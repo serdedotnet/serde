@@ -31,6 +31,7 @@ namespace Serde
                 if (current is NamespaceDeclarationSyntax ns)
                 {
                     namespaceDeclaration = ns;
+                    break;
                 }
             }
             var typeName = typeDecl.Identifier.ValueText;
@@ -42,22 +43,21 @@ namespace Serde
                     Kind: SymbolKind.Field or SymbolKind.Property,
                 }).ToList();
 
-            var calls = fieldsAndProps.Select(m => $@"          type.SerializeField(""{m.Name}"", {m.Name}); ");
+            var calls = fieldsAndProps.Select(m => $@"        type.SerializeField(""{m.Name}"", {m.Name});");
 
-            var typeText = SourceText.From($@"
-using Serde;
-partial {typeDecl.Keyword} {typeName}
+            var typeText = $@"
+partial {typeDecl.Keyword} {typeName} : Serde.ISerialize
 {{
     public void Serialize<TSerializer, TSerializeStruct>(TSerializer serializer)
-        where TSerializer : ISerializer<TSerializeStruct>
-        where TSerializeStruct : ISerializeStruct
+        where TSerializer : Serde.ISerializer<TSerializeStruct>
+        where TSerializeStruct : Serde.ISerializeStruct
     {{
         var type = serializer.SerializeStruct(""{typeName}"", 3);
-{string.Join(Environment.NewLine, calls)}
+{string.Join("\r\n", calls)}
         type.End();
     }}
-}}
-");
+}}";
+            context.AddSource($"{typeName}.Serde.cs", typeText);
         }
 
         struct TypeDeclReceiver : ISyntaxContextReceiver
@@ -82,8 +82,9 @@ partial {typeDecl.Keyword} {typeName}
                             {
                                 name = q.Right;
                             }
-                            if (name is IdentifierNameSyntax { Identifier: { ValueText: string text } }
-                                && text == nameof(SerdeGenerator))
+                            if (name is IdentifierNameSyntax { Identifier: {
+                                    ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
+                                } })
                             {
                                 TypeDeclarationSyntax = typeDecl;
                                 SemanticModel = context.SemanticModel;
