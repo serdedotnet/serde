@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.CodeAnalysis.Text;
 using Xunit;
@@ -27,10 +28,10 @@ partial class Rgb
 }";
             var verifier = new CSharpSourceGeneratorTest<SerdeGenerator, XUnitVerifier>()
             {
-                TestCode = src
+                TestCode = src,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            verifier.ReferenceAssemblies = verifier.ReferenceAssemblies.AddAssemblies(
-                ImmutableArray.Create(typeof(Serde.GenerateSerdeAttribute).Assembly.Location));
+            verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerdeAttribute).Assembly);
             verifier.TestState.GeneratedSources.Add(("SerdeGenerator\\Serde.SerdeGenerator\\Rgb.Serde.cs", SourceText.From(@"
 partial class Rgb : Serde.ISerialize
 {
