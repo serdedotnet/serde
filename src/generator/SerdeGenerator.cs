@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Serde
 {
@@ -43,22 +45,91 @@ namespace Serde
                     Kind: SymbolKind.Field or SymbolKind.Property,
                 }).ToList();
 
-            var calls = fieldsAndProps.Select(m => $@"        type.SerializeField(""{m.Name}"", {m.Name});");
+            var statements = new List<StatementSyntax>(); 
+            statements.Add(LocalDeclarationStatement(VariableDeclaration(
+                IdentifierName(Identifier("var")),
+                SeparatedList(new[] {
+                    VariableDeclarator(
+                        Identifier("type"),
+                        argumentList: null,
+                        EqualsValueClause(InvocationExpression(
+                            QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeStruct")),
+                            ArgumentList(SeparatedList(new [] {
+                                Argument(StringLiteral(typeName)), Argument(NumericLiteral(fieldsAndProps.Count))
+                            }))
+                        ))
+                    )
+                })
+            )));
 
-            var typeText = $@"
-partial {typeDecl.Keyword} {typeName} : Serde.ISerialize
-{{
-    public void Serialize<TSerializer, TSerializeStruct>(TSerializer serializer)
-        where TSerializer : Serde.ISerializer<TSerializeStruct>
-        where TSerializeStruct : Serde.ISerializeStruct
-    {{
-        var type = serializer.SerializeStruct(""{typeName}"", 3);
-{string.Join("\r\n", calls)}
-        type.End();
-    }}
-}}";
-            context.AddSource($"{typeName}.Serde.cs", typeText);
+            statements.AddRange(fieldsAndProps.Select(m => 
+                ExpressionStatement(InvocationExpression(
+                    QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
+                    ArgumentList(SeparatedList(new ExpressionSyntax[] {
+                        LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(m.Name)),
+                        IdentifierName(m.Name)
+                    }.Select(Argument)))))
+            ));
+
+            statements.Add(ExpressionStatement(InvocationExpression(
+                QualifiedName(IdentifierName("type"), IdentifierName("End")),
+                ArgumentList()
+            )));
+
+            var newMethod = MethodDeclaration(attributeLists: default,
+                modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
+                PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                explicitInterfaceSpecifier: default,
+                identifier: Identifier("Serialize"),
+                typeParameterList: TypeParameterList(SeparatedList(new[] {
+                    "TSerializer", "TSerializeStruct"
+                }.Select(s => TypeParameter(s)))),
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer") })),
+                constraintClauses: List(new[] {
+                    TypeParameterConstraintClause(
+                        IdentifierName("TSerializer"),
+                        SeparatedList(new TypeParameterConstraintSyntax[] {
+                            TypeConstraint(QualifiedName(
+                                IdentifierName("Serde"),
+                                GenericName(
+                                    Identifier("ISerializer"),
+                                    TypeArgumentList(SeparatedList(new TypeSyntax[] { IdentifierName("TSerializeStruct") })))))
+                        })
+                    ),
+                    TypeParameterConstraintClause(
+                        IdentifierName("TSerializeStruct"),
+                        SeparatedList(new TypeParameterConstraintSyntax[] {
+                            TypeConstraint(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerializeStruct")))
+                        })
+                    )
+                }),
+                body: Block(statements.ToArray()),
+                semicolonToken: default
+                );
+
+            var newType = typeDecl
+                .WithAttributeLists(List<AttributeListSyntax>())
+                .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
+                    SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
+                })))
+                .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
+
+            context.AddSource($"{typeName}.Serde.cs", newType.NormalizeWhitespace(eol: Environment.NewLine).ToFullString());
         }
+
+        private static ParameterSyntax Parameter(string typeName, string paramName) => SyntaxFactory.Parameter(
+            attributeLists: default,
+            modifiers: default,
+            type: IdentifierName(typeName),
+            Identifier(paramName),
+            default
+        );
+
+        private static LiteralExpressionSyntax NumericLiteral(int num)
+            => LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(num));
+
+        private static LiteralExpressionSyntax StringLiteral(string text)
+            => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(text));
 
         struct TypeDeclReceiver : ISyntaxContextReceiver
         {

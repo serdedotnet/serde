@@ -1,5 +1,6 @@
 
 using System.Collections.Immutable;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -32,12 +33,12 @@ partial class Rgb
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
             verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerdeAttribute).Assembly);
-            verifier.TestState.GeneratedSources.Add(("SerdeGenerator\\Serde.SerdeGenerator\\Rgb.Serde.cs", SourceText.From(@"
-partial class Rgb : Serde.ISerialize
+            verifier.TestState.GeneratedSources.Add((
+               Path.Combine("SerdeGenerator", "Serde.SerdeGenerator", "Rgb.Serde.cs"), SourceText.From(
+@"partial class Rgb : Serde.ISerialize
 {
     public void Serialize<TSerializer, TSerializeStruct>(TSerializer serializer)
-        where TSerializer : Serde.ISerializer<TSerializeStruct>
-        where TSerializeStruct : Serde.ISerializeStruct
+        where TSerializer : Serde.ISerializer<TSerializeStruct> where TSerializeStruct : Serde.ISerializeStruct
     {
         var type = serializer.SerializeStruct(""Rgb"", 3);
         type.SerializeField(""Red"", Red);
