@@ -3,6 +3,8 @@ namespace Serde.Test
 {
     internal partial class AllInOne
     {
+        public bool BoolField = true;
+        public char CharField = '#';
         public byte ByteField = byte.MaxValue;
         public ushort UShortField = ushort.MaxValue;
         public uint UIntField = uint.MaxValue;

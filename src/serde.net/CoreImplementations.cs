@@ -3,6 +3,28 @@
 
 namespace Serde
 {
+    public readonly struct BoolWrap : ISerialize
+    {
+        private readonly bool _b;
+        public BoolWrap(bool b) { _b = b; }
+
+        void ISerialize.Serialize<TSerializer, _>(TSerializer serializer)
+        {
+            serializer.Serialize(_b);
+        }
+    }
+
+    public readonly struct CharWrap : ISerialize
+    {
+        private readonly char _c;
+        public CharWrap(char c) { _c = c; }
+
+        void ISerialize.Serialize<TSerializer, _>(TSerializer serializer)
+        {
+            serializer.Serialize(_c);
+        }
+    }
+
     public readonly struct ByteWrap : ISerialize
     {
         private readonly byte _b;

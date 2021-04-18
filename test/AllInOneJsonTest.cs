@@ -8,9 +8,9 @@ namespace Serde.Test
         public void Test()
         {
             var allInOne = new AllInOne();
-            var expected = @"{""ByteField"":255,""UShortField"":65535,""UIntField"":4294967295,""ULongField"":18446744073709551615,"
+            var expected = @"{""BoolField"":true,""CharField"":""#"",""ByteField"":255,""UShortField"":65535,""UIntField"":4294967295,""ULongField"":18446744073709551615,"
              + @"""SByteField"":127,""ShortField"":32767,""IntField"":2147483647,""LongField"":9223372036854775807,""StringField"":""StringValue""}";
-            var actual = JsonSerializer.ToString(allInOne);
+            var actual = JsonSerializer.WriteToString(allInOne);
             Assert.Equal(expected, actual);
         }
     }
@@ -19,7 +19,9 @@ namespace Serde.Test
     {
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer)
         {
-            var type = serializer.SerializeType("AllInOne", 8);
+            var type = serializer.SerializeType("AllInOne", 10);
+            type.SerializeField("BoolField", new BoolWrap(BoolField));
+            type.SerializeField("CharField", new CharWrap(CharField));
             type.SerializeField("ByteField", new ByteWrap(ByteField));
             type.SerializeField("UShortField", new UInt16Wrap(UShortField));
             type.SerializeField("UIntField", new UInt32Wrap(UIntField));
