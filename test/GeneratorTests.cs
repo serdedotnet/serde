@@ -52,35 +52,6 @@ namespace Serde.Test
             static string GetPath([CallerFilePath] string path = "") => path;
         }
 
-        [Fact]
-        public Task Rgb()
-        {
-            var src = @"
-using Serde;
-
-[GenerateSerde]
-partial class Rgb
-{
-    public byte Red;
-    public byte Green;
-    public byte Blue;
-}";
-            var expected = @"
-partial class Rgb : Serde.ISerialize
-{
-    public void Serde.ISerialize.Serialize<TSerializer, TSerializeStruct>(TSerializer serializer)
-        where TSerializer : Serde.ISerializer<TSerializeStruct> where TSerializeStruct : Serde.ISerializeType
-    {
-        var type = serializer.SerializeStruct(""Rgb"", 3);
-        type.SerializeField(""Red"", new ByteWrap(Red));
-        type.SerializeField(""Green"", new ByteWrap(Green));
-        type.SerializeField(""Blue"", new ByteWrap(Blue));
-        type.End();
-    }
-}";
-            return VerifyGeneratedCode(src, "Rgb", expected);
-        }
-
         private Task VerifyGeneratedCode(string src, string typeName, string expected)
         {
             var verifier = new CSharpSourceGeneratorTest<SerdeGenerator, XUnitVerifier>()
