@@ -26,15 +26,6 @@ namespace Serde
                 return;
             }
 
-            NamespaceDeclarationSyntax? namespaceDeclaration = null;
-            for (SyntaxNode? current = typeDecl; current is not null; current = current.Parent)
-            {
-                if (current is NamespaceDeclarationSyntax ns)
-                {
-                    namespaceDeclaration = ns;
-                    break;
-                }
-            }
             var typeName = typeDecl.Identifier.ValueText;
             var semanticModel = syntaxReceiver.SemanticModel!;
 
@@ -44,7 +35,54 @@ namespace Serde
                     Kind: SymbolKind.Field or SymbolKind.Property,
                 }).ToList();
 
+            // Generate statements for ISerialize.Serialize implementation
+            var statements = GenerateISerializeStatements(typeName, fieldsAndProps);
+
+            // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer) { ... }`
+            var newMethod = MethodDeclaration(attributeLists: default,
+                modifiers: default,
+                PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
+                    QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
+                identifier: Identifier("Serialize"),
+                typeParameterList: TypeParameterList(SeparatedList(new[] {
+                    "TSerializer", "TSerializeType"
+                }.Select(s => TypeParameter(s)))),
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer") })),
+                constraintClauses: default,
+                body: Block(statements.ToArray()),
+                semicolonToken: default
+                );
+
+            MemberDeclarationSyntax newType = typeDecl
+                .WithAttributeLists(List<AttributeListSyntax>())
+                .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
+                    SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
+                })))
+                .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
+
+            // If the original type was in a namespace, put this decl in the same one
+            if (typeDecl.Parent is NamespaceDeclarationSyntax ns)
+            {
+                newType = ns.WithMembers(List(new[] { newType }));
+            }
+
+            var tree = CompilationUnit(
+                externs: default,
+                usings: List(new[] { UsingDirective(IdentifierName("Serde")) }),
+                attributeLists: default,
+                members: List<MemberDeclarationSyntax>(new[] { newType }));
+            tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
+
+            context.AddSource($"{typeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
+        }
+
+        private List<StatementSyntax> GenerateISerializeStatements(
+            string typeName,
+            List<ISymbol> fieldsAndProps)
+        {
             var statements = new List<StatementSyntax>(); 
+            // `var type = serializer.SerializeType("TypeName", numFields)`
             statements.Add(LocalDeclarationStatement(VariableDeclaration(
                 IdentifierName(Identifier("var")),
                 SeparatedList(new[] {
@@ -52,7 +90,7 @@ namespace Serde
                         Identifier("type"),
                         argumentList: null,
                         EqualsValueClause(InvocationExpression(
-                            QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeStruct")),
+                            QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeType")),
                             ArgumentList(SeparatedList(new [] {
                                 Argument(StringLiteral(typeName)), Argument(NumericLiteral(fieldsAndProps.Count))
                             }))
@@ -72,16 +110,25 @@ namespace Serde
                 };
                 // If the target is a core type, we need to wrap it. Otherwise, just pass it through
                 ExpressionSyntax fieldExpr = IdentifierName(m.Name);
-                switch (memberType.SpecialType)
+                string? wrapperName = memberType.SpecialType switch 
                 {
-                    case SpecialType.None:
-                        break;
-                    case SpecialType.System_Byte:
-                        fieldExpr = ObjectCreationExpression(
-                            IdentifierName("ByteWrap"),
-                            ArgumentList(SeparatedList(new[] { Argument(fieldExpr) })),
-                            initializer: null);
-                        break;
+                    SpecialType.System_Byte => "ByteWrap",
+                    SpecialType.System_UInt16 => "UInt16Wrap",
+                    SpecialType.System_UInt32 => "UInt32Wrap",
+                    SpecialType.System_UInt64 => "UInt64Wrap",
+                    SpecialType.System_SByte => "SByteWrap",
+                    SpecialType.System_Int16 => "Int16Wrap",
+                    SpecialType.System_Int32 => "Int32Wrap",
+                    SpecialType.System_Int64 => "Int64Wrap",
+                    SpecialType.System_String => "StringWrap",
+                    _ => null
+                };
+                if (wrapperName is not null)
+                {
+                    fieldExpr = ObjectCreationExpression(
+                        IdentifierName(wrapperName),
+                        ArgumentList(SeparatedList(new[] { Argument(fieldExpr) })),
+                        initializer: null);
                 }
 
                 statements.Add(
@@ -100,46 +147,7 @@ namespace Serde
                 ArgumentList()
             )));
 
-            var newMethod = MethodDeclaration(attributeLists: default,
-                modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
-                PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
-                    QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
-                identifier: Identifier("Serialize"),
-                typeParameterList: TypeParameterList(SeparatedList(new[] {
-                    "TSerializer", "TSerializeStruct"
-                }.Select(s => TypeParameter(s)))),
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer") })),
-                constraintClauses: List(new[] {
-                    TypeParameterConstraintClause(
-                        IdentifierName("TSerializer"),
-                        SeparatedList(new TypeParameterConstraintSyntax[] {
-                            TypeConstraint(QualifiedName(
-                                IdentifierName("Serde"),
-                                GenericName(
-                                    Identifier("ISerializer"),
-                                    TypeArgumentList(SeparatedList(new TypeSyntax[] { IdentifierName("TSerializeStruct") })))))
-                        })
-                    ),
-                    TypeParameterConstraintClause(
-                        IdentifierName("TSerializeStruct"),
-                        SeparatedList(new TypeParameterConstraintSyntax[] {
-                            TypeConstraint(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerializeType")))
-                        })
-                    )
-                }),
-                body: Block(statements.ToArray()),
-                semicolonToken: default
-                );
-
-            var newType = typeDecl
-                .WithAttributeLists(List<AttributeListSyntax>())
-                .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
-                    SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
-                })))
-                .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
-
-            context.AddSource($"{typeName}.ISerialize.cs", Environment.NewLine + newType.NormalizeWhitespace(eol: Environment.NewLine).ToFullString());
+            return statements;
         }
 
         private static ParameterSyntax Parameter(string typeName, string paramName) => SyntaxFactory.Parameter(

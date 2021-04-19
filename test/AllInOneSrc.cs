@@ -12,5 +12,7 @@ namespace Serde.Test
         public short ShortField = short.MaxValue;
         public int IntField = int.MaxValue;
         public long LongField = long.MaxValue;
+
+        public string StringField = "StringValue";
     }
 }

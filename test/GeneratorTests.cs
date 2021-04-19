@@ -25,21 +25,26 @@ namespace Serde.Test
             // Add [GenerateSerde] to the class
             src = src.Replace("internal partial class AllInOne", @"[GenerateSerde] internal partial class AllInOne");
             var expected = @"
-internal partial class AllInOne : Serde.ISerialize
+using Serde;
+
+namespace Serde.Test
 {
-    public void Serde.ISerialize.Serialize<TSerializer, TSerializeStruct>(TSerializer serializer)
-        where TSerializer : Serde.ISerializer<TSerializeStruct> where TSerializeStruct : Serde.ISerializeType
+    internal partial class AllInOne : Serde.ISerialize
     {
-        var type = serializer.SerializeStruct(""AllInOne"", 8);
-        type.SerializeField(""ByteField"", new ByteWrap(ByteField));
-        type.SerializeField(""UShortField"", new UInt16Wrap(UShortField));
-        type.SerializeField(""UIntField"", new UInt32Wrap(UIntField));
-        type.SerializeField(""ULongField"", new UInt64Wrap(ULongField));
-        type.SerializeField(""SByteField"", SByteField);
-        type.SerializeField(""ShortField"", ShortField);
-        type.SerializeField(""IntField"", IntField);
-        type.SerializeField(""LongField"", LongField);
-        type.End();
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer)
+        {
+            var type = serializer.SerializeType(""AllInOne"", 9);
+            type.SerializeField(""ByteField"", new ByteWrap(ByteField));
+            type.SerializeField(""UShortField"", new UInt16Wrap(UShortField));
+            type.SerializeField(""UIntField"", new UInt32Wrap(UIntField));
+            type.SerializeField(""ULongField"", new UInt64Wrap(ULongField));
+            type.SerializeField(""SByteField"", new SByteWrap(SByteField));
+            type.SerializeField(""ShortField"", new Int16Wrap(ShortField));
+            type.SerializeField(""IntField"", new Int32Wrap(IntField));
+            type.SerializeField(""LongField"", new Int64Wrap(LongField));
+            type.SerializeField(""StringField"", new StringWrap(StringField));
+            type.End();
+        }
     }
 }";
             return VerifyGeneratedCode(src, "AllInOne", expected);
@@ -83,6 +88,7 @@ partial class Rgb : Serde.ISerialize
                 TestCode = src,
                 ReferenceAssemblies = Config.LatestTfRefs,
             };
+            verifier.CompilerDiagnostics = CompilerDiagnostics.Warnings;
             verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerdeAttribute).Assembly);
             verifier.TestState.GeneratedSources.Add((
                 Path.Combine("SerdeGenerator", "Serde.SerdeGenerator", $"{typeName}.ISerialize.cs"),

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Serde
 {
-    public static class _JsonSerializer
+    public static class JsonSerializer
     {
         public static string ToString<T>(T value) where T : ISerialize
         {
@@ -64,7 +64,12 @@ namespace Serde
 
             public void Serialize(long i64) => _builder.Append(i64);
 
-            public void Serialize(string s) => _builder.Append(s);
+            public void Serialize(string s)
+            {
+                _builder.Append('"');
+                _builder.Append(s);
+                _builder.Append('"');
+            }
 
             public SerializerImpl SerializeType(string name, int numFields)
             {
