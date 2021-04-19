@@ -22,7 +22,7 @@ namespace Serde
             }
         }
 
-        partial struct SerializerImpl : ISerializeStruct
+        partial struct SerializerImpl : ISerializeType
         {
             public void End() => _builder.Append('}');
 
@@ -34,33 +34,7 @@ namespace Serde
                 }
             }
 
-            public void SerializeField(string name, bool b)
-            {
-                CheckComma();
-                Serialize(name);
-                _builder.Append(':');
-                Serialize(b);
-            }
-
-            public void SerializeField(string name, byte b) => SerializeField(name, (int)b);
-
-            public void SerializeField(string name, int i)
-            {
-                CheckComma();
-                Serialize(name);
-                _builder.Append(':');
-                Serialize(i);
-            }
-
-            public void SerializeField(string name, string s)
-            {
-                CheckComma();
-                Serialize(name);
-                _builder.Append(':');
-                Serialize(s);
-            }
-
-            public void SerializeField<T>(string name, T value) where T : ISerialize
+            void ISerializeType.SerializeField<T>(string name, T value)
             {
                 CheckComma();
                 Serialize(name);
@@ -76,11 +50,28 @@ namespace Serde
 
             public void Serialize(byte b) => _builder.Append(b);
 
-            public void Serialize(int i) => _builder.Append(i);
+            public void Serialize(ushort u16) => _builder.Append(u16);
 
-            public void Serialize(string s) => _builder.Append(s);
+            public void Serialize(uint u32) => _builder.Append(u32);
 
-            public SerializerImpl SerializeStruct(string name, int numFields)
+            public void Serialize(ulong u64) => _builder.Append(u64);
+
+            public void Serialize(sbyte b) => _builder.Append(b);
+
+            public void Serialize(short i16) => _builder.Append(i16);
+
+            public void Serialize(int i32) => _builder.Append(i32);
+
+            public void Serialize(long i64) => _builder.Append(i64);
+
+            public void Serialize(string s)
+            {
+                _builder.Append('"');
+                _builder.Append(s);
+                _builder.Append('"');
+            }
+
+            public SerializerImpl SerializeType(string name, int numFields)
             {
                 _builder.Append('{');
                 return this;
