@@ -79,7 +79,7 @@ namespace Serde
             var newMethod = MethodDeclaration(attributeLists: default,
                 modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
                 PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                explicitInterfaceSpecifier: default,
+                explicitInterfaceSpecifier: default!,
                 identifier: Identifier("Serialize"),
                 typeParameterList: TypeParameterList(SeparatedList(new[] {
                     "TSerializer", "TSerializeStruct"
