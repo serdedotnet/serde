@@ -29,6 +29,7 @@ namespace Serde
         where TSerializeType : ISerializeType
     {
         void Serialize(bool b);
+        void Serialize(char c);
         void Serialize(byte b);
         void Serialize(ushort u16);
         void Serialize(uint u32);

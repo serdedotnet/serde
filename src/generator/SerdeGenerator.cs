@@ -6,28 +6,68 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using static Serde.Diagnostics;
 
 namespace Serde
 {
     [Generator]
     public class SerdeGenerator : ISourceGenerator
     {
-        public void Initialize(GeneratorInitializationContext context)
-        {
-            context.RegisterForSyntaxNotifications(() => new TypeDeclReceiver());
-        }
+        public void Initialize(GeneratorInitializationContext context) { }
 
         public void Execute(GeneratorExecutionContext context)
         {
-            var syntaxReceiver = (TypeDeclReceiver)context.SyntaxContextReceiver!;
-            var typeDecl = syntaxReceiver.TypeDeclarationSyntax;
-            if (typeDecl is null)
+            foreach (var tree in context.Compilation.SyntaxTrees)
             {
+                foreach (var typeDecl in tree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>())
+                {
+                    if (typeDecl.IsKind(SyntaxKind.ClassDeclaration)
+                         || typeDecl.IsKind(SyntaxKind.StructDeclaration)
+                         || typeDecl.IsKind(SyntaxKind.RecordDeclaration))
+                    {
+                        foreach (var attrLists in typeDecl.AttributeLists)
+                        {
+                            foreach (var attr in attrLists.Attributes)
+                            {
+                                var name = attr.Name;
+                                while (name is QualifiedNameSyntax q)
+                                {
+                                    name = q.Right;
+                                }
+                                if (name is IdentifierNameSyntax
+                                    {
+                                        Identifier:
+                                        {
+                                            ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
+                                        }
+                                    })
+                                {
+                                    VisitType(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        private void VisitType(
+            GeneratorExecutionContext context,
+            TypeDeclarationSyntax typeDecl,
+            SemanticModel semanticModel)
+        {
+            if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
+            {
+                // Type must be partial
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_TypeNotPartial,
+                    typeDecl.Identifier.GetLocation(),
+                    typeDecl.Identifier.ValueText));
                 return;
             }
 
             var typeName = typeDecl.Identifier.ValueText;
-            var semanticModel = syntaxReceiver.SemanticModel!;
 
             var typeDef = semanticModel.GetDeclaredSymbol(typeDecl)!;
             var fieldsAndProps = typeDef.GetMembers().Where(m => m is {
@@ -36,48 +76,52 @@ namespace Serde
                 }).ToList();
 
             // Generate statements for ISerialize.Serialize implementation
-            var statements = GenerateISerializeStatements(typeName, fieldsAndProps);
+            var statements = GenerateISerializeStatements(context, typeName, fieldsAndProps);
 
-            // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer) { ... }`
-            var newMethod = MethodDeclaration(attributeLists: default,
-                modifiers: default,
-                PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
-                    QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
-                identifier: Identifier("Serialize"),
-                typeParameterList: TypeParameterList(SeparatedList(new[] {
-                    "TSerializer", "TSerializeType"
-                }.Select(s => TypeParameter(s)))),
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer") })),
-                constraintClauses: default,
-                body: Block(statements.ToArray()),
-                semicolonToken: default
-                );
-
-            MemberDeclarationSyntax newType = typeDecl
-                .WithAttributeLists(List<AttributeListSyntax>())
-                .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
-                    SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
-                })))
-                .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
-
-            // If the original type was in a namespace, put this decl in the same one
-            if (typeDecl.Parent is NamespaceDeclarationSyntax ns)
+            if (statements is not null)
             {
-                newType = ns.WithMembers(List(new[] { newType }));
+                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer) { ... }`
+                var newMethod = MethodDeclaration(attributeLists: default,
+                    modifiers: default,
+                    PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                    explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
+                        QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
+                    identifier: Identifier("Serialize"),
+                    typeParameterList: TypeParameterList(SeparatedList(new[] {
+                    "TSerializer", "TSerializeType"
+                    }.Select(s => TypeParameter(s)))),
+                    parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer") })),
+                    constraintClauses: default,
+                    body: Block(statements.ToArray()),
+                    semicolonToken: default
+                    );
+
+                MemberDeclarationSyntax newType = typeDecl
+                    .WithAttributeLists(List<AttributeListSyntax>())
+                    .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
+                        SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
+                    })))
+                    .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
+
+                // If the original type was in a namespace, put this decl in the same one
+                if (typeDecl.Parent is NamespaceDeclarationSyntax ns)
+                {
+                    newType = ns.WithMembers(List(new[] { newType }));
+                }
+
+                var tree = CompilationUnit(
+                    externs: default,
+                    usings: List(new[] { UsingDirective(IdentifierName("Serde")) }),
+                    attributeLists: default,
+                    members: List<MemberDeclarationSyntax>(new[] { newType }));
+                tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
+
+                context.AddSource($"{typeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
             }
-
-            var tree = CompilationUnit(
-                externs: default,
-                usings: List(new[] { UsingDirective(IdentifierName("Serde")) }),
-                attributeLists: default,
-                members: List<MemberDeclarationSyntax>(new[] { newType }));
-            tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
-
-            context.AddSource($"{typeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
         }
 
-        private List<StatementSyntax> GenerateISerializeStatements(
+        private List<StatementSyntax>? GenerateISerializeStatements(
+            GeneratorExecutionContext context,
             string typeName,
             List<ISymbol> fieldsAndProps)
         {
@@ -108,10 +152,40 @@ namespace Serde
                     IPropertySymbol { Type: var t } => t,
                     _ => throw ExceptionUtilities.Unreachable
                 };
-                // If the target is a core type, we need to wrap it. Otherwise, just pass it through
-                ExpressionSyntax fieldExpr = IdentifierName(m.Name);
-                string? wrapperName = memberType.SpecialType switch 
+
+                // Check if the type is a primitive
+                if (TrySerializePrimitive(memberType, m))
                 {
+                    continue;
+                }
+
+                // Check if type implements ISerializable
+                var iserializableSymbol = context.Compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
+                if (memberType.Interfaces.Contains(iserializableSymbol, SymbolEqualityComparer.Default))
+                {
+                    AddSerializeField(memberType, IdentifierName(m.Name));
+                }
+
+                // No built-in handling and doesn't implement ISerializable, error
+                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_DoesntImplementISerializable, m.Locations[0], m, memberType));
+                return null;
+            }
+
+            // `type.End();`
+            statements.Add(ExpressionStatement(InvocationExpression(
+                QualifiedName(IdentifierName("type"), IdentifierName("End")),
+                ArgumentList()
+            )));
+
+            return statements;
+
+            bool TrySerializePrimitive(ITypeSymbol type, ISymbol member)
+            {
+                // If the target is a core type, we need to wrap it. Otherwise, just pass it through
+                string? wrapperName = type.SpecialType switch
+                {
+                    SpecialType.System_Boolean => "BoolWrap",
+                    SpecialType.System_Char => "CharWrap",
                     SpecialType.System_Byte => "ByteWrap",
                     SpecialType.System_UInt16 => "UInt16Wrap",
                     SpecialType.System_UInt32 => "UInt32Wrap",
@@ -123,31 +197,33 @@ namespace Serde
                     SpecialType.System_String => "StringWrap",
                     _ => null
                 };
-                if (wrapperName is not null)
+                if (wrapperName is null)
                 {
-                    fieldExpr = ObjectCreationExpression(
-                        IdentifierName(wrapperName),
-                        ArgumentList(SeparatedList(new[] { Argument(fieldExpr) })),
-                        initializer: null);
+                    return false;
                 }
+                ExpressionSyntax fieldExpr = IdentifierName(member.Name);
+                fieldExpr = ObjectCreationExpression(
+                    IdentifierName(wrapperName),
+                    ArgumentList(SeparatedList(new[] { Argument(fieldExpr) })),
+                    initializer: null);
 
+                AddSerializeField(member, fieldExpr);
+                return true;
+            }
+
+            // Add a statement like `type.SerializeField("member.Name", value)`
+            void AddSerializeField(ISymbol member, ExpressionSyntax value)
+            {
                 statements.Add(
                     ExpressionStatement(InvocationExpression(
                         // type.SerializeField
                         QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
                         ArgumentList(SeparatedList(new ExpressionSyntax[] {
                             // "FieldName"
-                            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(m.Name)),
-                            fieldExpr
+                            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.Name)),
+                            value
                         }.Select(Argument))))));
             }
-
-            statements.Add(ExpressionStatement(InvocationExpression(
-                QualifiedName(IdentifierName("type"), IdentifierName("End")),
-                ArgumentList()
-            )));
-
-            return statements;
         }
 
         private static ParameterSyntax Parameter(string typeName, string paramName) => SyntaxFactory.Parameter(
@@ -163,41 +239,5 @@ namespace Serde
 
         private static LiteralExpressionSyntax StringLiteral(string text)
             => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(text));
-
-        struct TypeDeclReceiver : ISyntaxContextReceiver
-        {
-            public TypeDeclarationSyntax? TypeDeclarationSyntax { get; private set; }
-            public SemanticModel? SemanticModel { get; private set; }
-
-            public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-            {
-                var node = context.Node;
-                if (node is TypeDeclarationSyntax typeDecl &&
-                    (node.IsKind(SyntaxKind.ClassDeclaration)
-                     || node.IsKind(SyntaxKind.StructDeclaration)
-                     || node.IsKind(SyntaxKind.RecordDeclaration)))
-                {
-                    foreach (var attrLists in typeDecl.AttributeLists)
-                    {
-                        foreach (var attr in attrLists.Attributes)
-                        {
-                            var name = attr.Name;
-                            while (name is QualifiedNameSyntax q)
-                            {
-                                name = q.Right;
-                            }
-                            if (name is IdentifierNameSyntax { Identifier: {
-                                    ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
-                                } })
-                            {
-                                TypeDeclarationSyntax = typeDecl;
-                                SemanticModel = context.SemanticModel;
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }
