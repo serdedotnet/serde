@@ -16,6 +16,32 @@ namespace Serde.Test
     public class GeneratorTests
     {
         [Fact]
+        public Task Rgb()
+        {
+            var src = @"
+using Serde;
+[GenerateSerde]
+partial struct Rgb
+{
+    public byte Red, Green, Blue;
+}";
+            return VerifyGeneratedCode(src, "Rgb", @"
+using Serde;
+
+partial struct Rgb : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""Rgb"", 3);
+        type.SerializeField(""Red"", new ByteWrap(Red));
+        type.SerializeField(""Green"", new ByteWrap(Green));
+        type.SerializeField(""Blue"", new ByteWrap(Blue));
+        type.End();
+    }
+}");
+        }
+
+        [Fact]
         public Task AllInOne()
         {
             var curPath = GetPath();
@@ -105,15 +131,15 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             var verifier = CreateVerifier(src);
             verifier.ExpectedDiagnostics.AddRange(diagnostics);
             verifier.TestState.GeneratedSources.Add((
-                Path.Combine("SerdeGenerator", "Serde.SerdeGenerator", $"{typeName}.ISerialize.cs"),
+                Path.Combine("SerdeGenerator", $"Serde.{nameof(ISerializeGenerator)}", $"{typeName}.ISerialize.cs"),
                 SourceText.From(expected, Encoding.UTF8))
             );
             return verifier.RunAsync();
         }
 
-        private CSharpSourceGeneratorTest<SerdeGenerator, XUnitVerifier> CreateVerifier(string src)
+        private CSharpSourceGeneratorTest<ISerializeGenerator, XUnitVerifier> CreateVerifier(string src)
         {
-            var verifier = new CSharpSourceGeneratorTest<SerdeGenerator, XUnitVerifier>()
+            var verifier = new CSharpSourceGeneratorTest<ISerializeGenerator, XUnitVerifier>()
             {
                 TestCode = src,
                 ReferenceAssemblies = Config.LatestTfRefs,
