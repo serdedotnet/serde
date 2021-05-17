@@ -1,16 +1,19 @@
 
+using System;
 using System.IO;
 
 namespace Serde
 {
-    public sealed partial class JsonSerializer
+    public static partial class JsonSerializer
     {
-        // Simple helpers for the most common uses
-        public static string WriteToString<T>(T t) where T : ISerialize
+        /// <summary>
+        /// Serialize the given type to a string.
+        /// </summary>
+        public static string WriteToString<T>(T s) where T : ISerialize
         {
             var writer = new StringWriter();
             var serializer = new Impl(writer);
-            t.Serialize<Impl, Impl>(serializer);
+            s.Serialize<Impl, SerializeType>(ref serializer);
             return writer.ToString();
         }
 
@@ -20,19 +23,19 @@ namespace Serde
         private partial struct Impl
         {
             private readonly TextWriter _writer;
-            private TypeState _state;
             public Impl(TextWriter writer)
             {
                 _writer = writer;
-                _state = TypeState.Start;
             }
+
+            public void Write(char c) => _writer.Write(c);
         }
     }
 
     // Implementations of ISerializer interfaces
     partial class JsonSerializer
     {
-        partial struct Impl : ISerializer<Impl>
+        partial struct Impl : ISerializer<SerializeType>, ISerializer<ISerializeType>
         {
             public void Serialize(bool b) => _writer.Write(b ? "true" : "false");
 
@@ -60,21 +63,33 @@ namespace Serde
                 _writer.Write(s);
                 _writer.Write('"');
             }
+
+            public SerializeType SerializeType(string name, int numFields)
+            {
+                _writer.Write('{');
+                // Copies Impl, since we can't hold a ref. This forces the persistant state to be a
+                // reference type, but that works for now.
+                return new SerializeType(this);
+            }
+
+            ISerializeType ISerializer<ISerializeType>.SerializeType(string name, int numFields)
+                => SerializeType(name, numFields);
         }
 
-        partial struct Impl : ISerializeType
+        struct SerializeType : ISerializeType
         {
-            private enum TypeState
+            private enum State
             {
                 Start = 0,
                 WritingFields,
                 End
             }
-            public Impl SerializeType(string name, int numFields)
+            private State _state;
+            private Impl _impl;
+            public SerializeType(Impl impl)
             {
-                _state = TypeState.Start;
-                _writer.Write('{');
-                return this;
+                _state = State.Start;
+                _impl = impl;
             }
 
             public void SerializeField<T>(string name, T value)
@@ -82,23 +97,27 @@ namespace Serde
             {
                 switch (_state)
                 {
-                    case TypeState.WritingFields:
-                        _writer.Write(',');
-                        goto case TypeState.Start;
-
-                    case TypeState.Start:
-                        this.Serialize(name);
-                        _writer.Write(':');
-                        value.Serialize<Impl, Impl>(this);
-                        _state = TypeState.WritingFields;
+                    case State.Start:
+                        _state = State.WritingFields;
                         break;
+
+                    case State.WritingFields:
+                        _impl.Write(',');
+                        break;
+
+                    case State.End:
+                        throw new InvalidOperationException("Cannot write fields after calling End()");
                 }
+
+                _impl.Serialize(name);
+                _impl.Write(':');
+                value.Serialize<Impl, SerializeType>(ref _impl);
             }
 
             public void End()
             {
-                _writer.Write('}');
-                _state = TypeState.End;
+                _impl.Write('}');
+                _state = State.End;
             }
         }
     }
