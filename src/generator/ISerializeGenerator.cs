@@ -110,7 +110,7 @@ namespace Serde
 
             if (statements is not null)
             {
-                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer) { ... }`
+                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer) { ... }`
                 var newMethod = MethodDeclaration(attributeLists: default,
                     modifiers: default,
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
@@ -120,7 +120,7 @@ namespace Serde
                     typeParameterList: TypeParameterList(SeparatedList(new[] {
                     "TSerializer", "TSerializeType"
                     }.Select(s => TypeParameter(s)))),
-                    parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer") })),
+                    parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer", byRef: true) })),
                     constraintClauses: default,
                     body: Block(statements.ToArray()),
                     semicolonToken: default
@@ -256,10 +256,10 @@ namespace Serde
             }
         }
 
-        private static ParameterSyntax Parameter(string typeName, string paramName) => SyntaxFactory.Parameter(
+        private static ParameterSyntax Parameter(string typeName, string paramName, bool byRef = false) => SyntaxFactory.Parameter(
             attributeLists: default,
             modifiers: default,
-            type: IdentifierName(typeName),
+            type: byRef ? SyntaxFactory.RefType(IdentifierName(typeName)) : IdentifierName(typeName),
             Identifier(paramName),
             default
         );

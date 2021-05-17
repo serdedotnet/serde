@@ -9,9 +9,7 @@ namespace Serde
 
     public interface ISerialize
     {
-        void Serialize<
-            TSerializer,
-            TSerializeType>(TSerializer serializer)
+        void Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
             where TSerializeType : ISerializeType
             where TSerializer : ISerializer<TSerializeType>;
     }
@@ -24,7 +22,7 @@ namespace Serde
     }
 
     public interface ISerializer<
-        TSerializeType
+        out TSerializeType
         >
         where TSerializeType : ISerializeType
     {

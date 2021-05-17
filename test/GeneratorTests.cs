@@ -30,7 +30,7 @@ using Serde;
 
 partial struct Rgb : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer)
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""Rgb"", 3);
         type.SerializeField(""Red"", new ByteWrap(Red));
@@ -57,7 +57,7 @@ namespace Serde.Test
 {
     internal partial class AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(TSerializer serializer)
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""AllInOne"", 11);
             type.SerializeField(""BoolField"", new BoolWrap(BoolField));
