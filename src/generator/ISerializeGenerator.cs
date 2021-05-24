@@ -111,7 +111,8 @@ namespace Serde
             if (statements is not null)
             {
                 // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer) { ... }`
-                var newMethod = MethodDeclaration(attributeLists: default,
+                var newMethod = MethodDeclaration(
+                    attributeLists: default,
                     modifiers: default,
                     PredefinedType(Token(SyntaxKind.VoidKeyword)),
                     explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
