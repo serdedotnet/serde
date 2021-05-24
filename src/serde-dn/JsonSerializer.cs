@@ -17,6 +17,14 @@ namespace Serde
             return writer.ToString();
         }
 
+        public static string WriteToString(ISerializeShared s)
+        {
+            var writer = new StringWriter();
+            var serializer = new Impl(writer);
+            s.Serialize(serializer);
+            return writer.ToString();
+        }
+
         // Using a mutable struct allows for an efficient low-allocation implementation of the
         // ISerializer interface, but mutable structs are easy to misuse in C#, so hide the
         // implementation for now.
