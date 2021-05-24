@@ -7,11 +7,19 @@ namespace Serde
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
     public class GenerateSerdeAttribute : Attribute { }
 
-    public interface ISerialize
+    public interface ISerializeShared
+    {
+        void Serialize(ISerializer<ISerializeType> serializer);
+    }
+
+    public interface ISerialize : ISerializeShared
     {
         void Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
             where TSerializeType : ISerializeType
             where TSerializer : ISerializer<TSerializeType>;
+
+        void ISerializeShared.Serialize(ISerializer<ISerializeType> serializer)
+            => Serialize<ISerializer<ISerializeType>, ISerializeType>(ref serializer);
     }
 
     public interface ISerializeType
