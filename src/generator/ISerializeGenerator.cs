@@ -110,7 +110,7 @@ namespace Serde
 
             if (statements is not null)
             {
-                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer) { ... }`
+                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer) { ... }`
                 var newMethod = MethodDeclaration(
                     attributeLists: default,
                     modifiers: default,
@@ -119,7 +119,7 @@ namespace Serde
                         QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
                     identifier: Identifier("Serialize"),
                     typeParameterList: TypeParameterList(SeparatedList(new[] {
-                    "TSerializer", "TSerializeType"
+                        "TSerializer", "TSerializeType", "TSerializeEnumerable"
                     }.Select(s => TypeParameter(s)))),
                     parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer", byRef: true) })),
                     constraintClauses: default,
