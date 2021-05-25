@@ -7,9 +7,10 @@ namespace Serde.Test
     {
         internal JsonNode() { }
 
-        public abstract void Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
-            where TSerializer : ISerializer<TSerializeType>
-            where TSerializeType : ISerializeType;
+        public abstract void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable>
+            where TSerializeType : ISerializeType
+            where TSerializeEnumerable : ISerializeEnumerable;
 
         public static implicit operator JsonNode(int i) => new JsonNumber(i);
     }
@@ -19,7 +20,7 @@ namespace Serde.Test
 
     partial record JsonNumber
     {
-        public override void Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
         {
             serializer.Serialize(Value);
         }
@@ -27,7 +28,7 @@ namespace Serde.Test
 
     partial record JsonObject
     {
-        public override void Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType("", Members.Count);
             foreach (var (name, node) in Members)

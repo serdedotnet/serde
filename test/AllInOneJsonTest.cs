@@ -17,7 +17,7 @@ namespace Serde.Test
 
     internal partial class AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType("AllInOne", 10);
             type.SerializeField("BoolField", new BoolWrap(BoolField));
