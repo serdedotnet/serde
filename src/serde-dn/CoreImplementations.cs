@@ -8,7 +8,7 @@ namespace Serde
         private readonly bool _b;
         public BoolWrap(bool b) { _b = b; }
 
-        void ISerialize.Serialize<TSerializer, _>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_b);
         }
@@ -19,7 +19,7 @@ namespace Serde
         private readonly char _c;
         public CharWrap(char c) { _c = c; }
 
-        void ISerialize.Serialize<TSerializer, _>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_c);
         }
@@ -30,7 +30,7 @@ namespace Serde
         private readonly byte _b;
         public ByteWrap(byte b) { _b = b;}
 
-        void ISerialize.Serialize<TSerializer, _>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_b);
         }
@@ -41,7 +41,7 @@ namespace Serde
         private readonly ushort _i;
         public UInt16Wrap(ushort i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -52,7 +52,7 @@ namespace Serde
         private readonly uint _i;
         public UInt32Wrap(uint i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -63,7 +63,7 @@ namespace Serde
         private readonly ulong _i;
         public UInt64Wrap(ulong i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -74,7 +74,7 @@ namespace Serde
         private readonly sbyte _i;
         public SByteWrap(sbyte i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -85,7 +85,7 @@ namespace Serde
         private readonly short _i;
         public Int16Wrap(short i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -96,7 +96,7 @@ namespace Serde
         private readonly int _i;
         public Int32Wrap(int i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -107,7 +107,7 @@ namespace Serde
         private readonly long _i;
         public Int64Wrap(long i) { _i = i; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_i);
         }
@@ -118,7 +118,7 @@ namespace Serde
         private readonly string _s;
         public StringWrap(string s) { _s = s; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_s);
         }

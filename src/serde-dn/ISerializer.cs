@@ -9,17 +9,18 @@ namespace Serde
 
     public interface ISerializeShared
     {
-        void Serialize(ISerializer<ISerializeType> serializer);
+        void Serialize(ISerializer<ISerializeType, ISerializeEnumerable> serializer);
     }
 
     public interface ISerialize : ISerializeShared
     {
-        void Serialize<TSerializer, TSerializeType>(ref TSerializer serializer)
+        void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
             where TSerializeType : ISerializeType
-            where TSerializer : ISerializer<TSerializeType>;
+            where TSerializeEnumerable : ISerializeEnumerable
+            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable>;
 
-        void ISerializeShared.Serialize(ISerializer<ISerializeType> serializer)
-            => Serialize<ISerializer<ISerializeType>, ISerializeType>(ref serializer);
+        void ISerializeShared.Serialize(ISerializer<ISerializeType, ISerializeEnumerable> serializer)
+            => Serialize<ISerializer<ISerializeType, ISerializeEnumerable>, ISerializeType, ISerializeEnumerable>(ref serializer);
     }
 
     public interface ISerializeType
@@ -29,10 +30,18 @@ namespace Serde
         void SkipField(string name) { }
     }
 
+    public interface ISerializeEnumerable
+    {
+        void SerializeElement<T>(T value) where T : ISerialize;
+        void End();
+    }
+
     public interface ISerializer<
-        out TSerializeType
+        out TSerializeType,
+        out TSerializeEnumerable
         >
         where TSerializeType : ISerializeType
+        where TSerializeEnumerable : ISerializeEnumerable
     {
         void Serialize(bool b);
         void Serialize(char c);
@@ -46,5 +55,6 @@ namespace Serde
         void Serialize(long i64);
         void Serialize(string s);
         TSerializeType SerializeType(string name, int numFields);
+        TSerializeEnumerable SerializeEnumerable(int? length);
     }
 }
