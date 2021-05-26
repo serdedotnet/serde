@@ -120,6 +120,14 @@ struct Impl : ISerializer<SerializeType>
         return new SerializeType(this);
     }
 }
+struct SerializeType : ISerializeType
+{
+    private Impl _impl; // should be a ref
+    public SerializeType(ref Impl impl)
+    {
+        _impl = impl; // copies
+    }
+}
 ```
 
 The important part here is that the serializer returns a new type, which takes as a parameter a
