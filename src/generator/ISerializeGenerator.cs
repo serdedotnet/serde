@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -45,45 +46,76 @@ namespace Serde
     {
         public void Initialize(GeneratorInitializationContext context) { }
 
+        internal static bool IsGenerateSerdeAnnotated(SyntaxNode node)
+        {
+            switch (node.Kind())
+            {
+                case SyntaxKind.ClassDeclaration:
+                case SyntaxKind.StructDeclaration:
+                case SyntaxKind.RecordDeclaration:
+                    var typeDecl = (TypeDeclarationSyntax)node;
+                    foreach (var attrLists in typeDecl.AttributeLists)
+                    {
+                        foreach (var attr in attrLists.Attributes)
+                        {
+                            var name = attr.Name;
+                            while (name is QualifiedNameSyntax q)
+                            {
+                                name = q.Right;
+                            }
+                            if (name is IdentifierNameSyntax
+                                {
+                                    Identifier:
+                                    {
+                                        ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
+                                    }
+                                })
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+            }
+            return false;
+        }
+
         public void Execute(GeneratorExecutionContext context)
         {
             foreach (var tree in context.Compilation.SyntaxTrees)
             {
-                foreach (var typeDecl in tree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>())
+                foreach (var node in tree.GetRoot().DescendantNodes())
                 {
-                    if (typeDecl.IsKind(SyntaxKind.ClassDeclaration)
-                         || typeDecl.IsKind(SyntaxKind.StructDeclaration)
-                         || typeDecl.IsKind(SyntaxKind.RecordDeclaration))
+                    if (IsGenerateSerdeAnnotated(node))
                     {
-                        foreach (var attrLists in typeDecl.AttributeLists)
-                        {
-                            foreach (var attr in attrLists.Attributes)
-                            {
-                                var name = attr.Name;
-                                while (name is QualifiedNameSyntax q)
-                                {
-                                    name = q.Right;
-                                }
-                                if (name is IdentifierNameSyntax
-                                    {
-                                        Identifier:
-                                        {
-                                            ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
-                                        }
-                                    })
-                                {
-                                    VisitType(context, typeDecl, context.Compilation.GetSemanticModel(tree));
-                                }
-                            }
-                        }
+                        GenerateImpl(new ProxyExecutionContext(context),
+                            (TypeDeclarationSyntax)node,
+                            context.Compilation.GetSemanticModel(tree));
                     }
-
                 }
             }
         }
 
-        private void VisitType(
-            GeneratorExecutionContext context,
+        internal readonly struct ProxyExecutionContext
+        {
+            private readonly Action<Diagnostic> _reportDiagnostic;
+            private readonly Action<string, string> _addSource;
+            public ProxyExecutionContext(GeneratorExecutionContext context)
+            {
+                _reportDiagnostic = context.ReportDiagnostic;
+                _addSource = context.AddSource;
+            }
+            public ProxyExecutionContext(SourceProductionContext context)
+            {
+                _reportDiagnostic = context.ReportDiagnostic;
+                _addSource = context.AddSource;
+            }
+            public void ReportDiagnostic(Diagnostic diagnostic) => _reportDiagnostic(diagnostic);
+            public void AddSource(string hintName, string src) => _addSource(hintName, src);
+        }
+
+        internal static void GenerateImpl(
+            ProxyExecutionContext context,
             TypeDeclarationSyntax typeDecl,
             SemanticModel semanticModel)
         {
@@ -106,7 +138,7 @@ namespace Serde
                 }).ToList();
 
             // Generate statements for ISerialize.Serialize implementation
-            var statements = GenerateISerializeStatements(context, typeName, fieldsAndProps);
+            var statements = GenerateISerializeStatements(context, semanticModel.Compilation, typeName, fieldsAndProps);
 
             if (statements is not null)
             {
@@ -151,8 +183,9 @@ namespace Serde
             }
         }
 
-        private List<StatementSyntax>? GenerateISerializeStatements(
-            GeneratorExecutionContext context,
+        private static List<StatementSyntax>? GenerateISerializeStatements(
+            ProxyExecutionContext context,
+            Compilation compilation,
             string typeName,
             List<ISymbol> fieldsAndProps)
         {
@@ -190,16 +223,34 @@ namespace Serde
                     continue;
                 }
 
-                // Check if type implements ISerializable
-                var iserializableSymbol = context.Compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
-                if (memberType.Interfaces.Contains(iserializableSymbol, SymbolEqualityComparer.Default))
+                // Check if type implements Serde.ISerialize or has the GenerateSerde attribute
+                var iserializeSymbol = compilation.GetTypeByMetadataName("Serde.ISerialize");
+                if (HasGenerateSerdeAttribute(memberType.GetAttributes()) || memberType.Interfaces.Contains(iserializeSymbol, SymbolEqualityComparer.Default))
                 {
                     AddSerializeField(memberType, IdentifierName(m.Name));
+                    continue;
                 }
 
-                // No built-in handling and doesn't implement ISerializable, error
-                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_DoesntImplementISerializable, m.Locations[0], m, memberType));
+                // No built-in handling and doesn't implement ISerialize, error
+                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_DoesntImplementISerialize, m.Locations[0], m, memberType));
                 return null;
+
+                bool HasGenerateSerdeAttribute(ImmutableArray<AttributeData> attributes)
+                {
+                    var attrType = compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
+                    if (attrType is null)
+                    {
+                        return false;
+                    }
+                    foreach (var attr in attributes)
+                    {
+                        if (attr.AttributeClass?.Equals(attrType, SymbolEqualityComparer.Default) == true)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
             }
 
             // `type.End();`

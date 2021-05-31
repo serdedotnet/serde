@@ -92,8 +92,8 @@ partial struct S1
 }
 struct S2 { }";
             return VerifyGeneratedCode(src,
-                // /0/Test0.cs(6,15): error ERR_DoesntImplementISerializable: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializable. Either implement the interface, or use a remote implementation.
-                DiagnosticResult.CompilerError("ERR_DoesntImplementISerializable").WithSpan(6, 15, 6, 16));
+                // /0/Test0.cs(6,15): error ERR_DoesntImplementISerialize: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a remote implementation.
+                DiagnosticResult.CompilerError("ERR_DoesntImplementISerialize").WithSpan(6, 15, 6, 16));
         }
 
         [Fact]
@@ -113,6 +113,50 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             );
         }
 
+        [Fact]
+        public Task DoubleGeneration()
+        {
+            var src = @"
+using Serde;
+[GenerateSerde]
+partial struct S1
+{
+    public S2 S2;
+}
+[GenerateSerde]
+partial struct S2
+{
+    public int X;
+}";
+            var gen = new[] {
+                ("S1", @"
+using Serde;
+
+partial struct S1 : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""S1"", 1);
+        type.SerializeField(""S2"", S2);
+        type.End();
+    }
+}"),
+                ("S2", @"
+using Serde;
+
+partial struct S2 : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""S2"", 1);
+        type.SerializeField(""X"", new Int32Wrap(X));
+        type.End();
+    }
+}")
+            };
+            return VerifyGeneratedCode(src, gen);
+        }
+
         private Task VerifyGeneratedCode(
             string src,
             params DiagnosticResult[] diagnostics)
@@ -122,18 +166,23 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             return verifier.RunAsync();
         }
 
+        private Task VerifyGeneratedCode(string src, string typeName, string expected, params DiagnosticResult[] diagnostics)
+            => VerifyGeneratedCode(src, new[] { (typeName, expected) }, diagnostics);
+
         private Task VerifyGeneratedCode(
             string src,
-            string typeName,
-            string expected,
+            (string typeName, string expected)[] sources,
             params DiagnosticResult[] diagnostics)
         {
             var verifier = CreateVerifier(src);
             verifier.ExpectedDiagnostics.AddRange(diagnostics);
-            verifier.TestState.GeneratedSources.Add((
-                Path.Combine("SerdeGenerator", $"Serde.{nameof(ISerializeGenerator)}", $"{typeName}.ISerialize.cs"),
-                SourceText.From(expected, Encoding.UTF8))
-            );
+            foreach (var (typeName, expected) in sources)
+            {
+                verifier.TestState.GeneratedSources.Add((
+                    Path.Combine("SerdeGenerator", $"Serde.{nameof(ISerializeGenerator)}", $"{typeName}.ISerialize.cs"),
+                    SourceText.From(expected, Encoding.UTF8))
+                );
+            }
             return verifier.RunAsync();
         }
 

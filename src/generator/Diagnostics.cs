@@ -6,7 +6,7 @@ namespace Serde
 {
     internal enum DiagId
     {
-        ERR_DoesntImplementISerializable = 1,
+        ERR_DoesntImplementISerialize = 1,
         ERR_TypeNotPartial = 2
     }
 }
@@ -19,7 +19,7 @@ namespace Serde
     {
         public static string GetName(this DiagId id) => id switch
         {
-            ERR_DoesntImplementISerializable => nameof(ERR_DoesntImplementISerializable),
+            ERR_DoesntImplementISerialize => nameof(ERR_DoesntImplementISerialize),
             ERR_TypeNotPartial => nameof(ERR_TypeNotPartial),
             _ => throw ExceptionUtilities.Unreachable
         };
