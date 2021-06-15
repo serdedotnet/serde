@@ -131,15 +131,15 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             var verifier = CreateVerifier(src);
             verifier.ExpectedDiagnostics.AddRange(diagnostics);
             verifier.TestState.GeneratedSources.Add((
-                Path.Combine("SerdeGenerator", $"Serde.{nameof(ISerializeGenerator)}", $"{typeName}.ISerialize.cs"),
+                Path.Combine("SerdeGenerator", $"Serde.{nameof(SerializeGenerator)}", $"{typeName}.ISerialize.cs"),
                 SourceText.From(expected, Encoding.UTF8))
             );
             return verifier.RunAsync();
         }
 
-        private CSharpSourceGeneratorTest<ISerializeGenerator, XUnitVerifier> CreateVerifier(string src)
+        private CSharpSourceGeneratorTest<SerializeGenerator, XUnitVerifier> CreateVerifier(string src)
         {
-            var verifier = new CSharpSourceGeneratorTest<ISerializeGenerator, XUnitVerifier>()
+            var verifier = new CSharpSourceGeneratorTest<SerializeGenerator, XUnitVerifier>()
             {
                 TestCode = src,
                 ReferenceAssemblies = Config.LatestTfRefs,
