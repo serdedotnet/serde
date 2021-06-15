@@ -16,5 +16,7 @@ namespace Serde.Test
         public long LongField = long.MaxValue;
 
         public string StringField = "StringValue";
+
+        public int[] IntArr = new[] { 1, 2, 3 };
     }
 }

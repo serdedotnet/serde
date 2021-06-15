@@ -190,6 +190,11 @@ namespace Serde
                     continue;
                 }
 
+                if (TrySerializeEnumerable(memberType, m))
+                {
+                    continue;
+                }
+
                 // Check if type implements ISerializable
                 var iserializableSymbol = context.Compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
                 if (memberType.Interfaces.Contains(iserializableSymbol, SymbolEqualityComparer.Default))
@@ -240,6 +245,21 @@ namespace Serde
 
                 AddSerializeField(member, fieldExpr);
                 return true;
+            }
+
+            bool TrySerializeEnumerable(ITypeSymbol type, ISymbol member)
+            {
+                if (type.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+                {
+                    return false;
+                }
+                // Add statements like
+                //  var enumerable = type.SerializeEnumerable(null);
+                //  foreach (var elem in Member)
+                //  {
+                //      enumerable.SerializeElement(elem);
+                //  }
+                //  enumerable.End();
             }
 
             // Add a statement like `type.SerializeField("member.Name", value)`

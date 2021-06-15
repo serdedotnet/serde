@@ -1,6 +1,8 @@
 
 // Contains implementations of data interfaces for core types
 
+using System.Collections.Generic;
+
 namespace Serde
 {
     public readonly struct BoolWrap : ISerialize
@@ -121,6 +123,29 @@ namespace Serde
         void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
         {
             serializer.Serialize(_s);
+        }
+    }
+
+    public readonly struct EnumerableWrap<T, TEnum> : ISerialize
+        where T : ISerialize
+        where TEnum : IEnumerable<T>
+    {
+        private readonly int? _count;
+        private readonly TEnum _enumerable;
+        public EnumerableWrap(int? count, TEnum enumerable)
+        {
+            _count = count;
+            _enumerable = enumerable;
+        }
+
+        void ISerialize.Serialize<TSerializer, _1, _2>(ref TSerializer serializer)
+        {
+            var sEnumerable = serializer.SerializeEnumerable(_count);
+            foreach (var elem in _enumerable)
+            {
+                sEnumerable.SerializeElement(elem);
+            }
+            sEnumerable.End();
         }
     }
 }
