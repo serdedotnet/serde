@@ -53,6 +53,8 @@ namespace Serde
         void Serialize(short i16);
         void Serialize(int i32);
         void Serialize(long i64);
+        void Serialize(float f);
+        void Serialize(double d);
         void Serialize(string s);
         TSerializeType SerializeType(string name, int numFields);
         TSerializeEnumerable SerializeEnumerable(int? length);

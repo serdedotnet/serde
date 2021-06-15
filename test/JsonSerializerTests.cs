@@ -19,45 +19,9 @@ namespace Serde.Test
             return Encoding.UTF8.GetString(stream.ToArray());
         }
 
-        abstract record JsonNode : ISerialize
+        private void VerifyJsonSource(JsonNode node, string expected)
         {
-            internal JsonNode() { }
-
-            public abstract void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
-                where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable>
-                where TSerializeType : ISerializeType
-                where TSerializeEnumerable : ISerializeEnumerable;
-
-            public static implicit operator JsonNode(int i) => new JsonNumber(i);
-        }
-        abstract record JsonValue : JsonNode;
-        partial record JsonNumber(int Value) : JsonValue;
-        partial record JsonObject(IReadOnlyList<(string FieldName, JsonNode Node)> Members) : JsonNode;
-
-        partial record JsonNumber
-        {
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
-            {
-                serializer.Serialize(Value);
-            }
-        }
-
-        partial record JsonObject
-        {
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
-            {
-                var type = serializer.SerializeType("", Members.Count);
-                foreach (var (name, node) in Members)
-                {
-                    type.SerializeField(name, node);
-                }
-                type.End();
-            }
-        }
-
-        private void VerifyJsonSource(JsonObject o, string expected)
-        {
-            var actual = JsonSerializer.WriteToString(o);
+            var actual = JsonSerializer.WriteToString(node);
             Assert.Equal(expected.Trim(), PrettyPrint(actual));
         }
 
@@ -80,6 +44,46 @@ namespace Serde.Test
   },
   ""field3"": 2
 }");
+        }
+
+        [Fact]
+        public void TestEnumerable()
+        {
+            var src = new JsonArray(ImmutableArray.Create<JsonNode>(
+                1,
+                2
+            ));
+
+            VerifyJsonSource(src, @"
+[
+  1,
+  2
+]");
+        }
+
+        [Fact]
+        public void NestedEnumerable()
+        {
+            var src = new JsonArray(ImmutableArray.Create<JsonNode>(
+                1,
+                new JsonArray(ImmutableArray.Create<JsonNode>(
+                    3,
+                    4
+                )),
+                5,
+                8
+            ));
+
+            VerifyJsonSource(src, @"
+[
+  1,
+  [
+    3,
+    4
+  ],
+  5,
+  8
+]");
         }
     }
 }
