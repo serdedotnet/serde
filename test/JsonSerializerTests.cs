@@ -9,7 +9,7 @@ namespace Serde.Test
 {
     public class JsonSerializerTests
     {
-        private string PrettyPrint(string json)
+        internal static string PrettyPrint(string json)
         {
             var doc = System.Text.Json.JsonDocument.Parse(json);
             var stream = new MemoryStream();

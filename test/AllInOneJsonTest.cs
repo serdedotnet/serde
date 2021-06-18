@@ -8,10 +8,22 @@ namespace Serde.Test
         public void Test()
         {
             var allInOne = new AllInOne();
-            var expected = @"{""BoolField"":true,""CharField"":""#"",""ByteField"":255,""UShortField"":65535,""UIntField"":4294967295,""ULongField"":18446744073709551615,"
-             + @"""SByteField"":127,""ShortField"":32767,""IntField"":2147483647,""LongField"":9223372036854775807,""StringField"":""StringValue""}";
-            var actual = JsonSerializer.WriteToString(allInOne);
-            Assert.Equal(expected, actual);
+            var expected = @"
+{
+  ""BoolField"": true,
+  ""CharField"": ""#"",
+  ""ByteField"": 255,
+  ""UShortField"": 65535,
+  ""UIntField"": 4294967295,
+  ""ULongField"": 18446744073709551615,
+  ""SByteField"": 127,
+  ""ShortField"": 32767,
+  ""IntField"": 2147483647,
+  ""LongField"": 9223372036854775807,
+  ""StringField"": ""StringValue""
+}";
+            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.WriteToString(allInOne));
+            Assert.Equal(expected.Trim(), actual);
         }
     }
 
@@ -31,6 +43,8 @@ namespace Serde.Test
             type.SerializeField("IntField", new Int32Wrap(IntField));
             type.SerializeField("LongField", new Int64Wrap(LongField));
             type.SerializeField("StringField", new StringWrap(StringField));
+            type.SerializeField("IntArr", ArrayPrimWrap<int, Int32Wrap>.Ctor(Int32Wrap.Ctor)(IntArr));
+            type.SerializeField("NestedArr", ArrayPrimWrap<int[], ArrayPrimWrap<int, Int32Wrap>>.Ctor(ArrayPrimWrap<int, Int32Wrap>.Ctor(Int32Wrap.Ctor))(NestedArr));
             type.End();
         }
     }

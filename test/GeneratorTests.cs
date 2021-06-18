@@ -113,6 +113,54 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             );
         }
 
+        [Fact]
+        public Task TypeWithArray()
+        {
+            var src = @"
+using Serde;
+[GenerateSerde]
+partial class C
+{
+    public readonly int[] IntArr = new[] { 1, 2, 3 };
+}";
+            return VerifyGeneratedCode(src, "C", @"
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""IntArr"", ArrayPrimWrap<int, Int32Wrap>.Ctor(Int32Wrap.Ctor)(IntArr));
+        type.End();
+    }
+}");
+
+        }
+
+        [Fact]
+        public Task NestedArray()
+        {
+            var src = @"
+using Serde;
+[GenerateSerde]
+partial class C
+{
+    public readonly int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
+}";
+            return VerifyGeneratedCode(src, "C", @"
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""NestedArr"", new ArrayWrap<Int32Wrap>());
+        type.End();
+    }
+}");
+
+        }
+
         private Task VerifyGeneratedCode(
             string src,
             params DiagnosticResult[] diagnostics)

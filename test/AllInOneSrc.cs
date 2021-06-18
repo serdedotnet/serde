@@ -18,5 +18,6 @@ namespace Serde.Test
         public string StringField = "StringValue";
 
         public int[] IntArr = new[] { 1, 2, 3 };
+        public int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
     }
 }

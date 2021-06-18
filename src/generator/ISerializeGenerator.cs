@@ -207,12 +207,6 @@ namespace Serde
                     continue;
                 }
 
-                if (memberType is INamedTypeSymbol n && TrySerializeEnumerable(n, m, out expr))
-                {
-                    statements.Add(MakeSerializeField(m, expr));
-                    continue;
-                }
-
                 // No built-in handling and doesn't implement ISerializable, error
                 context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_DoesntImplementISerializable, m.Locations[0], m, memberType));
                 return null;
@@ -263,8 +257,26 @@ namespace Serde
 
             static bool TrySerializePrimitive(ITypeSymbol type, ISymbol member, [NotNullWhen(true)] out ExpressionSyntax? fieldExpr)
             {
-                // If the target is a core type, we need to wrap it. Otherwise, just pass it through
-                string? wrapperName = type.SpecialType switch
+                var wrapperName = GetScalarName(type);
+                if (wrapperName is not null)
+                {
+                    fieldExpr = ObjectCreationExpression(
+                        IdentifierName(wrapperName),
+                        ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                        initializer: null);
+                    return true;
+                }
+                fieldExpr = TryMakeCompoundPrimExpression(type);
+                if (fieldExpr is not null)
+                {
+                    fieldExpr = InvocationExpression(
+                        fieldExpr,
+                        ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })));
+                }
+                return fieldExpr is not null;
+
+                // If the target is a core type, we can wrap it
+                static string? GetScalarName(ITypeSymbol type) => type.SpecialType switch
                 {
                     SpecialType.System_Boolean => "BoolWrap",
                     SpecialType.System_Char => "CharWrap",
@@ -279,38 +291,48 @@ namespace Serde
                     SpecialType.System_String => "StringWrap",
                     _ => null
                 };
-                if (wrapperName is null)
-                {
-                    fieldExpr = null;
-                    return false;
-                }
-                fieldExpr = ObjectCreationExpression(
-                    IdentifierName(wrapperName),
-                    ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
-                    initializer: null);
-                return true;
-            }
 
-            static bool TrySerializeEnumerable(INamedTypeSymbol type, ISymbol member, [NotNullWhen(true)] out ExpressionSyntax? expr)
-            {
-                foreach (var iface in type.AllInterfaces)
+                static ExpressionSyntax? TryMakeCompoundPrimExpression(ITypeSymbol type)
                 {
-                    if (iface.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                    if (type is IArrayTypeSymbol and
+                        { IsSZArray: true, Rank: 1, ElementType: { } elemType })
                     {
-                        var elementType = iface.TypeArguments[0];
-                        expr = ObjectCreationExpression(
-                            GenericName(
-                                Identifier("EnumerableWrap"),
-                                TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                                    IdentifierName(elementType.Name),
-                                    IdentifierName(type.Name)
-                                })))
-                        );
-                        return true;
+                        return MakeArrayPrimExpression(elemType);
+                    }
+
+                    return null;
+
+                    static ExpressionSyntax? MakeArrayPrimExpression(ITypeSymbol elemType)
+                    {
+                        var wrapperName = GetScalarName(elemType);
+                        ExpressionSyntax? wrapperArg;
+                        if (wrapperName is not null)
+                        {
+                            // ArrayPrimWrap<`elemType`, `elemTypeWrapper`>.Ctor(`ElemTypeWrapper`.Ctor)(`member`)
+                            wrapperArg = QualifiedName(IdentifierName(wrapperName), IdentifierName("Ctor"));
+                        }
+                        else
+                        {
+                            wrapperArg = TryMakeCompoundPrimExpression(elemType);
+                        }
+
+                        if (wrapperArg is not null)
+                        {
+                            var primWrap = GenericName(
+                                Identifier("ArrayPrimWrap"), TypeArgumentList(SeparatedList(new TypeSyntax[] {
+                                IdentifierName(elemType.ToDisplayString()), IdentifierName(wrapperName)
+                                })));
+
+                            return InvocationExpression(
+                                QualifiedName(primWrap, IdentifierName("Ctor")),
+                                ArgumentList(SeparatedList(new[] { Argument(wrapperArg) })));
+                        }
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
-                expr = null;
-                return false;
             }
         }
 
