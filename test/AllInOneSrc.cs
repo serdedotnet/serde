@@ -1,7 +1,9 @@
 
+using System.Collections.Immutable;
+
 namespace Serde.Test
 {
-    internal partial class AllInOne
+    public partial class AllInOne
     {
         public bool BoolField = true;
         public char CharField = '#';
@@ -16,5 +18,10 @@ namespace Serde.Test
         public long LongField = long.MaxValue;
 
         public string StringField = "StringValue";
+
+        public int[] IntArr = new[] { 1, 2, 3 };
+        public int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
+
+        public ImmutableArray<int> IntImm = ImmutableArray.Create<int>(1, 2);
     }
 }

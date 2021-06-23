@@ -65,6 +65,10 @@ namespace Serde
 
             public void Serialize(long i64) => _writer.Write(i64);
 
+            public void Serialize(float f) => _writer.Write(f);
+
+            public void Serialize(double d) => _writer.Write(d);
+
             public void Serialize(string s)
             {
                 _writer.Write('"');

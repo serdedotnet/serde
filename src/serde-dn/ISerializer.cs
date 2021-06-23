@@ -23,6 +23,12 @@ namespace Serde
             => Serialize<ISerializer<ISerializeType, ISerializeEnumerable>, ISerializeType, ISerializeEnumerable>(ref serializer);
     }
 
+    public interface IWrap<T, TWrap>
+        where TWrap : ISerialize
+    {
+        TWrap Create(T t); // Should be abstract static
+    }
+
     public interface ISerializeType
     {
         void SerializeField<T>(string name, T value) where T : ISerialize;
@@ -53,6 +59,8 @@ namespace Serde
         void Serialize(short i16);
         void Serialize(int i32);
         void Serialize(long i64);
+        void Serialize(float f);
+        void Serialize(double d);
         void Serialize(string s);
         TSerializeType SerializeType(string name, int numFields);
         TSerializeEnumerable SerializeEnumerable(int? length);

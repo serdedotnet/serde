@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -41,7 +43,7 @@ namespace Serde
     /// </code>
     /// </example>
     [Generator]
-    public class ISerializeGenerator : ISourceGenerator
+    public class SerializeGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context) { }
 
@@ -106,7 +108,7 @@ namespace Serde
                 }).ToList();
 
             // Generate statements for ISerialize.Serialize implementation
-            var statements = GenerateISerializeStatements(context, typeName, fieldsAndProps);
+            var statements = GenerateSerializeBody(context, typeName, fieldsAndProps);
 
             if (statements is not null)
             {
@@ -151,11 +153,16 @@ namespace Serde
             }
         }
 
-        private List<StatementSyntax>? GenerateISerializeStatements(
+        private List<StatementSyntax>? GenerateSerializeBody(
             GeneratorExecutionContext context,
             string typeName,
             List<ISymbol> fieldsAndProps)
         {
+            // The generated body of ISerialize is
+            // `var type = serializer.SerializeType("TypeName", numFields)`
+            // type.SerializeField("FieldName", FieldValue);
+            // type.End();
+
             var statements = new List<StatementSyntax>();
             // `var type = serializer.SerializeType("TypeName", numFields)`
             statements.Add(LocalDeclarationStatement(VariableDeclaration(
@@ -184,22 +191,60 @@ namespace Serde
                     _ => throw ExceptionUtilities.Unreachable
                 };
 
-                // Check if the type is a primitive
-                if (TrySerializePrimitive(memberType, m))
+                ExpressionSyntax? expr;
+                // Always prefer a direct implementation of ISerialize
+                if (ImplementsISerialize(memberType))
                 {
+                    expr = IdentifierName(m.Name);
+                    statements.Add(MakeSerializeField(m, expr));
                     continue;
                 }
 
-                // Check if type implements ISerializable
-                var iserializableSymbol = context.Compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
-                if (memberType.Interfaces.Contains(iserializableSymbol, SymbolEqualityComparer.Default))
+                // Check if the type is a primitive
+                if (TrySerializePrimitive(memberType, m, out expr))
                 {
-                    AddSerializeField(memberType, IdentifierName(m.Name));
+                    statements.Add(MakeSerializeField(m, expr));
+                    continue;
                 }
 
                 // No built-in handling and doesn't implement ISerializable, error
                 context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_DoesntImplementISerializable, m.Locations[0], m, memberType));
                 return null;
+
+                bool ImplementsISerialize(ITypeSymbol memberType)
+                {
+                    // Check if the type either has the GenerateSerde attribute, or directly implements ISerialize
+                    // (If the type has the GenerateSerde attribute then the generator will implement the interface)
+                    var attrType = context.Compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
+                    if (attrType is not null)
+                    {
+                        var attributes = memberType.GetAttributes();
+                        foreach (var attr in attributes)
+                        {
+                            if (attr.AttributeClass?.Equals(attrType, SymbolEqualityComparer.Default) == true)
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    var iserializeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize");
+                    if (iserializeSymbol is not null && memberType.Interfaces.Contains(iserializeSymbol, SymbolEqualityComparer.Default))
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
+                // Add a statement like `type.SerializeField("member.Name", value)`
+                static ExpressionStatementSyntax MakeSerializeField(ISymbol member, ExpressionSyntax value)
+                    => ExpressionStatement(InvocationExpression(
+                        // type.SerializeField
+                        QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
+                        ArgumentList(SeparatedList(new ExpressionSyntax[] {
+                            // "FieldName"
+                            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.Name)),
+                            value
+                        }.Select(Argument)))));
             }
 
             // `type.End();`
@@ -210,10 +255,31 @@ namespace Serde
 
             return statements;
 
-            bool TrySerializePrimitive(ITypeSymbol type, ISymbol member)
+            static bool TrySerializePrimitive(ITypeSymbol type, ISymbol member, [NotNullWhen(true)] out ExpressionSyntax? fieldExpr)
             {
-                // If the target is a core type, we need to wrap it. Otherwise, just pass it through
-                string? wrapperName = type.SpecialType switch
+                var wrapperName = GetPrimitiveWrapper(type);
+                if (wrapperName is not null)
+                {
+                    fieldExpr = ObjectCreationExpression(
+                        IdentifierName(wrapperName),
+                        ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                        initializer: null);
+                    return true;
+                }
+                var wrapperType = TryGetWrapperName(type);
+                if (wrapperType is not null)
+                {
+                    fieldExpr = ObjectCreationExpression(
+                        wrapperType,
+                        ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                        initializer: null);
+                    return true;
+                }
+                fieldExpr = null;
+                return false;
+
+                // If the target is a core type, we can wrap it
+                static string? GetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
                 {
                     SpecialType.System_Boolean => "BoolWrap",
                     SpecialType.System_Char => "CharWrap",
@@ -228,32 +294,47 @@ namespace Serde
                     SpecialType.System_String => "StringWrap",
                     _ => null
                 };
-                if (wrapperName is null)
+
+                static TypeSyntax? TryGetWrapperName(ITypeSymbol type)
                 {
-                    return false;
+                    (string, ITypeSymbol)? compoundWrapper = type switch
+                    {
+                        IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } => ("ArrayWrap", elemType),
+                        INamedTypeSymbol { Name: "ImmutableArray", TypeArguments: var args } => ("ImmutableArrayWrap", args[0]),
+                        _ => null
+                    };
+
+                    return compoundWrapper is { } result
+                        ? MakeWrappedExpression(result.Item1, result.Item2)
+                        : null;
+
+                    static TypeSyntax? MakeWrappedExpression(string baseWrapperName, ITypeSymbol elemType)
+                    {
+                        // Want to generate:
+                        //      ArrayWrap<`elemType`, `elemTypeWrapper`>
+
+                        TypeSyntax? wrapperName;
+                        var primWrapper = GetPrimitiveWrapper(elemType);
+                        if (primWrapper is null)
+                        {
+                            wrapperName = TryGetWrapperName(elemType);
+                            if (wrapperName is null)
+                            {
+                                // Could not find a wrapper
+                                return null;
+                            }
+                        }
+                        else
+                        {
+                            wrapperName = IdentifierName(primWrapper);
+                        }
+
+                        return GenericName(
+                            Identifier(baseWrapperName), TypeArgumentList(SeparatedList(new TypeSyntax[] {
+                                IdentifierName(elemType.ToDisplayString()), wrapperName
+                            })));
+                    }
                 }
-                ExpressionSyntax fieldExpr = IdentifierName(member.Name);
-                fieldExpr = ObjectCreationExpression(
-                    IdentifierName(wrapperName),
-                    ArgumentList(SeparatedList(new[] { Argument(fieldExpr) })),
-                    initializer: null);
-
-                AddSerializeField(member, fieldExpr);
-                return true;
-            }
-
-            // Add a statement like `type.SerializeField("member.Name", value)`
-            void AddSerializeField(ISymbol member, ExpressionSyntax value)
-            {
-                statements.Add(
-                    ExpressionStatement(InvocationExpression(
-                        // type.SerializeField
-                        QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
-                        ArgumentList(SeparatedList(new ExpressionSyntax[] {
-                            // "FieldName"
-                            LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.Name)),
-                            value
-                        }.Select(Argument))))));
             }
         }
 

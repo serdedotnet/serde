@@ -8,6 +8,7 @@ namespace Benchmarks
 {
     [GenericTypeArguments(typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location))]
+    [GenericTypeArguments(typeof(Serde.Test.AllInOne))]
     public class JsonToString<T> where T : Serde.ISerialize
     {
         private T value;
