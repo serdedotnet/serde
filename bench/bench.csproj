@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="*-*" />
     <PackageReference Include="Newtonsoft.JSON" Version="13.0.1" />
     <ProjectReference Include="../src/serde-dn/SerdeDn.csproj" />
     <ProjectReference Include="../src/generator/SerdeGenerator.csproj">
