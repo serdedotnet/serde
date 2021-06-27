@@ -18,6 +18,7 @@ namespace Serde
             using var writer = new Utf8JsonWriter(bufferWriter);
             var serializer = new Impl(writer);
             s.Serialize<Impl, SerializeType, SerializeEnumerable>(ref serializer);
+            writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }
 
