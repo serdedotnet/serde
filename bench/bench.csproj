@@ -9,10 +9,7 @@
     <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
     <PackageReference Include="Newtonsoft.JSON" Version="13.0.1" />
     <ProjectReference Include="../src/serde-dn/SerdeDn.csproj" />
-    <ProjectReference Include="../src/generator/SerdeGenerator.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <Analyzer Include="$(ArtifactsPath)bin/SerdeGenerator/$(Configuration)/netstandard2.0/SerdeGenerator.dll" />
+    <ProjectReference Include="../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
   <ItemGroup>
