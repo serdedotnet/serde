@@ -215,18 +215,15 @@ namespace Serde
                 {
                     // Check if the type either has the GenerateSerde attribute, or directly implements ISerialize
                     // (If the type has the GenerateSerde attribute then the generator will implement the interface)
-                    var attrType = context.Compilation.GetTypeByMetadataName("Serde.GenerateSerdeAttribute");
-                    if (attrType is not null)
+                    var attributes = memberType.GetAttributes();
+                    foreach (var attr in attributes)
                     {
-                        var attributes = memberType.GetAttributes();
-                        foreach (var attr in attributes)
+                        if (attr.AttributeClass?.Name is "GenerateSerde" or "GenerateSerdeAttribute")
                         {
-                            if (attr.AttributeClass?.Equals(attrType, SymbolEqualityComparer.Default) == true)
-                            {
-                                return true;
-                            }
+                            return true;
                         }
                     }
+
                     var iserializeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize");
                     if (iserializeSymbol is not null && memberType.Interfaces.Contains(iserializeSymbol, SymbolEqualityComparer.Default))
                     {
