@@ -12,7 +12,7 @@ namespace Serde
         /// <summary>
         /// Serialize the given type to a string.
         /// </summary>
-        public static string WriteToString<T>(T s) where T : ISerialize
+        public static string Serialize<T>(T s) where T : ISerialize
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
             using var writer = new Utf8JsonWriter(bufferWriter);
@@ -20,15 +20,6 @@ namespace Serde
             s.Serialize<Impl, SerializeType, SerializeEnumerable>(ref serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
-        }
-
-        public static string WriteToString(ISerializeShared s)
-        {
-            var stream = new MemoryStream();
-            using var writer = new Utf8JsonWriter(stream);
-            var serializer = new Impl(writer);
-            s.Serialize(serializer);
-            return Encoding.UTF8.GetString(stream.ToArray());
         }
 
         // Using a mutable struct allows for an efficient low-allocation implementation of the
