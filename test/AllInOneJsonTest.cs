@@ -84,7 +84,7 @@ namespace Serde.Test
     2
   ]
 }";
-            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.WriteToString(allInOne));
+            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.Serialize(allInOne));
             Assert.Equal(expected.Trim(), actual);
         }
     }

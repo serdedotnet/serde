@@ -40,7 +40,7 @@ namespace Serde.Test
                 var localName = "c" + index;
                 serializeStatements.Add($"var {localName} = new {n}();");
                 serializeStatements.Add($@"results.Add(
-(Serde.JsonSerializer.WriteToString({localName}),
+(Serde.JsonSerializer.Serialize({localName}),
  System.Text.Json.JsonSerializer.Serialize({localName}, options)));");
                 index++;
             }

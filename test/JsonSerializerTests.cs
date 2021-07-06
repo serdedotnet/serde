@@ -21,7 +21,7 @@ namespace Serde.Test
 
         private void VerifyJsonSource(JsonNode node, string expected)
         {
-            var actual = JsonSerializer.WriteToString(node);
+            var actual = JsonSerializer.Serialize(node);
             Assert.Equal(expected.Trim(), PrettyPrint(actual));
         }
 
