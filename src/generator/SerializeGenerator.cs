@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
+using static Serde.WellKnownTypes;
 
 namespace Serde
 {
@@ -137,9 +138,14 @@ namespace Serde
                     .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
 
                 // If the original type was in a namespace, put this decl in the same one
-                if (typeDecl.Parent is NamespaceDeclarationSyntax ns)
+                switch (typeDecl.Parent)
                 {
-                    newType = ns.WithMembers(List(new[] { newType }));
+                    case NamespaceDeclarationSyntax ns:
+                        newType = ns.WithMembers(List(new[] { newType }));
+                        break;
+                    case TypeDeclarationSyntax parentType:
+                        newType = parentType.WithMembers(List(new[] { newType}));
+                        break;
                 }
 
                 var tree = CompilationUnit(
@@ -149,7 +155,21 @@ namespace Serde
                     members: List<MemberDeclarationSyntax>(new[] { newType }));
                 tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
 
-                context.AddSource($"{typeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
+                string fullTypeName = typeName;
+                for (var current = typeDecl.Parent; current is not null; current = current.Parent)
+                {
+                    switch (current)
+                    {
+                        case NamespaceDeclarationSyntax ns:
+                            fullTypeName = ns.Name + "." + fullTypeName;
+                            break;
+                        case TypeDeclarationSyntax parentType:
+                            fullTypeName = parentType.Identifier.ValueText + "." + fullTypeName;
+                            break;
+                    }
+                }
+
+                context.AddSource($"{fullTypeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
             }
         }
 
@@ -193,7 +213,7 @@ namespace Serde
 
                 ExpressionSyntax? expr;
                 // Always prefer a direct implementation of ISerialize
-                if (ImplementsISerialize(memberType))
+                if (ImplementsISerialize(memberType, context))
                 {
                     expr = IdentifierName(m.Name);
                     statements.Add(MakeSerializeField(m, expr));
@@ -201,7 +221,7 @@ namespace Serde
                 }
 
                 // Check if the type is a primitive
-                if (TrySerializePrimitive(memberType, m, out expr))
+                if (TrySerializeBuiltIn(memberType, m, context, out expr))
                 {
                     statements.Add(MakeSerializeField(m, expr));
                     continue;
@@ -211,26 +231,6 @@ namespace Serde
                 context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_DoesntImplementISerializable, m.Locations[0], m, memberType));
                 return null;
 
-                bool ImplementsISerialize(ITypeSymbol memberType)
-                {
-                    // Check if the type either has the GenerateSerde attribute, or directly implements ISerialize
-                    // (If the type has the GenerateSerde attribute then the generator will implement the interface)
-                    var attributes = memberType.GetAttributes();
-                    foreach (var attr in attributes)
-                    {
-                        if (attr.AttributeClass?.Name is "GenerateSerde" or "GenerateSerdeAttribute")
-                        {
-                            return true;
-                        }
-                    }
-
-                    var iserializeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize");
-                    if (iserializeSymbol is not null && memberType.Interfaces.Contains(iserializeSymbol, SymbolEqualityComparer.Default))
-                    {
-                        return true;
-                    }
-                    return false;
-                }
 
                 // Add a statement like `type.SerializeField("member.Name", value)`
                 static ExpressionStatementSyntax MakeSerializeField(ISymbol member, ExpressionSyntax value)
@@ -251,88 +251,143 @@ namespace Serde
             )));
 
             return statements;
+        }
 
-            static bool TrySerializePrimitive(ITypeSymbol type, ISymbol member, [NotNullWhen(true)] out ExpressionSyntax? fieldExpr)
+        /// <summary>
+        /// SerdeDn provides wrappers for primitives and common types in the framework. If found,
+        /// we generate and initialize the wrapper.
+        /// </summary>
+        private static bool TrySerializeBuiltIn(
+            ITypeSymbol type,
+            ISymbol member,
+            GeneratorExecutionContext context,
+            [NotNullWhen(true)] out ExpressionSyntax? fieldExpr)
+        {
+            var wrapperName = TryGetPrimitiveWrapper(type);
+            if (wrapperName is not null)
             {
-                var wrapperName = GetPrimitiveWrapper(type);
-                if (wrapperName is not null)
-                {
-                    fieldExpr = ObjectCreationExpression(
-                        IdentifierName(wrapperName),
-                        ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
-                        initializer: null);
-                    return true;
-                }
-                var wrapperType = TryGetWrapperName(type);
-                if (wrapperType is not null)
-                {
-                    fieldExpr = ObjectCreationExpression(
-                        wrapperType,
-                        ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
-                        initializer: null);
-                    return true;
-                }
-                fieldExpr = null;
-                return false;
+                fieldExpr = ObjectCreationExpression(
+                    IdentifierName(wrapperName),
+                    ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                    initializer: null);
+                return true;
+            }
 
-                // If the target is a core type, we can wrap it
-                static string? GetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
+            var wrapperType = TryGetCompoundWrapper(type, context);
+            if (wrapperType is not null)
+            {
+                fieldExpr = ObjectCreationExpression(
+                    wrapperType,
+                    ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                    initializer: null);
+                return true;
+            }
+            fieldExpr = null;
+            return false;
+
+            // If the target is a core type, we can wrap it
+            static string? TryGetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
+            {
+                SpecialType.System_Boolean => "BoolWrap",
+                SpecialType.System_Char => "CharWrap",
+                SpecialType.System_Byte => "ByteWrap",
+                SpecialType.System_UInt16 => "UInt16Wrap",
+                SpecialType.System_UInt32 => "UInt32Wrap",
+                SpecialType.System_UInt64 => "UInt64Wrap",
+                SpecialType.System_SByte => "SByteWrap",
+                SpecialType.System_Int16 => "Int16Wrap",
+                SpecialType.System_Int32 => "Int32Wrap",
+                SpecialType.System_Int64 => "Int64Wrap",
+                SpecialType.System_String => "StringWrap",
+                _ => null
+            };
+
+            static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context)
+            {
+                (string, ITypeSymbol)? compoundWrapper = type switch
                 {
-                    SpecialType.System_Boolean => "BoolWrap",
-                    SpecialType.System_Char => "CharWrap",
-                    SpecialType.System_Byte => "ByteWrap",
-                    SpecialType.System_UInt16 => "UInt16Wrap",
-                    SpecialType.System_UInt32 => "UInt32Wrap",
-                    SpecialType.System_UInt64 => "UInt64Wrap",
-                    SpecialType.System_SByte => "SByteWrap",
-                    SpecialType.System_Int16 => "Int16Wrap",
-                    SpecialType.System_Int32 => "Int32Wrap",
-                    SpecialType.System_Int64 => "Int64Wrap",
-                    SpecialType.System_String => "StringWrap",
+                    IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } => ("ArrayWrap", elemType),
+                    INamedTypeSymbol { TypeArguments: var args } t => TryGetWrapperName(t, context) is { } wrapper
+                        ? (wrapper, args[0])
+                        : null,
                     _ => null
                 };
 
-                static TypeSyntax? TryGetWrapperName(ITypeSymbol type)
+                return compoundWrapper is { } result
+                    ? MakeWrappedExpression(result.Item1, result.Item2, context)
+                    : null;
+
+                static TypeSyntax? MakeWrappedExpression(string baseWrapperName, ITypeSymbol elemType, GeneratorExecutionContext context)
                 {
-                    (string, ITypeSymbol)? compoundWrapper = type switch
+                    if (ImplementsISerialize(elemType, context))
                     {
-                        IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } => ("ArrayWrap", elemType),
-                        INamedTypeSymbol { Name: "ImmutableArray", TypeArguments: var args } => ("ImmutableArrayWrap", args[0]),
-                        _ => null
-                    };
-
-                    return compoundWrapper is { } result
-                        ? MakeWrappedExpression(result.Item1, result.Item2)
-                        : null;
-
-                    static TypeSyntax? MakeWrappedExpression(string baseWrapperName, ITypeSymbol elemType)
-                    {
-                        // Want to generate:
-                        //      ArrayWrap<`elemType`, `elemTypeWrapper`>
-
-                        TypeSyntax? wrapperName;
-                        var primWrapper = GetPrimitiveWrapper(elemType);
-                        if (primWrapper is null)
-                        {
-                            wrapperName = TryGetWrapperName(elemType);
-                            if (wrapperName is null)
-                            {
-                                // Could not find a wrapper
-                                return null;
-                            }
-                        }
-                        else
-                        {
-                            wrapperName = IdentifierName(primWrapper);
-                        }
-
+                        // ArrayWrap<`elemType`>
                         return GenericName(
                             Identifier(baseWrapperName), TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                                IdentifierName(elemType.ToDisplayString()), wrapperName
+                                    IdentifierName(elemType.ToDisplayString())
                             })));
                     }
+
+                    // Want to generate:
+                    //      ArrayWrap<`elemType`, `elemTypeWrapper`>
+
+                    TypeSyntax? wrapperName;
+                    var primWrapper = TryGetPrimitiveWrapper(elemType);
+                    if (primWrapper is null)
+                    {
+                        wrapperName = TryGetCompoundWrapper(elemType, context);
+                        if (wrapperName is null)
+                        {
+                            // Could not find a wrapper
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        wrapperName = IdentifierName(primWrapper);
+                    }
+
+                    return GenericName(
+                        Identifier(baseWrapperName), TypeArgumentList(SeparatedList(new TypeSyntax[] {
+                                IdentifierName(elemType.ToDisplayString()), wrapperName
+                        })));
                 }
             }
+        }
+
+        private static string? TryGetWrapperName(INamedTypeSymbol typeSymbol, GeneratorExecutionContext context)
+        {
+            if (TryGetWellKnownType(typeSymbol, context) is {} wk)
+            {
+                return wk switch
+                {
+                    WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
+                    WellKnownType.List_1 => "ListWrap",
+                    _ => throw ExceptionUtilities.Unreachable
+                };
+            }
+            return null;
+        }
+
+        static bool ImplementsISerialize(ITypeSymbol memberType, GeneratorExecutionContext context)
+        {
+            // Check if the type either has the GenerateSerde attribute, or directly implements ISerialize
+            // (If the type has the GenerateSerde attribute then the generator will implement the interface)
+            var attributes = memberType.GetAttributes();
+            foreach (var attr in attributes)
+            {
+                if (attr.AttributeClass?.Name is "GenerateSerde" or "GenerateSerdeAttribute")
+                {
+                    return true;
+                }
+            }
+
+            var iserializeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize");
+            if (iserializeSymbol is not null && memberType.Interfaces.Contains(iserializeSymbol, SymbolEqualityComparer.Default))
+            {
+                return true;
+            }
+            return false;
         }
 
         private static ParameterSyntax Parameter(string typeName, string paramName, bool byRef = false) => SyntaxFactory.Parameter(

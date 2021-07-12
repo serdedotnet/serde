@@ -1,4 +1,5 @@
 
+using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -94,7 +95,6 @@ partial class C : Serde.ISerialize
         type.End();
     }
 }");
-
         }
 
         [Fact]
@@ -119,30 +119,117 @@ partial class C : Serde.ISerialize
         type.End();
     }
 }");
+        }
 
+        [Fact]
+        public Task NestedArray2()
+        {
+            var src = @"
+using Serde;
+[GenerateSerde]
+partial class C
+{
+    public readonly int[][] NestedArr = new int[][] { };
+}";
+            return VerifyGeneratedCode(src, "C", @"
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""NestedArr"", new ArrayWrap<int[], ArrayWrap<int, Int32Wrap>>(NestedArr));
+        type.End();
+    }
+}");
+        }
+
+        [Fact]
+        public Task ArrayOfGenerateSerde()
+        {
+            var src = @"
+using Serde;
+
+partial class TestCase15
+{
+    [GenerateSerde]
+    public partial class Class0
+    {
+        public Class1[] Field0 = new Class1[]{new Class1()};
+        public bool[] Field1 = new bool[]{false};
+    }
+
+    [GenerateSerde]
+    public partial class Class1
+    {
+        public int Field0 = int.MaxValue;
+        public byte Field1 = byte.MaxValue;
+    }
+}";
+
+            return VerifyGeneratedCode(src, new[] {
+                ("TestCase15.Class0", @"
+using Serde;
+
+partial class TestCase15
+{
+    public partial class Class0 : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+        {
+            var type = serializer.SerializeType(""Class0"", 2);
+            type.SerializeField(""Field0"", new ArrayWrap<TestCase15.Class1>(Field0));
+            type.SerializeField(""Field1"", new ArrayWrap<bool, BoolWrap>(Field1));
+            type.End();
+        }
+    }
+}"),
+                ("TestCase15.Class1", @"
+using Serde;
+
+partial class TestCase15
+{
+    public partial class Class1 : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+        {
+            var type = serializer.SerializeType(""Class1"", 2);
+            type.SerializeField(""Field0"", new Int32Wrap(Field0));
+            type.SerializeField(""Field1"", new ByteWrap(Field1));
+            type.End();
+        }
+    }
+}")
+            });
         }
 
         internal static Task VerifyGeneratedCode(
             string src,
             params DiagnosticResult[] diagnostics)
-        {
-            var verifier = CreateVerifier(src);
-            verifier.ExpectedDiagnostics.AddRange(diagnostics);
-            return verifier.RunAsync();
-        }
+            => VerifyGeneratedCode(src, Array.Empty<(string, string)>(), diagnostics);
 
         internal static Task VerifyGeneratedCode(
             string src,
             string typeName,
             string expected,
             params DiagnosticResult[] diagnostics)
+            => VerifyGeneratedCode(src, new[] { (typeName, expected)}, diagnostics);
+
+        internal static Task VerifyGeneratedCode(
+            string src,
+            (string typeName, string expected)[] generated,
+            params DiagnosticResult[] diagnostics)
         {
             var verifier = CreateVerifier(src);
             verifier.ExpectedDiagnostics.AddRange(diagnostics);
-            verifier.TestState.GeneratedSources.Add((
-                Path.Combine("SerdeGenerator", $"Serde.{nameof(SerializeGenerator)}", $"{typeName}.ISerialize.cs"),
-                SourceText.From(expected, Encoding.UTF8))
-            );
+            foreach (var (typeName, expected) in generated)
+            {
+                verifier.TestState.GeneratedSources.Add((
+                    Path.Combine("SerdeGenerator", $"Serde.{nameof(SerializeGenerator)}", $"{typeName}.ISerialize.cs"),
+                    SourceText.From(expected, Encoding.UTF8))
+                );
+            }
             return verifier.RunAsync();
         }
 
