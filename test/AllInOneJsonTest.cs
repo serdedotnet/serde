@@ -14,8 +14,8 @@ namespace Serde.Test
             var allInOnePath = Path.Combine(Path.GetDirectoryName(curPath)!, "AllInOneSrc.cs");
 
             var src = File.ReadAllText(allInOnePath);
-            // Add [GenerateSerde] to the class
-            src = src.Replace("public partial class AllInOne", @"[GenerateSerde] public partial class AllInOne");
+            // Add [GenerateISerialize] to the class
+            src = src.Replace("public partial class AllInOne", @"[GenerateISerialize] public partial class AllInOne");
             var expected = @"
 using Serde;
 

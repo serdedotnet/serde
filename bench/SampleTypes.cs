@@ -3,7 +3,7 @@ using Serde;
 namespace Benchmarks
 {
     // the view models come from a real world app called "AllReady"
-    [GenerateSerde]
+    [GenerateISerialize]
     public partial class LoginViewModel
     {
         public string Email { get; set; }
@@ -11,7 +11,7 @@ namespace Benchmarks
         public bool RememberMe { get; set; }
     }
 
-    [GenerateSerde]
+    [GenerateISerialize]
     public partial class Location
     {
         public int Id { get; set; }

@@ -163,7 +163,7 @@ public static class Runner
 
                         // Add the first type
                         types.Add(ClassDeclaration(
-                            attributeLists: List(new[] { AttributeList(SeparatedList(new[] { Attribute(IdentifierName("GenerateSerde")) })) }),
+                            attributeLists: List(new[] { AttributeList(SeparatedList(new[] { Attribute(IdentifierName("GenerateISerialize")) })) }),
                             modifiers: TokenList(new[] { Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.PartialKeyword) }),
                             identifier: Identifier(typeDef.TypeName(typeIndex)),
                             typeParameterList: null,

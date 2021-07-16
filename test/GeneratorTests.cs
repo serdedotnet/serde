@@ -19,7 +19,7 @@ namespace Serde.Test
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateISerialize]
 partial struct Rgb
 {
     public byte Red, Green, Blue;
@@ -45,7 +45,7 @@ partial struct Rgb : Serde.ISerialize
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateISerialize]
 partial struct S1
 {
     public S2 X;
@@ -61,14 +61,14 @@ struct S2 { }";
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateISerialize]
 struct S { }
-[GenerateSerde]
+[GenerateISerialize]
 class C { }";
             return VerifyGeneratedCode(src,
-// /0/Test0.cs(4,8): error ERR_TypeNotPartial: The type 'S' has the `[GenerateSerdeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
+// /0/Test0.cs(4,8): error ERR_TypeNotPartial: The type 'S' has the `[GenerateISerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
 DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(4, 8, 4, 9),
-// /0/Test0.cs(6,7): error ERR_TypeNotPartial: The type 'C' has the `[GenerateSerdeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
+// /0/Test0.cs(6,7): error ERR_TypeNotPartial: The type 'C' has the `[GenerateISerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
 DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             );
         }
@@ -78,7 +78,7 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateISerialize]
 partial class C
 {
     public readonly int[] IntArr = new[] { 1, 2, 3 };
@@ -102,7 +102,7 @@ partial class C : Serde.ISerialize
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateISerialize]
 partial class C
 {
     public readonly int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
@@ -126,7 +126,7 @@ partial class C : Serde.ISerialize
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateISerialize]
 partial class C
 {
     public readonly int[][] NestedArr = new int[][] { };
@@ -146,21 +146,21 @@ partial class C : Serde.ISerialize
         }
 
         [Fact]
-        public Task ArrayOfGenerateSerde()
+        public Task ArrayOfGenerateISerialize()
         {
             var src = @"
 using Serde;
 
 partial class TestCase15
 {
-    [GenerateSerde]
+    [GenerateISerialize]
     public partial class Class0
     {
         public Class1[] Field0 = new Class1[]{new Class1()};
         public bool[] Field1 = new bool[]{false};
     }
 
-    [GenerateSerde]
+    [GenerateISerialize]
     public partial class Class1
     {
         public int Field0 = int.MaxValue;
@@ -240,7 +240,7 @@ partial class TestCase15
                 TestCode = src,
                 ReferenceAssemblies = Config.LatestTfRefs,
             };
-            verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerdeAttribute).Assembly);
+            verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateISerialize).Assembly);
             return verifier;
         }
     }

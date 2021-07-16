@@ -13,7 +13,7 @@ using static Serde.WellKnownTypes;
 namespace Serde
 {
     /// <summary>
-    /// Recognizes the [GenerateSerde] attribute on a type to generate an implementation
+    /// Recognizes the [GenerateISerialize] attribute on a type to generate an implementation
     /// of Serde.ISerialize. The implementation generally looks like a call to SerializeType,
     /// then successive calls to SerializeField.
     /// </summary>
@@ -21,7 +21,7 @@ namespace Serde
     /// For a type like,
     ///
     /// <code>
-    /// [GenerateSerde]
+    /// [GenerateISerialize]
     /// partial struct Rgb { public byte Red; public byte Green; public byte Blue; }
     /// </code>
     ///
@@ -71,7 +71,7 @@ namespace Serde
                                     {
                                         Identifier:
                                         {
-                                            ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
+                                            ValueText: "GenerateISerialize" or "GenerateISerializeAttribute"
                                         }
                                     })
                                 {
@@ -371,12 +371,12 @@ namespace Serde
 
         static bool ImplementsISerialize(ITypeSymbol memberType, GeneratorExecutionContext context)
         {
-            // Check if the type either has the GenerateSerde attribute, or directly implements ISerialize
-            // (If the type has the GenerateSerde attribute then the generator will implement the interface)
+            // Check if the type either has the GenerateISerialize attribute, or directly implements ISerialize
+            // (If the type has the GenerateISerialize attribute then the generator will implement the interface)
             var attributes = memberType.GetAttributes();
             foreach (var attr in attributes)
             {
-                if (attr.AttributeClass?.Name is "GenerateSerde" or "GenerateSerdeAttribute")
+                if (attr.AttributeClass?.Name is "GenerateISerialize" or "GenerateISerializeAttribute")
                 {
                     return true;
                 }

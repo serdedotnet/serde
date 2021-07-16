@@ -5,7 +5,7 @@ namespace Serde
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public class GenerateSerdeAttribute : Attribute { }
+    public class GenerateISerialize : Attribute { }
 
     public interface ISerialize
     {
