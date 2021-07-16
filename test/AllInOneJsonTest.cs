@@ -44,7 +44,7 @@ namespace Serde.Test
         }
     }
 }";
-            return GeneratorTests.VerifyGeneratedCode(src, "AllInOne", expected);
+            return GeneratorTests.VerifyGeneratedCode(src, "Serde.Test.AllInOne", expected);
 
             static string GetPath([CallerFilePath] string path = "") => path;
         }

@@ -26,23 +26,38 @@ namespace Serde.Test
         /// as System.Text.Json.
         /// </summary>
         [Fact]
-        public async Task CheckPrimitiveEquivalents()
+        public async Task CheckPrimitiveEquivalentsAsync()
         {
-            var typeDefs = Gen.Sample(4, 5, Gen.Sized(FsCheckGenerators.GenTypeDef));
-            var (names, classDecls) = ToMembers(typeDefs);
+            // Generates test cases, each of which has multiple generated classes
+            var testCases = Gen.Sample(4, 100, Gen.Sized(FsCheckGenerators.GenTypeDef));
+            var wrappers = new MemberDeclarationSyntax[testCases.Length];
+            int wrapperIndex = 0;
+            foreach (var type in testCases)
+            {
+                var classDecls = ToMembers((TestTypeDef)type);
+                // Wrap the classes used by each test case in an outer class to
+                // prevent name collision
+                wrappers[wrapperIndex] = ClassDeclaration(
+                    attributeLists: default,
+                    modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
+                    identifier: Identifier("TestCase" + wrapperIndex),
+                    typeParameterList: null,
+                    baseList: null,
+                    constraintClauses: default,
+                    members: List(classDecls)).NormalizeWhitespace();
+                wrapperIndex++;
+            }
 
             var serializeStatements = new List<string>();
             serializeStatements.Add("var results = new List<(string, string)>();");
             serializeStatements.Add("var options = new System.Text.Json.JsonSerializerOptions() { IncludeFields = true };");
-            int index = 0;
-            foreach (var n in names)
+            for (int i = 0; i < wrappers.Length; i++)
             {
-                var localName = "c" + index;
-                serializeStatements.Add($"var {localName} = new {n}();");
+                var localName = "t" + i;
+                serializeStatements.Add($"var {localName} = new TestCase{i}.Class0();");
                 serializeStatements.Add($@"results.Add(
 (Serde.JsonSerializer.Serialize({localName}),
  System.Text.Json.JsonSerializer.Serialize({localName}, options)));");
-                index++;
             }
             serializeStatements.Add("return results;");
 
@@ -69,7 +84,7 @@ public static class Runner
                     UsingDirective(IdentifierName("Serde"))
                     }),
                 attributeLists: default,
-                List(classDecls)).NormalizeWhitespace());
+                List(wrappers)).NormalizeWhitespace());
 
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
@@ -83,6 +98,8 @@ public static class Runner
                 comp,
                 out var newComp,
                 out var diagnostics);
+
+            Assert.Empty(diagnostics);
             
             var peStream = new MemoryStream();
             var result = newComp.Emit(peStream,
@@ -93,7 +110,7 @@ public static class Runner
                 options: s_emitOptions,
                 cancellationToken: default);
 
-            Assert.True(result.Success);
+            Assert.True(result.Success, allTypes.ToString());
             var loaded = Assembly.Load(peStream.GetBuffer());
             var testResults = (List<(string Serde, string SystemText)>)loaded.GetType("Runner")!.GetMethod("Run")!.Invoke(null, null)!;
             foreach (var (serde, systemText) in testResults)
@@ -102,128 +119,197 @@ public static class Runner
             }
         }
 
-        // Tuns a list of test types into a list of type declarations and the name of
-        // the "root" type. A test type starts with the root, and generates multiple classes
-        // that are all referenced by the root.
-        public static (IReadOnlyList<string> RootNames, IReadOnlyList<MemberDeclarationSyntax> ClassDecls) ToMembers(IEnumerable<TestType> typeDefs)
+        // Tuns a test type into a list of type declarations. The root type is always named
+        // "Class0".
+        public static IReadOnlyList<MemberDeclarationSyntax> ToMembers(TestTypeDef typeDef)
         {
             // Types have generated unique names, counting from a depth-first traversal
-            int typeIndex = 0;
             var types = new List<MemberDeclarationSyntax>();
-            var rootNames = new List<string>();
-            foreach (var type in typeDefs)
-            {
-                rootNames.Add(AddType((TestTypeDef)type));
-            }
+            _ = VisitType(typeDef, typeIndex: 0, types);
+            // Reverse types, as they're added depth-first
+            types.Reverse();
+            return types;
 
-            return (rootNames, types);
-
-            string AddType(TestTypeDef typeDef)
+            // Generate syntax for the given typedef, and the type definition for the generated
+            // types of any fields. Returns the type index of the last type generated.
+            static int VisitType(TestType type, int typeIndex, List<MemberDeclarationSyntax> types)
             {
-                var typeName = "Class" + typeIndex++;
-                var fields = new List<MemberDeclarationSyntax>();
-                int fieldIndex = 0;
-                foreach (var field in typeDef.FieldTypes)
+                switch (type)
                 {
-                    TypeSyntax fieldTypeName;
-                    ExpressionSyntax initializer;
-                    switch (field)
-                    {
-                        case TestBool b:
-                            fieldTypeName = b.TypeName;
-                            initializer = LiteralExpression(SyntaxKind.FalseLiteralExpression);
-                            break;
-                        case TestPrimitive p:
-                            fieldTypeName = p.TypeName;
-                            initializer = MemberAccessExpression(
-                                SyntaxKind.SimpleMemberAccessExpression,
-                                fieldTypeName,
-                                IdentifierName("MaxValue"));
-                            break;
-                        case TestTypeDef d:
-                            fieldTypeName = IdentifierName(AddType(d));
-                            initializer = ObjectCreationExpression(
-                                fieldTypeName,
-                                argumentList: ArgumentList(),
-                                initializer: null);
-                            break;
-                        default:
-                            throw new InvalidOperationException("Unexpected TestType" + field);
-                    }
-                    fields.Add(FieldDeclaration(
-                        attributeLists: default,
-                        modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
-                        VariableDeclaration(
-                        fieldTypeName,
-                        SeparatedList(new[] { VariableDeclarator(
-                            Identifier("Field" + fieldIndex),
-                            argumentList: null,
-                            initializer: EqualsValueClause(initializer)) })
-                    )));
-                    fieldIndex++;
+                    case TestListLike arr:
+                        return VisitType(arr.ElementType, typeIndex, types);
+                    case TestTypeDef typeDef:
+                        var fieldsSyntax = new List<MemberDeclarationSyntax>();
+                        // nextIndex tracks the number of types we're generating. Every type
+                        // will get a new index, which will be used to create a unique name
+                        int nextIndex = typeIndex + 1;
+                        for (int fieldIndex = 0; fieldIndex < typeDef.FieldTypes.Length; fieldIndex++)
+                        {
+                            var field = typeDef.FieldTypes[fieldIndex];
+                            var fieldTypeName = field.TypeSyntax(nextIndex);
+                            ExpressionSyntax initializer = field.Value(nextIndex);
+                            fieldsSyntax.Add(FieldDeclaration(
+                                attributeLists: default,
+                                modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
+                                VariableDeclaration(
+                                    fieldTypeName,
+                                    SeparatedList(new[] { VariableDeclarator(
+                                Identifier("Field" + fieldIndex),
+                                argumentList: null,
+                                initializer: EqualsValueClause(initializer)) }))
+                            ));
+                            nextIndex = VisitType(field, nextIndex, types);
+                        }
+
+                        // Add the first type
+                        types.Add(ClassDeclaration(
+                            attributeLists: List(new[] { AttributeList(SeparatedList(new[] { Attribute(IdentifierName("GenerateSerde")) })) }),
+                            modifiers: TokenList(new[] { Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.PartialKeyword) }),
+                            identifier: Identifier(typeDef.TypeName(typeIndex)),
+                            typeParameterList: null,
+                            baseList: null,
+                            constraintClauses: default,
+                            List(fieldsSyntax)
+                        ));
+                        return nextIndex;
+
+                    default:
+                        return typeIndex;
                 }
-                types.Add(ClassDeclaration(
-                    attributeLists: List(new[] { AttributeList(SeparatedList(new[] { Attribute(IdentifierName("GenerateSerde")) })) }),
-                    modifiers: TokenList(new[] { Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.PartialKeyword) }),
-                    identifier: Identifier(typeName),
-                    typeParameterList: null,
-                    baseList: null,
-                    constraintClauses: default,
-                    List(fields)
-                ));
-                return typeName;
             }
         }
 
-        public abstract record TestType;
+        public abstract record TestType
+        {
+            public abstract TypeSyntax TypeSyntax(int typeIndex);
+            public abstract ExpressionSyntax Value(int typeIndex);
+        }
         public abstract record TestPrimitive : TestType
         {
-            public abstract TypeSyntax TypeName { get; }
+            public abstract SyntaxKind SyntaxKind { get; }
+            public sealed override TypeSyntax TypeSyntax(int typeIndex) => PredefinedType(Token(SyntaxKind));
+            public override ExpressionSyntax Value(int typeIndex) => MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                TypeSyntax(typeIndex),
+                IdentifierName("MaxValue"));
+
         }
         public sealed record TestByte : TestPrimitive
         {
-            public sealed override TypeSyntax TypeName => PredefinedType(Token(SyntaxKind.ByteKeyword));
+            public sealed override SyntaxKind SyntaxKind => SyntaxKind.ByteKeyword;
         }
-        public record TestBool : TestPrimitive
+        public sealed record TestChar : TestPrimitive
         {
-            public sealed override TypeSyntax TypeName => PredefinedType(Token(SyntaxKind.BoolKeyword));
+            public sealed override SyntaxKind SyntaxKind => SyntaxKind.CharKeyword;
+        }
+        public sealed record TestBool : TestPrimitive
+        {
+            public sealed override SyntaxKind SyntaxKind => SyntaxKind.BoolKeyword;
+            public override ExpressionSyntax Value(int typeIndex) => LiteralExpression(SyntaxKind.FalseLiteralExpression);
+        }
+        public sealed record TestInt : TestPrimitive
+        {
+            public sealed override SyntaxKind SyntaxKind => SyntaxKind.IntKeyword;
+        }
+        public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName(TypeName(typeIndex));
+            public override ExpressionSyntax Value(int typeIndex) => ObjectCreationExpression(
+                TypeSyntax(typeIndex),
+                argumentList: ArgumentList(),
+                initializer: null);
+            public string TypeName(int typeIndex) => "Class" + typeIndex;
+        }
+        public abstract record TestListLike(int Length, TestType ElementType) : TestType
+        {
+            protected ExpressionSyntax[] MakeElements(int typeIndex)
+            {
+                var values = new ExpressionSyntax[Length];
+                for (int i = 0; i < Length; i++)
+                {
+                    values[i] = ElementType.Value(typeIndex);
+                }
+                return values;
+            }
+        }
+        public record TestTypeArray(int Length, TestType ElementType) : TestListLike(Length, ElementType)
+        {
+            public override ArrayTypeSyntax TypeSyntax(int typeIndex)
+                => ArrayType(
+                    ElementType.TypeSyntax(typeIndex),
+                    List(new[] { 
+                        ArrayRankSpecifier(SeparatedList(new ExpressionSyntax[] { OmittedArraySizeExpression() }))
+                   }));
+
+            public override ExpressionSyntax Value(int typeIndex)
+            {
+                return ArrayCreationExpression(
+                    TypeSyntax(typeIndex),
+                    initializer: InitializerExpression(
+                        SyntaxKind.ArrayInitializerExpression,
+                        SeparatedList(MakeElements(typeIndex))));
+            }
         }
 
-        public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType;
+        public record TestTypeList(int Length, TestType ElementType) : TestListLike(Length, ElementType)
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex)
+                => GenericName(Identifier("List"), TypeArgumentList(SeparatedList(new[] { ElementType.TypeSyntax(typeIndex) })));
+                
+            public override ExpressionSyntax Value(int typeIndex)
+                => ObjectCreationExpression(
+                    TypeSyntax(typeIndex),
+                    argumentList: ArgumentList(),
+                    initializer: InitializerExpression(SyntaxKind.CollectionInitializerExpression, SeparatedList(MakeElements(typeIndex)))
+                    );
+        }
 
         public static class FsCheckGenerators
         {
-            public static Gen<TestType> GenPrimitive()
-                => Gen.OneOf(new[] {
-                    Gen.Constant<TestType>(new TestByte()),
-                    Gen.Constant<TestType>(new TestBool())
+            public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf(new[] {
+                    Gen.Constant<TestType>(new TestChar()),
+                    Gen.Constant<TestType>(new TestBool()),
+                    Gen.Constant<TestType>(new TestInt())
                 });
 
             public static Gen<TestType> GenType(int size)
             {
-                var genPrim = GenPrimitive();
                 if (size == 0)
                 {
-                    return genPrim;
+                    return GenPrimitive;
                 }
                 else
                 {
-                    return Gen.OneOf(new[] {
-                        genPrim,
+                    var genAny = Gen.OneOf(new[] {
+                        GenPrimitive,
+                        GenTypeArray(size),
+                        GenTypeList(size),
                         GenTypeDef(size)
                     });
+                    return genAny;
                 }
             }
 
+            public static Gen<(int Length, TestType ElementType)> GenListLike(int size)
+                // generate between 0 and 2 elements
+                => Gen.Choose(0, 2).Zip(GenType(size / 2), (l, t) => (l, t));
+
+            public static Gen<TestType> GenTypeArray(int size)
+                => GenListLike(size).Select(x => (TestType)new TestTypeArray(x.Length, x.ElementType));
+
+            public static Gen<TestType> GenTypeList(int size)
+                => GenListLike(size).Select(x => (TestType)new TestTypeList(x.Length, x.ElementType));
+
             public static Gen<TestType> GenTypeDef(int size)
             {
-                Gen<TestType> genField = GenType(size / 2);
-                return
-                    // generate classes with between 1 and 3 fields
-                    from arraySize in Gen.Choose(1, 3)
-                    from array in Gen.ArrayOf(arraySize, genField)
-                    select (TestType)new TestTypeDef(array.ToImmutableArray());
+                // generate class with between 1 and 3 fields
+                return Gen.Choose(1, 3)
+                    .SelectMany(arraySize => ImmArrayOf(arraySize, GenType(size / 2))
+                        .Select(types => ((TestType)new TestTypeDef(types))));
             }
+
+            public static Gen<ImmutableArray<T>> ImmArrayOf<T>(int n, Gen<T> gen)
+                => Gen.ArrayOf(n, gen).Select(a => a.ToImmutableArray());
         }
     }
 }
