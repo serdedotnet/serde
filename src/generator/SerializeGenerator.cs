@@ -211,6 +211,12 @@ namespace Serde
                     _ => throw ExceptionUtilities.Unreachable
                 };
 
+                // Check if the SerdeAttribute was used to provide a wrapper
+                if (TryGetExplicitWrapper(m))
+                {
+                    continue;
+                }
+
                 ExpressionSyntax? expr;
                 // Always prefer a direct implementation of ISerialize
                 if (ImplementsISerialize(memberType, context))
@@ -251,6 +257,43 @@ namespace Serde
             )));
 
             return statements;
+        }
+
+        private static bool TryGetSerdeAttribute(ISymbol member, [NotNullWhen(true)] out AttributeData? serdeAttr)
+        {
+            foreach (var attr in member.GetAttributes())
+            {
+                if (attr.AttributeClass is 
+                    { Name: "SerdeAttribute",
+                        ContainingNamespace: {
+                            Name: "Serde",
+                            ContainingNamespace: { IsGlobalNamespace: true }
+                        }
+                    })
+                {
+                    serdeAttr = attr;
+                    return true;
+                }
+            }
+            serdeAttr = null;
+            return false;
+        }
+
+        private static bool TryGetExplicitWrapper(ISymbol member)
+        {
+            if (!TryGetSerdeAttribute(member, out var serdeAttr))
+            {
+                return false;
+            }
+
+            foreach (var kvp in serdeAttr.NamedArguments)
+            {
+                if (kvp.Key == "Wrapper")
+                {
+                    return kvp.Value.Type != null;
+                }
+            }
+            return false;
         }
 
         /// <summary>

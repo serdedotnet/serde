@@ -4,8 +4,18 @@ using System.Diagnostics;
 namespace Serde
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public class GenerateISerialize : Attribute { }
+    [Conditional("EMIT_SERDE_ATTRIBUTES")]
+    public sealed class GenerateISerialize : Attribute { }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property | AttributeTargets.Field,
+        AllowMultiple = false,
+        Inherited = false)]
+    [Conditional("EMIT_SERDE_ATTRIBUTES")]
+    public sealed class SerdeAttribute : Attribute
+    {
+        public Type Wrapper { get; set; }
+        public string Wrapped { get; set; }
+    }
 
     public interface ISerialize
     {

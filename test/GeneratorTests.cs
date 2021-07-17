@@ -204,6 +204,46 @@ partial class TestCase15
             });
         }
 
+        [Fact]
+        public Task CustomWrapper()
+        {
+            var src = @"
+using Serde;
+
+[GenerateISerialize]
+partial struct S
+{
+    public int X;
+}
+
+[GenerateISerialize]
+partial class C
+{
+    [Serde(Wrapper = typeof(MemoryWrap<>))]
+    public System.Memory<S> M;
+}
+
+partial readonly struct MemoryWrap<T> : ISerialize
+{
+    private System.Memory<T> _m;
+    public MemoryWrap(System.Memory<T> m)
+    {
+        _m = m;
+    }
+
+    void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    {
+        var e = serializer.SerializeEnumerable(_m.Length);
+        foreach (var item in _m.Span)
+        {
+            e.SerializeElement(item);
+        }
+        e.End();
+    }
+}";
+            return VerifyGeneratedCode(src, new[] { ("S", ""), ("C", "") });
+        }
+
         internal static Task VerifyGeneratedCode(
             string src,
             params DiagnosticResult[] diagnostics)
