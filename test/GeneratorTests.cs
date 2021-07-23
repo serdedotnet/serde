@@ -29,7 +29,7 @@ using Serde;
 
 partial struct Rgb : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""Rgb"", 3);
         type.SerializeField(""Red"", new ByteWrap(Red));
@@ -88,7 +88,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""IntArr"", new ArrayWrap<int, Int32Wrap>(IntArr));
@@ -112,7 +112,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""NestedArr"", new ArrayWrap<int[], ArrayWrap<int, Int32Wrap>>(NestedArr));
@@ -136,7 +136,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""NestedArr"", new ArrayWrap<int[], ArrayWrap<int, Int32Wrap>>(NestedArr));
@@ -176,7 +176,7 @@ partial class TestCase15
 {
     public partial class Class0 : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""Class0"", 2);
             type.SerializeField(""Field0"", new ArrayWrap<TestCase15.Class1>(Field0));
@@ -192,7 +192,7 @@ partial class TestCase15
 {
     public partial class Class1 : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""Class1"", 2);
             type.SerializeField(""Field0"", new Int32Wrap(Field0));
@@ -204,6 +204,181 @@ partial class TestCase15
             });
         }
 
+        [Fact]
+        public Task DictionaryGenerate()
+        {
+            var src = @"
+using Serde;
+using System.Collections.Generic;
+
+[GenerateSerde]
+partial class C
+{
+    public readonly Dictionary<string, int> Map = new Dictionary<string, int>()
+    {
+        [""abc""] = 5,
+        [""def""] = 3
+    };
+}
+";
+            return VerifyGeneratedCode(src, "C", @"
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""Map"", new DictWrap<string, StringWrap, int, Int32Wrap>(Map));
+        type.End();
+    }
+}");
+        }
+
+        [Fact]
+        public Task DictionaryGenerate2()
+        {
+            var src = @"
+using Serde;
+using System.Collections.Generic;
+
+[GenerateSerde]
+partial record C(int X);
+
+[GenerateSerde]
+partial class C2
+{
+    public readonly Dictionary<string, C> Map = new Dictionary<string, C>()
+    {
+        [""abc""] = new C(11),
+        [""def""] = new C(3)
+    };
+}
+";
+            return VerifyGeneratedCode(src, new[] {
+                ("C", @"
+using Serde;
+
+partial record C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""X"", new Int32Wrap(X));
+        type.End();
+    }
+}"),
+                ("C2", @"
+using Serde;
+
+partial class C2 : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C2"", 1);
+        type.SerializeField(""Map"", new DictWrap<string, StringWrap, C, IdWrap<C>>(Map));
+        type.End();
+    }
+}")
+});
+        }
+
+        [Fact]
+        public Task IDictionaryImplGenerate()
+        {
+            var src = @"
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Serde;
+
+record R(Dictionary<string, int> D) : IDictionary<string, int>
+{
+    public int this[string key] { get => ((IDictionary<string, int>)D)[key]; set => ((IDictionary<string, int>)D)[key] = value; }
+
+    public ICollection<string> Keys => ((IDictionary<string, int>)D).Keys;
+
+    public ICollection<int> Values => ((IDictionary<string, int>)D).Values;
+
+    public int Count => ((ICollection<KeyValuePair<string, int>>)D).Count;
+
+    public bool IsReadOnly => ((ICollection<KeyValuePair<string, int>>)D).IsReadOnly;
+
+    public void Add(string key, int value)
+    {
+        ((IDictionary<string, int>)D).Add(key, value);
+    }
+
+    public void Add(KeyValuePair<string, int> item)
+    {
+        ((ICollection<KeyValuePair<string, int>>)D).Add(item);
+    }
+
+    public void Clear()
+    {
+        ((ICollection<KeyValuePair<string, int>>)D).Clear();
+    }
+
+    public bool Contains(KeyValuePair<string, int> item)
+    {
+        return ((ICollection<KeyValuePair<string, int>>)D).Contains(item);
+    }
+
+    public bool ContainsKey(string key)
+    {
+        return ((IDictionary<string, int>)D).ContainsKey(key);
+    }
+
+    public void CopyTo(KeyValuePair<string, int>[] array, int arrayIndex)
+    {
+        ((ICollection<KeyValuePair<string, int>>)D).CopyTo(array, arrayIndex);
+    }
+
+    public IEnumerator<KeyValuePair<string, int>> GetEnumerator()
+    {
+        return ((IEnumerable<KeyValuePair<string, int>>)D).GetEnumerator();
+    }
+
+    public bool Remove(string key)
+    {
+        return ((IDictionary<string, int>)D).Remove(key);
+    }
+
+    public bool Remove(KeyValuePair<string, int> item)
+    {
+        return ((ICollection<KeyValuePair<string, int>>)D).Remove(item);
+    }
+
+    public bool TryGetValue(string key, out int value)
+    {
+        return ((IDictionary<string, int>)D).TryGetValue(key, out value);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)D).GetEnumerator();
+    }
+}
+[GenerateSerde]
+partial class C
+{
+    public R RDictionary;
+}";
+            return VerifyGeneratedCode(src, "C", @"
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""RDictionary"", new IDictWrap<string, StringWrap, int, Int32Wrap>(RDictionary));
+        type.End();
+    }
+}");
+        }
+
+        
         internal static Task VerifyGeneratedCode(
             string src,
             params DiagnosticResult[] diagnostics)

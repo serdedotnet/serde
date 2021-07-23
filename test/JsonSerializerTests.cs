@@ -85,5 +85,46 @@ namespace Serde.Test
   8
 ]");
         }
+
+        private struct JsonDictionaryWrapper : ISerialize
+        {
+            private readonly Dictionary<int, int> _d;
+            public JsonDictionaryWrapper(Dictionary<int, int> d)
+            {
+                _d = d;
+            }
+
+            public void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+                where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
+                where TSerializeType : ISerializeType
+                where TSerializeEnumerable : ISerializeEnumerable
+                where TSerializeDictionary : ISerializeDictionary
+            {
+                var sd = serializer.SerializeDictionary(_d.Count);
+                foreach (var (k,v) in _d)
+                {
+                    sd.SerializeKey(new StringWrap(k.ToString()));
+                    sd.SerializeValue(new Int32Wrap(v));
+                }
+                sd.End();
+            }
+        }
+
+        [Fact]
+        public void TestCustomDictionary()
+        {
+            var d = new Dictionary<int, int>()
+            {
+                [3] = 5,
+                [1] = 10
+            };
+            var js = JsonSerializer.Serialize(new JsonDictionaryWrapper(d));
+            var resultDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<int, int>>(js)!;
+            Assert.Equal(d.Count, resultDict.Count);
+            foreach (var (k, v) in resultDict)
+            {
+                Assert.Equal(d[k], v);
+            }
+        }
     }
 }
