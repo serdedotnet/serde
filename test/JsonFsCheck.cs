@@ -1,7 +1,9 @@
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -110,7 +112,8 @@ public static class Runner
                 options: s_emitOptions,
                 cancellationToken: default);
 
-            Assert.True(result.Success, allTypes.ToString());
+            Assert.True(result.Success,
+                string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.GetMessage())));
             var loaded = Assembly.Load(peStream.GetBuffer());
             var testResults = (List<(string Serde, string SystemText)>)loaded.GetType("Runner")!.GetMethod("Run")!.Invoke(null, null)!;
             foreach (var (serde, systemText) in testResults)
@@ -181,7 +184,13 @@ public static class Runner
 
         public abstract record TestType
         {
+            /// <summary>
+            /// Produce the syntax that represents this type, e.g. in a return type position.
+            /// </summary>
             public abstract TypeSyntax TypeSyntax(int typeIndex);
+            /// <summary>
+            /// Produce an expression that would produce a value of this type, e.g. in an initializer position.
+            /// </summar>
             public abstract ExpressionSyntax Value(int typeIndex);
         }
         public abstract record TestPrimitive : TestType
@@ -264,6 +273,45 @@ public static class Runner
                     );
         }
 
+        // Represent a Dictionary like a list, because the key must always be a string
+        public record TestTypeDictionary(int Length, TestType ElementType) : TestListLike(Length, ElementType)
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex)
+                => GenericName(Identifier("Dictionary"), TypeArgumentList(SeparatedList(new[] {
+                    PredefinedType(Token(SyntaxKind.StringKeyword)),
+                    ElementType.TypeSyntax(typeIndex)
+                })));
+
+            public override ExpressionSyntax Value(int typeIndex)
+                { 
+                    var p = ParseExpression("new Dictionary<string, int>() { [\"s0\"] = int.MaxValue }");
+                    var real = ObjectCreationExpression(
+                        TypeSyntax(typeIndex),
+                        argumentList: ArgumentList(),
+                        initializer: InitializerExpression(SyntaxKind.ObjectInitializerExpression, SeparatedList(
+                            GetInitializerExpressions(typeIndex)
+                    )));
+                    return real;
+                }
+            
+            private ExpressionSyntax[] GetInitializerExpressions(int typeIndex)
+            {
+                var typeValues = MakeElements(typeIndex);
+                var dictExprs = new ExpressionSyntax[typeValues.Length];
+                for (int i = 0; i < typeValues.Length; i++)
+                {
+                    dictExprs[i] = AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        ImplicitElementAccess(BracketedArgumentList(
+                            SeparatedList(new[] { 
+                                Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal($"s{i}")))
+                            }))),
+                        typeValues[i]);
+                }
+                return dictExprs;
+            }
+        }
+
         public static class FsCheckGenerators
         {
             public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf(new[] {
@@ -284,7 +332,8 @@ public static class Runner
                         GenPrimitive,
                         GenTypeArray(size),
                         GenTypeList(size),
-                        GenTypeDef(size)
+                        GenTypeDictionary(size),
+                        GenTypeDef(size),
                     });
                     return genAny;
                 }
@@ -299,6 +348,9 @@ public static class Runner
 
             public static Gen<TestType> GenTypeList(int size)
                 => GenListLike(size).Select(x => (TestType)new TestTypeList(x.Length, x.ElementType));
+
+            public static Gen<TestType> GenTypeDictionary(int size)
+                => GenListLike(size).Select(x => (TestType)new TestTypeDictionary(x.Length, x.ElementType));
 
             public static Gen<TestType> GenTypeDef(int size)
             {

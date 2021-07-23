@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -32,7 +33,7 @@ namespace Serde
     ///
     /// partial struct Rgb : Serde.ISerialize
     /// {
-    ///     void Serde.ISerialize.Serialize&lt;TSerializer, TSerializeType&gt;TSerializer serializer)
+    ///     void Serde.ISerialize.Serialize&lt;TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary&gt;TSerializer serializer)
     ///     {
     ///         var type = serializer.SerializeType("Rgb", 3);
     ///         type.SerializeField("Red", new ByteWrap(Red));
@@ -113,7 +114,7 @@ namespace Serde
 
             if (statements is not null)
             {
-                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer) { ... }`
+                // Generate method `void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer) { ... }`
                 var newMethod = MethodDeclaration(
                     attributeLists: default,
                     modifiers: default,
@@ -122,7 +123,7 @@ namespace Serde
                         QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
                     identifier: Identifier("Serialize"),
                     typeParameterList: TypeParameterList(SeparatedList(new[] {
-                        "TSerializer", "TSerializeType", "TSerializeEnumerable"
+                        "TSerializer", "TSerializeType", "TSerializeEnumerable", "TSerializeDictionary"
                     }.Select(s => TypeParameter(s)))),
                     parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer", byRef: true) })),
                     constraintClauses: default,
@@ -135,7 +136,16 @@ namespace Serde
                     .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
                         SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
                     })))
-                    .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }));
+                    .WithSemicolonToken(default)
+                    .WithOpenBraceToken(Token(SyntaxKind.OpenBraceToken))
+                    .WithMembers(List(new MemberDeclarationSyntax[] { newMethod }))
+                    .WithCloseBraceToken(Token(SyntaxKind.CloseBraceToken));
+
+                // If the original type was a record, remove the parameter list
+                if (newType is RecordDeclarationSyntax record)
+                {
+                    newType = record.WithParameterList(null);
+                }
 
                 // If the original type was in a namespace, put this decl in the same one
                 switch (typeDecl.Parent)
@@ -284,87 +294,115 @@ namespace Serde
             }
             fieldExpr = null;
             return false;
-
-            // If the target is a core type, we can wrap it
-            static string? TryGetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
-            {
-                SpecialType.System_Boolean => "BoolWrap",
-                SpecialType.System_Char => "CharWrap",
-                SpecialType.System_Byte => "ByteWrap",
-                SpecialType.System_UInt16 => "UInt16Wrap",
-                SpecialType.System_UInt32 => "UInt32Wrap",
-                SpecialType.System_UInt64 => "UInt64Wrap",
-                SpecialType.System_SByte => "SByteWrap",
-                SpecialType.System_Int16 => "Int16Wrap",
-                SpecialType.System_Int32 => "Int32Wrap",
-                SpecialType.System_Int64 => "Int64Wrap",
-                SpecialType.System_String => "StringWrap",
-                _ => null
-            };
-
-            static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context)
-            {
-                (string, ITypeSymbol)? compoundWrapper = type switch
-                {
-                    IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } => ("ArrayWrap", elemType),
-                    INamedTypeSymbol { TypeArguments: var args } t => TryGetWrapperName(t, context) is { } wrapper
-                        ? (wrapper, args[0])
-                        : null,
-                    _ => null
-                };
-
-                return compoundWrapper is { } result
-                    ? MakeWrappedExpression(result.Item1, result.Item2, context)
-                    : null;
-
-                static TypeSyntax? MakeWrappedExpression(string baseWrapperName, ITypeSymbol elemType, GeneratorExecutionContext context)
-                {
-                    if (ImplementsISerialize(elemType, context))
-                    {
-                        // ArrayWrap<`elemType`>
-                        return GenericName(
-                            Identifier(baseWrapperName), TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                                    IdentifierName(elemType.ToDisplayString())
-                            })));
-                    }
-
-                    // Want to generate:
-                    //      ArrayWrap<`elemType`, `elemTypeWrapper`>
-
-                    TypeSyntax? wrapperName;
-                    var primWrapper = TryGetPrimitiveWrapper(elemType);
-                    if (primWrapper is null)
-                    {
-                        wrapperName = TryGetCompoundWrapper(elemType, context);
-                        if (wrapperName is null)
-                        {
-                            // Could not find a wrapper
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        wrapperName = IdentifierName(primWrapper);
-                    }
-
-                    return GenericName(
-                        Identifier(baseWrapperName), TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                                IdentifierName(elemType.ToDisplayString()), wrapperName
-                        })));
-                }
-            }
         }
 
-        private static string? TryGetWrapperName(INamedTypeSymbol typeSymbol, GeneratorExecutionContext context)
+        // If the target is a core type, we can wrap it
+        private static string? TryGetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
+        {
+            SpecialType.System_Boolean => "BoolWrap",
+            SpecialType.System_Char => "CharWrap",
+            SpecialType.System_Byte => "ByteWrap",
+            SpecialType.System_UInt16 => "UInt16Wrap",
+            SpecialType.System_UInt32 => "UInt32Wrap",
+            SpecialType.System_UInt64 => "UInt64Wrap",
+            SpecialType.System_SByte => "SByteWrap",
+            SpecialType.System_Int16 => "Int16Wrap",
+            SpecialType.System_Int32 => "Int32Wrap",
+            SpecialType.System_Int64 => "Int64Wrap",
+            SpecialType.System_String => "StringWrap",
+            _ => null
+        };
+
+        private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context)
+        {
+            switch (type)
+            {
+                case IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }:
+                    return MakeWrappedExpression("ArrayWrap", ImmutableArray.Create(elemType), context);
+
+                case INamedTypeSymbol t:
+                    if (TryGetWrapperName(t, context) is {} tuple)
+                    {
+                        return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context);
+                    }
+                    break;
+            }
+            return null;
+        }
+
+        private static TypeSyntax? MakeWrappedExpression(
+            string baseWrapperName,
+            ImmutableArray<ITypeSymbol> elemTypes,
+            GeneratorExecutionContext context)
+        {
+            var wrapperTypes = new List<TypeSyntax>();
+            foreach (var elemType in elemTypes)
+            {
+                var elemTypeSyntax = ParseTypeName(elemType.ToDisplayString());
+
+                if (ImplementsISerialize(elemType, context))
+                {
+                    // Special case for List-like types: 
+                    // If the element type directly implements ISerialize, we can
+                    // use a single-arity version of the wrapper
+                    //      ArrayWrap<`elemType`>
+                    wrapperTypes.Add(elemTypeSyntax);
+
+                    // Otherwise we need an `IdWrap` which just delegates to the inner
+                    // type.
+                    if (elemTypes.Length > 1)
+                    {
+                        wrapperTypes.Add(GenericName(
+                            Identifier("IdWrap"), TypeArgumentList(SeparatedList(new TypeSyntax[] {
+                                elemTypeSyntax
+                            }))
+                        ));
+                    }
+                    continue;
+                }
+
+                // Otherwise we'll need to wrap the element type as well e.g.,
+                //      ArrayWrap<`elemType`, `elemTypeWrapper`>
+
+                var primWrapper = TryGetPrimitiveWrapper(elemType);
+                TypeSyntax? wrapperName = primWrapper is not null
+                    ? IdentifierName(primWrapper)
+                    : TryGetCompoundWrapper(elemType, context);
+
+                if (wrapperName is null)
+                {
+                    // Could not find a wrapper
+                    return null;
+                }
+                else
+                {
+                    wrapperTypes.Add(elemTypeSyntax);
+                    wrapperTypes.Add(wrapperName);
+                }
+            }
+
+            return GenericName(
+                Identifier(baseWrapperName), TypeArgumentList(SeparatedList(wrapperTypes)));
+        }
+
+        private static (string WrapperName, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperName(INamedTypeSymbol typeSymbol, GeneratorExecutionContext context)
         {
             if (TryGetWellKnownType(typeSymbol, context) is {} wk)
             {
-                return wk switch
+                return (wk.ToWrapper(), typeSymbol.TypeArguments);
+            }
+            // Check if it implements well-known interfaces
+            foreach (var iface in WellKnownTypes.GetAvailableInterfacesInOrder(context))
+            {
+                Debug.Assert(iface.TypeKind == TypeKind.Interface);
+                foreach (var impl in typeSymbol.Interfaces)
                 {
-                    WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
-                    WellKnownType.List_1 => "ListWrap",
-                    _ => throw ExceptionUtilities.Unreachable
-                };
+                    if (impl.OriginalDefinition.Equals(iface, SymbolEqualityComparer.Default) &&
+                        WellKnownTypes.TryGetWellKnownType(iface, context)?.ToWrapper() is { } wrap)
+                    {
+                        return (wrap, impl.TypeArguments);
+                    }
+                }
             }
             return null;
         }

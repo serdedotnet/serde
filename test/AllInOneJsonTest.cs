@@ -23,7 +23,7 @@ namespace Serde.Test
 {
     public partial class AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""AllInOne"", 14);
             type.SerializeField(""BoolField"", new BoolWrap(BoolField));

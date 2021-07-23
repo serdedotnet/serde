@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace Serde
@@ -10,7 +11,10 @@ namespace Serde
     internal enum WellKnownType
     {
         ImmutableArray_1,
-        List_1
+        List_1,
+        Dictionary_2,
+        IDictionary_2,
+        IReadOnlyDictionary_2,
     }
     internal static class WellKnownTypes
     {
@@ -27,10 +31,32 @@ namespace Serde
             return null;
         }
 
+        public static ImmutableArray<INamedTypeSymbol> GetAvailableInterfacesInOrder(GeneratorExecutionContext context)
+        {
+            var builder = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+            // Order matters here -- checking for interface implementation happens in order and
+            // bails out early on the first success
+            var candidates = new[] {
+                WellKnownType.IDictionary_2,
+                WellKnownType.IReadOnlyDictionary_2
+            };
+            foreach (var candidate in candidates)
+            {
+                if (context.Compilation.GetTypeByMetadataName(candidate.GetFQN()) is {} type)
+                {
+                    builder.Add(type);
+                }
+            }
+            return builder.ToImmutable();
+        }
+
         private static WellKnownType? NameToWellKnownType(string s) => s switch
         {
             "ImmutableArray`1" => WellKnownType.ImmutableArray_1,
             "List`1" => WellKnownType.List_1,
+            "Dictionary`2" => WellKnownType.Dictionary_2,
+            "IDictionary`2" => WellKnownType.IDictionary_2,
+            "IReadOnlyDictionary`2" => WellKnownType.IReadOnlyDictionary_2,
              _ => null
         };
 
@@ -38,6 +64,19 @@ namespace Serde
         {
             WellKnownType.ImmutableArray_1 => "System.Collections.Immutable.ImmutableArray`1",
             WellKnownType.List_1 => "System.Collections.Generic.List`1",
+            WellKnownType.Dictionary_2 => "System.Collections.Generic.Dictionary`2",
+            WellKnownType.IDictionary_2 => "System.Collections.Generic.IDictionary`2",
+            WellKnownType.IReadOnlyDictionary_2 => "System.Collections.Generic.IReadOnlyDictionary`2",
+            _ => throw ExceptionUtilities.Unreachable
+        };
+
+        internal static string ToWrapper(this WellKnownType wk) => wk switch
+        {
+            WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
+            WellKnownType.List_1 => "ListWrap",
+            WellKnownType.Dictionary_2 => "DictWrap",
+            WellKnownType.IDictionary_2 => "IDictWrap",
+            WellKnownType.IReadOnlyDictionary_2 => "IRODictWrap",
             _ => throw ExceptionUtilities.Unreachable
         };
     }

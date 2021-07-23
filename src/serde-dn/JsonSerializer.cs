@@ -1,7 +1,5 @@
 
 using System;
-using System.Buffers;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -17,7 +15,7 @@ namespace Serde
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
             using var writer = new Utf8JsonWriter(bufferWriter);
             var serializer = new Impl(writer);
-            s.Serialize<Impl, SerializeType, SerializeEnumerable>(ref serializer);
+            s.Serialize<Impl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }
@@ -38,7 +36,7 @@ namespace Serde
     // Implementations of ISerializer interfaces
     partial class JsonSerializer
     {
-        partial struct Impl : ISerializer<SerializeType, SerializeEnumerable>, ISerializer<ISerializeType, ISerializeEnumerable>
+        partial struct Impl : ISerializer<SerializeType, SerializeEnumerable, SerializeDictionary>
         {
             public void Serialize(bool b) => _writer.WriteBooleanValue(b);
 
@@ -78,11 +76,11 @@ namespace Serde
                 return new SerializeEnumerable(ref this);
             }
 
-            ISerializeType ISerializer<ISerializeType, ISerializeEnumerable>.SerializeType(string name, int numFields)
-                => SerializeType(name, numFields);
-
-            ISerializeEnumerable ISerializer<ISerializeType, ISerializeEnumerable>.SerializeEnumerable(int? count)
-                => SerializeEnumerable(count);
+            public SerializeDictionary SerializeDictionary(int? count)
+            {
+                _writer.WriteStartObject();
+                return new SerializeDictionary(ref this);
+            }
         }
 
         struct SerializeType : ISerializeType
@@ -99,7 +97,7 @@ namespace Serde
                 where T : ISerialize
             {
                 _impl._writer.WritePropertyName(name);
-                value.Serialize<Impl, SerializeType, SerializeEnumerable>(ref _impl);
+                value.Serialize<Impl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref _impl);
             }
 
             public void End()
@@ -119,13 +117,82 @@ namespace Serde
             }
             void ISerializeEnumerable.SerializeElement<T>(T value)
             {
-                value.Serialize<Impl, SerializeType, SerializeEnumerable>(ref _impl);
+                value.Serialize<Impl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref _impl);
             }
 
             void ISerializeEnumerable.End()
             {
                 _impl._writer.WriteEndArray();
             }
+        }
+
+        struct SerializeDictionary : ISerializeDictionary
+        {
+            private Impl _impl;
+            public SerializeDictionary(ref Impl impl)
+            {
+                // Copies Impl, since we can't hold a ref. This forces the persistant state to be a
+                // reference type, but that works for now.
+                _impl = impl;
+            }
+            void ISerializeDictionary.SerializeKey<T>(T key)
+            {
+                // Grab a string value
+                var keySerializer = new KeySerializer();
+                key.Serialize<KeySerializer, ISerializeType, ISerializeEnumerable, ISerializeDictionary>(ref keySerializer);
+                _impl._writer.WritePropertyName(keySerializer.StringResult!);
+            }
+            void ISerializeDictionary.SerializeValue<T>(T value)
+            {
+                value.Serialize<Impl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref _impl);
+            }
+            void ISerializeDictionary.End()
+            {
+                _impl._writer.WriteEndObject();
+            }
+        }
+
+        public sealed class KeyNotStringException : Exception { }
+
+        struct KeySerializer : ISerializer<ISerializeType, ISerializeEnumerable, ISerializeDictionary>
+        {
+            public string? StringResult;
+            public KeySerializer(int dummy)
+            {
+                StringResult = null;
+            }
+
+            public void Serialize(bool b) => throw new KeyNotStringException();
+            public void Serialize(char c) => throw new KeyNotStringException();
+            public void Serialize(byte b) => throw new KeyNotStringException();
+            public void Serialize(ushort u16) => throw new KeyNotStringException();
+
+            public void Serialize(uint u32) => throw new KeyNotStringException();
+
+            public void Serialize(ulong u64) => throw new KeyNotStringException();
+
+            public void Serialize(sbyte b) => throw new KeyNotStringException();
+
+            public void Serialize(short i16) => throw new KeyNotStringException();
+
+            public void Serialize(int i32) => throw new KeyNotStringException();
+
+            public void Serialize(long i64) => throw new KeyNotStringException();
+
+            public void Serialize(float f) => throw new KeyNotStringException();
+
+            public void Serialize(double d) => throw new KeyNotStringException();
+
+            public void Serialize(string s)
+            {
+                StringResult = s;
+            }
+
+            public ISerializeDictionary SerializeDictionary(int? length) => throw new KeyNotStringException();
+
+            public ISerializeEnumerable SerializeEnumerable(int? length) => throw new KeyNotStringException();
+
+            public ISerializeType SerializeType(string name, int numFields) => throw new KeyNotStringException();
         }
     }
 }

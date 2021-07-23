@@ -9,10 +9,11 @@ namespace Serde
 
     public interface ISerialize
     {
-        void Serialize<TSerializer, TSerializeType, TSerializeEnumerable>(ref TSerializer serializer)
+        void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             where TSerializeType : ISerializeType
             where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable>;
+            where TSerializeDictionary : ISerializeDictionary
+            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>;
     }
 
     public interface IWrap<T, TWrap>
@@ -34,12 +35,21 @@ namespace Serde
         void End();
     }
 
+    public interface ISerializeDictionary
+    {
+        void SerializeKey<T>(T key) where T : ISerialize;
+        void SerializeValue<T>(T value) where T : ISerialize;
+        void End();
+    }
+
     public interface ISerializer<
         out TSerializeType,
-        out TSerializeEnumerable
+        out TSerializeEnumerable,
+        out TSerializeDictionary
         >
         where TSerializeType : ISerializeType
         where TSerializeEnumerable : ISerializeEnumerable
+        where TSerializeDictionary : ISerializeDictionary
     {
         void Serialize(bool b);
         void Serialize(char c);
@@ -56,5 +66,6 @@ namespace Serde
         void Serialize(string s);
         TSerializeType SerializeType(string name, int numFields);
         TSerializeEnumerable SerializeEnumerable(int? length);
+        TSerializeDictionary SerializeDictionary(int? length);
     }
 }
