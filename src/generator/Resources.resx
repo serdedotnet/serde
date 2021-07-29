@@ -121,6 +121,6 @@
     <value>The member '{0}'s return type '{1}' doesn't implement Serde.ISerializable. Either implement the interface, or use a remote implementation.</value>
   </data>
   <data name="ERR_TypeNotPartial" xml:space="preserve">
-    <value>The type '{0}' has the `[GenerateSerdeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.</value>
+    <value>The type '{0}' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.</value>
   </data>
 </root>

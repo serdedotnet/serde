@@ -19,7 +19,7 @@ namespace Serde.Test
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateSerialize]
 partial struct Rgb
 {
     public byte Red, Green, Blue;
@@ -45,7 +45,7 @@ partial struct Rgb : Serde.ISerialize
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateSerialize]
 partial struct S1
 {
     public S2 X;
@@ -61,14 +61,14 @@ struct S2 { }";
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateSerialize]
 struct S { }
-[GenerateSerde]
+[GenerateSerialize]
 class C { }";
             return VerifyGeneratedCode(src,
-// /0/Test0.cs(4,8): error ERR_TypeNotPartial: The type 'S' has the `[GenerateSerdeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
+// /0/Test0.cs(4,8): error ERR_TypeNotPartial: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
 DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(4, 8, 4, 9),
-// /0/Test0.cs(6,7): error ERR_TypeNotPartial: The type 'C' has the `[GenerateSerdeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
+// /0/Test0.cs(6,7): error ERR_TypeNotPartial: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
 DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
             );
         }
@@ -78,7 +78,7 @@ DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(6, 7, 6, 8)
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateSerialize]
 partial class C
 {
     public readonly int[] IntArr = new[] { 1, 2, 3 };
@@ -102,7 +102,7 @@ partial class C : Serde.ISerialize
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateSerialize]
 partial class C
 {
     public readonly int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
@@ -126,7 +126,7 @@ partial class C : Serde.ISerialize
         {
             var src = @"
 using Serde;
-[GenerateSerde]
+[GenerateSerialize]
 partial class C
 {
     public readonly int[][] NestedArr = new int[][] { };
@@ -146,21 +146,21 @@ partial class C : Serde.ISerialize
         }
 
         [Fact]
-        public Task ArrayOfGenerateSerde()
+        public Task ArrayOfGenerateSerialize()
         {
             var src = @"
 using Serde;
 
 partial class TestCase15
 {
-    [GenerateSerde]
+    [GenerateSerialize]
     public partial class Class0
     {
         public Class1[] Field0 = new Class1[]{new Class1()};
         public bool[] Field1 = new bool[]{false};
     }
 
-    [GenerateSerde]
+    [GenerateSerialize]
     public partial class Class1
     {
         public int Field0 = int.MaxValue;
@@ -211,7 +211,7 @@ partial class TestCase15
 using Serde;
 using System.Collections.Generic;
 
-[GenerateSerde]
+[GenerateSerialize]
 partial class C
 {
     public readonly Dictionary<string, int> Map = new Dictionary<string, int>()
@@ -242,10 +242,10 @@ partial class C : Serde.ISerialize
 using Serde;
 using System.Collections.Generic;
 
-[GenerateSerde]
+[GenerateSerialize]
 partial record C(int X);
 
-[GenerateSerde]
+[GenerateSerialize]
 partial class C2
 {
     public readonly Dictionary<string, C> Map = new Dictionary<string, C>()
@@ -359,7 +359,7 @@ record R(Dictionary<string, int> D) : IDictionary<string, int>
         return ((IEnumerable)D).GetEnumerator();
     }
 }
-[GenerateSerde]
+[GenerateSerialize]
 partial class C
 {
     public R RDictionary;
@@ -378,6 +378,105 @@ partial class C : Serde.ISerialize
 }");
         }
 
+        [Fact]
+        public Task ExplicitWrapper()
+        {
+            var src = @"
+using Serde;
+
+public struct S
+{
+    public int X;
+    public int Y;
+    public S(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+}
+public struct SWrap : ISerialize
+{
+    private readonly S _s;
+    public SWrap(S s)
+    {
+        _s = s;
+    }
+    void ISerialize.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
+    {
+        serializer.Serialize(_s.X);
+        serializer.Serialize(_s.Y);
+    }
+}
+[GenerateSerialize]
+partial class C
+{
+    [SerdeWrap(typeof(SWrap))]
+    public S S = new S();
+}";
+            return VerifyGeneratedCode(src, "C", @"
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""S"", new SWrap(S));
+        type.End();
+    }
+}");
+        }
+
+        [Fact]
+        public Task ExplicitGenericWrapper()
+        {
+            var src = @"
+using Serde;
+
+public struct S<T>
+{
+    public T Field;
+    public S(T f)
+    {
+        Field = f;
+    }
+}
+public struct SWrap<T, TWrap> : ISerialize, IWrap<S<T>, SWrap<T, TWrap>>
+    where TWrap : struct, ISerialize, IWrap<T, TWrap>
+{
+    public SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
+    private readonly S<T> _s;
+    public SWrap(S<T> s)
+    {
+        _s = s;
+    }
+    void ISerialize.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""S"", 1);
+        var d = default(TWrap);
+        type.SerializeField(""S"", d.Create(_s.Field));
+        type.End();
+    }
+}
+[GenerateSerialize]
+partial class C
+{
+    [SerdeWrap(typeof(SWrap<,>))]
+    public S<int> S = new S<int>(5);
+}";
+            return VerifyGeneratedCode(src, "C", @"
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""S"", new SWrap<int, Int32Wrap>(S));
+        type.End();
+    }
+}");
+        }
         
         internal static Task VerifyGeneratedCode(
             string src,
@@ -415,7 +514,7 @@ partial class C : Serde.ISerialize
                 TestCode = src,
                 ReferenceAssemblies = Config.LatestTfRefs,
             };
-            verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerdeAttribute).Assembly);
+            verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerializeAttribute).Assembly);
             return verifier;
         }
     }

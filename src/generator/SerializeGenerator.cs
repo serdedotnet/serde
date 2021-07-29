@@ -14,7 +14,7 @@ using static Serde.WellKnownTypes;
 namespace Serde
 {
     /// <summary>
-    /// Recognizes the [GenerateSerde] attribute on a type to generate an implementation
+    /// Recognizes the [GenerateSerialize] attribute on a type to generate an implementation
     /// of Serde.ISerialize. The implementation generally looks like a call to SerializeType,
     /// then successive calls to SerializeField.
     /// </summary>
@@ -22,7 +22,7 @@ namespace Serde
     /// For a type like,
     ///
     /// <code>
-    /// [GenerateSerde]
+    /// [GenerateSerialize]
     /// partial struct Rgb { public byte Red; public byte Green; public byte Blue; }
     /// </code>
     ///
@@ -72,7 +72,7 @@ namespace Serde
                                     {
                                         Identifier:
                                         {
-                                            ValueText: "GenerateSerde" or "GenerateSerdeAttribute"
+                                            ValueText: "GenerateSerialize" or "GenerateSerializeAttribute"
                                         }
                                     })
                                 {
@@ -273,27 +273,67 @@ namespace Serde
             GeneratorExecutionContext context,
             [NotNullWhen(true)] out ExpressionSyntax? fieldExpr)
         {
+            var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) }));
+            // Priority:
+
+            // 1. an explicit wrap
+            var attr = TryGetExplicitWrapper(member);
+            if (attr is { ConstructorArguments: { Length: 1 } attrArgs } &&
+                attrArgs[0] is { Value: INamedTypeSymbol wrapperType })
+            {
+                var memberType = member switch
+                {
+                    IFieldSymbol { Type: INamedTypeSymbol t } => t,
+                    IPropertySymbol { Type: INamedTypeSymbol t } => t,
+                    _ => throw ExceptionUtilities.Unreachable
+                };
+                var expr = MakeWrappedExpression(
+                    wrapperType.Name,
+                    memberType.TypeArguments,
+                    context);
+                if (expr is not null)
+                {
+                    fieldExpr = ObjectCreationExpression(
+                        expr,
+                        argListFromMemberName,
+                        initializer: null);
+                    return true;
+                }
+            }
+
             var wrapperName = TryGetPrimitiveWrapper(type);
             if (wrapperName is not null)
             {
                 fieldExpr = ObjectCreationExpression(
                     IdentifierName(wrapperName),
-                    ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                    argListFromMemberName,
                     initializer: null);
                 return true;
             }
 
-            var wrapperType = TryGetCompoundWrapper(type, context);
-            if (wrapperType is not null)
+            var wrapperTypeSyntax = TryGetCompoundWrapper(type, context);
+            if (wrapperTypeSyntax is not null)
             {
                 fieldExpr = ObjectCreationExpression(
-                    wrapperType,
-                    ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) })),
+                    wrapperTypeSyntax,
+                    argListFromMemberName,
                     initializer: null);
                 return true;
             }
             fieldExpr = null;
             return false;
+        }
+
+        private static AttributeData? TryGetExplicitWrapper(ISymbol member)
+        {
+            foreach (var attr in member.GetAttributes())
+            {
+                if (attr.AttributeClass?.Name is "SerdeWrapAttribute")
+                {
+                    return attr;
+                }
+            }
+            return null;
         }
 
         // If the target is a core type, we can wrap it
@@ -335,6 +375,11 @@ namespace Serde
             ImmutableArray<ITypeSymbol> elemTypes,
             GeneratorExecutionContext context)
         {
+            if (elemTypes.Length == 0)
+            {
+                return IdentifierName(baseWrapperName);
+            }
+
             var wrapperTypes = new List<TypeSyntax>();
             foreach (var elemType in elemTypes)
             {
@@ -409,12 +454,12 @@ namespace Serde
 
         static bool ImplementsISerialize(ITypeSymbol memberType, GeneratorExecutionContext context)
         {
-            // Check if the type either has the GenerateSerde attribute, or directly implements ISerialize
-            // (If the type has the GenerateSerde attribute then the generator will implement the interface)
+            // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
+            // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
             var attributes = memberType.GetAttributes();
             foreach (var attr in attributes)
             {
-                if (attr.AttributeClass?.Name is "GenerateSerde" or "GenerateSerdeAttribute")
+                if (attr.AttributeClass?.Name is "GenerateSerializeAttribute")
                 {
                     return true;
                 }

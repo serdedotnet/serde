@@ -1,7 +1,26 @@
 // Contains implementations of data interfaces for core types
 
+using System;
+using System.Diagnostics;
+
 namespace Serde
 {
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
+    public sealed class SerdeWrapAttribute : Attribute
+    { 
+        public SerdeWrapAttribute(Type wrapper)
+        {
+            Wrapper = wrapper;
+        }
+        public Type Wrapper { get; }
+    }
+
+    public interface IWrap<T, TWrap> where TWrap : ISerialize
+    {
+        TWrap Create(T t); // Should be abstract static
+    }
+
     public readonly struct BoolWrap : ISerialize, IWrap<bool, BoolWrap>
     {
         public BoolWrap Create(bool t) => new BoolWrap(t);

@@ -5,7 +5,7 @@ namespace Serde
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public class GenerateSerdeAttribute : Attribute { }
+    public sealed class GenerateSerializeAttribute : Attribute { }
 
     public interface ISerialize
     {
@@ -14,12 +14,6 @@ namespace Serde
             where TSerializeEnumerable : ISerializeEnumerable
             where TSerializeDictionary : ISerializeDictionary
             where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>;
-    }
-
-    public interface IWrap<T, TWrap>
-        where TWrap : ISerialize
-    {
-        TWrap Create(T t); // Should be abstract static
     }
 
     public interface ISerializeType
