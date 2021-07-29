@@ -7,15 +7,17 @@ using System.Runtime.CompilerServices;
 
 namespace Serde.Test
 {
-    internal abstract record JsonNode : ISerialize
+    internal abstract record JsonNode : ISerializeStatic
     {
         private protected JsonNode() { }
 
         public abstract void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary;
+            where TSerializer : ISerializerStatic<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
+            where TSerializeType : ISerializeTypeStatic
+            where TSerializeEnumerable : ISerializeEnumerableStatic
+            where TSerializeDictionary : ISerializeDictionaryStatic;
+
+        public abstract void Serialize(ISerializer serializer);
 
         public static implicit operator JsonNode(int i) => new JsonNumber(i);
         public static implicit operator JsonNode(bool b) => new JsonBool(b);
@@ -32,6 +34,11 @@ namespace Serde.Test
         {
             serializer.Serialize(_d);
         }
+
+        public override void Serialize(ISerializer serializer)
+        {
+            serializer.Serialize(_d);
+        }
     }
     internal record JsonBool(bool Value) : JsonNode
     {
@@ -39,10 +46,20 @@ namespace Serde.Test
         {
             serializer.Serialize(Value);
         }
+
+        public override void Serialize(ISerializer serializer)
+        {
+            serializer.Serialize(Value);
+        }
     }
     internal record JsonString(string Value) : JsonNode
     {
         public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            serializer.Serialize(Value);
+        }
+
+        public override void Serialize(ISerializer serializer)
         {
             serializer.Serialize(Value);
         }
@@ -62,6 +79,16 @@ namespace Serde.Test
             }
             type.End();
         }
+
+        public override void Serialize(ISerializer serializer)
+        {
+            var type = serializer.SerializeType("", Members.Length);
+            foreach (var (name, node) in Members)
+            {
+                type.SerializeField(name, node);
+            }
+            type.End();
+        }
     }
     internal record JsonArray(ImmutableArray<JsonNode> Elements) : JsonNode
     {
@@ -70,6 +97,16 @@ namespace Serde.Test
         { }
 
         public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            var enumerable = serializer.SerializeEnumerable(Elements.Length);
+            foreach (var element in Elements)
+            {
+                enumerable.SerializeElement(element);
+            }
+            enumerable.End();
+        }
+
+        public override void Serialize(ISerializer serializer)
         {
             var enumerable = serializer.SerializeEnumerable(Elements.Length);
             foreach (var element in Elements)

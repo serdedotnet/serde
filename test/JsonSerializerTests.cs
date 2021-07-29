@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using Serde.Json;
 using Xunit;
 
 namespace Serde.Test
@@ -21,7 +22,7 @@ namespace Serde.Test
 
         private void VerifyJsonSource(JsonNode node, string expected)
         {
-            var actual = JsonSerializer.Serialize(node);
+            var actual = Serde.Json.JsonSerializer.Serialize(node);
             Assert.Equal(expected.Trim(), PrettyPrint(actual));
         }
 
@@ -86,19 +87,29 @@ namespace Serde.Test
 ]");
         }
 
-        private struct JsonDictionaryWrapper : ISerialize
+        private struct JsonDictionaryWrapper : ISerialize, ISerializeStatic
         {
             private readonly Dictionary<int, int> _d;
             public JsonDictionaryWrapper(Dictionary<int, int> d)
             {
                 _d = d;
             }
-
             public void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-                where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-                where TSerializeType : ISerializeType
-                where TSerializeEnumerable : ISerializeEnumerable
-                where TSerializeDictionary : ISerializeDictionary
+                where TSerializer : ISerializerStatic<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
+                where TSerializeType : ISerializeTypeStatic
+                where TSerializeEnumerable : ISerializeEnumerableStatic
+                where TSerializeDictionary : ISerializeDictionaryStatic
+            {
+                var sd = serializer.SerializeDictionary(_d.Count);
+                foreach (var (k,v) in _d)
+                {
+                    sd.SerializeKey(new StringWrap(k.ToString()));
+                    sd.SerializeValue(new Int32Wrap(v));
+                }
+                sd.End();
+            }
+
+            void ISerialize.Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(_d.Count);
                 foreach (var (k,v) in _d)
@@ -118,7 +129,7 @@ namespace Serde.Test
                 [3] = 5,
                 [1] = 10
             };
-            var js = JsonSerializer.Serialize(new JsonDictionaryWrapper(d));
+            var js = Serde.Json.JsonSerializer.Serialize(new JsonDictionaryWrapper(d));
             var resultDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<int, int>>(js)!;
             Assert.Equal(d.Count, resultDict.Count);
             foreach (var (k, v) in resultDict)

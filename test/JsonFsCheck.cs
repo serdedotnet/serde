@@ -58,7 +58,7 @@ namespace Serde.Test
                 var localName = "t" + i;
                 serializeStatements.Add($"var {localName} = new TestCase{i}.Class0();");
                 serializeStatements.Add($@"results.Add(
-(Serde.JsonSerializer.Serialize({localName}),
+(Serde.Json.JsonSerializer.Serialize({localName}),
  System.Text.Json.JsonSerializer.Serialize({localName}, options)));");
             }
             serializeStatements.Add("return results;");

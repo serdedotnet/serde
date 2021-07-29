@@ -33,7 +33,7 @@ namespace Benchmarks
         }
 
         [Benchmark]
-        public string SerdeJson() => Serde.JsonSerializer.Serialize(value);
+        public string SerdeJson() => Serde.Json.JsonSerializer.Serialize(value);
 
         // DataContractJsonSerializer does not provide an API to serialize to string
         // so it's not included here (apples vs apples thing)

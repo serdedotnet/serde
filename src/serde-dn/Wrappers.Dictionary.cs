@@ -17,7 +17,7 @@ namespace Serde
             _dict = dict;
         }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void ISerialize.Serialize(ISerializer serializer)
         {
             var sd = serializer.SerializeDictionary(_dict.Count);
             var kwrap = default(TKeyWrap);
@@ -44,8 +44,9 @@ namespace Serde
         {
             _dict = dict;
         }
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-        {
+
+        void ISerialize.Serialize(ISerializer serializer)
+        {            
             var sd = serializer.SerializeDictionary(_dict.Count);
             var kwrap = default(TKeyWrap);
             var vwrap = default(TValueWrap);
@@ -71,7 +72,8 @@ namespace Serde
         {
             _dict = dict;
         }
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+
+        void ISerialize.Serialize(ISerializer serializer)
         {
             var sd = serializer.SerializeDictionary(_dict.Count);
             var kwrap = default(TKeyWrap);

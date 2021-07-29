@@ -1,19 +1,23 @@
-﻿using System;
+﻿
+using System;
 using System.Diagnostics;
 
 namespace Serde
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public sealed class GenerateSerializeAttribute : Attribute { }
+    public sealed class GenerateSerializeAttribute : Attribute
+    {
+        /// <summary>
+        /// Whether or not to generate an implementation for ISerializeStatic.
+        /// Currently always false, as the generator does not support it yet.
+        /// </summary>
+        public bool Static { get; } = false;
+    }
 
     public interface ISerialize
     {
-        void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>;
+        void Serialize(ISerializer serializer);
     }
 
     public interface ISerializeType
@@ -36,14 +40,7 @@ namespace Serde
         void End();
     }
 
-    public interface ISerializer<
-        out TSerializeType,
-        out TSerializeEnumerable,
-        out TSerializeDictionary
-        >
-        where TSerializeType : ISerializeType
-        where TSerializeEnumerable : ISerializeEnumerable
-        where TSerializeDictionary : ISerializeDictionary
+    public interface ISerializer
     {
         void Serialize(bool b);
         void Serialize(char c);
@@ -58,8 +55,8 @@ namespace Serde
         void Serialize(float f);
         void Serialize(double d);
         void Serialize(string s);
-        TSerializeType SerializeType(string name, int numFields);
-        TSerializeEnumerable SerializeEnumerable(int? length);
-        TSerializeDictionary SerializeDictionary(int? length);
+        ISerializeType SerializeType(string name, int numFields);
+        ISerializeEnumerable SerializeEnumerable(int? length);
+        ISerializeDictionary SerializeDictionary(int? length);
     }
 }
