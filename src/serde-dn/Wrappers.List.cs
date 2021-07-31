@@ -9,13 +9,8 @@ namespace Serde
 {
     internal static class EnumerableHelpers
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeArray<T, TWrap, TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(T[] arr, ref TSerializer serializer)
+        public static void SerializeArray<T, TWrap>(T[] arr, ISerializer serializer)
             where TWrap : struct, IWrap<T, TWrap>, ISerialize
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
         {
             var enumerable = serializer.SerializeEnumerable(arr.Length);
             var wrapper = default(TWrap);
@@ -27,12 +22,8 @@ namespace Serde
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeList<T, TWrap, TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(List<T> list, ref TSerializer serializer)
-            where TWrap : struct, ISerialize, IWrap<T, TWrap>
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
+        public static void SerializeList<T, TWrap>(List<T> list, ISerializer serializer)
+            where TWrap : struct, IWrap<T, TWrap>, ISerialize
         {
             var enumerable = serializer.SerializeEnumerable(list.Count);
             var wrapper = default(TWrap);
@@ -44,12 +35,8 @@ namespace Serde
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeImmutableArray<T, TWrap, TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ImmutableArray<T> list, ref TSerializer serializer)
-            where TWrap : struct, ISerialize, IWrap<T, TWrap>
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
+        public static void SerializeImmutableArray<T, TWrap>(ImmutableArray<T> list, ISerializer serializer)
+            where TWrap : struct, IWrap<T, TWrap>, ISerialize
         {
             var enumerable = serializer.SerializeEnumerable(list.Length);
             var wrapper = default(TWrap);
@@ -61,37 +48,12 @@ namespace Serde
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeIList<T, TList, TWrapper, TWrapped, TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(TList list, ref TSerializer serializer)
-            where TList : IList<T>
-            where TWrapped : ISerialize
-            where TWrapper : struct, IWrap<T, TWrapped>
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
+        public static void SerializeIList<T, TWrap>(IList<T> list, ISerializer serializer)
+            where TWrap : struct, IWrap<T, TWrap>, ISerialize
         {
             var enumerable = serializer.SerializeEnumerable(list.Count);
-            var wrapper = default(TWrapper);
+            var wrapper = default(TWrap);
             foreach (var item in list)
-            {
-                enumerable.SerializeElement(wrapper.Create(item));
-            }
-            enumerable.End();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeEnumerable<T, TEnum, TWrapper, TWrapped, TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(TEnum e, ref TSerializer serializer)
-            where TEnum : IEnumerable<T>
-            where TWrapped : ISerialize
-            where TWrapper : struct, IWrap<T, TWrapped>
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
-        {
-            var enumerable = serializer.SerializeEnumerable(null);
-            var wrapper = default(TWrapper);
-            foreach (var item in e)
             {
                 enumerable.SerializeElement(wrapper.Create(item));
             }
@@ -109,12 +71,12 @@ namespace Serde
             _t = t;
         }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => _t.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => _t.Serialize(serializer);
     }
 
     public readonly struct ArrayWrap<T, TWrap> : ISerialize, IWrap<T[], ArrayWrap<T, TWrap>>
-        where TWrap: struct, ISerialize, IWrap<T, TWrap>
+        where TWrap: struct, IWrap<T, TWrap>, ISerialize
     {
         public ArrayWrap<T, TWrap> Create(T[] t) => new ArrayWrap<T, TWrap>(t);
 
@@ -124,14 +86,8 @@ namespace Serde
             _a = a;
         }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => EnumerableHelpers.SerializeArray<
-                T,
-                TWrap,
-                TSerializer,
-                TSerializeType,
-                TSerializeEnumerable,
-                TSerializeDictionary>(_a, ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => EnumerableHelpers.SerializeArray<T, TWrap>(_a, serializer);
     }
 
     public readonly struct ArrayWrap<T> : ISerialize, IWrap<T[], ArrayWrap<T>>
@@ -142,14 +98,8 @@ namespace Serde
         private readonly T[] _a;
         public ArrayWrap(T[] a) { _a = a; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => EnumerableHelpers.SerializeArray<
-                T,
-                IdWrap<T>,
-                TSerializer,
-                TSerializeType,
-                TSerializeEnumerable,
-                TSerializeDictionary>(_a, ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => EnumerableHelpers.SerializeArray<T, IdWrap<T>>(_a, serializer);
     }
 
     public readonly struct ListWrap<T> : ISerialize, IWrap<List<T>, ListWrap<T>>
@@ -160,18 +110,12 @@ namespace Serde
         private readonly List<T> _a;
         public ListWrap(List<T> a) { _a = a; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => EnumerableHelpers.SerializeList<
-                T,
-                IdWrap<T>,
-                TSerializer,
-                TSerializeType,
-                TSerializeEnumerable,
-                TSerializeDictionary>(_a, ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => EnumerableHelpers.SerializeList<T, IdWrap<T>>(_a, serializer);
     }
 
     public readonly struct ListWrap<T, TWrap> : ISerialize, IWrap<List<T>, ListWrap<T, TWrap>>
-        where TWrap : struct, ISerialize, IWrap<T, TWrap>
+        where TWrap : struct, IWrap<T, TWrap>, ISerialize
     {
         public ListWrap<T, TWrap> Create(List<T> t) => new ListWrap<T, TWrap>(t);
 
@@ -181,14 +125,8 @@ namespace Serde
             _a = a;
         }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => EnumerableHelpers.SerializeList<
-                T,
-                TWrap,
-                TSerializer,
-                TSerializeType,
-                TSerializeEnumerable,
-                TSerializeDictionary>(_a, ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => EnumerableHelpers.SerializeList<T, TWrap>(_a, serializer);
     }
 
     public readonly struct ImmutableArrayWrap<T> : ISerialize, IWrap<ImmutableArray<T>, ImmutableArrayWrap<T>>
@@ -199,18 +137,12 @@ namespace Serde
         private readonly ImmutableArray<T> _a;
         public ImmutableArrayWrap(ImmutableArray<T> a) { _a = a; }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => EnumerableHelpers.SerializeImmutableArray<
-                T,
-                IdWrap<T>,
-                TSerializer,
-                TSerializeType,
-                TSerializeEnumerable,
-                TSerializeDictionary>(_a, ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => EnumerableHelpers.SerializeImmutableArray<T, IdWrap<T>>(_a, serializer);
     }
 
     public readonly struct ImmutableArrayWrap<T, TWrap> : ISerialize, IWrap<ImmutableArray<T>, ImmutableArrayWrap<T, TWrap>>
-        where TWrap : struct, ISerialize, IWrap<T, TWrap>
+        where TWrap : struct, IWrap<T, TWrap>, ISerialize
     {
         public ImmutableArrayWrap<T, TWrap> Create(ImmutableArray<T> t) => new ImmutableArrayWrap<T, TWrap>(t);
 
@@ -220,13 +152,7 @@ namespace Serde
             _a = a;
         }
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            => EnumerableHelpers.SerializeImmutableArray<
-                T,
-                TWrap,
-                TSerializer,
-                TSerializeType,
-                TSerializeEnumerable,
-                TSerializeDictionary>(_a, ref serializer);
+        void ISerialize.Serialize(ISerializer serializer)
+            => EnumerableHelpers.SerializeImmutableArray<T, TWrap>(_a, serializer);
     }
 }

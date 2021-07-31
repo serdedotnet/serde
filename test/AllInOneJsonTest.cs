@@ -1,6 +1,7 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Serde.Json;
 using Xunit;
 
 namespace Serde.Test
@@ -23,7 +24,7 @@ namespace Serde.Test
 {
     public partial class AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""AllInOne"", 14);
             type.SerializeField(""BoolField"", new BoolWrap(BoolField));
