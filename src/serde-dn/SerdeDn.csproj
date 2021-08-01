@@ -13,6 +13,7 @@
     <PackageOutputPath>$(ArtifactsPath)pack</PackageOutputPath>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/agocke/serde-dn</RepositoryUrl>
+    <PackageProjectUrl>https://commentout.com/serde-dn</PackageProjectUrl>
   </PropertyGroup>
 
   <!-- Include generator without referencing it -->
