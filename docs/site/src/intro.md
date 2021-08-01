@@ -1,14 +1,14 @@
 # Getting Started
 
-SerdeDn is a port of the popular [serde.rs](https://serde.rs) Rust serialization/deserialization
+Serde-dn is a port of the popular [serde.rs](https://serde.rs) Rust serialization/deserialization
 library to .NET.
 
-SerdeDn only supports serialization at the moment. Deserialization support is under construction.
+Serde-dn only supports serialization at the moment. Deserialization support is under construction.
 
 Start by adding the `serde-dn` NuGet package:
 
 ```bash
-dotnet add package SerdeDn --prerelease
+dotnet add package serde-dn --prerelease
 ```
 
 Next, your type needs to implement the `ISerialize` interface. Serde-dn will do this for you if your

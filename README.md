@@ -8,7 +8,7 @@ SerdeDn only supports serialization at the moment. Deserialization support is un
 Start by adding the `serde-dn` NuGet package:
 
 ```bash
-dotnet add package SerdeDn --prerelease
+dotnet add package serde-dn --prerelease
 ```
 
 Next, your type needs to implement the `ISerialize` interface. Serde-dn will do this for you if your
