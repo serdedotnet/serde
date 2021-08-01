@@ -63,31 +63,31 @@ namespace Serde.Json
             return this;
         }
 
-        public void Serialize(bool b) => _impl.Serialize(b);
+        public void SerializeBool(bool b) => _impl.SerializeBool(b);
 
-        public void Serialize(char c) => _impl.Serialize(c);
+        public void SerializeChar(char c) => _impl.SerializeChar(c);
 
-        public void Serialize(byte b) => _impl.Serialize(b);
+        public void SerializeByte(byte b) => _impl.SerializeByte(b);
 
-        public void Serialize(ushort u16) => _impl.Serialize(u16);
+        public void SerializeU16(ushort u16) => _impl.SerializeU16(u16);
 
-        public void Serialize(uint u32) => _impl.Serialize(u32);
+        public void SerializeU32(uint u32) => _impl.SerializeU32(u32);
 
-        public void Serialize(ulong u64) => _impl.Serialize(u64);
+        public void SerializeU64(ulong u64) => _impl.SerializeU64(u64);
 
-        public void Serialize(sbyte b) => _impl.Serialize(b);
+        public void SerializeSByte(sbyte b) => _impl.SerializeSByte(b);
 
-        public void Serialize(short i16) => _impl.Serialize(i16);
+        public void SerializeI16(short i16) => _impl.SerializeI16(i16);
 
-        public void Serialize(int i32) => _impl.Serialize(i32);
+        public void SerializeI32(int i32) => _impl.SerializeI32(i32);
 
-        public void Serialize(long i64) => _impl.Serialize(i64);
+        public void SerializeI64(long i64) => _impl.SerializeI64(i64);
 
-        public void Serialize(float f) => _impl.Serialize(f);
+        public void SerializeFloat(float f) => _impl.SerializeFloat(f);
 
-        public void Serialize(double d) => _impl.Serialize(d);
+        public void SerializeDouble(double d) => _impl.SerializeDouble(d);
 
-        public void Serialize(string s) => _impl.Serialize(s);
+        public void SerializeString(string s) => _impl.SerializeString(s);
     }
 
     partial class JsonSerializer : ISerializeType
