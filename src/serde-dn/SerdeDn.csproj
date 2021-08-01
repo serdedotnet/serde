@@ -2,16 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <Nullable>enable</Nullable>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <!-- Package settings -->
   <PropertyGroup>
-    <PackageId>SerdeDn</PackageId>
+    <PackageId>serde-dn</PackageId>
     <Version>0.1.0</Version>
     <IsPackable>true</IsPackable>
     <PackageOutputPath>$(ArtifactsPath)pack</PackageOutputPath>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/agocke/serde-dn</RepositoryUrl>
   </PropertyGroup>
 
   <!-- Include generator without referencing it -->

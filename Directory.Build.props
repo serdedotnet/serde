@@ -4,5 +4,6 @@
         <ArtifactsPath>$(RepoRoot)artifacts/</ArtifactsPath>
         <BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>
         <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 </Project>
