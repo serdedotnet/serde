@@ -1,4 +1,4 @@
-# Serde-dn
+# Getting Started
 
 SerdeDn is a port of the popular [serde.rs](https://serde.rs) Rust serialization/deserialization
 library to .NET.
