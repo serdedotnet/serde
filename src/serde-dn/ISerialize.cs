@@ -42,19 +42,19 @@ namespace Serde
 
     public interface ISerializer
     {
-        void Serialize(bool b);
-        void Serialize(char c);
-        void Serialize(byte b);
-        void Serialize(ushort u16);
-        void Serialize(uint u32);
-        void Serialize(ulong u64);
-        void Serialize(sbyte b);
-        void Serialize(short i16);
-        void Serialize(int i32);
-        void Serialize(long i64);
-        void Serialize(float f);
-        void Serialize(double d);
-        void Serialize(string s);
+        void SerializeBool(bool b);
+        void SerializeChar(char c);
+        void SerializeByte(byte b);
+        void SerializeU16(ushort u16);
+        void SerializeU32(uint u32);
+        void SerializeU64(ulong u64);
+        void SerializeSByte(sbyte b);
+        void SerializeI16(short i16);
+        void SerializeI32(int i32);
+        void SerializeI64(long i64);
+        void SerializeFloat(float f);
+        void SerializeDouble(double d);
+        void SerializeString(string s);
         ISerializeType SerializeType(string name, int numFields);
         ISerializeEnumerable SerializeEnumerable(int? length);
         ISerializeDictionary SerializeDictionary(int? length);

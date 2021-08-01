@@ -20,31 +20,31 @@ namespace Serde.Json
     // Implementations of ISerializerStatic
     partial struct JsonSerializerStatic : ISerializerStatic<SerializeTypeStatic, SerializeEnumerableStatic, SerializeDictionaryStatic>
     {
-        public void Serialize(bool b) => _writer.WriteBooleanValue(b);
+        public void SerializeBool(bool b) => _writer.WriteBooleanValue(b);
 
-        public void Serialize(char c) => Serialize(c.ToString());
+        public void SerializeChar(char c) => SerializeString(c.ToString());
 
-        public void Serialize(byte b) => _writer.WriteNumberValue(b);
+        public void SerializeByte(byte b) => _writer.WriteNumberValue(b);
 
-        public void Serialize(ushort u16) => _writer.WriteNumberValue(u16);
+        public void SerializeU16(ushort u16) => _writer.WriteNumberValue(u16);
 
-        public void Serialize(uint u32) => _writer.WriteNumberValue(u32);
+        public void SerializeU32(uint u32) => _writer.WriteNumberValue(u32);
 
-        public void Serialize(ulong u64) => _writer.WriteNumberValue(u64);
+        public void SerializeU64(ulong u64) => _writer.WriteNumberValue(u64);
 
-        public void Serialize(sbyte b) => _writer.WriteNumberValue(b);
+        public void SerializeSByte(sbyte b) => _writer.WriteNumberValue(b);
 
-        public void Serialize(short i16) => _writer.WriteNumberValue(i16);
+        public void SerializeI16(short i16) => _writer.WriteNumberValue(i16);
 
-        public void Serialize(int i32) => _writer.WriteNumberValue(i32);
+        public void SerializeI32(int i32) => _writer.WriteNumberValue(i32);
 
-        public void Serialize(long i64) => _writer.WriteNumberValue(i64);
+        public void SerializeI64(long i64) => _writer.WriteNumberValue(i64);
 
-        public void Serialize(float f) => _writer.WriteNumberValue(f);
+        public void SerializeFloat(float f) => _writer.WriteNumberValue(f);
 
-        public void Serialize(double d) => _writer.WriteNumberValue(d);
+        public void SerializeDouble(double d) => _writer.WriteNumberValue(d);
 
-        public void Serialize(string s) => _writer.WriteStringValue(s);
+        public void SerializeString(string s) => _writer.WriteStringValue(s);
 
         public SerializeTypeStatic SerializeType(string name, int numFields)
         {
@@ -180,28 +180,28 @@ namespace Serde.Json
                 StringResult = null;
             }
 
-            public void Serialize(bool b) => throw new KeyNotStringException();
-            public void Serialize(char c) => throw new KeyNotStringException();
-            public void Serialize(byte b) => throw new KeyNotStringException();
-            public void Serialize(ushort u16) => throw new KeyNotStringException();
+            public void SerializeBool(bool b) => throw new KeyNotStringException();
+            public void SerializeChar(char c) => throw new KeyNotStringException();
+            public void SerializeByte(byte b) => throw new KeyNotStringException();
+            public void SerializeU16(ushort u16) => throw new KeyNotStringException();
 
-            public void Serialize(uint u32) => throw new KeyNotStringException();
+            public void SerializeU32(uint u32) => throw new KeyNotStringException();
 
-            public void Serialize(ulong u64) => throw new KeyNotStringException();
+            public void SerializeU64(ulong u64) => throw new KeyNotStringException();
 
-            public void Serialize(sbyte b) => throw new KeyNotStringException();
+            public void SerializeSByte(sbyte b) => throw new KeyNotStringException();
 
-            public void Serialize(short i16) => throw new KeyNotStringException();
+            public void SerializeI16(short i16) => throw new KeyNotStringException();
 
-            public void Serialize(int i32) => throw new KeyNotStringException();
+            public void SerializeI32(int i32) => throw new KeyNotStringException();
 
-            public void Serialize(long i64) => throw new KeyNotStringException();
+            public void SerializeI64(long i64) => throw new KeyNotStringException();
 
-            public void Serialize(float f) => throw new KeyNotStringException();
+            public void SerializeFloat(float f) => throw new KeyNotStringException();
 
-            public void Serialize(double d) => throw new KeyNotStringException();
+            public void SerializeDouble(double d) => throw new KeyNotStringException();
 
-            public void Serialize(string s)
+            public void SerializeString(string s)
             {
                 StringResult = s;
             }

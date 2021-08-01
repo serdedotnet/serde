@@ -403,8 +403,8 @@ public struct SWrap : ISerialize
     }
     void ISerialize.Serialize(ISerializer serializer)
     {
-        serializer.Serialize(_s.X);
-        serializer.Serialize(_s.Y);
+        serializer.SerializeI32(_s.X);
+        serializer.SerializeI32(_s.Y);
     }
 }
 [GenerateSerialize]

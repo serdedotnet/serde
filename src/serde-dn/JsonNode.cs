@@ -32,36 +32,36 @@ namespace Serde.Test
 
         public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
-            serializer.Serialize(_d);
+            serializer.SerializeDouble(_d);
         }
 
         public override void Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_d);
+            serializer.SerializeDouble(_d);
         }
     }
     internal record JsonBool(bool Value) : JsonNode
     {
         public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
-            serializer.Serialize(Value);
+            serializer.SerializeBool(Value);
         }
 
         public override void Serialize(ISerializer serializer)
         {
-            serializer.Serialize(Value);
+            serializer.SerializeBool(Value);
         }
     }
     internal record JsonString(string Value) : JsonNode
     {
         public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
-            serializer.Serialize(Value);
+            serializer.SerializeString(Value);
         }
 
         public override void Serialize(ISerializer serializer)
         {
-            serializer.Serialize(Value);
+            serializer.SerializeString(Value);
         }
     }
     internal record JsonObject(ImmutableArray<(string FieldName, JsonNode Node)> Members) : JsonNode

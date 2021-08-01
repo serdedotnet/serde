@@ -30,12 +30,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_b);
+            serializer.SerializeBool(_b);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_b);
+            serializer.SerializeBool(_b);
         }
     }
 
@@ -48,12 +48,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_c);
+            serializer.SerializeChar(_c);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_c);
+            serializer.SerializeChar(_c);
         }
     }
 
@@ -66,12 +66,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_b);
+            serializer.SerializeByte(_b);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_b);
+            serializer.SerializeByte(_b);
         }
     }
 
@@ -84,12 +84,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeU16(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeU16(_i);
         }
     }
 
@@ -102,12 +102,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeU32(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeU32(_i);
         }
     }
 
@@ -120,12 +120,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeU64(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeU64(_i);
         }
     }
 
@@ -138,12 +138,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeSByte(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeSByte(_i);
         }
     }
 
@@ -156,12 +156,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeI16(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeI16(_i);
         }
     }
 
@@ -174,12 +174,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeI32(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeI32(_i);
         }
     }
 
@@ -192,12 +192,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeI64(_i);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_i);
+            serializer.SerializeI64(_i);
         }
     }
 
@@ -210,12 +210,12 @@ namespace Serde
 
         void ISerializeStatic.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
         {
-            serializer.Serialize(_s);
+            serializer.SerializeString(_s);
         }
 
         void ISerialize.Serialize(ISerializer serializer)
         {
-            serializer.Serialize(_s);
+            serializer.SerializeString(_s);
         }
     }
 }
