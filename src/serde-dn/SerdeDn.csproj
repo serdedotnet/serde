@@ -8,7 +8,7 @@
   <!-- Package settings -->
   <PropertyGroup>
     <PackageId>serde-dn</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.2</Version>
     <IsPackable>true</IsPackable>
     <PackageOutputPath>$(ArtifactsPath)pack</PackageOutputPath>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
