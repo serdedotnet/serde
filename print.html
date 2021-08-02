@@ -144,7 +144,10 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
+                        <div style="text-align: right;">
+  <a style="color: var(--icons);" href="https://github.com/agocke/serde-dn">View on GitHub</a>
+</div>
+<h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <p>Serde-dn is a port of the popular <a href="https://serde.rs">serde.rs</a> Rust serialization/deserialization
 library to .NET.</p>
 <p>Serde-dn only supports serialization at the moment. Deserialization support is under construction.</p>
@@ -166,9 +169,9 @@ partial class SampleClass
 Console.WriteLine(Serde.Json.JsonSerializer.Serialize(new SampleClass()));
 // prints: {&quot;X&quot;:3,&quot;Y&quot;:&quot;sample&quot;}
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><span style="float:right">
-  [GitHub][repo]
-</span>
+<div style="break-before: page; page-break-before: always;"></div><div style="text-align: right;">
+  <a style="color: var(--icons);" href="https://github.com/agocke/serde-dn">View on GitHub</a>
+</div>
 <h1 id="about"><a class="header" href="#about">About</a></h1>
 <p>Like Serde, SerdeDn is a framework for types which control how they serialize themselves. Basic
 cases are fully automated using a C# source generator. It has no reflection or run-time dispatch so
