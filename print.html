@@ -166,7 +166,10 @@ partial class SampleClass
 Console.WriteLine(Serde.Json.JsonSerializer.Serialize(new SampleClass()));
 // prints: {&quot;X&quot;:3,&quot;Y&quot;:&quot;sample&quot;}
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="about"><a class="header" href="#about">About</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><span style="float:right">
+  [GitHub][repo]
+</span>
+<h1 id="about"><a class="header" href="#about">About</a></h1>
 <p>Like Serde, SerdeDn is a framework for types which control how they serialize themselves. Basic
 cases are fully automated using a C# source generator. It has no reflection or run-time dispatch so
 it's trimming and AOT friendly. It is high-performance—the built-in JsonSerializer is as fast or
