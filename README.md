@@ -29,4 +29,4 @@ Console.WriteLine(Serde.Json.JsonSerializer.Serialize(new SampleClass()));
 // prints: {"X":3,"Y":"sample"}
 ```
 
-For more detail, see [https://commentout.com/serde-dn](https://www.commentout.com/serde-dn/about.html).
+For more detail, see [agocke.github.io/serde-dn](https://agocke.github.io/serde-dn/about.html).
