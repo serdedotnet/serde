@@ -1,8 +1,6 @@
-<span style="float:right">
-  [GitHub][repo]
-</span>
-
-[repo]: https://github.com/agocke/serde-dn
+<div style="text-align: right;">
+  <a style="color: var(--icons);" href="https://github.com/agocke/serde-dn">View on GitHub</a>
+</div>
 
 # About 
 

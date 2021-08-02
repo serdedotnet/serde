@@ -1,3 +1,7 @@
+<div style="text-align: right;">
+  <a style="color: var(--icons);" href="https://github.com/agocke/serde-dn">View on GitHub</a>
+</div>
+
 # Getting Started
 
 Serde-dn is a port of the popular [serde.rs](https://serde.rs) Rust serialization/deserialization
