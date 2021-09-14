@@ -8,7 +8,7 @@ namespace Serde
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
     public sealed class SerdeWrapAttribute : Attribute
-    { 
+    {
         public SerdeWrapAttribute(Type wrapper)
         {
             Wrapper = wrapper;
@@ -201,7 +201,11 @@ namespace Serde
         }
     }
 
-    public readonly struct StringWrap : ISerialize, ISerializeStatic, IWrap<string, StringWrap>
+    public readonly struct StringWrap :
+        ISerialize,
+        ISerializeStatic,
+        IWrap<string, StringWrap>,
+        IDeserialize<string>
     {
         public StringWrap Create(string s) => new StringWrap(s);
 
@@ -216,6 +220,17 @@ namespace Serde
         void ISerialize.Serialize(ISerializer serializer)
         {
             serializer.SerializeString(_s);
+        }
+
+        public static string Deserialize(IDeserializer deserializer)
+        {
+            return deserializer.DeserializeString<string, Visitor>(new Visitor());
+        }
+
+        private struct Visitor : IDeserializeVisitor<string>
+        {
+            public string ExpectedTypeName => "string";
+            public string VisitString(string s) => s;
         }
     }
 }
