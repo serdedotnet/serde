@@ -31,7 +31,7 @@ namespace Serde.Test
         public async Task CheckPrimitiveEquivalentsAsync()
         {
             // Generates test cases, each of which has multiple generated classes
-            var testCases = Gen.Sample(4, 100, Gen.Sized(FsCheckGenerators.GenTypeDef));
+            var testCases = Gen.Sample(4, 100, Gen.Sized(TestTypeGenerators.GenTypeDef));
             var wrappers = new MemberDeclarationSyntax[testCases.Length];
             int wrapperIndex = 0;
             foreach (var type in testCases)
@@ -91,7 +91,7 @@ public static class Runner
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
                syntaxTrees: new[] { mainTree, allTypes },
-               references: (await ReferenceAssemblies.Net.Net50.ResolveAsync(null, default))
+               references: (await Config.LatestTfRefs.ResolveAsync(null, default))
                     .Append(MetadataReference.CreateFromFile(typeof(Serde.ISerialize).Assembly.Location)),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
@@ -102,7 +102,7 @@ public static class Runner
                 out var diagnostics);
 
             Assert.Empty(diagnostics);
-            
+
             var peStream = new MemoryStream();
             var result = newComp.Emit(peStream,
                 pdbStream: null,
@@ -246,7 +246,7 @@ public static class Runner
             public override ArrayTypeSyntax TypeSyntax(int typeIndex)
                 => ArrayType(
                     ElementType.TypeSyntax(typeIndex),
-                    List(new[] { 
+                    List(new[] {
                         ArrayRankSpecifier(SeparatedList(new ExpressionSyntax[] { OmittedArraySizeExpression() }))
                    }));
 
@@ -264,7 +264,7 @@ public static class Runner
         {
             public override TypeSyntax TypeSyntax(int typeIndex)
                 => GenericName(Identifier("List"), TypeArgumentList(SeparatedList(new[] { ElementType.TypeSyntax(typeIndex) })));
-                
+
             public override ExpressionSyntax Value(int typeIndex)
                 => ObjectCreationExpression(
                     TypeSyntax(typeIndex),
@@ -283,7 +283,7 @@ public static class Runner
                 })));
 
             public override ExpressionSyntax Value(int typeIndex)
-                { 
+                {
                     var p = ParseExpression("new Dictionary<string, int>() { [\"s0\"] = int.MaxValue }");
                     var real = ObjectCreationExpression(
                         TypeSyntax(typeIndex),
@@ -293,7 +293,7 @@ public static class Runner
                     )));
                     return real;
                 }
-            
+
             private ExpressionSyntax[] GetInitializerExpressions(int typeIndex)
             {
                 var typeValues = MakeElements(typeIndex);
@@ -303,7 +303,7 @@ public static class Runner
                     dictExprs[i] = AssignmentExpression(
                         SyntaxKind.SimpleAssignmentExpression,
                         ImplicitElementAccess(BracketedArgumentList(
-                            SeparatedList(new[] { 
+                            SeparatedList(new[] {
                                 Argument(LiteralExpression(SyntaxKind.StringLiteralExpression, Literal($"s{i}")))
                             }))),
                         typeValues[i]);
@@ -312,7 +312,7 @@ public static class Runner
             }
         }
 
-        public static class FsCheckGenerators
+        public static class TestTypeGenerators
         {
             public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf(new[] {
                     Gen.Constant<TestType>(new TestChar()),

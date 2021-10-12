@@ -34,6 +34,16 @@ namespace Serde.Json
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }
+
+        public static T Deserialize<T>(string source)
+            where T : IDeserialize<T>
+            => Deserialize<T, T>(source);
+
+        public static T Deserialize<T, D>(string source)
+            where D : IDeserialize<T>
+        {
+            return D.Deserialize(JsonDeserializer.FromString(source));
+        }
     }
 
     // Implementations of ISerializer interfaces

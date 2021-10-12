@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Serde.Json;
 using Xunit;
+using static Serde.Json.JsonValue;
 
 namespace Serde.Test
 {
@@ -20,18 +21,19 @@ namespace Serde.Test
             return Encoding.UTF8.GetString(stream.ToArray());
         }
 
-        private void VerifyJsonSource(JsonNode node, string expected)
+        private void VerifyJsonSource(JsonValue node, string expected)
         {
             var actual = Serde.Json.JsonSerializer.Serialize(node);
+            using var doc = JsonDocument.Parse(actual);
             Assert.Equal(expected.Trim(), PrettyPrint(actual));
         }
 
         [Fact]
         public void TestNestedTypes()
         {
-            var src = new JsonObject(new (string, JsonNode)[] {
+            var src = new Object(new (string, JsonValue)[] {
                 ("field1", 1),
-                ("field2", new JsonObject(new (string, JsonNode)[] {
+                ("field2", new Object(new (string, JsonValue)[] {
                     ("nested1", 5)
                 })),
                 ("field3", 2)
@@ -48,9 +50,9 @@ namespace Serde.Test
         }
 
         [Fact]
-        public void TestEnumerable()
+        public void SerializeEnumerable()
         {
-            var src = new JsonArray(ImmutableArray.Create<JsonNode>(
+            var src = new Array(ImmutableArray.Create<JsonValue>(
                 1,
                 2
             ));
@@ -65,9 +67,9 @@ namespace Serde.Test
         [Fact]
         public void NestedEnumerable()
         {
-            var src = new JsonArray(ImmutableArray.Create<JsonNode>(
+            var src = new Array(ImmutableArray.Create<JsonValue>(
                 1,
-                new JsonArray(ImmutableArray.Create<JsonNode>(
+                new Array(ImmutableArray.Create<JsonValue>(
                     3,
                     4
                 )),
