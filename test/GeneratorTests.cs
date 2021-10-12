@@ -492,15 +492,15 @@ partial class C : Serde.ISerialize
 
         internal static Task VerifyGeneratedCode(
             string src,
-            (string typeName, string expected)[] generated,
+            (string fileName, string expected)[] generated,
             params DiagnosticResult[] diagnostics)
         {
             var verifier = CreateVerifier(src);
             verifier.ExpectedDiagnostics.AddRange(diagnostics);
-            foreach (var (typeName, expected) in generated)
+            foreach (var (fileName, expected) in generated)
             {
                 verifier.TestState.GeneratedSources.Add((
-                    Path.Combine("SerdeGenerator", $"Serde.{nameof(SerializeGenerator)}", $"{typeName}.ISerialize.cs"),
+                    Path.Combine("SerdeGenerator", $"Serde.{nameof(SerializeGenerator)}", $"{fileName}.cs"),
                     SourceText.From(expected, Encoding.UTF8))
                 );
             }

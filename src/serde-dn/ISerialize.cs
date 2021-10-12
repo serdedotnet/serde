@@ -15,6 +15,13 @@ namespace Serde
         public bool Static { get; } = false;
     }
 
+    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
+    public sealed class GenerateWrapper : Attribute
+    {
+        public GenerateWrapper(string memberName) { }
+    }
+
     public interface ISerialize
     {
         void Serialize(ISerializer serializer);

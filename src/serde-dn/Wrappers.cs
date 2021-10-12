@@ -201,6 +201,7 @@ namespace Serde
         }
     }
 
+    [GenerateWrapper(nameof(_s))]
     public readonly struct StringWrap :
         ISerialize,
         ISerializeStatic,
