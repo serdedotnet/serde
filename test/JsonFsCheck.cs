@@ -91,7 +91,7 @@ public static class Runner
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
                syntaxTrees: new[] { mainTree, allTypes },
-               references: (await ReferenceAssemblies.Net.Net50.ResolveAsync(null, default))
+               references: (await Config.LatestTfRefs.ResolveAsync(null, default))
                     .Append(MetadataReference.CreateFromFile(typeof(Serde.ISerialize).Assembly.Location)),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 

@@ -24,6 +24,7 @@ namespace Serde.Test
         private void VerifyJsonSource(JsonValue node, string expected)
         {
             var actual = Serde.Json.JsonSerializer.Serialize(node);
+            using var doc = JsonDocument.Parse(actual);
             Assert.Equal(expected.Trim(), PrettyPrint(actual));
         }
 

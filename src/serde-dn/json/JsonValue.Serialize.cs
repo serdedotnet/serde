@@ -66,7 +66,7 @@ namespace Serde.Json
             public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             {
                 var type = serializer.SerializeType("", Members.Count);
-                foreach (var (name, node) in Members)
+                foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
                 {
                     type.SerializeField(name, node);
                 }
@@ -76,7 +76,7 @@ namespace Serde.Json
             public override void Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("", Members.Count);
-                foreach (var (name, node) in Members)
+                foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
                 {
                     type.SerializeField(name, node);
                 }
