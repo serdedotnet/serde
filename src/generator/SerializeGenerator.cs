@@ -45,7 +45,7 @@ namespace Serde
     /// </code>
     /// </example>
     [Generator]
-    public class SerializeGenerator : ISourceGenerator
+    public partial class SerializeGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context) { }
 
@@ -68,15 +68,20 @@ namespace Serde
                                 {
                                     name = q.Right;
                                 }
-                                if (name is IdentifierNameSyntax
-                                    {
-                                        Identifier:
+                                switch (name)
+                                {
+                                    case IdentifierNameSyntax { Identifier:
                                         {
                                             ValueText: "GenerateSerialize" or "GenerateSerializeAttribute"
-                                        }
-                                    })
-                                {
-                                    VisitType(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                        }}:
+                                        GenerateSerialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                        break;
+                                    case IdentifierNameSyntax { Identifier:
+                                        {
+                                            ValueText: "GenerateWrapper" or "GenerateWrapperAttribute"
+                                        }}:
+                                        GenerateWrapper(context, attr, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                        break;
                                 }
                             }
                         }
@@ -86,7 +91,7 @@ namespace Serde
             }
         }
 
-        private void VisitType(
+        private void GenerateSerialize(
             GeneratorExecutionContext context,
             TypeDeclarationSyntax typeDecl,
             SemanticModel semanticModel)
@@ -177,7 +182,7 @@ namespace Serde
                     }
                 }
 
-                context.AddSource($"{fullTypeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
+                context.AddSource($"{fullTypeName}.cs", Environment.NewLine + tree.ToFullString());
             }
         }
 
@@ -385,7 +390,7 @@ namespace Serde
 
                 if (ImplementsISerialize(elemType, context))
                 {
-                    // Special case for List-like types: 
+                    // Special case for List-like types:
                     // If the element type directly implements ISerialize, we can
                     // use a single-arity version of the wrapper
                     //      ArrayWrap<`elemType`>
