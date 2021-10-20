@@ -24,9 +24,9 @@ partial struct StringWrap
             return GeneratorTests.VerifyGeneratedCode(src, "StringWrap", @"
 using Serde;
 
-partial struct StringWrap : ISerialize
+partial struct StringWrap : Serde.ISerialize
 {
-    void ISerialize.Serialize(ISerializer serializer)
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         serializer.SerializeString(_s);
     }

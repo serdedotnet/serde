@@ -95,7 +95,7 @@ public static class Runner
                     .Append(MetadataReference.CreateFromFile(typeof(Serde.ISerialize).Assembly.Location)),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            var driver = CSharpGeneratorDriver.Create(new SerializeGenerator());
+            var driver = CSharpGeneratorDriver.Create(new Generator());
             driver.RunGeneratorsAndUpdateCompilation(
                 comp,
                 out var newComp,

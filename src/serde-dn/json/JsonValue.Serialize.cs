@@ -6,24 +6,18 @@ using System.Linq;
 
 namespace Serde.Json
 {
-    internal abstract partial record JsonValue : ISerializeStatic
+    internal abstract partial record JsonValue : ISerialize
     {
         public abstract void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            where TSerializer : ISerializerStatic<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeTypeStatic
-            where TSerializeEnumerable : ISerializeEnumerableStatic
-            where TSerializeDictionary : ISerializeDictionaryStatic;
+            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
+            where TSerializeType : ISerializeType
+            where TSerializeEnumerable : ISerializeEnumerable
+            where TSerializeDictionary : ISerializeDictionary;
 
-        public abstract void Serialize(ISerializer serializer);
 
-        partial record Number : ISerializeStatic
+        partial record Number
         {
             public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            {
-                serializer.SerializeDouble(Value);
-            }
-
-            public override void Serialize(ISerializer serializer)
             {
                 serializer.SerializeDouble(Value);
             }
@@ -35,24 +29,16 @@ namespace Serde.Json
             {
                 serializer.SerializeBool(Value);
             }
-
-            public override void Serialize(ISerializer serializer)
-            {
-                serializer.SerializeBool(Value);
-            }
         }
+
         partial record String
         {
             public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             {
                 serializer.SerializeString(Value);
             }
-
-            public override void Serialize(ISerializer serializer)
-            {
-                serializer.SerializeString(Value);
-            }
         }
+
         partial record Object
         {
             public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
@@ -72,17 +58,8 @@ namespace Serde.Json
                 }
                 type.End();
             }
-
-            public override void Serialize(ISerializer serializer)
-            {
-                var type = serializer.SerializeType("", Members.Count);
-                foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
-                {
-                    type.SerializeField(name, node);
-                }
-                type.End();
-            }
         }
+
         partial record Array
         {
             public Array(IEnumerable<JsonValue> elements)
@@ -90,16 +67,6 @@ namespace Serde.Json
             { }
 
             public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            {
-                var enumerable = serializer.SerializeEnumerable(Elements.Length);
-                foreach (var element in Elements)
-                {
-                    enumerable.SerializeElement(element);
-                }
-                enumerable.End();
-            }
-
-            public override void Serialize(ISerializer serializer)
             {
                 var enumerable = serializer.SerializeEnumerable(Elements.Length);
                 foreach (var element in Elements)

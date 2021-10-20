@@ -9,7 +9,7 @@ namespace Serde
     public sealed class GenerateSerializeAttribute : Attribute
     {
         /// <summary>
-        /// Whether or not to generate an implementation for ISerializeStatic.
+        /// Whether or not to generate an implementation for ISerialize.
         /// Currently always false, as the generator does not support it yet.
         /// </summary>
         public bool Static { get; } = false;
@@ -24,7 +24,11 @@ namespace Serde
 
     public interface ISerialize
     {
-        void Serialize(ISerializer serializer);
+        void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            where TSerializeType : ISerializeType
+            where TSerializeEnumerable : ISerializeEnumerable
+            where TSerializeDictionary : ISerializeDictionary
+            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>;
     }
 
     public interface ISerializeType
@@ -47,7 +51,14 @@ namespace Serde
         void End();
     }
 
-    public interface ISerializer
+    public interface ISerializer<
+        out TSerializeType,
+        out TSerializeEnumerable,
+        out TSerializeDictionary
+        >
+        where TSerializeType : ISerializeType
+        where TSerializeEnumerable : ISerializeEnumerable
+        where TSerializeDictionary : ISerializeDictionary
     {
         void SerializeBool(bool b);
         void SerializeChar(char c);
@@ -62,8 +73,8 @@ namespace Serde
         void SerializeFloat(float f);
         void SerializeDouble(double d);
         void SerializeString(string s);
-        ISerializeType SerializeType(string name, int numFields);
-        ISerializeEnumerable SerializeEnumerable(int? length);
-        ISerializeDictionary SerializeDictionary(int? length);
+        TSerializeType SerializeType(string name, int numFields);
+        TSerializeEnumerable SerializeEnumerable(int? length);
+        TSerializeDictionary SerializeDictionary(int? length);
     }
 }
