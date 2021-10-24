@@ -89,7 +89,7 @@ namespace Serde.Test
 ]");
         }
 
-        private struct JsonDictionaryWrapper : ISerialize, ISerializeStatic
+        private struct JsonDictionaryWrapper : ISerialize
         {
             private readonly Dictionary<int, int> _d;
             public JsonDictionaryWrapper(Dictionary<int, int> d)
@@ -97,21 +97,10 @@ namespace Serde.Test
                 _d = d;
             }
             public void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-                where TSerializer : ISerializerStatic<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-                where TSerializeType : ISerializeTypeStatic
-                where TSerializeEnumerable : ISerializeEnumerableStatic
-                where TSerializeDictionary : ISerializeDictionaryStatic
-            {
-                var sd = serializer.SerializeDictionary(_d.Count);
-                foreach (var (k,v) in _d)
-                {
-                    sd.SerializeKey(new StringWrap(k.ToString()));
-                    sd.SerializeValue(new Int32Wrap(v));
-                }
-                sd.End();
-            }
-
-            void ISerialize.Serialize(ISerializer serializer)
+                where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
+                where TSerializeType : ISerializeType
+                where TSerializeEnumerable : ISerializeEnumerable
+                where TSerializeDictionary : ISerializeDictionary
             {
                 var sd = serializer.SerializeDictionary(_d.Count);
                 foreach (var (k,v) in _d)

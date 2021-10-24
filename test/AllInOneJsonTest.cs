@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Serde.Test
 {
-    public class AllInOneTest
+    public class AllInOneJsonTest
     {
         [Fact]
         public Task GeneratorTest()
@@ -24,7 +24,7 @@ namespace Serde.Test
 {
     public partial class AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""AllInOne"", 14);
             type.SerializeField(""BoolField"", new BoolWrap(BoolField));
