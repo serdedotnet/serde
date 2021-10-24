@@ -14,3 +14,8 @@ jobs:
         dotnet-version: 6.0.100-rc.1.21463.6
     - name: Pack
       run: dotnet pack -warnaserror -c Release
+    - name: Upload package
+      uses: actions/upload-artifact@v2
+      with:
+        name: NuGet packages
+        path: artifacts/pack/*.nupkg
