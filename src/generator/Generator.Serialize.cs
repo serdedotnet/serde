@@ -67,6 +67,7 @@ namespace Serde
                     );
 
                 MemberDeclarationSyntax newType = typeDecl
+                    .WithModifiers(TokenList(Token(SyntaxKind.PartialKeyword)))
                     .WithAttributeLists(List<AttributeListSyntax>())
                     .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] {
                         SimpleBaseType(QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize")))
@@ -124,16 +125,17 @@ namespace Serde
             SemanticModel model,
             string? receiverName)
         {
+            var containerSymbol = model.GetDeclaredSymbol(typeDecl)!;
             ExpressionSyntax receiverExpr;
             ITypeSymbol receiverType;
             if (receiverName is null)
             {
-                receiverType = model.GetDeclaredSymbol(typeDecl)!;
+                receiverType = containerSymbol;
                 receiverExpr = ThisExpression();
             }
             else
             {
-                var members = model.LookupSymbols(typeDecl.SpanStart, name: receiverName);
+                var members = model.LookupSymbols(typeDecl.SpanStart, container: containerSymbol, name: receiverName);
                 if (members.Length != 1)
                 {
                     return null;
@@ -144,14 +146,12 @@ namespace Serde
 
             var statements = new List<StatementSyntax>();
 
-            // If this is one of the serde-dn types, dispatch directly
-            if (receiverType.SpecialType == SpecialType.System_String)
+            // If this is one of the serde-dn built-in types, dispatch directly
+            var directCall = TryMakeDirectSerializeCall(receiverType, receiverExpr);
+            if (directCall is not null)
             {
-                // `serializer.SerializeString(receiver)`
-                statements.Add(ExpressionStatement(InvocationExpression(
-                    QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeString")),
-                    ArgumentList(SeparatedList(new[] { Argument(receiverExpr) }))
-                )));
+                // `serializer.Serialize...(receiver)`
+                statements.Add(directCall);
                 return statements;
             }
 
@@ -237,6 +237,34 @@ namespace Serde
                         LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.Name)),
                         value
                     }.Select(Argument)))));
+
+            ExpressionStatementSyntax? TryMakeDirectSerializeCall(ITypeSymbol receiverType, ExpressionSyntax receiverExpr)
+            {
+                string? serializeMethodSuffix = receiverType.SpecialType switch
+                {
+                    SpecialType.System_String => "String",
+                    SpecialType.System_Boolean => "Bool",
+                    SpecialType.System_Char => "Char",
+                    SpecialType.System_Byte => "Byte",
+                    SpecialType.System_UInt16 => "U16",
+                    SpecialType.System_UInt32 => "U32",
+                    SpecialType.System_UInt64 => "U64",
+                    SpecialType.System_SByte => "SByte",
+                    SpecialType.System_Int16 => "I16",
+                    SpecialType.System_Int32 => "I32",
+                    SpecialType.System_Int64 => "I64",
+                    SpecialType.System_Single => "Float",
+                    SpecialType.System_Double => "Double",
+                    _ => null
+                };
+                // `serializer.SerializeString(receiver)`
+                return serializeMethodSuffix is null
+                    ? null
+                    : ExpressionStatement(InvocationExpression(
+                        QualifiedName(IdentifierName("serializer"), IdentifierName("Serialize" + serializeMethodSuffix)),
+                        ArgumentList(SeparatedList(new[] { Argument(receiverExpr) }))));
+
+            }
         }
 
         /// <summary>

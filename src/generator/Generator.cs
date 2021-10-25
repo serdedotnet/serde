@@ -45,42 +45,77 @@ namespace Serde
 
         public void Execute(GeneratorExecutionContext context)
         {
+            var walker = new TypeWalker(this, context);
             foreach (var tree in context.Compilation.SyntaxTrees)
             {
-                foreach (var typeDecl in tree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>())
+                walker.Visit(tree.GetRoot());
+            }
+        }
+
+        private sealed class TypeWalker : CSharpSyntaxWalker
+        {
+            private readonly Generator _generator;
+            private readonly GeneratorExecutionContext _context;
+
+            public TypeWalker(Generator generator, GeneratorExecutionContext context)
+            {
+                _generator = generator;
+                _context = context;
+            }
+
+            public override void VisitClassDeclaration(ClassDeclarationSyntax node)
+            {
+                VisitTypeDecl(node);
+                base.VisitClassDeclaration(node);
+            }
+
+            public override void VisitStructDeclaration(StructDeclarationSyntax node)
+            {
+                VisitTypeDecl(node);
+                base.VisitStructDeclaration(node);
+            }
+
+            public override void VisitRecordDeclaration(RecordDeclarationSyntax node)
+            {
+                VisitTypeDecl(node);
+                base.VisitRecordDeclaration(node);
+            }
+
+            private void VisitTypeDecl(TypeDeclarationSyntax typeDecl)
+            {
+                var tree = typeDecl.SyntaxTree;
+                var context = _context;
+                foreach (var attrLists in typeDecl.AttributeLists)
                 {
-                    if (typeDecl.IsKind(SyntaxKind.ClassDeclaration)
-                         || typeDecl.IsKind(SyntaxKind.StructDeclaration)
-                         || typeDecl.IsKind(SyntaxKind.RecordDeclaration))
+                    foreach (var attr in attrLists.Attributes)
                     {
-                        foreach (var attrLists in typeDecl.AttributeLists)
+                        var name = attr.Name;
+                        while (name is QualifiedNameSyntax q)
                         {
-                            foreach (var attr in attrLists.Attributes)
+                            name = q.Right;
+                        }
+                        switch (name)
+                        {
+                            case IdentifierNameSyntax
                             {
-                                var name = attr.Name;
-                                while (name is QualifiedNameSyntax q)
+                                Identifier:
                                 {
-                                    name = q.Right;
+                                    ValueText: "GenerateSerialize" or "GenerateSerializeAttribute"
                                 }
-                                switch (name)
+                            }:
+                                _generator.GenerateSerialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                break;
+                            case IdentifierNameSyntax
+                            {
+                                Identifier:
                                 {
-                                    case IdentifierNameSyntax { Identifier:
-                                        {
-                                            ValueText: "GenerateSerialize" or "GenerateSerializeAttribute"
-                                        }}:
-                                        GenerateSerialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
-                                        break;
-                                    case IdentifierNameSyntax { Identifier:
-                                        {
-                                            ValueText: "GenerateWrapper" or "GenerateWrapperAttribute"
-                                        }}:
-                                        GenerateWrapper(context, attr, typeDecl, context.Compilation.GetSemanticModel(tree));
-                                        break;
+                                    ValueText: "GenerateWrapper" or "GenerateWrapperAttribute"
                                 }
-                            }
+                            }:
+                                _generator.GenerateWrapper(context, attr, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                break;
                         }
                     }
-
                 }
             }
         }

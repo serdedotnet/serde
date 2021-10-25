@@ -40,11 +40,5 @@ namespace Serde
 
             GenerateSerialize(context, typeDecl, model, memberName);
         }
-
-        private static string? TryGetBuiltInName(ITypeSymbol type) => type.SpecialType switch
-        {
-            SpecialType.System_String => "String",
-            _ => null
-        };
     }
 }
