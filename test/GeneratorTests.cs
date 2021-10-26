@@ -186,7 +186,7 @@ using Serde;
 
 partial class TestCase15
 {
-    public partial class Class0 : Serde.ISerialize
+    partial class Class0 : Serde.ISerialize
     {
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
@@ -202,7 +202,7 @@ using Serde;
 
 partial class TestCase15
 {
-    public partial class Class1 : Serde.ISerialize
+    partial class Class1 : Serde.ISerialize
     {
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {

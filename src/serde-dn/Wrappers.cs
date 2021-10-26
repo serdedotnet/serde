@@ -152,8 +152,7 @@ namespace Serde
     }
 
     [GenerateWrapper(nameof(_s))]
-    public readonly struct StringWrap :
-        ISerialize,
+    public readonly partial struct StringWrap :
         IWrap<string, StringWrap>,
         IDeserialize<string>
     {
@@ -161,11 +160,6 @@ namespace Serde
 
         private readonly string _s;
         public StringWrap(string s) { _s = s; }
-
-        void ISerialize.Serialize<TSerializer, _1, _2, _3>(ref TSerializer serializer)
-        {
-            serializer.SerializeString(_s);
-        }
 
         public static string Deserialize(IDeserializer deserializer)
         {

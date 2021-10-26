@@ -1,7 +1,7 @@
 
 namespace Serde.Test
 {
-    public partial class AllInOne : Serde.ISerialize
+    partial class AllInOne : Serde.ISerialize
     {
         void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
