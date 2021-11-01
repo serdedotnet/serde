@@ -7,6 +7,7 @@ namespace Serde
 {
     /// <summary>
     /// Represents a member with no arguments, namely a field or property
+    /// </summary>
     internal readonly struct DataMemberSymbol
     {
         private readonly ISymbol _symbol;
