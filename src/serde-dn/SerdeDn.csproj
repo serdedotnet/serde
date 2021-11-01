@@ -31,7 +31,7 @@
     <ProjectReference Include="../generator/SerdeGenerator.csproj"
                       ReferenceOutputAssembly="false"
                       OutputItemType="Analyzer" />
-    <None Include="$(OutputPath)/SerdeGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
+    <None Include="$(BaseOutputPath)/../SerdeGenerator/Release/netstandard2.0/SerdeGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
   </ItemGroup>
 
 </Project>
