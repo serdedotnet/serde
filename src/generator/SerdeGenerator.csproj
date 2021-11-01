@@ -11,4 +11,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.2" PrivateAssets="all" />
   </ItemGroup>
 
+  <!-- Include analyzer in NuGet package -->
+  <ItemGroup>
+    <None Include="$(OutputPath)/SerdeGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
+  </ItemGroup>
+
 </Project>
