@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -15,46 +16,120 @@ namespace Serde.Test
             var allInOnePath = Path.Combine(Path.GetDirectoryName(curPath)!, "AllInOneSrc.cs");
 
             var src = File.ReadAllText(allInOnePath);
-            // Add [GenerateSerialize] to the class
-            src = src.Replace("public partial class AllInOne", @"[GenerateSerialize] public partial class AllInOne");
-            var expected = @"
+            var serializeSrc = @"
 using Serde;
 
 namespace Serde.Test
 {
-    partial class AllInOne : Serde.ISerialize
+    partial record AllInOne : Serde.ISerialize
     {
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""AllInOne"", 14);
-            type.SerializeField(""BoolField"", new BoolWrap(BoolField));
-            type.SerializeField(""CharField"", new CharWrap(CharField));
-            type.SerializeField(""ByteField"", new ByteWrap(ByteField));
-            type.SerializeField(""UShortField"", new UInt16Wrap(UShortField));
-            type.SerializeField(""UIntField"", new UInt32Wrap(UIntField));
-            type.SerializeField(""ULongField"", new UInt64Wrap(ULongField));
-            type.SerializeField(""SByteField"", new SByteWrap(SByteField));
-            type.SerializeField(""ShortField"", new Int16Wrap(ShortField));
-            type.SerializeField(""IntField"", new Int32Wrap(IntField));
-            type.SerializeField(""LongField"", new Int64Wrap(LongField));
-            type.SerializeField(""StringField"", new StringWrap(StringField));
-            type.SerializeField(""IntArr"", new ArrayWrap<int, Int32Wrap>(IntArr));
-            type.SerializeField(""NestedArr"", new ArrayWrap<int[], ArrayWrap<int, Int32Wrap>>(NestedArr));
-            type.SerializeField(""IntImm"", new ImmutableArrayWrap<int, Int32Wrap>(IntImm));
+            type.SerializeField(""BoolField"", new BoolWrap(this.BoolField));
+            type.SerializeField(""CharField"", new CharWrap(this.CharField));
+            type.SerializeField(""ByteField"", new ByteWrap(this.ByteField));
+            type.SerializeField(""UShortField"", new UInt16Wrap(this.UShortField));
+            type.SerializeField(""UIntField"", new UInt32Wrap(this.UIntField));
+            type.SerializeField(""ULongField"", new UInt64Wrap(this.ULongField));
+            type.SerializeField(""SByteField"", new SByteWrap(this.SByteField));
+            type.SerializeField(""ShortField"", new Int16Wrap(this.ShortField));
+            type.SerializeField(""IntField"", new Int32Wrap(this.IntField));
+            type.SerializeField(""LongField"", new Int64Wrap(this.LongField));
+            type.SerializeField(""StringField"", new StringWrap(this.StringField));
+            type.SerializeField(""IntArr"", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
+            type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
+            type.SerializeField(""IntImm"", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
             type.End();
         }
     }
 }";
-            return GeneratorTests.VerifyGeneratedCode(src, "Serde.Test.AllInOne", expected);
+            var deserializeSrc = @"
+using Serde;
+
+namespace Serde.Test
+{
+    partial record AllInOne : Serde.IDeserialize<Serde.Test.AllInOne>
+    {
+        static Serde.Test.AllInOne Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize<D>(ref D deserializer)
+        {
+            var visitor = new SerdeVisitor();
+            var fieldNames = new[]{""BoolField"", ""CharField"", ""ByteField"", ""UShortField"", ""UIntField"", ""ULongField"", ""SByteField"", ""ShortField"", ""IntField"", ""LongField"", ""StringField"", ""IntArr"", ""NestedArr"", ""IntImm""};
+            return deserializer.DeserializeType<AllInOne, SerdeVisitor>(""AllInOne"", fieldNames, visitor);
+        }
+
+        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne>
+        {
+            public string ExpectedTypeName => ""Serde.Test.AllInOne"";
+            Serde.Test.AllInOne Serde.IDeserializeVisitor<Serde.Test.AllInOne>.VisitDictionary<D>(ref D d)
+            {
+                Serde.Test.AllInOne newType = new Serde.Test.AllInOne();
+                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                {
+                    switch (key)
+                    {
+                        case ""BoolField"":
+                            newType.BoolField = d.GetNextValue<bool, BoolWrap>();
+                            break;
+                        case ""CharField"":
+                            newType.CharField = d.GetNextValue<char, CharWrap>();
+                            break;
+                        case ""ByteField"":
+                            newType.ByteField = d.GetNextValue<byte, ByteWrap>();
+                            break;
+                        case ""UShortField"":
+                            newType.UShortField = d.GetNextValue<ushort, UInt16Wrap>();
+                            break;
+                        case ""UIntField"":
+                            newType.UIntField = d.GetNextValue<uint, UInt32Wrap>();
+                            break;
+                        case ""ULongField"":
+                            newType.ULongField = d.GetNextValue<ulong, UInt64Wrap>();
+                            break;
+                        case ""SByteField"":
+                            newType.SByteField = d.GetNextValue<sbyte, SByteWrap>();
+                            break;
+                        case ""ShortField"":
+                            newType.ShortField = d.GetNextValue<short, Int16Wrap>();
+                            break;
+                        case ""IntField"":
+                            newType.IntField = d.GetNextValue<int, Int32Wrap>();
+                            break;
+                        case ""LongField"":
+                            newType.LongField = d.GetNextValue<long, Int64Wrap>();
+                            break;
+                        case ""StringField"":
+                            newType.StringField = d.GetNextValue<string, StringWrap>();
+                            break;
+                        case ""IntArr"":
+                            newType.IntArr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                            break;
+                        case ""NestedArr"":
+                            newType.NestedArr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
+                            break;
+                        case ""IntImm"":
+                            newType.IntImm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                            break;
+                        default:
+                            throw new InvalidDeserializeValueException(""Unexpected field or property name in type Serde.Test.AllInOne: '"" + key + ""'"");
+                    }
+                }
+
+                return newType;
+            }
+        }
+    }
+}";
+
+            return GeneratorSerializeTests.VerifyGeneratedCode(src, new[] {
+                ("Serde.Test.AllInOne.ISerialize", serializeSrc),
+                ("Serde.Test.AllInOne.IDeserialize", deserializeSrc)
+            });
 
             static string GetPath([CallerFilePath] string path = "") => path;
         }
 
-        [Fact]
-        public void JsonEmitTest()
-        {
-            var allInOne = new AllInOne();
-            var expected = @"
+        private const string Serialized = @"
 {
   ""BoolField"": true,
   ""CharField"": ""#"",
@@ -85,8 +160,40 @@ namespace Serde.Test
     2
   ]
 }";
-            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.Serialize(allInOne));
-            Assert.Equal(expected.Trim(), actual);
+        private static readonly AllInOne Deserialized = new AllInOne()
+        {
+            BoolField = true,
+            CharField = '#',
+            ByteField = byte.MaxValue,
+            UShortField = ushort.MaxValue,
+            UIntField = uint.MaxValue,
+            ULongField = ulong.MaxValue,
+
+            SByteField = sbyte.MaxValue,
+            ShortField = short.MaxValue,
+            IntField = int.MaxValue,
+            LongField = long.MaxValue,
+
+            StringField = "StringValue",
+
+            IntArr = new[] { 1, 2, 3 },
+            NestedArr = new[] { new[] { 1 }, new[] { 2 } },
+
+            IntImm = ImmutableArray.Create<int>(1, 2)
+        };
+
+        [Fact]
+        public void SerializeTest()
+        {
+            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.Serialize(Deserialized));
+            Assert.Equal(Serialized.Trim(), actual);
+        }
+
+        [Fact]
+        public void DeserializeTest()
+        {
+            var actual = JsonSerializer.Deserialize<AllInOne>(Serialized);
+            Assert.Equal(Deserialized, actual);
         }
     }
 }

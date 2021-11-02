@@ -2,88 +2,82 @@ using System.Collections.Generic;
 
 namespace Serde
 {
-    public readonly struct DictWrap<TKey, TKeyWrap, TValue, TValueWrap> : ISerialize,
-        IWrap<Dictionary<TKey, TValue>, DictWrap<TKey, TKeyWrap, TValue, TValueWrap>>
-        where TKey : notnull
-        where TKeyWrap : struct, IWrap<TKey, TKeyWrap>, ISerialize
-        where TValueWrap : struct, IWrap<TValue, TValueWrap>, ISerialize
+    public static class DictWrap
     {
-        public DictWrap<TKey, TKeyWrap, TValue, TValueWrap> Create(Dictionary<TKey, TValue> t)
-            => new DictWrap<TKey, TKeyWrap, TValue, TValueWrap>(t);
-
-        private readonly Dictionary<TKey, TValue> _dict;
-        public DictWrap(Dictionary<TKey, TValue> dict)
+        public readonly struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> : ISerialize,
+            ISerializeWrap<Dictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
+            where TKey : notnull
+            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize
+            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize
         {
-            _dict = dict;
-        }
+            public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(Dictionary<TKey, TValue> t)
+                => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-        {
-            var sd = serializer.SerializeDictionary(_dict.Count);
-            var kwrap = default(TKeyWrap);
-            var vwrap = default(TValueWrap);
-            foreach (var (k, v) in _dict)
+            private readonly Dictionary<TKey, TValue> _dict;
+            public SerializeImpl(Dictionary<TKey, TValue> dict)
             {
-                sd.SerializeKey(kwrap.Create(k));
-                sd.SerializeValue(vwrap.Create(v));
+                _dict = dict;
             }
-            sd.End();
+
+            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            {
+                var sd = serializer.SerializeDictionary(_dict.Count);
+                foreach (var (k, v) in _dict)
+                {
+                    sd.SerializeKey(TKeyWrap.Create(k));
+                    sd.SerializeValue(TValueWrap.Create(v));
+                }
+                sd.End();
+            }
         }
     }
 
-    public readonly struct IDictWrap<TKey, TKeyWrap, TValue, TValueWrap> : ISerialize,
-        IWrap<IDictionary<TKey, TValue>, IDictWrap<TKey, TKeyWrap, TValue, TValueWrap>>
-        where TKey : notnull
-        where TKeyWrap : struct, IWrap<TKey, TKeyWrap>, ISerialize
-        where TValueWrap : struct, IWrap<TValue, TValueWrap>, ISerialize
+    public static class IDictWrap
     {
-        public IDictWrap<TKey, TKeyWrap, TValue, TValueWrap> Create(IDictionary<TKey, TValue> t)
-            => new IDictWrap<TKey, TKeyWrap, TValue, TValueWrap>(t);
-        private readonly IDictionary<TKey, TValue> _dict;
-        public IDictWrap(IDictionary<TKey, TValue> dict)
+        public readonly record struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(IDictionary<TKey, TValue> Value)
+            : ISerialize, ISerializeWrap<IDictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
+            where TKey : notnull
+            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize
+            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize
         {
-            _dict = dict;
-        }
+            public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IDictionary<TKey, TValue> t)
+                => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-        {
-            var sd = serializer.SerializeDictionary(_dict.Count);
-            var kwrap = default(TKeyWrap);
-            var vwrap = default(TValueWrap);
-            foreach (var (k, v) in _dict)
+            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             {
-                sd.SerializeKey(kwrap.Create(k));
-                sd.SerializeValue(vwrap.Create(v));
+                var sd = serializer.SerializeDictionary(Value.Count);
+                foreach (var (k, v) in Value)
+                {
+                    sd.SerializeKey(TKeyWrap.Create(k));
+                    sd.SerializeValue(TValueWrap.Create(v));
+                }
+                sd.End();
             }
-            sd.End();
         }
     }
 
-    public readonly struct IRODictWrap<TKey, TKeyWrap, TValue, TValueWrap> : ISerialize,
-        IWrap<IReadOnlyDictionary<TKey, TValue>, IRODictWrap<TKey, TKeyWrap, TValue, TValueWrap>>
-        where TKey : notnull
-        where TKeyWrap : struct, IWrap<TKey, TKeyWrap>, ISerialize
-        where TValueWrap : struct, IWrap<TValue, TValueWrap>, ISerialize
+    public static class IRODictWrap
     {
-        public IRODictWrap<TKey, TKeyWrap, TValue, TValueWrap> Create(IReadOnlyDictionary<TKey, TValue> t)
-            => new IRODictWrap<TKey, TKeyWrap, TValue, TValueWrap>(t);
-        private readonly IReadOnlyDictionary<TKey, TValue> _dict;
-        public IRODictWrap(IReadOnlyDictionary<TKey, TValue> dict)
+        public readonly record struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(IReadOnlyDictionary<TKey, TValue> Value)
+            : ISerialize,
+            ISerializeWrap<IReadOnlyDictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
+            where TKey : notnull
+            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize
+            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize
         {
-            _dict = dict;
-        }
+            public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IReadOnlyDictionary<TKey, TValue> t)
+                => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-        {
-            var sd = serializer.SerializeDictionary(_dict.Count);
-            var kwrap = default(TKeyWrap);
-            var vwrap = default(TValueWrap);
-            foreach (var (k, v) in _dict)
+            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             {
-                sd.SerializeKey(kwrap.Create(k));
-                sd.SerializeValue(vwrap.Create(v));
+                var sd = serializer.SerializeDictionary(Value.Count);
+                foreach (var (k, v) in Value)
+                {
+                    sd.SerializeKey(TKeyWrap.Create(k));
+                    sd.SerializeValue(TValueWrap.Create(v));
+                }
+                sd.End();
             }
-            sd.End();
         }
     }
 }

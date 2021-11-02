@@ -20,14 +20,21 @@ namespace Serde
             TypeDeclarationSyntax typeDecl,
             SemanticModel semanticModel)
         {
-            GenerateSerialize(context, typeDecl, semanticModel, receiverName: null);
+            var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
+            if (receiverType is null)
+            {
+                return;
+            }
+            var receiverExpr = ThisExpression();
+            GenerateSerialize(context, typeDecl, semanticModel, receiverType, receiverExpr);
         }
 
         private void GenerateSerialize(
             GeneratorExecutionContext context,
             TypeDeclarationSyntax typeDecl,
             SemanticModel semanticModel,
-            string? receiverName)
+            ITypeSymbol receiverType,
+            ExpressionSyntax receiverExpr)
         {
             if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
             {
@@ -42,7 +49,7 @@ namespace Serde
             var typeName = typeDecl.Identifier.ValueText;
 
             // Generate statements for ISerialize.Serialize implementation
-            var statements = GenerateSerializeBody(context, typeDecl, semanticModel, receiverName);
+            var statements = GenerateSerializeBody(context, typeDecl, semanticModel, receiverType, receiverExpr);
 
             if (statements is not null)
             {
@@ -115,7 +122,7 @@ namespace Serde
                     }
                 }
 
-                context.AddSource($"{fullTypeName}.cs", Environment.NewLine + tree.ToFullString());
+                context.AddSource($"{fullTypeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
             }
         }
 
@@ -123,44 +130,12 @@ namespace Serde
             GeneratorExecutionContext context,
             TypeDeclarationSyntax typeDecl,
             SemanticModel model,
-            string? receiverName)
+            ITypeSymbol receiverType,
+            ExpressionSyntax receiverExpr)
         {
-            var containerSymbol = model.GetDeclaredSymbol(typeDecl)!;
-            ExpressionSyntax receiverExpr;
-            ITypeSymbol receiverType;
-            if (receiverName is null)
-            {
-                receiverType = containerSymbol;
-                receiverExpr = ThisExpression();
-            }
-            else
-            {
-                var members = model.LookupSymbols(typeDecl.SpanStart, container: containerSymbol, name: receiverName);
-                if (members.Length != 1)
-                {
-                    return null;
-                }
-                receiverType = SymbolUtilities.GetSymbolType(members[0]);
-                receiverExpr = IdentifierName(receiverName);
-            }
-
             var statements = new List<StatementSyntax>();
 
-            // If this is one of the serde-dn built-in types, dispatch directly
-            var directCall = TryMakeDirectSerializeCall(receiverType, receiverExpr);
-            if (directCall is not null)
-            {
-                // `serializer.Serialize...(receiver)`
-                statements.Add(directCall);
-                return statements;
-            }
-
-            var fieldsAndProps = receiverType.GetMembers()
-                .Where(m => m is {
-                    DeclaredAccessibility: Accessibility.Public,
-                    Kind: SymbolKind.Field or SymbolKind.Property,
-                })
-                .Select(m => new DataMemberSymbol(m)).ToList();
+            var fieldsAndProps = SymbolUtilities.GetPublicDataMembers(receiverType);
 
             // The generated body of ISerialize is
             // `var type = serializer.SerializeType("TypeName", numFields)`
@@ -214,17 +189,19 @@ namespace Serde
                 GeneratorExecutionContext context,
                 ExpressionSyntax receiverExpr)
             {
+                var memberExpr = MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    receiverExpr,
+                    IdentifierName(m.Name));
+
                 // Always prefer a direct implementation of ISerialize
                 if (ImplementsISerialize(memberType, context))
                 {
-                    return MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        receiverExpr,
-                        IdentifierName(m.Name));
+                    return memberExpr;
                 }
 
                 // Try using a built-in wrapper
-                return TrySerializeBuiltIn(memberType, m, context);
+                return TrySerializeBuiltIn(memberType, m, context, memberExpr);
             }
 
             // Make a statement like `type.SerializeField("member.Name", value)`
@@ -237,34 +214,6 @@ namespace Serde
                         LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.Name)),
                         value
                     }.Select(Argument)))));
-
-            ExpressionStatementSyntax? TryMakeDirectSerializeCall(ITypeSymbol receiverType, ExpressionSyntax receiverExpr)
-            {
-                string? serializeMethodSuffix = receiverType.SpecialType switch
-                {
-                    SpecialType.System_String => "String",
-                    SpecialType.System_Boolean => "Bool",
-                    SpecialType.System_Char => "Char",
-                    SpecialType.System_Byte => "Byte",
-                    SpecialType.System_UInt16 => "U16",
-                    SpecialType.System_UInt32 => "U32",
-                    SpecialType.System_UInt64 => "U64",
-                    SpecialType.System_SByte => "SByte",
-                    SpecialType.System_Int16 => "I16",
-                    SpecialType.System_Int32 => "I32",
-                    SpecialType.System_Int64 => "I64",
-                    SpecialType.System_Single => "Float",
-                    SpecialType.System_Double => "Double",
-                    _ => null
-                };
-                // `serializer.SerializeString(receiver)`
-                return serializeMethodSuffix is null
-                    ? null
-                    : ExpressionStatement(InvocationExpression(
-                        QualifiedName(IdentifierName("serializer"), IdentifierName("Serialize" + serializeMethodSuffix)),
-                        ArgumentList(SeparatedList(new[] { Argument(receiverExpr) }))));
-
-            }
         }
 
         /// <summary>
@@ -274,9 +223,10 @@ namespace Serde
         private static ExpressionSyntax? TrySerializeBuiltIn(
             ITypeSymbol type,
             DataMemberSymbol member,
-            GeneratorExecutionContext context)
+            GeneratorExecutionContext context,
+            ExpressionSyntax memberExpr)
         {
-            var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(IdentifierName(member.Name)) }));
+            var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(memberExpr) }));
             // Priority:
 
             // 1. an explicit wrap
@@ -291,7 +241,7 @@ namespace Serde
                     INamedTypeSymbol n => n.TypeArguments,
                     _ => ImmutableArray<ITypeSymbol>.Empty
                 };
-                var expr = MakeWrappedExpression(wrapperType.Name, typeArgs, context);
+                var expr = MakeWrappedExpression(wrapperType.Name, typeArgs, context, WrapUsage.Serialize);
                 if (expr is not null)
                 {
                     return ObjectCreationExpression(
@@ -314,7 +264,7 @@ namespace Serde
 
             // 3. A wrapper for a compound type (might need nested wrappers)
 
-            var wrapperTypeSyntax = TryGetCompoundWrapper(type, context);
+            var wrapperTypeSyntax = TryGetCompoundWrapper(type, context, WrapUsage.Serialize);
             if (wrapperTypeSyntax is not null)
             {
                 return ObjectCreationExpression(
@@ -355,17 +305,17 @@ namespace Serde
             _ => null
         };
 
-        private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context)
+        private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, WrapUsage usage)
         {
             switch (type)
             {
                 case IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }:
-                    return MakeWrappedExpression("ArrayWrap", ImmutableArray.Create(elemType), context);
+                    return MakeWrappedExpression($"ArrayWrap.{usage.GetName()}", ImmutableArray.Create(elemType), context, usage);
 
                 case INamedTypeSymbol t:
-                    if (TryGetWrapperName(t, context) is {} tuple)
+                    if (TryGetWrapperName(t, context, usage) is {} tuple)
                     {
-                        return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context);
+                        return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage);
                     }
                     break;
             }
@@ -375,7 +325,8 @@ namespace Serde
         private static TypeSyntax? MakeWrappedExpression(
             string baseWrapperName,
             ImmutableArray<ITypeSymbol> elemTypes,
-            GeneratorExecutionContext context)
+            GeneratorExecutionContext context,
+            WrapUsage usage)
         {
             if (elemTypes.Length == 0)
             {
@@ -397,7 +348,7 @@ namespace Serde
 
                     // Otherwise we need an `IdWrap` which just delegates to the inner
                     // type.
-                    if (elemTypes.Length > 1)
+                    //if (elemTypes.Length > 1)
                     {
                         wrapperTypes.Add(GenericName(
                             Identifier("IdWrap"), TypeArgumentList(SeparatedList(new TypeSyntax[] {
@@ -414,7 +365,7 @@ namespace Serde
                 var primWrapper = TryGetPrimitiveWrapper(elemType);
                 TypeSyntax? wrapperName = primWrapper is not null
                     ? IdentifierName(primWrapper)
-                    : TryGetCompoundWrapper(elemType, context);
+                    : TryGetCompoundWrapper(elemType, context, usage);
 
                 if (wrapperName is null)
                 {
@@ -432,11 +383,14 @@ namespace Serde
                 Identifier(baseWrapperName), TypeArgumentList(SeparatedList(wrapperTypes)));
         }
 
-        private static (string WrapperName, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperName(INamedTypeSymbol typeSymbol, GeneratorExecutionContext context)
+        private static (string WrapperName, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperName(
+            ITypeSymbol typeSymbol,
+            GeneratorExecutionContext context,
+            WrapUsage usage)
         {
-            if (TryGetWellKnownType(typeSymbol, context) is {} wk)
+            if (typeSymbol is INamedTypeSymbol named && TryGetWellKnownType(named, context) is {} wk)
             {
-                return (wk.ToWrapper(), typeSymbol.TypeArguments);
+                return (wk.ToWrapper(usage), named.TypeArguments);
             }
             // Check if it implements well-known interfaces
             foreach (var iface in WellKnownTypes.GetAvailableInterfacesInOrder(context))
@@ -445,7 +399,7 @@ namespace Serde
                 foreach (var impl in typeSymbol.Interfaces)
                 {
                     if (impl.OriginalDefinition.Equals(iface, SymbolEqualityComparer.Default) &&
-                        WellKnownTypes.TryGetWellKnownType(iface, context)?.ToWrapper() is { } wrap)
+                        WellKnownTypes.TryGetWellKnownType(iface, context)?.ToWrapper(usage) is { } wrap)
                     {
                         return (wrap, impl.TypeArguments);
                     }

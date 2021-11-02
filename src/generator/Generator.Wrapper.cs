@@ -38,7 +38,45 @@ namespace Serde
                 return;
             }
 
-            GenerateSerialize(context, typeDecl, model, memberName);
+            var containerSymbol = model.GetDeclaredSymbol(typeDecl)!;
+            ExpressionSyntax receiverExpr;
+            ITypeSymbol receiverType;
+            var members = model.LookupSymbols(typeDecl.SpanStart, containerSymbol, memberName);
+            if (members.Length != 1)
+            {
+                // Error about bad lookup
+                return;
+            }
+            receiverType = SymbolUtilities.GetSymbolType(members[0]);
+            receiverExpr = IdentifierName(memberName);
+
+            if (receiverType.SpecialType != SpecialType.None)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_CantWrapSpecialType,
+                    attrArgSyntax.GetLocation(),
+                    receiverType));
+                return;
+            }
+
+            GenerateSerialize(context, typeDecl, model, receiverType, receiverExpr);
+            GenerateDeserialize(context, typeDecl, model, receiverType, receiverExpr);
         }
+    }
+
+    internal enum WrapUsage : byte
+    {
+        Serialize = 0b01,
+        Deserialize = 0b10,
+    }
+
+    internal static class WrapUsageExtensions
+    {
+        public static string GetName(this WrapUsage usage) => usage switch
+        {
+            WrapUsage.Serialize => "SerializeImpl",
+            WrapUsage.Deserialize => "DeserializeImpl",
+            _ => throw ExceptionUtilities.Unreachable
+        };
     }
 }

@@ -16,6 +16,7 @@ namespace Serde
         IDictionary_2,
         IReadOnlyDictionary_2,
     }
+
     internal static class WellKnownTypes
     {
         public static WellKnownType? TryGetWellKnownType(INamedTypeSymbol t, GeneratorExecutionContext context)
@@ -70,7 +71,7 @@ namespace Serde
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        internal static string ToWrapper(this WellKnownType wk) => wk switch
+        internal static string ToWrapper(this WellKnownType wk, WrapUsage usage) => wk switch
         {
             WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
             WellKnownType.List_1 => "ListWrap",
@@ -78,6 +79,6 @@ namespace Serde
             WellKnownType.IDictionary_2 => "IDictWrap",
             WellKnownType.IReadOnlyDictionary_2 => "IRODictWrap",
             _ => throw ExceptionUtilities.Unreachable
-        };
+        } + "." + usage.GetName();
     }
 }

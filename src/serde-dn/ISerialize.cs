@@ -1,27 +1,5 @@
-﻿
-using System;
-using System.Diagnostics;
-
-namespace Serde
+﻿namespace Serde
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public sealed class GenerateSerializeAttribute : Attribute
-    {
-        /// <summary>
-        /// Whether or not to generate an implementation for ISerialize.
-        /// Currently always false, as the generator does not support it yet.
-        /// </summary>
-        public bool Static { get; } = false;
-    }
-
-    [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public sealed class GenerateWrapper : Attribute
-    {
-        public GenerateWrapper(string memberName) { }
-    }
-
     public interface ISerialize
     {
         void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)

@@ -123,4 +123,7 @@
   <data name="ERR_TypeNotPartial" xml:space="preserve">
     <value>The type '{0}' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.</value>
   </data>
+  <data name="ERR_CantWrapSpecialType" xml:space="preserve">
+    <value>The type '{0}' can't be automatically wrapped because it is a built-in type.</value>
+  </data>
 </root>
