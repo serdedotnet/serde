@@ -149,6 +149,42 @@ namespace Serde
             void ISerialize.Serialize<TSerializer, Type, Enumerable, Dictionary>(ref TSerializer serializer)
                 => EnumerableHelpers.SerializeList<T, TWrap, TSerializer, Type, Enumerable, Dictionary>(Value, ref serializer);
         }
+
+        public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
+            where TWrap : IDeserialize<T>
+        {
+            static List<T> IDeserialize<List<T>>.Deserialize<D>(ref D deserializer)
+            {
+                return deserializer.DeserializeEnumerable<List<T>, SerdeVisitor>(new SerdeVisitor());
+            }
+            private sealed class SerdeVisitor : IDeserializeVisitor<List<T>>
+            {
+                string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T).ToString() + "[]";
+
+                List<T> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(ref D d)
+                {
+                    List<T> list;
+                    if (d.SizeOpt is int size)
+                    {
+                        list = new List<T>(size);
+                    }
+                    else
+                    {
+                        size = -1; // Set initial size to unknown
+                        list = new List<T>();
+                    }
+                    while (d.TryGetNext<T, TWrap>(out T? next))
+                    {
+                        list.Add(next);
+                    }
+                    if (size >= 0 && list.Count != size)
+                    {
+                        throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {list.Count} items");
+                    }
+                    return list;
+                }
+            }
+        }
     }
 
     public static class ImmutableArrayWrap
@@ -178,26 +214,24 @@ namespace Serde
                 public string ExpectedTypeName => "ImmutableArray<" + typeof(T).ToString() + ">";
                 ImmutableArray<T> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(ref D d)
                 {
-                    var builder = d.SizeOpt is int size
-                            ? ImmutableArray.CreateBuilder<T>(size)
-                            : ImmutableArray.CreateBuilder<T>();
-
-                    int i = 0;
-                    while (true)
+                    ImmutableArray<T>.Builder builder;
+                    if (d.SizeOpt is int size)
                     {
-                        if (d.TryGetNext<T, TWrap>(out T? next))
-                        {
-                            builder.Add(next);
-                            i++;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        builder = ImmutableArray.CreateBuilder<T>(size);
                     }
-                    if (d.SizeOpt is int size2 && size2 != i)
+                    else
                     {
-                        throw new InvalidDeserializeValueException($"Expected {size2} items, found {i}");
+                        size = -1; // Set initial size to unknown
+                        builder = ImmutableArray.CreateBuilder<T>();
+                    }
+
+                    while (d.TryGetNext<T, TWrap>(out T? next))
+                    {
+                        builder.Add(next);
+                    }
+                    if (size >= 0 && builder.Count != size)
+                    {
+                        throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
                     }
                     return builder.ToImmutable();
                 }

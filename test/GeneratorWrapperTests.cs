@@ -63,6 +63,7 @@ partial struct PointWrap
 }";
             return GeneratorSerializeTests.VerifyGeneratedCode(src, new[] {
                 ("PointWrap.ISerialize", @"
+#nullable enable
 using Serde;
 
 partial struct PointWrap : Serde.ISerialize
@@ -76,6 +77,7 @@ partial struct PointWrap : Serde.ISerialize
     }
 }"),
                 ("PointWrap.IDeserialize", @"
+#nullable enable
 using Serde;
 
 partial struct PointWrap : Serde.IDeserialize<Point>

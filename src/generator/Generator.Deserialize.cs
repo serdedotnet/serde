@@ -93,14 +93,17 @@ namespace Serde
                 }
 
                 // If the original type was in a namespace, put this decl in the same one
-                switch (typeDecl.Parent)
+                for (var current = typeDecl.Parent; current is not null; current = current.Parent)
                 {
-                    case NamespaceDeclarationSyntax ns:
-                        newType = ns.WithMembers(List(new[] { newType }));
-                        break;
-                    case TypeDeclarationSyntax parentType:
-                        newType = parentType.WithMembers(List(new[] { newType}));
-                        break;
+                    switch (current)
+                    {
+                        case NamespaceDeclarationSyntax ns:
+                            newType = ns.WithMembers(List(new[] { newType }));
+                            break;
+                        case TypeDeclarationSyntax parentType:
+                            newType = parentType.WithMembers(List(new[] { newType }));
+                            break;
+                    }
                 }
 
                 var tree = CompilationUnit(
@@ -124,7 +127,11 @@ namespace Serde
                     }
                 }
 
-                context.AddSource($"{fullTypeName}.IDeserialize.cs", Environment.NewLine + tree.ToFullString());
+                context.AddSource($"{fullTypeName}.IDeserialize.cs",
+                    Environment.NewLine +
+                    "#nullable enable" +
+                    Environment.NewLine +
+                    tree.ToFullString());
             }
         }
 
@@ -248,7 +255,12 @@ namespace Serde
                 foreach (var m in members)
                 {
                     string? wrapperName = null;
-                    if (TryGetPrimitiveWrapper(m.Type) is { } primWrap)
+                    var memberType = m.Type.ToDisplayString();
+                    if (ImplementsSerde(m.Type, context, WrapUsage.Deserialize))
+                    {
+                        wrapperName = memberType;
+                    }
+                    else if (TryGetPrimitiveWrapper(m.Type) is { } primWrap)
                     {
                         wrapperName = primWrap;
                     }
@@ -256,7 +268,6 @@ namespace Serde
                     {
                         wrapperName = compound.ToString();
                     }
-                    var memberType = m.Type.ToDisplayString();
                     cases.AppendLine(@$"
             case ""{m.Name}"":
                 newType.{m.Name} = d.GetNextValue<{memberType}, {wrapperName}>();

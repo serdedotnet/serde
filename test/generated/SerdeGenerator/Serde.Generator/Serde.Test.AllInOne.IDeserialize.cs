@@ -1,4 +1,5 @@
 ﻿
+#nullable enable
 using Serde;
 
 namespace Serde.Test

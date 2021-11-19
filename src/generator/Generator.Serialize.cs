@@ -91,14 +91,17 @@ namespace Serde
                 }
 
                 // If the original type was in a namespace, put this decl in the same one
-                switch (typeDecl.Parent)
+                for (var current = typeDecl.Parent; current is not null; current = current.Parent)
                 {
-                    case NamespaceDeclarationSyntax ns:
-                        newType = ns.WithMembers(List(new[] { newType }));
-                        break;
-                    case TypeDeclarationSyntax parentType:
-                        newType = parentType.WithMembers(List(new[] { newType}));
-                        break;
+                    switch (current)
+                    {
+                        case NamespaceDeclarationSyntax ns:
+                            newType = ns.WithMembers(List(new[] { newType }));
+                            break;
+                        case TypeDeclarationSyntax parentType:
+                            newType = parentType.WithMembers(List(new[] { newType }));
+                            break;
+                    }
                 }
 
                 var tree = CompilationUnit(
@@ -122,7 +125,8 @@ namespace Serde
                     }
                 }
 
-                context.AddSource($"{fullTypeName}.ISerialize.cs", Environment.NewLine + tree.ToFullString());
+                context.AddSource($"{fullTypeName}.ISerialize.cs",
+                    Environment.NewLine + "#nullable enable" + Environment.NewLine + tree.ToFullString());
             }
         }
 
@@ -195,7 +199,7 @@ namespace Serde
                     IdentifierName(m.Name));
 
                 // Always prefer a direct implementation of ISerialize
-                if (ImplementsISerialize(memberType, context))
+                if (ImplementsSerde(memberType, context, WrapUsage.Serialize))
                 {
                     return memberExpr;
                 }
@@ -338,7 +342,7 @@ namespace Serde
             {
                 var elemTypeSyntax = ParseTypeName(elemType.ToDisplayString());
 
-                if (ImplementsISerialize(elemType, context))
+                if (ImplementsSerde(elemType, context, usage))
                 {
                     // Special case for List-like types:
                     // If the element type directly implements ISerialize, we can
@@ -349,12 +353,17 @@ namespace Serde
                     // Otherwise we need an `IdWrap` which just delegates to the inner
                     // type.
                     //if (elemTypes.Length > 1)
+                    if (usage == WrapUsage.Serialize)
                     {
                         wrapperTypes.Add(GenericName(
                             Identifier("IdWrap"), TypeArgumentList(SeparatedList(new TypeSyntax[] {
                                 elemTypeSyntax
                             }))
                         ));
+                    }
+                    else
+                    {
+                        wrapperTypes.Add(elemTypeSyntax);
                     }
                     continue;
                 }
@@ -408,21 +417,27 @@ namespace Serde
             return null;
         }
 
-        private static bool ImplementsISerialize(ITypeSymbol memberType, GeneratorExecutionContext context)
+        /// <summary>
+        /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
+        /// </summary>
+        private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, WrapUsage usage)
         {
             // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
             // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
             var attributes = memberType.GetAttributes();
             foreach (var attr in attributes)
             {
-                if (attr.AttributeClass?.Name is "GenerateSerializeAttribute")
+                if (usage == WrapUsage.Serialize && attr.AttributeClass?.Name is "GenerateSerializeAttribute" ||
+                    usage == WrapUsage.Deserialize && attr.AttributeClass?.Name is "GenerateDeserializeAttribute")
                 {
                     return true;
                 }
             }
 
-            var iserializeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize`4");
-            if (iserializeSymbol is not null && memberType.Interfaces.Contains(iserializeSymbol, SymbolEqualityComparer.Default))
+            var serdeSymbol = context.Compilation.GetTypeByMetadataName(usage == WrapUsage.Serialize
+                ? "Serde.ISerialize`4"
+                : "Serde.IDeserialize`1");
+            if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default))
             {
                 return true;
             }
