@@ -52,6 +52,24 @@ namespace Serde
             }
         }
 
+        internal static string? SerdeBuiltInName(SpecialType specialType) => specialType switch
+        {
+            SpecialType.System_String => "String",
+            SpecialType.System_Boolean => "Bool",
+            SpecialType.System_Char => "Char",
+            SpecialType.System_Byte => "Byte",
+            SpecialType.System_UInt16 => "U16",
+            SpecialType.System_UInt32 => "U32",
+            SpecialType.System_UInt64 => "U64",
+            SpecialType.System_SByte => "SByte",
+            SpecialType.System_Int16 => "I16",
+            SpecialType.System_Int32 => "I32",
+            SpecialType.System_Int64 => "I64",
+            SpecialType.System_Single => "Float",
+            SpecialType.System_Double => "Double",
+            _ => null
+        };
+
         private sealed class TypeWalker : CSharpSyntaxWalker
         {
             private readonly Generator _generator;
@@ -104,6 +122,15 @@ namespace Serde
                                 }
                             }:
                                 _generator.GenerateSerialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                break;
+                            case IdentifierNameSyntax
+                            {
+                                Identifier:
+                                {
+                                    ValueText: "GenerateDeserialize" or "GenerateDeserializeAttribute"
+                                }
+                            }:
+                                _generator.GenerateDeserialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
                                 break;
                             case IdentifierNameSyntax
                             {

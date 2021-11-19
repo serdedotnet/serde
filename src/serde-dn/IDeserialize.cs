@@ -6,7 +6,8 @@ namespace Serde
 {
     public interface IDeserialize<T>
     {
-        abstract static T Deserialize(IDeserializer deserializer);
+        abstract static T Deserialize<D>(ref D deserializer)
+            where D : IDeserializer;
     }
 
     public sealed class InvalidDeserializeValueException : Exception
@@ -19,6 +20,7 @@ namespace Serde
     public interface IDeserializeVisitor<T>
     {
         string ExpectedTypeName { get; }
+        T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
         T VisitBool(bool b) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitChar(char c) => VisitString(c.ToString());
         T VisitByte(byte b) => VisitU64(b);
@@ -58,22 +60,23 @@ namespace Serde
 
     public interface IDeserializer
     {
-        T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeBool<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeChar<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeByte<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeU16<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeU32<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeU64<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeSByte<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeI16<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeI32<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeFloat<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeType<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeEnumerable<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>;
+        T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>;
     }
 }

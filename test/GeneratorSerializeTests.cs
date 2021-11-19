@@ -4,6 +4,8 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
@@ -12,7 +14,7 @@ using Xunit;
 
 namespace Serde.Test
 {
-    public class GeneratorTests
+    public class GeneratorSerializeTests
     {
         [Fact]
         public Task Rgb()
@@ -32,9 +34,9 @@ partial struct Rgb : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""Rgb"", 3);
-        type.SerializeField(""Red"", new ByteWrap(Red));
-        type.SerializeField(""Green"", new ByteWrap(Green));
-        type.SerializeField(""Blue"", new ByteWrap(Blue));
+        type.SerializeField(""Red"", new ByteWrap(this.Red));
+        type.SerializeField(""Green"", new ByteWrap(this.Green));
+        type.SerializeField(""Blue"", new ByteWrap(this.Blue));
         type.End();
     }
 }");
@@ -103,7 +105,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""IntArr"", new ArrayWrap<int, Int32Wrap>(IntArr));
+        type.SerializeField(""IntArr"", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
         type.End();
     }
 }");
@@ -127,7 +129,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""NestedArr"", new ArrayWrap<int[], ArrayWrap<int, Int32Wrap>>(NestedArr));
+        type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
         type.End();
     }
 }");
@@ -151,7 +153,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""NestedArr"", new ArrayWrap<int[], ArrayWrap<int, Int32Wrap>>(NestedArr));
+        type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
         type.End();
     }
 }");
@@ -181,7 +183,7 @@ partial class TestCase15
 }";
 
             return VerifyGeneratedCode(src, new[] {
-                ("TestCase15.Class0", @"
+                ("TestCase15.Class0.ISerialize", @"
 using Serde;
 
 partial class TestCase15
@@ -191,13 +193,13 @@ partial class TestCase15
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""Class0"", 2);
-            type.SerializeField(""Field0"", new ArrayWrap<TestCase15.Class1>(Field0));
-            type.SerializeField(""Field1"", new ArrayWrap<bool, BoolWrap>(Field1));
+            type.SerializeField(""Field0"", new ArrayWrap.SerializeImpl<TestCase15.Class1, IdWrap<TestCase15.Class1>>(this.Field0));
+            type.SerializeField(""Field1"", new ArrayWrap.SerializeImpl<bool, BoolWrap>(this.Field1));
             type.End();
         }
     }
 }"),
-                ("TestCase15.Class1", @"
+                ("TestCase15.Class1.ISerialize", @"
 using Serde;
 
 partial class TestCase15
@@ -207,8 +209,8 @@ partial class TestCase15
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
             var type = serializer.SerializeType(""Class1"", 2);
-            type.SerializeField(""Field0"", new Int32Wrap(Field0));
-            type.SerializeField(""Field1"", new ByteWrap(Field1));
+            type.SerializeField(""Field0"", new Int32Wrap(this.Field0));
+            type.SerializeField(""Field1"", new ByteWrap(this.Field1));
             type.End();
         }
     }
@@ -241,7 +243,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""Map"", new DictWrap<string, StringWrap, int, Int32Wrap>(Map));
+        type.SerializeField(""Map"", new DictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.Map));
         type.End();
     }
 }");
@@ -268,7 +270,7 @@ partial class C2
 }
 ";
             return VerifyGeneratedCode(src, new[] {
-                ("C", @"
+                ("C.ISerialize", @"
 using Serde;
 
 partial record C : Serde.ISerialize
@@ -276,11 +278,11 @@ partial record C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""X"", new Int32Wrap(X));
+        type.SerializeField(""X"", new Int32Wrap(this.X));
         type.End();
     }
 }"),
-                ("C2", @"
+                ("C2.ISerialize", @"
 using Serde;
 
 partial class C2 : Serde.ISerialize
@@ -288,7 +290,7 @@ partial class C2 : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C2"", 1);
-        type.SerializeField(""Map"", new DictWrap<string, StringWrap, C, IdWrap<C>>(Map));
+        type.SerializeField(""Map"", new DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>(this.Map));
         type.End();
     }
 }")
@@ -384,7 +386,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""RDictionary"", new IDictWrap<string, StringWrap, int, Int32Wrap>(RDictionary));
+        type.SerializeField(""RDictionary"", new IDictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.RDictionary));
         type.End();
     }
 }");
@@ -433,7 +435,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""S"", new SWrap(S));
+        type.SerializeField(""S"", new SWrap(this.S));
         type.End();
     }
 }");
@@ -453,10 +455,10 @@ public struct S<T>
         Field = f;
     }
 }
-public struct SWrap<T, TWrap> : ISerialize, IWrap<S<T>, SWrap<T, TWrap>>
-    where TWrap : struct, ISerialize, IWrap<T, TWrap>
+public struct SWrap<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SWrap<T, TWrap>>
+    where TWrap : struct, ISerialize, ISerializeWrap<T, TWrap>
 {
-    public SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
+    public static SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
     private readonly S<T> _s;
     public SWrap(S<T> s)
     {
@@ -465,8 +467,7 @@ public struct SWrap<T, TWrap> : ISerialize, IWrap<S<T>, SWrap<T, TWrap>>
     void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""S"", 1);
-        var d = default(TWrap);
-        type.SerializeField(""S"", d.Create(_s.Field));
+        type.SerializeField(""S"", TWrap.Create(_s.Field));
         type.End();
     }
 }
@@ -484,23 +485,23 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""S"", new SWrap<int, Int32Wrap>(S));
+        type.SerializeField(""S"", new SWrap<int, Int32Wrap>(this.S));
         type.End();
     }
 }");
         }
 
-        internal static Task VerifyGeneratedCode(
+        private static Task VerifyGeneratedCode(
             string src,
             params DiagnosticResult[] diagnostics)
             => VerifyGeneratedCode(src, Array.Empty<(string, string)>(), diagnostics);
 
-        internal static Task VerifyGeneratedCode(
+        private static Task VerifyGeneratedCode(
             string src,
             string typeName,
             string expected,
             params DiagnosticResult[] diagnostics)
-            => VerifyGeneratedCode(src, new[] { (typeName, expected)}, diagnostics);
+            => VerifyGeneratedCode(src, new[] { (typeName + ".ISerialize", expected)}, diagnostics);
 
         internal static Task VerifyGeneratedCode(
             string src,
@@ -521,13 +522,18 @@ partial class C : Serde.ISerialize
 
         private static CSharpSourceGeneratorTest<Generator, XUnitVerifier> CreateVerifier(string src)
         {
-            var verifier = new CSharpSourceGeneratorTest<Generator, XUnitVerifier>()
+            var verifier = new Verifier()
             {
                 TestCode = src,
                 ReferenceAssemblies = Config.LatestTfRefs,
             };
             verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerializeAttribute).Assembly);
             return verifier;
+        }
+
+        private class Verifier : CSharpSourceGeneratorTest<Generator, XUnitVerifier>
+        {
+            protected override ParseOptions CreateParseOptions() => new CSharpParseOptions(LanguageVersion.Preview);
         }
     }
 }

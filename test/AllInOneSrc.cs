@@ -1,27 +1,70 @@
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Serde.Test
 {
-    public partial class AllInOne
+    [GenerateSerialize]
+    [GenerateDeserialize]
+    public sealed partial record AllInOne
     {
-        public bool BoolField = true;
-        public char CharField = '#';
-        public byte ByteField = byte.MaxValue;
-        public ushort UShortField = ushort.MaxValue;
-        public uint UIntField = uint.MaxValue;
-        public ulong ULongField = ulong.MaxValue;
+        public bool BoolField;
+        public char CharField;
+        public byte ByteField;
+        public ushort UShortField;
+        public uint UIntField;
+        public ulong ULongField;
 
-        public sbyte SByteField = sbyte.MaxValue;
-        public short ShortField = short.MaxValue;
-        public int IntField = int.MaxValue;
-        public long LongField = long.MaxValue;
+        public sbyte SByteField;
+        public short ShortField;
+        public int IntField;
+        public long LongField;
 
-        public string StringField = "StringValue";
+        public string StringField = null!;
 
-        public int[] IntArr = new[] { 1, 2, 3 };
-        public int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
+        public int[] IntArr = null!;
+        public int[][] NestedArr = null!;
 
-        public ImmutableArray<int> IntImm = ImmutableArray.Create<int>(1, 2);
+        public ImmutableArray<int> IntImm;
+
+        public bool Equals(AllInOne? other)
+        {
+            return other is not null &&
+                BoolField == other.BoolField &&
+                CharField == other.CharField &&
+                ByteField == other.ByteField &&
+                UShortField == other.UShortField &&
+                UIntField == other.UIntField &&
+                ULongField == other.ULongField &&
+                SByteField == other.SByteField &&
+                ShortField == other.ShortField &&
+                IntField == other.IntField &&
+                LongField == other.LongField &&
+                StringField == other.StringField &&
+                IntArr.AsSpan().SequenceEqual(other.IntArr.AsSpan()) &&
+                NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
+                    new Comparer()) &&
+                IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan());
+        }
+        private sealed class Comparer : IEqualityComparer<int[]>
+        {
+            public bool Equals(int[]? x, int[]? y)
+            {
+                return x?.AsSpan().SequenceEqual(y.AsSpan()) ?? y == null;
+            }
+
+            public int GetHashCode([DisallowNull] int[] obj)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

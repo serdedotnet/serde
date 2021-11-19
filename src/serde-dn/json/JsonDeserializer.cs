@@ -36,7 +36,7 @@ namespace Serde.Json
             return new Utf8JsonReader(_utf8Bytes.AsSpan()[_offset..], isFinalBlock: true, _readerState);
         }
 
-        public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -70,7 +70,7 @@ namespace Serde.Json
             return result;
         }
 
-        public T DeserializeBool<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -79,15 +79,7 @@ namespace Serde.Json
             return v.VisitBool(b);
         }
 
-        public T DeserializeByte<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            var reader = GetReader();
-            var b = reader.GetByte();
-            SaveState(reader);
-            return v.VisitByte(b);
-        }
-
-        public T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -102,7 +94,10 @@ namespace Serde.Json
             return v.VisitDictionary(ref map);
         }
 
-        public T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeDouble<T, V>(v);
+
+        public T DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             var d = reader.GetDouble();
@@ -110,7 +105,7 @@ namespace Serde.Json
             return v.VisitDouble(d);
         }
 
-        public T DeserializeEnumerable<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -125,9 +120,9 @@ namespace Serde.Json
             return v.VisitEnumerable(ref enumerable);
         }
 
-        private readonly struct DeEnumerable : IDeserializeEnumerable
+        private struct DeEnumerable : IDeserializeEnumerable
         {
-            private readonly JsonDeserializer _deserializer;
+            private JsonDeserializer _deserializer;
             public DeEnumerable(JsonDeserializer de)
             {
                 _deserializer = de;
@@ -147,14 +142,14 @@ namespace Serde.Json
                     return false;
                 }
                 // Don't save state
-                next = D.Deserialize(_deserializer);
+                next = D.Deserialize(ref _deserializer);
                 return true;
             }
         }
 
-        private readonly struct DeDictionary : IDeserializeDictionary
+        private struct DeDictionary : IDeserializeDictionary
         {
-            private readonly JsonDeserializer _deserializer;
+            private JsonDeserializer _deserializer;
             public DeDictionary(JsonDeserializer de)
             {
                 _deserializer = de;
@@ -188,32 +183,27 @@ namespace Serde.Json
                     next = default;
                     return false;
                 }
-                next = D.Deserialize(_deserializer);
+                next = D.Deserialize(ref _deserializer);
                 return true;
             }
 
             public V GetNextValue<V, D>() where D : IDeserialize<V>
             {
-                return D.Deserialize(_deserializer);
+                return D.Deserialize(ref _deserializer);
             }
         }
 
-        public T DeserializeFloat<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
+        public T DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeI64<T, V>(v);
 
-        public T DeserializeI16<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
+        public T DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeI64<T, V>(v);
 
-        public T DeserializeI32<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
 
-        public T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeI64<T, V>(v);
+
+        public T DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -222,45 +212,46 @@ namespace Serde.Json
             return v.VisitI64(i64);
         }
 
-        public T DeserializeSByte<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
             var s = reader.GetString();
             SaveState(reader);
-            return v.VisitString(s!);
+            return s is null
+                ? v.VisitNull()
+                : v.VisitString(s);
         }
 
-        public T DeserializeType<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeString<T, V>(v);
+
+        public T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>
         {
             // Types are identical to dictionaries
             return DeserializeDictionary<T, V>(v);
         }
 
-        public T DeserializeU16<T, V>(V v) where V : IDeserializeVisitor<T>
+        public T DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeU64<T, V>(v);
+
+        public T DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeU64<T, V>(v);
+
+        public T DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeU64<T, V>(v);
+
+        public T DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            throw new System.NotImplementedException();
+            var reader = GetReader();
+            reader.ReadOrThrow();
+            var u64 = reader.GetUInt64();
+            SaveState(reader);
+            return v.VisitU64(u64);
         }
 
-        public T DeserializeU32<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public T DeserializeU64<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public T DeserializeChar<T, V>(V v) where V : IDeserializeVisitor<T>
-        {
-            throw new System.NotImplementedException();
-        }
+        public T DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>
+            => DeserializeString<T, V>(v);
     }
 
     internal static class Utf8JsonReaderExtensions

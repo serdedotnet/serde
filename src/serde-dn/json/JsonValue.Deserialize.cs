@@ -5,13 +5,16 @@ namespace Serde.Json
 {
     internal abstract partial record JsonValue : IDeserialize<JsonValue>
     {
-        static JsonValue IDeserialize<JsonValue>.Deserialize(IDeserializer deserializer)
+        static JsonValue IDeserialize<JsonValue>.Deserialize<D>(ref D deserializer)
         {
-            return deserializer.DeserializeAny<JsonValue, Visitor>(new Visitor());
+            return deserializer.DeserializeAny<JsonValue, Visitor>(Visitor.Instance);
         }
 
         private sealed class Visitor : IDeserializeVisitor<JsonValue>
         {
+            public static readonly Visitor Instance = new Visitor();
+            private Visitor() { }
+
             public string ExpectedTypeName => nameof(JsonValue);
 
             public JsonValue VisitEnumerable<D>(ref D d)

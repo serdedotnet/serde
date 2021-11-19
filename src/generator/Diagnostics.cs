@@ -7,7 +7,8 @@ namespace Serde
     internal enum DiagId
     {
         ERR_DoesntImplementISerializable = 1,
-        ERR_TypeNotPartial = 2
+        ERR_TypeNotPartial = 2,
+        ERR_CantWrapSpecialType = 3
     }
 }
 
@@ -21,6 +22,7 @@ namespace Serde
         {
             ERR_DoesntImplementISerializable => nameof(ERR_DoesntImplementISerializable),
             ERR_TypeNotPartial => nameof(ERR_TypeNotPartial),
+            ERR_CantWrapSpecialType => nameof(ERR_CantWrapSpecialType),
             _ => throw ExceptionUtilities.Unreachable
         };
 
