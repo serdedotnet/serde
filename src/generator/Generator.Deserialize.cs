@@ -15,127 +15,31 @@ namespace Serde
     {
         private const string GeneratedVisitorName = "SerdeVisitor";
 
-        private void GenerateDeserialize(
+        private static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
             GeneratorExecutionContext context,
-            TypeDeclarationSyntax typeDecl,
-            SemanticModel semanticModel)
-        {
-            var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
-            if (receiverType is null)
-            {
-                return;
-            }
-            var receiverExpr = ThisExpression();
-            GenerateDeserialize(context, typeDecl, semanticModel, receiverType, receiverExpr);
-        }
-
-        private void GenerateDeserialize(
-            GeneratorExecutionContext context,
-            TypeDeclarationSyntax typeDecl,
-            SemanticModel model,
             ITypeSymbol receiverType,
             ExpressionSyntax receiverExpr)
         {
-            if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
-            {
-                // Type must be partial
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_TypeNotPartial,
-                    typeDecl.Identifier.GetLocation(),
-                    typeDecl.Identifier.ValueText));
-                return;
-            }
-
             TypeSyntax typeSyntax = ParseTypeName(receiverType.ToDisplayString());
 
-            // Generate statements for ISerialize.Deserialize implementation
-            var statements = GenerateDeserializeBody(receiverType);
+            // `Serde.IDeserialize<'typeName'>
+            var interfaceSyntax = QualifiedName(IdentifierName("Serde"), GenericName(
+                Identifier("IDeserialize"),
+                TypeArgumentList(SeparatedList(new[] { typeSyntax }))
+            ));
 
-            if (statements is not null)
-            {
-                // `Serde.IDeserialize<'typeName'>
-                var interfaceSyntax = QualifiedName(IdentifierName("Serde"), GenericName(
-                    Identifier("IDeserialize"),
-                    TypeArgumentList(SeparatedList(new[] { typeSyntax }))
-                ));
-
-                // Generate method `void ISerialize.Deserialize(IDeserializer deserializer) { ... }`
-                var newMethod = MethodDeclaration(
-                    attributeLists: default,
-                    modifiers: TokenList(Token(SyntaxKind.StaticKeyword)),
-                    typeSyntax,
-                    explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(interfaceSyntax),
-                    identifier: Identifier("Deserialize"),
-                    typeParameterList: TypeParameterList(SeparatedList(new[] {
-                        TypeParameter("D"),
-                        })),
-                    parameterList: ParameterList(SeparatedList(new[] { Parameter("D", "deserializer", byRef: true) })),
-                    constraintClauses: default,
-                    body: Block(statements.ToArray()),
-                    expressionBody: null
-                    );
-
-                var visitorType = GenerateVisitor(receiverType, typeSyntax, context);
-
-                MemberDeclarationSyntax newType = typeDecl
-                    .WithModifiers(TokenList(Token(SyntaxKind.PartialKeyword)))
-                    .WithAttributeLists(List<AttributeListSyntax>())
-                    .WithBaseList(BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) })))
-                    .WithSemicolonToken(default)
-                    .WithOpenBraceToken(Token(SyntaxKind.OpenBraceToken))
-                    .WithMembers(List(new MemberDeclarationSyntax[] { newMethod, visitorType }))
-                    .WithCloseBraceToken(Token(SyntaxKind.CloseBraceToken));
-
-                // If the original type was a record, remove the parameter list
-                if (newType is RecordDeclarationSyntax record)
-                {
-                    newType = record.WithParameterList(null);
-                }
-
-                // If the original type was in a namespace, put this decl in the same one
-                for (var current = typeDecl.Parent; current is not null; current = current.Parent)
-                {
-                    switch (current)
-                    {
-                        case NamespaceDeclarationSyntax ns:
-                            newType = ns.WithMembers(List(new[] { newType }));
-                            break;
-                        case TypeDeclarationSyntax parentType:
-                            newType = parentType.WithMembers(List(new[] { newType }));
-                            break;
-                    }
-                }
-
-                var tree = CompilationUnit(
-                    externs: default,
-                    usings: List(new[] { UsingDirective(IdentifierName("Serde")) }),
-                    attributeLists: default,
-                    members: List<MemberDeclarationSyntax>(new[] { newType }));
-                tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
-
-                string fullTypeName = typeDecl.Identifier.ValueText;
-                for (var current = typeDecl.Parent; current is not null; current = current.Parent)
-                {
-                    switch (current)
-                    {
-                        case NamespaceDeclarationSyntax ns:
-                            fullTypeName = ns.Name + "." + fullTypeName;
-                            break;
-                        case TypeDeclarationSyntax parentType:
-                            fullTypeName = parentType.Identifier.ValueText + "." + fullTypeName;
-                            break;
-                    }
-                }
-
-                context.AddSource($"{fullTypeName}.IDeserialize.cs",
-                    Environment.NewLine +
-                    "#nullable enable" +
-                    Environment.NewLine +
-                    tree.ToFullString());
-            }
+            // Generate members for ISerialize.Deserialize implementation
+            var method = GenerateDeserializeMethod(interfaceSyntax, receiverType);
+            var visitorType = GenerateVisitor(receiverType, typeSyntax, context);
+            var members = new MemberDeclarationSyntax[] { method, visitorType };
+            var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) }));
+            return (members, baseList);
         }
 
-        private List<StatementSyntax>? GenerateDeserializeBody(ITypeSymbol typeSymbol)
+        // Generate method `void ISerialize.Deserialize(IDeserializer deserializer) { ... }`
+        private static MethodDeclarationSyntax GenerateDeserializeMethod(
+            QualifiedNameSyntax interfaceSyntax,
+            ITypeSymbol typeSymbol)
         {
             var stmts = new List<StatementSyntax>();
 
@@ -204,7 +108,7 @@ namespace Serde
                         GenericName(
                             Identifier("DeserializeType"),
                             TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                            IdentifierName(typeSymbol.Name),
+                            typeSyntax,
                             IdentifierName(GeneratedVisitorName)
                             })))
                         ),
@@ -216,10 +120,23 @@ namespace Serde
                 )));
             }
 
-            return stmts;
+            return MethodDeclaration(
+                attributeLists: default,
+                modifiers: TokenList(Token(SyntaxKind.StaticKeyword)),
+                typeSyntax,
+                explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(interfaceSyntax),
+                identifier: Identifier("Deserialize"),
+                typeParameterList: TypeParameterList(SeparatedList(new[] {
+                        TypeParameter("D"),
+                    })),
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("D", "deserializer", byRef: true) })),
+                constraintClauses: default,
+                body: Block(stmts.ToArray()),
+                expressionBody: null
+                );
         }
 
-        private TypeDeclarationSyntax GenerateVisitor(ITypeSymbol type, TypeSyntax typeSyntax, GeneratorExecutionContext context)
+        private static TypeDeclarationSyntax GenerateVisitor(ITypeSymbol type, TypeSyntax typeSyntax, GeneratorExecutionContext context)
         {
             // Serde.IDeserializeVisitor<'typeName'>
             var interfaceSyntax = QualifiedName(IdentifierName("Serde"), GenericName(
@@ -241,7 +158,6 @@ namespace Serde
                 initializer: null,
                 semicolonToken: Token(SyntaxKind.SemicolonToken));
 
-
             var serdeName = SerdeBuiltInName(type.SpecialType);
             string methodText;
             if (serdeName is not null)
@@ -256,17 +172,21 @@ namespace Serde
                 {
                     string? wrapperName = null;
                     var memberType = m.Type.ToDisplayString();
-                    if (ImplementsSerde(m.Type, context, WrapUsage.Deserialize))
+                    if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
                     {
                         wrapperName = memberType;
                     }
-                    else if (TryGetPrimitiveWrapper(m.Type) is { } primWrap)
+                    else if (TryGetPrimitiveWrapper(m.Type) is {} primWrap)
                     {
                         wrapperName = primWrap;
                     }
-                    else if (TryGetCompoundWrapper(m.Type, context, WrapUsage.Deserialize) is {} compound)
+                    else if (TryGetCompoundWrapper(m.Type, context, SerdeUsage.Deserialize) is {} compound)
                     {
                         wrapperName = compound.ToString();
+                    }
+                    else if (TryCreateWrapper(m.Type, m, context, SerdeUsage.Deserialize) is {} wrap)
+                    {
+                        wrapperName = wrap.ToString();
                     }
                     cases.AppendLine(@$"
             case ""{m.Name}"":

@@ -10,7 +10,7 @@ namespace Serde.Test
         {
             var visitor = new SerdeVisitor();
             var fieldNames = new[]{"BoolField", "CharField", "ByteField", "UShortField", "UIntField", "ULongField", "SByteField", "ShortField", "IntField", "LongField", "StringField", "IntArr", "NestedArr", "IntImm"};
-            return deserializer.DeserializeType<AllInOne, SerdeVisitor>("AllInOne", fieldNames, visitor);
+            return deserializer.DeserializeType<Serde.Test.AllInOne, SerdeVisitor>("AllInOne", fieldNames, visitor);
         }
 
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne>
