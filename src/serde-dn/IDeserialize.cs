@@ -52,7 +52,7 @@ namespace Serde
         bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next)
             where D : IDeserialize<K>;
         V GetNextValue<V, D>() where D : IDeserialize<V>;
-        bool TryGetNextEntry<K, V, DK, DV>([MaybeNullWhen(false)] out (K, V) next)
+        bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
             where DK : IDeserialize<K>
             where DV : IDeserialize<V>;
         int? SizeOpt { get; }

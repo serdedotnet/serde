@@ -157,7 +157,7 @@ namespace Serde.Json
 
             public int? SizeOpt => null;
 
-            public bool TryGetNextEntry<K, V, DK, DV>([MaybeNullWhen(false)] out (K, V) next)
+            public bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
                 where DK : IDeserialize<K>
                 where DV : IDeserialize<V>
             {

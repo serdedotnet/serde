@@ -30,6 +30,44 @@ namespace Serde
                 sd.End();
             }
         }
+
+        public readonly struct DeserializeImpl<TKey, TKeyWrap, TValue, TValueWrap> : IDeserialize<Dictionary<TKey, TValue>>
+            where TKey : notnull
+            where TKeyWrap : IDeserialize<TKey>
+            where TValueWrap : IDeserialize<TValue>
+        {
+            static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize<D>(ref D deserializer)
+            {
+                return deserializer.DeserializeDictionary<Dictionary<TKey, TValue>, Visitor>(new Visitor());
+            }
+            private sealed class Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
+            {
+                public string ExpectedTypeName => "Dictionary<" + typeof(TKey).Name + ", " + typeof(TValue).Name + ">";
+                public Dictionary<TKey, TValue> VisitDictionary<D>(ref D d)
+                    where D : IDeserializeDictionary
+                {
+                    Dictionary<TKey, TValue> dict;
+                    if (d.SizeOpt is int size)
+                    {
+                        dict = new Dictionary<TKey, TValue>(size);
+                    }
+                    else
+                    {
+                        size = -1; // Set initial size to unknown
+                        dict = new Dictionary<TKey, TValue>();
+                    }
+                    while (d.TryGetNextEntry<TKey, TKeyWrap, TValue, TValueWrap>(out var next))
+                    {
+                        dict.Add(next.Item1, next.Item2);
+                    }
+                    if (size >= 0 && size != dict.Count)
+                    {
+                        throw new InvalidDeserializeValueException($"Expected {size} items, found {dict.Count}");
+                    }
+                    return dict;
+                }
+            }
+        }
     }
 
     public static class IDictWrap

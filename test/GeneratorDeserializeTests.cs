@@ -18,6 +18,7 @@ partial struct Rgb
     public byte Red, Green, Blue;
 }";
             return VerifyGeneratedCode(src, "Rgb", @"
+#nullable enable
 using Serde;
 
 partial struct Rgb : Serde.IDeserialize<Rgb>
@@ -70,6 +71,7 @@ partial struct ArrayField
     public int[] IntArr = new[] { 1, 2, 3 };
 }";
             return VerifyGeneratedCode(src, "ArrayField", @"
+#nullable enable
 using Serde;
 
 partial struct ArrayField : Serde.IDeserialize<ArrayField>

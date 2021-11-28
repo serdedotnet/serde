@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using FsCheck;
 using Microsoft.CodeAnalysis;
@@ -51,30 +52,45 @@ namespace Serde.Test
             }
 
             var serializeStatements = new List<string>();
-            serializeStatements.Add("var results = new List<(string, string)>();");
             serializeStatements.Add("var options = new System.Text.Json.JsonSerializerOptions() { IncludeFields = true };");
             for (int i = 0; i < wrappers.Length; i++)
             {
                 var localName = "t" + i;
-                serializeStatements.Add($"var {localName} = new TestCase{i}.Class0();");
-                serializeStatements.Add($@"results.Add(
-(Serde.Json.JsonSerializer.Serialize({localName}),
- System.Text.Json.JsonSerializer.Serialize({localName}, options)));");
+                var typeName = $"TestCase{i}.Type0";
+                serializeStatements.Add($"var {localName} = new {typeName}();");
+                var serName = $"{localName}Ser";
+                serializeStatements.Add($@"string {serName} =
+Serde.Json.JsonSerializer.Serialize({localName});");
+                var deName = $"{localName}De";
+                serializeStatements.Add($@"var {deName} =
+Serde.Json.JsonSerializer.Deserialize<{typeName}>({serName});");
+                serializeStatements.Add($@"if ({localName} != {deName})
+{{
+    throw new Exception(""Expected: "" + {localName} + Environment.NewLine + ""Actual: "" + {deName});
+}}");
+                serializeStatements.Add($"var stj{i} = System.Text.Json.JsonSerializer.Serialize({localName}, options);");
+                serializeStatements.Add($@"if ({serName} != stj{i})
+{{
+    throw new Exception(""Expected: "" + {serName} + Environment.NewLine + ""Actual: "" + stj{i});
+}}");
             }
-            serializeStatements.Add("return results;");
 
             var body = string.Join(Environment.NewLine, serializeStatements);
+            var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
             var mainTree = SyntaxFactory.ParseSyntaxTree($@"
 using System;
 using System.Collections.Generic;
 
-public static class Runner
+namespace Serde.Test
 {{
-    public static List<(string Serde, string SystemText)> Run()
+    public static class Runner
     {{
-        {body}
+        public static void Run()
+        {{
+            {body}
+        }}
     }}
-}}");
+}}", parseOptions, path: "Driver.cs");
 
             var allTypes = SyntaxTree(CompilationUnit(
                 externs: default,
@@ -83,25 +99,36 @@ public static class Runner
                     UsingDirective(QualifiedName(
                         QualifiedName(IdentifierName("System"), IdentifierName("Collections")),
                         IdentifierName("Generic"))),
-                    UsingDirective(IdentifierName("Serde"))
+                    UsingDirective(IdentifierName("Serde")),
                     }),
                 attributeLists: default,
-                List(wrappers)).NormalizeWhitespace());
+                List(new MemberDeclarationSyntax[] {
+                    NamespaceDeclaration(
+                        QualifiedName(IdentifierName("Serde"), IdentifierName("Test")),
+                        externs: default,
+                        usings: default,
+                        members: List(wrappers))
+                })).NormalizeWhitespace(),
+                parseOptions,
+                path: "AllTypes.cs");
+
+            var refs = new[] {
+                MetadataReference.CreateFromFile(typeof(Serde.ISerialize).Assembly.Location),
+            };
 
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
-               syntaxTrees: new[] { mainTree, allTypes },
-               references: (await Config.LatestTfRefs.ResolveAsync(null, default))
-                    .Append(MetadataReference.CreateFromFile(typeof(Serde.ISerialize).Assembly.Location)),
-               new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, parseOptions, "DeepEquals.cs") },
+               references: (await Config.LatestTfRefs.ResolveAsync(null, default)).Concat(refs),
+               new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
-            var driver = CSharpGeneratorDriver.Create(new Generator());
+            var driver = CSharpGeneratorDriver.Create(new[] { new Generator() }, parseOptions: parseOptions);
             driver.RunGeneratorsAndUpdateCompilation(
                 comp,
                 out var newComp,
                 out var diagnostics);
 
-            Assert.Empty(diagnostics);
+            Assert.True(diagnostics.Length == 0, diagnostics.ToString());
 
             var peStream = new MemoryStream();
             var result = newComp.Emit(peStream,
@@ -113,17 +140,13 @@ public static class Runner
                 cancellationToken: default);
 
             Assert.True(result.Success,
-                string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.GetMessage())));
+                string.Join(Environment.NewLine, result.Diagnostics));
             var loaded = Assembly.Load(peStream.GetBuffer());
-            var testResults = (List<(string Serde, string SystemText)>)loaded.GetType("Runner")!.GetMethod("Run")!.Invoke(null, null)!;
-            foreach (var (serde, systemText) in testResults)
-            {
-                Assert.Equal(systemText, serde);
-            }
+            loaded.GetType("Serde.Test.Runner")!.GetMethod("Run")!.Invoke(null, null);
         }
 
         // Tuns a test type into a list of type declarations. The root type is always named
-        // "Class0".
+        // "Type0".
         public static IReadOnlyList<MemberDeclarationSyntax> ToMembers(TestTypeDef typeDef)
         {
             // Types have generated unique names, counting from a depth-first traversal
@@ -142,7 +165,7 @@ public static class Runner
                     case TestListLike arr:
                         return VisitType(arr.ElementType, typeIndex, types);
                     case TestTypeDef typeDef:
-                        var fieldsSyntax = new List<MemberDeclarationSyntax>();
+                        var members = new List<MemberDeclarationSyntax>();
                         // nextIndex tracks the number of types we're generating. Every type
                         // will get a new index, which will be used to create a unique name
                         int nextIndex = typeIndex + 1;
@@ -151,28 +174,62 @@ public static class Runner
                             var field = typeDef.FieldTypes[fieldIndex];
                             var fieldTypeName = field.TypeSyntax(nextIndex);
                             ExpressionSyntax initializer = field.Value(nextIndex);
-                            fieldsSyntax.Add(FieldDeclaration(
-                                attributeLists: default,
+                            SyntaxList<AttributeListSyntax> attributes = default;
+
+                            members.Add(PropertyDeclaration(
+                                attributeLists: attributes,
                                 modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
-                                VariableDeclaration(
-                                    fieldTypeName,
-                                    SeparatedList(new[] { VariableDeclarator(
-                                Identifier("Field" + fieldIndex),
-                                argumentList: null,
-                                initializer: EqualsValueClause(initializer)) }))
-                            ));
+                                type: fieldTypeName,
+                                explicitInterfaceSpecifier: null,
+                                identifier: Identifier("Field" + fieldIndex),
+                                accessorList: AccessorList(List(new[] {
+                                    AccessorDeclaration(
+                                        SyntaxKind.GetAccessorDeclaration,
+                                        attributeLists: default,
+                                        modifiers: default,
+                                        keyword: Token(SyntaxKind.GetKeyword),
+                                        body: null,
+                                        expressionBody: null,
+                                        semicolonToken: Token(SyntaxKind.SemicolonToken)),
+                                    AccessorDeclaration(
+                                        SyntaxKind.SetAccessorDeclaration,
+                                        attributeLists: default,
+                                        modifiers: default,
+                                        keyword: Token(SyntaxKind.SetKeyword),
+                                        body: null,
+                                        expressionBody: null,
+                                        semicolonToken: Token(SyntaxKind.SemicolonToken)),
+                                })),
+                                expressionBody: null,
+                                initializer: EqualsValueClause(initializer),
+                                semicolonToken: Token(SyntaxKind.SemicolonToken)));
                             nextIndex = VisitType(field, nextIndex, types);
                         }
 
-                        // Add the first type
-                        types.Add(ClassDeclaration(
-                            attributeLists: List(new[] { AttributeList(SeparatedList(new[] { Attribute(IdentifierName("GenerateSerialize")) })) }),
+                        var typeName = typeDef.TypeName(typeIndex);
+
+                        // Add custom equals
+                        members.Add(SyntaxFactory.ParseMemberDeclaration(GenerateEquals(typeName, typeDef.FieldTypes))!);
+                        // Add custom hash code
+                        members.Add(SyntaxFactory.ParseMemberDeclaration(GenerateHashCode(typeName, typeDef.FieldTypes))!);
+
+                        // Add the type
+                        types.Add(TypeDeclaration(
+                            kind: SyntaxKind.RecordDeclaration,
+                            attributes: List(new[] { AttributeList(SeparatedList(new[] {
+                                Attribute(IdentifierName("GenerateSerialize")),
+                                Attribute(IdentifierName("GenerateDeserialize")),
+                            })) }),
                             modifiers: TokenList(new[] { Token(SyntaxKind.PublicKeyword), Token(SyntaxKind.PartialKeyword) }),
-                            identifier: Identifier(typeDef.TypeName(typeIndex)),
+                            keyword: Token(SyntaxKind.RecordKeyword),
+                            identifier: Identifier(typeName),
                             typeParameterList: null,
                             baseList: null,
                             constraintClauses: default,
-                            List(fieldsSyntax)
+                            openBraceToken: Token(SyntaxKind.OpenBraceToken),
+                            members: List(members),
+                            closeBraceToken: Token(SyntaxKind.CloseBraceToken),
+                            semicolonToken: default
                         ));
                         return nextIndex;
 
@@ -180,7 +237,98 @@ public static class Runner
                         return typeIndex;
                 }
             }
+
+            static string GenerateEquals(string containingName, ImmutableArray<TestType> fieldTypes)
+            {
+                var builder = new StringBuilder();
+                for (int fieldIndex = 0; fieldIndex < fieldTypes.Length; fieldIndex++)
+                {
+                    var fieldName = "Field" + fieldIndex;
+                    if (fieldTypes[fieldIndex] is TestListLike)
+                    {
+                        builder.AppendLine($"eq = eq && DeepEquals.Equals({fieldName}, other.{fieldName});");
+                    }
+                    else
+                    {
+                        builder.AppendLine($"eq = eq && ({fieldName} == other.{fieldName});");
+                    }
+                }
+
+                var text = @$"
+                public virtual bool Equals({containingName} other)
+                {{
+                    bool eq = true;
+                    {builder.ToString()}
+                    return eq;
+                }}";
+
+                return text;
+            }
+
+            // This generates a terribly performing, but correct hash code
+            static string GenerateHashCode(string containingName, ImmutableArray<TestType> fieldTypes)
+            {
+                var text = "public override int GetHashCode() => 0;";
+                return text;
+            }
         }
+
+        const string DeepEquals = @"
+using System.Collections;
+
+public static class DeepEquals
+{
+    public static new bool Equals(object? left, object? right) => (left, right) switch
+    {
+        (IDictionary d1, IDictionary d2) => DictEquals(d1, d2),
+        (IEnumerable e1, IEnumerable e2) => SequenceEquals(e1, e2),
+        _ => left?.Equals(right) == true
+    };
+
+    private static bool DictEquals(IDictionary left, IDictionary right)
+    {
+        if (left.Count != right.Count)
+        {
+            return false;
+        }
+        foreach (DictionaryEntry e in left)
+        {
+            var itemRight = right[e.Key];
+            if (itemRight is null || !Equals(e.Value, itemRight))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static bool SequenceEquals(IEnumerable left, IEnumerable right)
+    {
+        var leftEnum = left.GetEnumerator();
+        var rightEnum = right.GetEnumerator();
+        while (true)
+        {
+            var leftHasNext = leftEnum.MoveNext();
+            var rightHasNext = rightEnum.MoveNext();
+
+            if (leftHasNext ^ rightHasNext)
+            {
+                return false;
+            }
+            if (!leftHasNext && !rightHasNext)
+            {
+                return true;
+            }
+
+            var leftCurrent = leftEnum.Current;
+            var rightCurrent = rightEnum.Current;
+            if (!Equals(leftCurrent, rightCurrent))
+            {
+                return false;
+            }
+        }
+    }
+}";
 
         public abstract record TestType
         {
@@ -227,7 +375,7 @@ public static class Runner
                 TypeSyntax(typeIndex),
                 argumentList: ArgumentList(),
                 initializer: null);
-            public string TypeName(int typeIndex) => "Class" + typeIndex;
+            public string TypeName(int typeIndex) => "Type" + typeIndex;
         }
         public abstract record TestListLike(int Length, TestType ElementType) : TestType
         {

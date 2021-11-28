@@ -27,6 +27,7 @@ partial struct Rgb
     public byte Red, Green, Blue;
 }";
             return VerifyGeneratedCode(src, "Rgb", @"
+#nullable enable
 using Serde;
 
 partial struct Rgb : Serde.ISerialize
@@ -56,6 +57,7 @@ struct S2 { }";
             return VerifyGeneratedCode(src,
                 "S1",
                 @"
+#nullable enable
 using Serde;
 
 partial struct S1 : Serde.ISerialize
@@ -98,6 +100,7 @@ partial class C
     public readonly int[] IntArr = new[] { 1, 2, 3 };
 }";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize
@@ -122,6 +125,7 @@ partial class C
     public readonly int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
 }";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize
@@ -146,6 +150,7 @@ partial class C
     public readonly int[][] NestedArr = new int[][] { };
 }";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize
@@ -184,6 +189,7 @@ partial class TestCase15
 
             return VerifyGeneratedCode(src, new[] {
                 ("TestCase15.Class0.ISerialize", @"
+#nullable enable
 using Serde;
 
 partial class TestCase15
@@ -200,6 +206,7 @@ partial class TestCase15
     }
 }"),
                 ("TestCase15.Class1.ISerialize", @"
+#nullable enable
 using Serde;
 
 partial class TestCase15
@@ -236,6 +243,7 @@ partial class C
 }
 ";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize
@@ -271,6 +279,7 @@ partial class C2
 ";
             return VerifyGeneratedCode(src, new[] {
                 ("C.ISerialize", @"
+#nullable enable
 using Serde;
 
 partial record C : Serde.ISerialize
@@ -283,6 +292,7 @@ partial record C : Serde.ISerialize
     }
 }"),
                 ("C2.ISerialize", @"
+#nullable enable
 using Serde;
 
 partial class C2 : Serde.ISerialize
@@ -379,6 +389,7 @@ partial class C
     public R RDictionary;
 }";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize
@@ -428,6 +439,7 @@ partial class C
     public S S = new S();
 }";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize
@@ -478,6 +490,7 @@ partial class C
     public S<int> S = new S<int>(5);
 }";
             return VerifyGeneratedCode(src, "C", @"
+#nullable enable
 using Serde;
 
 partial class C : Serde.ISerialize

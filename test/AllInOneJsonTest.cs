@@ -17,6 +17,7 @@ namespace Serde.Test
 
             var src = File.ReadAllText(allInOnePath);
             var serializeSrc = @"
+#nullable enable
 using Serde;
 
 namespace Serde.Test
@@ -45,6 +46,7 @@ namespace Serde.Test
     }
 }";
             var deserializeSrc = @"
+#nullable enable
 using Serde;
 
 namespace Serde.Test
