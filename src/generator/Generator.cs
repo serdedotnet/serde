@@ -41,6 +41,8 @@ namespace Serde
 
     public partial class Generator : ISourceGenerator
     {
+        private static readonly GeneratorRegistry _registry = new GeneratorRegistry();
+
         public void Initialize(GeneratorInitializationContext context) { }
 
         public void Execute(GeneratorExecutionContext context)
@@ -121,7 +123,11 @@ namespace Serde
                                     ValueText: "GenerateSerialize" or "GenerateSerializeAttribute"
                                 }
                             }:
-                                _generator.GenerateSerialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                Generator.GenerateImpl(
+                                    SerdeUsage.Serialize,
+                                    typeDecl,
+                                    context.Compilation.GetSemanticModel(tree),
+                                    context);
                                 break;
                             case IdentifierNameSyntax
                             {
@@ -130,7 +136,11 @@ namespace Serde
                                     ValueText: "GenerateDeserialize" or "GenerateDeserializeAttribute"
                                 }
                             }:
-                                _generator.GenerateDeserialize(context, typeDecl, context.Compilation.GetSemanticModel(tree));
+                                Generator.GenerateImpl(
+                                    SerdeUsage.Deserialize,
+                                    typeDecl,
+                                    context.Compilation.GetSemanticModel(tree),
+                                    context);
                                 break;
                             case IdentifierNameSyntax
                             {

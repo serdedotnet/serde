@@ -71,7 +71,7 @@ namespace Serde
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        internal static string ToWrapper(this WellKnownType wk, WrapUsage usage) => wk switch
+        internal static string ToWrapper(this WellKnownType wk, SerdeUsage usage) => wk switch
         {
             WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
             WellKnownType.List_1 => "ListWrap",
