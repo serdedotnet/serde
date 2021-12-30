@@ -35,25 +35,29 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
         public string ExpectedTypeName => ""Rgb"";
         Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
         {
-            Rgb newType = new Rgb();
+            Serde.Option<byte> red = default;
+            Serde.Option<byte> green = default;
+            Serde.Option<byte> blue = default;
             while (d.TryGetNextKey<string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""Red"":
-                        newType.Red = d.GetNextValue<byte, ByteWrap>();
+                        red = d.GetNextValue<byte, ByteWrap>();
                         break;
                     case ""Green"":
-                        newType.Green = d.GetNextValue<byte, ByteWrap>();
+                        green = d.GetNextValue<byte, ByteWrap>();
                         break;
                     case ""Blue"":
-                        newType.Blue = d.GetNextValue<byte, ByteWrap>();
+                        blue = d.GetNextValue<byte, ByteWrap>();
                         break;
                     default:
                         throw new InvalidDeserializeValueException(""Unexpected field or property name in type Rgb: '"" + key + ""'"");
                 }
             }
 
+            Rgb newType = new Rgb()
+            {Red = red.Value, Green = green.Value, Blue = blue.Value, };
             return newType;
         }
     }
@@ -88,19 +92,21 @@ partial struct ArrayField : Serde.IDeserialize<ArrayField>
         public string ExpectedTypeName => ""ArrayField"";
         ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
         {
-            ArrayField newType = new ArrayField();
+            Serde.Option<int[]> intarr = default;
             while (d.TryGetNextKey<string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""IntArr"":
-                        newType.IntArr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                        intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                         break;
                     default:
                         throw new InvalidDeserializeValueException(""Unexpected field or property name in type ArrayField: '"" + key + ""'"");
                 }
             }
 
+            ArrayField newType = new ArrayField()
+            {IntArr = intarr.Value, };
             return newType;
         }
     }
