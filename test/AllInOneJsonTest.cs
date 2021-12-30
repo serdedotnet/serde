@@ -65,58 +65,73 @@ namespace Serde.Test
             public string ExpectedTypeName => ""Serde.Test.AllInOne"";
             Serde.Test.AllInOne Serde.IDeserializeVisitor<Serde.Test.AllInOne>.VisitDictionary<D>(ref D d)
             {
-                Serde.Test.AllInOne newType = new Serde.Test.AllInOne();
+                Serde.Option<bool> boolfield = default;
+                Serde.Option<char> charfield = default;
+                Serde.Option<byte> bytefield = default;
+                Serde.Option<ushort> ushortfield = default;
+                Serde.Option<uint> uintfield = default;
+                Serde.Option<ulong> ulongfield = default;
+                Serde.Option<sbyte> sbytefield = default;
+                Serde.Option<short> shortfield = default;
+                Serde.Option<int> intfield = default;
+                Serde.Option<long> longfield = default;
+                Serde.Option<string> stringfield = default;
+                Serde.Option<int[]> intarr = default;
+                Serde.Option<int[][]> nestedarr = default;
+                Serde.Option<System.Collections.Immutable.ImmutableArray<int>> intimm = default;
                 while (d.TryGetNextKey<string, StringWrap>(out string? key))
                 {
                     switch (key)
                     {
                         case ""BoolField"":
-                            newType.BoolField = d.GetNextValue<bool, BoolWrap>();
+                            boolfield = d.GetNextValue<bool, BoolWrap>();
                             break;
                         case ""CharField"":
-                            newType.CharField = d.GetNextValue<char, CharWrap>();
+                            charfield = d.GetNextValue<char, CharWrap>();
                             break;
                         case ""ByteField"":
-                            newType.ByteField = d.GetNextValue<byte, ByteWrap>();
+                            bytefield = d.GetNextValue<byte, ByteWrap>();
                             break;
                         case ""UShortField"":
-                            newType.UShortField = d.GetNextValue<ushort, UInt16Wrap>();
+                            ushortfield = d.GetNextValue<ushort, UInt16Wrap>();
                             break;
                         case ""UIntField"":
-                            newType.UIntField = d.GetNextValue<uint, UInt32Wrap>();
+                            uintfield = d.GetNextValue<uint, UInt32Wrap>();
                             break;
                         case ""ULongField"":
-                            newType.ULongField = d.GetNextValue<ulong, UInt64Wrap>();
+                            ulongfield = d.GetNextValue<ulong, UInt64Wrap>();
                             break;
                         case ""SByteField"":
-                            newType.SByteField = d.GetNextValue<sbyte, SByteWrap>();
+                            sbytefield = d.GetNextValue<sbyte, SByteWrap>();
                             break;
                         case ""ShortField"":
-                            newType.ShortField = d.GetNextValue<short, Int16Wrap>();
+                            shortfield = d.GetNextValue<short, Int16Wrap>();
                             break;
                         case ""IntField"":
-                            newType.IntField = d.GetNextValue<int, Int32Wrap>();
+                            intfield = d.GetNextValue<int, Int32Wrap>();
                             break;
                         case ""LongField"":
-                            newType.LongField = d.GetNextValue<long, Int64Wrap>();
+                            longfield = d.GetNextValue<long, Int64Wrap>();
                             break;
                         case ""StringField"":
-                            newType.StringField = d.GetNextValue<string, StringWrap>();
+                            stringfield = d.GetNextValue<string, StringWrap>();
                             break;
                         case ""IntArr"":
-                            newType.IntArr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                            intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
                         case ""NestedArr"":
-                            newType.NestedArr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
+                            nestedarr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
                             break;
                         case ""IntImm"":
-                            newType.IntImm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                            intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
                         default:
                             throw new InvalidDeserializeValueException(""Unexpected field or property name in type Serde.Test.AllInOne: '"" + key + ""'"");
                     }
                 }
 
+                Serde.Test.AllInOne newType = new Serde.Test.AllInOne()
+                {BoolField = boolfield.Value, CharField = charfield.Value, ByteField = bytefield.Value, UShortField = ushortfield.Value, UIntField = uintfield.Value, ULongField = ulongfield.Value, SByteField = sbytefield.Value, ShortField = shortfield.Value, IntField = intfield.Value, LongField = longfield.Value, StringField = stringfield.Value, IntArr = intarr.Value, NestedArr = nestedarr.Value, IntImm = intimm.Value, };
                 return newType;
             }
         }

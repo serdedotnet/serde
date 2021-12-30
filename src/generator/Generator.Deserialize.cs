@@ -167,11 +167,13 @@ namespace Serde
             else
             {
                 var cases = new StringBuilder();
+                var locals = new StringBuilder();
+                var assignments = new StringBuilder();
                 var members = SymbolUtilities.GetPublicDataMembers(type);
                 foreach (var m in members)
                 {
                     string? wrapperName = null;
-                    var memberType = m.Type.ToDisplayString();
+                    var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
                     if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
                     {
                         wrapperName = memberType;
@@ -188,16 +190,19 @@ namespace Serde
                     {
                         wrapperName = wrap.ToString();
                     }
+                    var lowerName = m.Name.ToLowerInvariant();
+                    locals.AppendLine($"Serde.Option<{memberType}> {lowerName} = default;");
+                    assignments.AppendLine($"{m.Name} = {lowerName}.Value,");
                     cases.AppendLine(@$"
             case ""{m.Name}"":
-                newType.{m.Name} = d.GetNextValue<{memberType}, {wrapperName}>();
+                {lowerName} = d.GetNextValue<{memberType}, {wrapperName}>();
                 break;");
                 }
 
                 methodText = @$"
 {typeName} Serde.IDeserializeVisitor<{typeName}>.VisitDictionary<D>(ref D d)
 {{
-    {typeName} newType = new {typeName}();
+    {locals}
     while (d.TryGetNextKey<string, StringWrap>(out string? key))
     {{
         switch (key)
@@ -207,6 +212,9 @@ namespace Serde
                 throw new InvalidDeserializeValueException(""Unexpected field or property name in type {typeName}: '"" + key + ""'"");
         }}
     }}
+    {typeName} newType = new {typeName}() {{
+        {assignments}
+    }};
     return newType;
 }}";
             }

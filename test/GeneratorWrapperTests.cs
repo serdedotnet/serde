@@ -94,22 +94,25 @@ partial struct PointWrap : Serde.IDeserialize<Point>
         public string ExpectedTypeName => ""Point"";
         Point Serde.IDeserializeVisitor<Point>.VisitDictionary<D>(ref D d)
         {
-            Point newType = new Point();
+            Serde.Option<int> x = default;
+            Serde.Option<int> y = default;
             while (d.TryGetNextKey<string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""X"":
-                        newType.X = d.GetNextValue<int, Int32Wrap>();
+                        x = d.GetNextValue<int, Int32Wrap>();
                         break;
                     case ""Y"":
-                        newType.Y = d.GetNextValue<int, Int32Wrap>();
+                        y = d.GetNextValue<int, Int32Wrap>();
                         break;
                     default:
                         throw new InvalidDeserializeValueException(""Unexpected field or property name in type Point: '"" + key + ""'"");
                 }
             }
 
+            Point newType = new Point()
+            {X = x.Value, Y = y.Value, };
             return newType;
         }
     }
@@ -204,22 +207,25 @@ namespace Serde
             public string ExpectedTypeName => ""System.Collections.Specialized.BitVector32.Section"";
             System.Collections.Specialized.BitVector32.Section Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>.VisitDictionary<D>(ref D d)
             {
-                System.Collections.Specialized.BitVector32.Section newType = new System.Collections.Specialized.BitVector32.Section();
+                Serde.Option<short> mask = default;
+                Serde.Option<short> offset = default;
                 while (d.TryGetNextKey<string, StringWrap>(out string? key))
                 {
                     switch (key)
                     {
                         case ""Mask"":
-                            newType.Mask = d.GetNextValue<short, Int16Wrap>();
+                            mask = d.GetNextValue<short, Int16Wrap>();
                             break;
                         case ""Offset"":
-                            newType.Offset = d.GetNextValue<short, Int16Wrap>();
+                            offset = d.GetNextValue<short, Int16Wrap>();
                             break;
                         default:
                             throw new InvalidDeserializeValueException(""Unexpected field or property name in type System.Collections.Specialized.BitVector32.Section: '"" + key + ""'"");
                     }
                 }
 
+                System.Collections.Specialized.BitVector32.Section newType = new System.Collections.Specialized.BitVector32.Section()
+                {Mask = mask.Value, Offset = offset.Value, };
                 return newType;
             }
         }
@@ -243,27 +249,30 @@ partial class C : Serde.IDeserialize<C>
         public string ExpectedTypeName => ""C"";
         C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
         {
-            C newType = new C();
+            Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
             while (d.TryGetNextKey<string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""S"":
-                        newType.S = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
+                        s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
                         break;
                     default:
                         throw new InvalidDeserializeValueException(""Unexpected field or property name in type C: '"" + key + ""'"");
                 }
             }
 
+            C newType = new C()
+            {S = s.Value, };
             return newType;
         }
     }
 }") },
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(27,29): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 27, 29, 27, 41).WithArguments("System.Collections.Specialized.BitVector32.Section.Mask"),
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(30,29): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 30, 29, 30, 43).WithArguments("System.Collections.Specialized.BitVector32.Section.Offset"));
+    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,18): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 18, 39, 22).WithArguments("System.Collections.Specialized.BitVector32.Section.Mask"),
+    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,37): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 37, 39, 43).WithArguments("System.Collections.Specialized.BitVector32.Section.Offset"));
+
         }
 
         private static Task VerifyGeneratedCode(

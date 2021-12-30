@@ -28,6 +28,13 @@ namespace Serde
             _ => throw ExceptionUtilities.Unreachable
         };
 
+        public NullableAnnotation NullableAnnotation => _symbol switch
+        {
+            IFieldSymbol f => f.NullableAnnotation,
+            IPropertySymbol p => p.NullableAnnotation,
+            _ => throw ExceptionUtilities.Unreachable
+        };
+
         public ImmutableArray<Location> Locations => _symbol.Locations;
 
         public string Name => _symbol.Name;
