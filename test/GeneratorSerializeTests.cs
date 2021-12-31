@@ -1,16 +1,9 @@
 
 using System;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
-using Microsoft.CodeAnalysis.Text;
 using Xunit;
+using static Serde.Test.GeneratorTestUtils;
 
 namespace Serde.Test
 {
@@ -26,7 +19,7 @@ partial struct Rgb
 {
     public byte Red, Green, Blue;
 }";
-            return VerifyGeneratedCode(src, "Rgb", @"
+            return VerifySerialize(src, "Rgb", @"
 #nullable enable
 using Serde;
 
@@ -54,7 +47,7 @@ partial struct S1
     public S2 X;
 }
 struct S2 { }";
-            return VerifyGeneratedCode(src,
+            return VerifySerialize(src,
                 "S1",
                 @"
 #nullable enable
@@ -81,7 +74,7 @@ using Serde;
 struct S { }
 [GenerateSerialize]
 class C { }";
-            return VerifyGeneratedCode(src,
+            return VerifyDiagnostics(src,
 // /0/Test0.cs(4,8): error ERR_TypeNotPartial: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
 DiagnosticResult.CompilerError("ERR_TypeNotPartial").WithSpan(4, 8, 4, 9),
 // /0/Test0.cs(6,7): error ERR_TypeNotPartial: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.
@@ -99,7 +92,7 @@ partial class C
 {
     public readonly int[] IntArr = new[] { 1, 2, 3 };
 }";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -124,7 +117,7 @@ partial class C
 {
     public readonly int[][] NestedArr = new[] { new[] { 1 }, new[] { 2 } };
 }";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -149,7 +142,7 @@ partial class C
 {
     public readonly int[][] NestedArr = new int[][] { };
 }";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -242,7 +235,7 @@ partial class C
     };
 }
 ";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -388,7 +381,7 @@ partial class C
 {
     public R RDictionary;
 }";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -438,7 +431,7 @@ partial class C
     [SerdeWrap(typeof(SWrap))]
     public S S = new S();
 }";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -489,7 +482,7 @@ partial class C
     [SerdeWrap(typeof(SWrap<,>))]
     public S<int> S = new S<int>(5);
 }";
-            return VerifyGeneratedCode(src, "C", @"
+            return VerifySerialize(src, "C", @"
 #nullable enable
 using Serde;
 
@@ -504,49 +497,11 @@ partial class C : Serde.ISerialize
 }");
         }
 
-        private static Task VerifyGeneratedCode(
-            string src,
-            params DiagnosticResult[] diagnostics)
-            => VerifyGeneratedCode(src, Array.Empty<(string, string)>(), diagnostics);
-
-        private static Task VerifyGeneratedCode(
+        private static Task VerifySerialize(
             string src,
             string typeName,
             string expected,
             params DiagnosticResult[] diagnostics)
             => VerifyGeneratedCode(src, new[] { (typeName + ".ISerialize", expected)}, diagnostics);
-
-        internal static Task VerifyGeneratedCode(
-            string src,
-            (string fileName, string expected)[] generated,
-            params DiagnosticResult[] diagnostics)
-        {
-            var verifier = CreateVerifier(src);
-            verifier.ExpectedDiagnostics.AddRange(diagnostics);
-            foreach (var (fileName, expected) in generated)
-            {
-                verifier.TestState.GeneratedSources.Add((
-                    Path.Combine("SerdeGenerator", $"Serde.{nameof(Generator)}", $"{fileName}.cs"),
-                    SourceText.From(expected, Encoding.UTF8))
-                );
-            }
-            return verifier.RunAsync();
-        }
-
-        private static CSharpSourceGeneratorTest<Generator, XUnitVerifier> CreateVerifier(string src)
-        {
-            var verifier = new Verifier()
-            {
-                TestCode = src,
-                ReferenceAssemblies = Config.LatestTfRefs,
-            };
-            verifier.TestState.AdditionalReferences.Add(typeof(Serde.GenerateSerializeAttribute).Assembly);
-            return verifier;
-        }
-
-        private class Verifier : CSharpSourceGeneratorTest<Generator, XUnitVerifier>
-        {
-            protected override ParseOptions CreateParseOptions() => new CSharpParseOptions(LanguageVersion.Preview);
-        }
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Serde.Json
 {
-    internal abstract partial record JsonValue : ISerialize
+    partial record JsonValue : ISerialize
     {
         public abstract void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>

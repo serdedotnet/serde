@@ -34,8 +34,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <ProjectReference Include="../src/serde-dn/SerdeDn.csproj" />
-    <ProjectReference Include="../src/generator/SerdeGenerator.csproj"
-                      OutputItemType="Analyzer" />
+    <ProjectReference Include="../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
 </Project>

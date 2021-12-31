@@ -17,6 +17,15 @@ namespace Serde
         IReadOnlyDictionary_2,
     }
 
+    internal enum WellKnownAttribute
+    {
+        GenerateSerialize,
+        GenerateDeserialize,
+        GenerateSerde,
+        GenerateWrapper,
+        SerdeOptions
+    }
+
     internal static class WellKnownTypes
     {
         public static WellKnownType? TryGetWellKnownType(INamedTypeSymbol t, GeneratorExecutionContext context)
@@ -50,6 +59,28 @@ namespace Serde
             }
             return builder.ToImmutable();
         }
+
+        internal static string GetName(this WellKnownAttribute wk) => wk switch
+        {
+            WellKnownAttribute.GenerateDeserialize => "GenerateDeserialize",
+            WellKnownAttribute.GenerateSerialize => "GenerateSerialize",
+            WellKnownAttribute.GenerateSerde => "GenerateSerde",
+            WellKnownAttribute.GenerateWrapper => "GenerateWrapper",
+            WellKnownAttribute.SerdeOptions => "SerdeOptions",
+            _ => throw ExceptionUtilities.UnexpectedValue(wk)
+        };
+
+        internal static bool HasMatchingName(string name, WellKnownAttribute wk)
+        {
+            var typeName = wk.GetName();
+            return name.Equals(typeName, StringComparison.Ordinal) ||
+                name.Equals(wk.GetFqn(), StringComparison.Ordinal);
+        }
+
+        internal static string GetFqn(this WellKnownAttribute wk) => "Serde." + wk.GetName();
+
+        internal static bool IsWellKnownAttribute(INamedTypeSymbol type, WellKnownAttribute wk)
+            => type.ToDisplayString().Equals(wk.GetFqn(), StringComparison.Ordinal);
 
         private static WellKnownType? NameToWellKnownType(string s) => s switch
         {

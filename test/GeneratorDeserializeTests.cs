@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using static Serde.Test.GeneratorTestUtils;
 
 namespace Serde.Test
 {
@@ -17,7 +18,7 @@ partial struct Rgb
 {
     public byte Red, Green, Blue;
 }";
-            return VerifyGeneratedCode(src, "Rgb", @"
+            return VerifyDeserialize(src, "Rgb", @"
 #nullable enable
 using Serde;
 
@@ -52,12 +53,12 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
                         blue = d.GetNextValue<byte, ByteWrap>();
                         break;
                     default:
-                        throw new InvalidDeserializeValueException(""Unexpected field or property name in type Rgb: '"" + key + ""'"");
+                        break;
                 }
             }
 
             Rgb newType = new Rgb()
-            {Red = red.Value, Green = green.Value, Blue = blue.Value, };
+            {Red = red.GetValueOrThrow(""Red""), Green = green.GetValueOrThrow(""Green""), Blue = blue.GetValueOrThrow(""Blue""), };
             return newType;
         }
     }
@@ -74,7 +75,7 @@ partial struct ArrayField
 {
     public int[] IntArr = new[] { 1, 2, 3 };
 }";
-            return VerifyGeneratedCode(src, "ArrayField", @"
+            return VerifyDeserialize(src, "ArrayField", @"
 #nullable enable
 using Serde;
 
@@ -101,28 +102,23 @@ partial struct ArrayField : Serde.IDeserialize<ArrayField>
                         intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                         break;
                     default:
-                        throw new InvalidDeserializeValueException(""Unexpected field or property name in type ArrayField: '"" + key + ""'"");
+                        break;
                 }
             }
 
             ArrayField newType = new ArrayField()
-            {IntArr = intarr.Value, };
+            {IntArr = intarr.GetValueOrThrow(""IntArr""), };
             return newType;
         }
     }
 }");
         }
 
-        private static Task VerifyGeneratedCode(
-            string src,
-            params DiagnosticResult[] diagnostics)
-            => GeneratorSerializeTests.VerifyGeneratedCode(src, System.Array.Empty<(string, string)>(), diagnostics);
-
-        private static Task VerifyGeneratedCode(
+        private static Task VerifyDeserialize(
             string src,
             string typeName,
             string expected,
             params DiagnosticResult[] diagnostics)
-            => GeneratorSerializeTests.VerifyGeneratedCode(src, new[] { (typeName + ".IDeserialize", expected)}, diagnostics);
+            => VerifyGeneratedCode(src, new[] { (typeName + ".IDeserialize", expected)}, diagnostics);
     }
 }

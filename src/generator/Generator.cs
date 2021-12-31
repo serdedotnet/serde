@@ -109,48 +109,28 @@ namespace Serde
                 {
                     foreach (var attr in attrLists.Attributes)
                     {
-                        var name = attr.Name;
-                        while (name is QualifiedNameSyntax q)
+                        var name = attr.Name.ToString();
+                        if (WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateSerde) ||
+                            WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateSerialize))
                         {
-                            name = q.Right;
+                            Generator.GenerateImpl(
+                                SerdeUsage.Serialize,
+                                typeDecl,
+                                context.Compilation.GetSemanticModel(tree),
+                                context);
                         }
-                        switch (name)
+                        if (WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateSerde) ||
+                            WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateDeserialize))
                         {
-                            case IdentifierNameSyntax
-                            {
-                                Identifier:
-                                {
-                                    ValueText: "GenerateSerialize" or "GenerateSerializeAttribute"
-                                }
-                            }:
-                                Generator.GenerateImpl(
-                                    SerdeUsage.Serialize,
-                                    typeDecl,
-                                    context.Compilation.GetSemanticModel(tree),
-                                    context);
-                                break;
-                            case IdentifierNameSyntax
-                            {
-                                Identifier:
-                                {
-                                    ValueText: "GenerateDeserialize" or "GenerateDeserializeAttribute"
-                                }
-                            }:
-                                Generator.GenerateImpl(
-                                    SerdeUsage.Deserialize,
-                                    typeDecl,
-                                    context.Compilation.GetSemanticModel(tree),
-                                    context);
-                                break;
-                            case IdentifierNameSyntax
-                            {
-                                Identifier:
-                                {
-                                    ValueText: "GenerateWrapper" or "GenerateWrapperAttribute"
-                                }
-                            }:
-                                _generator.GenerateWrapper(context, attr, typeDecl, context.Compilation.GetSemanticModel(tree));
-                                break;
+                            Generator.GenerateImpl(
+                                SerdeUsage.Deserialize,
+                                typeDecl,
+                                context.Compilation.GetSemanticModel(tree),
+                                context);
+                        }
+                        if (WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateWrapper))
+                        {
+                            _generator.GenerateWrapper(context, attr, typeDecl, context.Compilation.GetSemanticModel(tree));
                         }
                     }
                 }

@@ -5,7 +5,7 @@ using static Serde.Json.JsonValue;
 
 namespace Serde.Test
 {
-    public class JsonDeserializeTests
+    public partial class JsonDeserializeTests
     {
         [Fact]
         public void DeserializeEnumerable()
@@ -65,6 +65,72 @@ namespace Serde.Test
             src = "false";
             result = JsonSerializer.Deserialize<JsonValue>(src);
             Assert.Equal(new JsonValue.Bool(false), result);
+        }
+
+        [GenerateDeserialize]
+        private partial struct ExtraMembers
+        {
+            public int b;
+        }
+
+        [Fact]
+        public void DeserializeExtraMembers()
+        {
+            var src = @"
+{
+    ""a"" : 1,
+    ""c"" : {
+        ""n1"": 1,
+        ""n2"": 2
+    },
+    ""b"" : 2,
+    ""d"" : [
+        { ""n1"": 1 },
+        2
+    ]
+}";
+            var result = JsonSerializer.Deserialize<ExtraMembers>(src);
+            Assert.Equal(2, result.b);
+        }
+
+        [GenerateDeserialize]
+        [SerdeOptions(MemberFormat = MemberFormat.CamelCase)]
+        private partial struct IdStruct
+        {
+            public int Id;
+        }
+
+        [Fact]
+        public void DeserializeId()
+        {
+            var src = @"{
+                ""_links"":{
+                    ""self"":{
+                        ""href"":""https://dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/pipelines/686?revision=12""
+                    },
+                    ""web"":{
+                        ""href"":""https://dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_build/definition?definitionId=686""
+                    }
+                },
+                ""configuration"":{
+                    ""path"":""eng/pipelines/runtime.yml"",
+                    ""repository"":{
+                        ""fullName"":""dotnet/runtime"",
+                        ""connection"":{
+                            ""id"":""28d5e64a-b32c-4fc1-8d1b-8d741d67ee12""
+                        },
+                        ""type"":""gitHub""
+                    },
+                    ""type"":""yaml""
+                },
+                ""url"":""https://dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/pipelines/686?revision=12"",
+                ""id"":686,
+                ""revision"":12,
+                ""name"":""runtime"",
+                ""folder"":""\\\\dotnet\\\\runtime""
+            }";
+            var result = JsonSerializer.Deserialize<IdStruct>(src);
+            Assert.Equal(686, result.Id);
         }
     }
 }

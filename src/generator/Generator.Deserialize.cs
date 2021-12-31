@@ -192,12 +192,16 @@ namespace Serde
                     }
                     var lowerName = m.Name.ToLowerInvariant();
                     locals.AppendLine($"Serde.Option<{memberType}> {lowerName} = default;");
-                    assignments.AppendLine($"{m.Name} = {lowerName}.Value,");
+                    assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrThrow(\"{m.Name}\"),");
                     cases.AppendLine(@$"
-            case ""{m.Name}"":
+            case ""{m.GetFormattedName()}"":
                 {lowerName} = d.GetNextValue<{memberType}, {wrapperName}>();
                 break;");
                 }
+
+                string unknownMemberBehavior = SymbolUtilities.GetSerdeOptions(type).DenyUnknownMembers
+                    ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + key + \"'\");"
+                    : "break;";
 
                 methodText = @$"
 {typeName} Serde.IDeserializeVisitor<{typeName}>.VisitDictionary<D>(ref D d)
@@ -209,7 +213,7 @@ namespace Serde
         {{
 {cases.ToString()}
             default:
-                throw new InvalidDeserializeValueException(""Unexpected field or property name in type {typeName}: '"" + key + ""'"");
+                {unknownMemberBehavior}
         }}
     }}
     {typeName} newType = new {typeName}() {{

@@ -6,12 +6,17 @@ namespace Serde
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public sealed class GenerateSerializeAttribute : Attribute
+    public sealed class GenerateSerialize : Attribute
     { }
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public sealed class GenerateDeserializeAttribute : Attribute
+    public sealed class GenerateDeserialize : Attribute
+    { }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
+    public sealed class GenerateSerde : Attribute
     { }
 
     [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
@@ -20,5 +25,4 @@ namespace Serde
     {
         public GenerateWrapper(string memberName) { }
     }
-
 }
