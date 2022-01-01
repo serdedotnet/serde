@@ -174,9 +174,9 @@ namespace Serde.Json
 
             public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
             {
-                var reader = _deserializer.GetReader();
                 while (true)
                 {
+                    var reader = _deserializer.GetReader();
                     reader.ReadOrThrow();
                     switch (reader.TokenType)
                     {
