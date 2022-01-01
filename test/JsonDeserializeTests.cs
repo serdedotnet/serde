@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
@@ -131,6 +132,47 @@ namespace Serde.Test
             }";
             var result = JsonSerializer.Deserialize<IdStruct>(src);
             Assert.Equal(686, result.Id);
+        }
+
+        [GenerateDeserialize]
+        [SerdeOptions(MemberFormat = MemberFormat.CamelCase)]
+        private readonly partial record struct IdStructList
+        {
+            public int Count { get; init; }
+            public List<IdStruct> Value { get; init; }
+        }
+
+        [Fact]
+        public void DeserializeNestedWithList()
+        {
+            var src = @"{
+  ""count"": 3,
+  ""value"": [
+    {
+        ""skip1"": ""x"",
+        ""id"": 1531298,
+        ""skip2"": false,
+        ""skip3"": null
+    },
+    {
+        ""skip1"": ""y"",
+        ""id"": 32414,
+        ""skip2"": false,
+        ""skip3"": null
+    },
+    {
+        ""skip1"": ""z"",
+        ""id"": 14254,
+        ""skip2"": false,
+        ""skip3"": null
+    }
+  ]
+}
+            }";
+            var result = JsonSerializer.Deserialize<IdStructList>(src);
+            Assert.Equal(1531298, result.Value[0].Id);
+            Assert.Equal(32414, result.Value[1].Id);
+            Assert.Equal(14254, result.Value[2].Id);
         }
     }
 }
