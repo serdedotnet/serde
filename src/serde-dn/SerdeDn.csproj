@@ -4,16 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Don't include the output from a previous source generator execution into future runs; the */** trick here ensures that there's
-    at least one subdirectory, which is our key that it's coming from a source generator as opposed to something that is coming from
-    some other tool. -->
-    <Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
-  </ItemGroup>
 
   <!-- Package settings -->
   <PropertyGroup>
@@ -28,9 +19,7 @@
 
   <!-- Include generator without referencing it -->
   <ItemGroup>
-    <ProjectReference Include="../generator/SerdeGenerator.csproj"
-                      ReferenceOutputAssembly="false"
-                      OutputItemType="Analyzer" />
+    <ProjectReference Include="../generator/SerdeGenerator.csproj" ReferenceOutputAssembly="false" />
     <None Include="$(BaseOutputPath)/../SerdeGenerator/Release/netstandard2.0/SerdeGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
   </ItemGroup>
 

@@ -1,6 +1,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Serde
 {
@@ -15,6 +16,16 @@ namespace Serde
         public InvalidDeserializeValueException(string msg)
         : base(msg)
         { }
+    }
+
+    public static class OptionExt
+    {
+        public static T GetValueOrThrow<T>(this Option<T> member, [CallerArgumentExpression("member")]string paramName = "")
+        {
+            return member.HasValue
+                ? member.GetValueOrDefault()
+                : throw new InvalidDeserializeValueException($"Required member '{paramName}' was missing a value in the source");
+        }
     }
 
     public interface IDeserializeVisitor<T>

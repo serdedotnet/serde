@@ -126,19 +126,19 @@ namespace Serde.Test
                             intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
                         default:
-                            throw new InvalidDeserializeValueException(""Unexpected field or property name in type Serde.Test.AllInOne: '"" + key + ""'"");
+                            break;
                     }
                 }
 
                 Serde.Test.AllInOne newType = new Serde.Test.AllInOne()
-                {BoolField = boolfield.Value, CharField = charfield.Value, ByteField = bytefield.Value, UShortField = ushortfield.Value, UIntField = uintfield.Value, ULongField = ulongfield.Value, SByteField = sbytefield.Value, ShortField = shortfield.Value, IntField = intfield.Value, LongField = longfield.Value, StringField = stringfield.Value, IntArr = intarr.Value, NestedArr = nestedarr.Value, IntImm = intimm.Value, };
+                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), IntArr = intarr.GetValueOrThrow(""IntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), };
                 return newType;
             }
         }
     }
 }";
 
-            return GeneratorSerializeTests.VerifyGeneratedCode(src, new[] {
+            return GeneratorTestUtils.VerifyGeneratedCode(src, new[] {
                 ("Serde.Test.AllInOne.ISerialize", serializeSrc),
                 ("Serde.Test.AllInOne.IDeserialize", deserializeSrc)
             });

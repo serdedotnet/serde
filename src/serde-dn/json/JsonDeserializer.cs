@@ -175,16 +175,29 @@ namespace Serde.Json
             public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
             {
                 var reader = _deserializer.GetReader();
-                // Check if the next token is the end of the object, but don't advance the stream if not
-                reader.ReadOrThrow();
-                if (reader.TokenType == JsonTokenType.EndObject)
+                while (true)
                 {
-                    _deserializer.SaveState(reader);
-                    next = default;
-                    return false;
+                    reader.ReadOrThrow();
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.EndObject:
+                            // Check if the next token is the end of the object, but don't advance the stream if not
+                            _deserializer.SaveState(reader);
+                            next = default;
+                            return false;
+                        case JsonTokenType.PropertyName:
+                            next = D.Deserialize(ref _deserializer);
+                            return true;
+                        default:
+                            // If we aren't at a property name, we must be at a value and intending to skip it
+                            // Call Skip in case we are starting a new array or object. Doesn't do
+                            // anything for bare tokens, but we've already read one token forward above,
+                            // so we can simply save the state and continue
+                            reader.Skip();
+                            _deserializer.SaveState(reader);
+                            break;
+                    }
                 }
-                next = D.Deserialize(ref _deserializer);
-                return true;
             }
 
             public V GetNextValue<V, D>() where D : IDeserialize<V>

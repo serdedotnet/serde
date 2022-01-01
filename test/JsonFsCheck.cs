@@ -1,9 +1,7 @@
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -14,7 +12,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -128,7 +125,7 @@ namespace Serde.Test
                 out var newComp,
                 out var diagnostics);
 
-            Assert.True(diagnostics.Length == 0, diagnostics.ToString());
+            Assert.True(diagnostics.Length == 0, string.Join(Environment.NewLine, diagnostics));
 
             var peStream = new MemoryStream();
             var result = newComp.Emit(peStream,

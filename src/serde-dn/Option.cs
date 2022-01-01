@@ -28,6 +28,8 @@ namespace Serde
             }
         }
 
+        public T GetValueOrDefault() => _value;
+
         public static implicit operator Option<T>(T value) => new Option<T>(value);
     }
 }

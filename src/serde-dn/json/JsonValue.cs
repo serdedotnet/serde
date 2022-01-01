@@ -4,12 +4,10 @@ using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-[assembly: InternalsVisibleTo("Serde.Test")]
-
 namespace Serde.Json
 {
     // definition
-    internal abstract partial record JsonValue
+    public abstract partial record JsonValue
     {
         public sealed partial record Number(double Value) : JsonValue;
         public sealed partial record Bool(bool Value) : JsonValue;

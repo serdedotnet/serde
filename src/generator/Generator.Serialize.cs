@@ -126,7 +126,7 @@ namespace Serde
                     QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
                     ArgumentList(SeparatedList(new ExpressionSyntax[] {
                         // "FieldName"
-                        LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.Name)),
+                        LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.GetFormattedName())),
                         value
                     }.Select(Argument)))));
         }
@@ -275,8 +275,22 @@ namespace Serde
             var attributes = memberType.GetAttributes();
             foreach (var attr in attributes)
             {
-                if (usage == SerdeUsage.Serialize && attr.AttributeClass?.Name is "GenerateSerializeAttribute" ||
-                    usage == SerdeUsage.Deserialize && attr.AttributeClass?.Name is "GenerateDeserializeAttribute")
+                var attrClass = attr.AttributeClass;
+                if (attrClass is null)
+                {
+                    continue;
+                }
+                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerde))
+                {
+                    return true;
+                }
+                if (usage == SerdeUsage.Serialize &&
+                    WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerialize))
+                {
+                    return true;
+                }
+                if (usage == SerdeUsage.Deserialize &&
+                    WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateDeserialize))
                 {
                     return true;
                 }

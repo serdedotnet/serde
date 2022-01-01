@@ -3,7 +3,7 @@ using System.Collections.Immutable;
 
 namespace Serde.Json
 {
-    internal abstract partial record JsonValue : IDeserialize<JsonValue>
+    partial record JsonValue : IDeserialize<JsonValue>
     {
         static JsonValue IDeserialize<JsonValue>.Deserialize<D>(ref D deserializer)
         {

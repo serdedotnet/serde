@@ -3,6 +3,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
+using static Serde.Test.GeneratorTestUtils;
 
 namespace Serde.Test
 {
@@ -22,7 +23,7 @@ readonly partial struct StringWrap
         _s = s;
     }
 }";
-            return VerifyGeneratedCode(src,
+            return VerifyDiagnostics(src,
             // /0/Test0.cs(3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
             DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan(3, 18, 3, 28));
 
@@ -36,7 +37,7 @@ using Serde;
 [GenerateWrapper(""Wrapped"")]
 partial record struct StringWrap(string Wrapped);
 ";
-            return VerifyGeneratedCode(src,
+            return VerifyDiagnostics(src,
             // /0/Test0.cs(3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
             DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan(3, 18, 3, 27));
         }
@@ -61,7 +62,7 @@ partial struct PointWrap
         _point = point;
     }
 }";
-            return GeneratorSerializeTests.VerifyGeneratedCode(src, new[] {
+            return VerifyGeneratedCode(src, new[] {
                 ("PointWrap.ISerialize", @"
 #nullable enable
 using Serde;
@@ -107,12 +108,12 @@ partial struct PointWrap : Serde.IDeserialize<Point>
                         y = d.GetNextValue<int, Int32Wrap>();
                         break;
                     default:
-                        throw new InvalidDeserializeValueException(""Unexpected field or property name in type Point: '"" + key + ""'"");
+                        break;
                 }
             }
 
             Point newType = new Point()
-            {X = x.Value, Y = y.Value, };
+            {X = x.GetValueOrThrow(""X""), Y = y.GetValueOrThrow(""Y""), };
             return newType;
         }
     }
@@ -130,7 +131,7 @@ partial class C
 {
     public BitVector32.Section S = new BitVector32.Section();
 }";
-            return GeneratorSerializeTests.VerifyGeneratedCode(src, new[] {
+            return VerifyGeneratedCode(src, new[] {
                 ("Serde.BitVector32SectionWrap", @"
 using Section = System.Collections.Specialized.BitVector32.Section;
 namespace Serde
@@ -180,7 +181,7 @@ partial class C
 {
     public BitVector32.Section S = new BitVector32.Section();
 }";
-            return GeneratorSerializeTests.VerifyGeneratedCode(src, new[] {
+            return VerifyGeneratedCode(src, new[] {
                 ("Serde.BitVector32SectionWrap", @"
 using Section = System.Collections.Specialized.BitVector32.Section;
 namespace Serde
@@ -220,12 +221,12 @@ namespace Serde
                             offset = d.GetNextValue<short, Int16Wrap>();
                             break;
                         default:
-                            throw new InvalidDeserializeValueException(""Unexpected field or property name in type System.Collections.Specialized.BitVector32.Section: '"" + key + ""'"");
+                            break;
                     }
                 }
 
                 System.Collections.Specialized.BitVector32.Section newType = new System.Collections.Specialized.BitVector32.Section()
-                {Mask = mask.Value, Offset = offset.Value, };
+                {Mask = mask.GetValueOrThrow(""Mask""), Offset = offset.GetValueOrThrow(""Offset""), };
                 return newType;
             }
         }
@@ -258,33 +259,21 @@ partial class C : Serde.IDeserialize<C>
                         s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
                         break;
                     default:
-                        throw new InvalidDeserializeValueException(""Unexpected field or property name in type C: '"" + key + ""'"");
+                        break;
                 }
             }
 
             C newType = new C()
-            {S = s.Value, };
+            {S = s.GetValueOrThrow(""S""), };
             return newType;
         }
     }
 }") },
     // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,18): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
     DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 18, 39, 22).WithArguments("System.Collections.Specialized.BitVector32.Section.Mask"),
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,37): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 37, 39, 43).WithArguments("System.Collections.Specialized.BitVector32.Section.Offset"));
+    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,55): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 55, 39, 61).WithArguments("System.Collections.Specialized.BitVector32.Section.Offset"));
 
         }
-
-        private static Task VerifyGeneratedCode(
-            string src,
-            params DiagnosticResult[] diagnostics)
-            => GeneratorSerializeTests.VerifyGeneratedCode(src, Array.Empty<(string, string)>(), diagnostics);
-
-        private static Task VerifyGeneratedCode(
-            string src,
-            string typeName,
-            string expected,
-            params DiagnosticResult[] diagnostics)
-            => GeneratorSerializeTests.VerifyGeneratedCode(src, new[] { (typeName, expected)}, diagnostics);
     }
 }
