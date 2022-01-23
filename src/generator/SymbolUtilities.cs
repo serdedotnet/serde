@@ -19,7 +19,7 @@ namespace Serde
 
         public static List<DataMemberSymbol> GetPublicDataMembers(ITypeSymbol type)
         {
-            var format = GetSerdeOptions(type).MemberFormat;
+            var format = GetTypeOptions(type).MemberFormat;
             return type.GetMembers()
                 .Where(m => m is {
                     DeclaredAccessibility: Accessibility.Public,
@@ -28,7 +28,7 @@ namespace Serde
                 .Select(m => new DataMemberSymbol(m, format)).ToList();
         }
 
-        internal static TypeOptions GetSerdeOptions(ITypeSymbol type)
+        internal static TypeOptions GetTypeOptions(ITypeSymbol type)
         {
             var options = new TypeOptions();
             foreach (var attr in type.GetAttributes())
@@ -38,7 +38,7 @@ namespace Serde
                 {
                     continue;
                 }
-                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeOptions))
+                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeTypeOptions))
                 {
                     foreach (var named in attr.NamedArguments)
                     {
@@ -70,5 +70,6 @@ namespace Serde
             }
             return options;
         }
+
     }
 }

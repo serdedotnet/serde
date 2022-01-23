@@ -192,14 +192,23 @@ namespace Serde
                     }
                     var lowerName = m.Name.ToLowerInvariant();
                     locals.AppendLine($"Serde.Option<{memberType}> {lowerName} = default;");
-                    assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrThrow(\"{m.Name}\"),");
+                    if (m.GetMemberOptions().NullIfMissing)
+                    {
+                        assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrDefault(null),");
+                    }
+                    else
+                    {
+                        assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrThrow(\"{m.Name}\"),");
+                    }
+                    // Note, don't use nullable annotation as wrappers don't necessarily allow null
+                    var nonNullMemberType = m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString();
                     cases.AppendLine(@$"
             case ""{m.GetFormattedName()}"":
-                {lowerName} = d.GetNextValue<{memberType}, {wrapperName}>();
+                {lowerName} = d.GetNextValue<{nonNullMemberType}, {wrapperName}>();
                 break;");
                 }
 
-                string unknownMemberBehavior = SymbolUtilities.GetSerdeOptions(type).DenyUnknownMembers
+                string unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
                     ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + key + \"'\");"
                     : "break;";
 

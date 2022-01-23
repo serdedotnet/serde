@@ -14,7 +14,7 @@ namespace Serde.Test
 using Serde;
 
 [GenerateSerialize]
-[SerdeOptions(MemberFormat = MemberFormat.CamelCase)]
+[SerdeTypeOptions(MemberFormat = MemberFormat.CamelCase)]
 partial struct S
 {
     public int One { get; set; }

@@ -124,5 +124,40 @@ namespace Serde
                 }
             }
         }
+
+        internal MemberOptions GetMemberOptions()
+        {
+            var options = new MemberOptions();
+            foreach (var attr in _symbol.GetAttributes())
+            {
+                var attrClass = attr.AttributeClass;
+                if (attrClass is null)
+                {
+                    continue;
+                }
+                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeMemberOptions))
+                {
+                    foreach (var named in attr.NamedArguments)
+                    {
+                        var value = named.Value.Value!;
+                        switch (named)
+                        {
+                            case {
+                                Key: nameof(MemberOptions.NullIfMissing),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type: { SpecialType: SpecialType.System_Boolean }
+                                } }:
+                                options = options with {
+                                    NullIfMissing = (bool)value
+                                };
+                                break;
+                        }
+                    }
+                    break;
+                }
+            }
+            return options;
+        }
     }
 }
