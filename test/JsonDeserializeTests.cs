@@ -95,7 +95,7 @@ namespace Serde.Test
         }
 
         [GenerateDeserialize]
-        [SerdeOptions(MemberFormat = MemberFormat.CamelCase)]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.CamelCase)]
         private partial struct IdStruct
         {
             public int Id;
@@ -135,19 +135,18 @@ namespace Serde.Test
         }
 
         [GenerateDeserialize]
-        [SerdeOptions(MemberFormat = MemberFormat.CamelCase)]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.CamelCase)]
         private readonly partial record struct IdStructList
         {
             public int Count { get; init; }
-            public List<IdStruct> Value { get; init; }
+            public List<IdStruct> List { get; init; }
         }
 
         [Fact]
         public void DeserializeNestedWithList()
         {
-            var src = @"{
-  ""count"": 3,
-  ""value"": [
+            var listSrc = @"
+[
     {
         ""skip1"": ""x"",
         ""id"": 1531298,
@@ -166,13 +165,43 @@ namespace Serde.Test
         ""skip2"": false,
         ""skip3"": null
     }
-  ]
-}
-            }";
+]";
+            var src = @$"{{
+  ""count"": 3,
+  ""list"": {listSrc}
+}}";
+
             var result = JsonSerializer.Deserialize<IdStructList>(src);
-            Assert.Equal(1531298, result.Value[0].Id);
-            Assert.Equal(32414, result.Value[1].Id);
-            Assert.Equal(14254, result.Value[2].Id);
+            Assert.Equal(result.Count, result.List.Count);
+            Assert.Equal(1531298, result.List[0].Id);
+            Assert.Equal(32414, result.List[1].Id);
+            Assert.Equal(14254, result.List[2].Id);
+            var listDirect = JsonSerializer.DeserializeList<IdStruct>(listSrc);
+            for (int i = 0; i < result.Count; i++)
+            {
+                Assert.Equal(result.List[i], listDirect[i]);
+            }
+        }
+
+        [Fact]
+        public void CheckSetToNull()
+        {
+            var src = @"
+{
+    ""Present"": ""abc"",
+    ""Extra"": ""def""
+}";
+            var result = JsonSerializer.Deserialize<SetToNull>(src);
+            Assert.Equal("abc", result.Present);
+            Assert.Null(result.Missing);
+        }
+
+        [GenerateDeserialize]
+        private readonly partial record struct SetToNull
+        {
+            public string Present { get; init; }
+            [SerdeMemberOptions(NullIfMissing = true)]
+            public string? Missing { get; init; }
         }
     }
 }

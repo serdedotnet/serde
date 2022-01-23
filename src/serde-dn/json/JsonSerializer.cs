@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 
@@ -25,6 +26,10 @@ namespace Serde.Json
         public static T Deserialize<T>(string source)
             where T : IDeserialize<T>
             => Deserialize<T, T>(source);
+
+        public static List<T> DeserializeList<T>(string source)
+            where T : IDeserialize<T>
+            => Deserialize<List<T>, ListWrap.DeserializeImpl<T, T>>(source);
 
         public static T Deserialize<T, D>(string source)
             where D : IDeserialize<T>

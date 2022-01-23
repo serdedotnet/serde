@@ -23,7 +23,8 @@ namespace Serde
         GenerateDeserialize,
         GenerateSerde,
         GenerateWrapper,
-        SerdeOptions
+        SerdeTypeOptions,
+        SerdeMemberOptions
     }
 
     internal static class WellKnownTypes
@@ -62,11 +63,12 @@ namespace Serde
 
         internal static string GetName(this WellKnownAttribute wk) => wk switch
         {
-            WellKnownAttribute.GenerateDeserialize => "GenerateDeserialize",
-            WellKnownAttribute.GenerateSerialize => "GenerateSerialize",
-            WellKnownAttribute.GenerateSerde => "GenerateSerde",
-            WellKnownAttribute.GenerateWrapper => "GenerateWrapper",
-            WellKnownAttribute.SerdeOptions => "SerdeOptions",
+            WellKnownAttribute.GenerateDeserialize => nameof(WellKnownAttribute.GenerateDeserialize),
+            WellKnownAttribute.GenerateSerialize => nameof(WellKnownAttribute.GenerateSerialize),
+            WellKnownAttribute.GenerateSerde => nameof(WellKnownAttribute.GenerateSerde),
+            WellKnownAttribute.GenerateWrapper => nameof(WellKnownAttribute.GenerateWrapper),
+            WellKnownAttribute.SerdeTypeOptions => nameof(WellKnownAttribute.SerdeTypeOptions),
+            WellKnownAttribute.SerdeMemberOptions => nameof(WellKnownAttribute.SerdeMemberOptions),
             _ => throw ExceptionUtilities.UnexpectedValue(wk)
         };
 

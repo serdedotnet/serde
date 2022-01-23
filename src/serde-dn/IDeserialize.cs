@@ -26,6 +26,13 @@ namespace Serde
                 ? member.GetValueOrDefault()
                 : throw new InvalidDeserializeValueException($"Required member '{paramName}' was missing a value in the source");
         }
+
+        public static T GetValueOrDefault<T>(this Option<T> member, T defaultValue)
+        {
+            return member.HasValue
+                ? member.GetValueOrDefault()
+                : defaultValue;
+        }
     }
 
     public interface IDeserializeVisitor<T>
