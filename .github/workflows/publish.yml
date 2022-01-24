@@ -1,0 +1,19 @@
+
+name: publish
+on:
+  push:
+    branches: [ release ]
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.100
+    - name: Pack
+      run: dotnet pack -warnaserror -c Release
+    - name: Publish package
+      run: dotnet nuget push -k ${secret.NUGET_API_KEY} artifacts/pack/serde-dn.*.nupkg
