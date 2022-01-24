@@ -16,4 +16,4 @@ jobs:
     - name: Pack
       run: dotnet pack -warnaserror -c Release
     - name: Publish package
-      run: dotnet nuget push -k ${secret.NUGET_API_KEY} artifacts/pack/serde-dn.*.nupkg
+      run: dotnet nuget push -k ${{ secrets.NUGET_API_KEY }} artifacts/pack/serde-dn.*.nupkg
