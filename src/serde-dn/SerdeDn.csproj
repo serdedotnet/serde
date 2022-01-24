@@ -9,7 +9,7 @@
   <!-- Package settings -->
   <PropertyGroup>
     <PackageId>serde-dn</PackageId>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <IsPackable>true</IsPackable>
     <PackageOutputPath>$(ArtifactsPath)pack</PackageOutputPath>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
