@@ -76,5 +76,13 @@ namespace Serde.Json
                 enumerable.End();
             }
         }
+
+        partial record Null
+        {
+            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            {
+                serializer.SerializeNull();
+            }
+        }
     }
 }

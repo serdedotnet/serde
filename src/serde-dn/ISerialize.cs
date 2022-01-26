@@ -51,6 +51,9 @@
         void SerializeFloat(float f);
         void SerializeDouble(double d);
         void SerializeString(string s);
+        void SerializeNull();
+        void SerializeNotNull<T>(T t) where T : notnull, ISerialize;
+
         TSerializeType SerializeType(string name, int numFields);
         TSerializeEnumerable SerializeEnumerable(int? length);
         TSerializeDictionary SerializeDictionary(int? length);

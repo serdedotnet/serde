@@ -37,6 +37,30 @@ partial struct Rgb : Serde.ISerialize
         }
 
         [Fact]
+        public Task NullableRefField()
+        {
+            var src = @"
+[Serde.GenerateSerialize]
+partial struct S
+{
+    public string? F;
+}";
+            return VerifySerialize(src, "S", @"
+#nullable enable
+using Serde;
+
+partial struct S : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType(""S"", 1);
+        type.SerializeField(""F"", new NullableRefWrap<string, StringWrap>(this.F));
+        type.End();
+    }
+}");
+        }
+
+        [Fact]
         public Task TypeDoesntImplementISerialize()
         {
             var src = @"

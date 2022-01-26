@@ -178,7 +178,7 @@ namespace Serde
                     {
                         wrapperName = memberType;
                     }
-                    else if (TryGetPrimitiveWrapper(m.Type) is {} primWrap)
+                    else if (TryGetPrimitiveWrapper(m.Type, SerdeUsage.Deserialize) is {} primWrap)
                     {
                         wrapperName = primWrap;
                     }

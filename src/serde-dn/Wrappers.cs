@@ -317,4 +317,24 @@ namespace Serde
             string IDeserializeVisitor<string>.VisitChar(char c) => c.ToString();
         }
     }
+
+    public readonly partial record struct NullableRefWrap<T, TWrap>(T? Value)
+        : ISerializeWrap<T?, NullableRefWrap<T, TWrap>>, ISerialize
+        where T : class
+        where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+    {
+        public static NullableRefWrap<T, TWrap> Create(T? t) => new NullableRefWrap<T, TWrap>(t);
+
+        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            if (Value is null)
+            {
+                serializer.SerializeNull();
+            }
+            else
+            {
+                serializer.SerializeNotNull(TWrap.Create(Value));
+            }
+        }
+    }
 }

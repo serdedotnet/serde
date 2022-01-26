@@ -14,6 +14,7 @@ namespace Serde.Json
         public sealed partial record String(string Value) : JsonValue;
         public sealed partial record Object(ImmutableDictionary<string, JsonValue> Members) : JsonValue;
         public sealed partial record Array(ImmutableArray<JsonValue> Elements) : JsonValue;
+        public sealed partial record Null : JsonValue;
     }
 
     // helpers
@@ -125,6 +126,12 @@ namespace Serde.Json
                 builder.Append(" }");
                 return builder.ToString();
             }
+        }
+
+        partial record Null
+        {
+            public static readonly Null Instance = new Null();
+            private Null() { }
         }
     }
 }

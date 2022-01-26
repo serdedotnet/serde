@@ -69,6 +69,22 @@ namespace Serde.Test
         }
 
         [GenerateDeserialize]
+        private partial struct NullableString
+        {
+            public string? S;
+        }
+
+        [Fact]
+        public void DeserializeNullableString()
+        {
+            var src = @"{
+                ""S"": null
+            ";
+            var result = JsonSerializer.Deserialize<NullableString>(src);
+            Assert.Null(result.S);
+        }
+
+        [GenerateDeserialize]
         private partial struct ExtraMembers
         {
             public int b;

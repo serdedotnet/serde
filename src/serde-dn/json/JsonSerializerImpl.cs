@@ -45,6 +45,12 @@ namespace Serde.Json
         public void SerializeDouble(double d) => _writer.WriteNumberValue(d);
 
         public void SerializeString(string s) => _writer.WriteStringValue(s);
+        public void SerializeNull() => _writer.WriteNullValue();
+
+        public void SerializeNotNull<T>(T t) where T : notnull, ISerialize
+        {
+            t.Serialize<JsonSerializerImpl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref this);
+        }
 
         public SerializeType SerializeType(string name, int numFields)
         {
@@ -177,6 +183,10 @@ namespace Serde.Json
             public ISerializeEnumerable SerializeEnumerable(int? length) => throw new KeyNotStringException();
 
             public ISerializeType SerializeType(string name, int numFields) => throw new KeyNotStringException();
+
+            public void SerializeNull() => throw new KeyNotStringException();
+
+            public void SerializeNotNull<T>(T t) where T : notnull, ISerialize => throw new KeyNotStringException();
         }
     }
 }
