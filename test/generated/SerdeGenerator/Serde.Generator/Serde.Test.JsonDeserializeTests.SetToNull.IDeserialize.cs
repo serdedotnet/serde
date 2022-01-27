@@ -30,7 +30,7 @@ namespace Serde.Test
                                 present = d.GetNextValue<string, StringWrap>();
                                 break;
                             case "Missing":
-                                missing = d.GetNextValue<string, StringWrap>();
+                                missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                                 break;
                             default:
                                 break;

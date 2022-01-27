@@ -317,4 +317,53 @@ namespace Serde
             string IDeserializeVisitor<string>.VisitChar(char c) => c.ToString();
         }
     }
+
+    public static class NullableRefWrap
+    {
+        public readonly partial record struct SerializeImpl<T, TWrap>(T? Value)
+            : ISerializeWrap<T?, SerializeImpl<T, TWrap>>, ISerialize
+            where T : class
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+        {
+            public static SerializeImpl<T, TWrap> Create(T? t) => new SerializeImpl<T, TWrap>(t);
+
+            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            {
+                if (Value is null)
+                {
+                    serializer.SerializeNull();
+                }
+                else
+                {
+                    serializer.SerializeNotNull(TWrap.Create(Value));
+                }
+            }
+        }
+
+        public readonly partial record struct DeserializeImpl<T, TWrap>(T? Value)
+            : IDeserialize<T?>
+            where T : class
+            where TWrap : IDeserialize<T>
+        {
+            public static T? Deserialize<D>(ref D deserializer) where D : IDeserializer
+            {
+                return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
+            }
+
+            private sealed class Visitor : IDeserializeVisitor<T?>
+            {
+                public string ExpectedTypeName => typeof(T).ToString() + "?";
+
+                T? IDeserializeVisitor<T?>.VisitNull()
+                {
+                    return null;
+                }
+
+                T? IDeserializeVisitor<T?>.VisitNotNull<D>(ref D d)
+                {
+                    return TWrap.Deserialize(ref d);
+                }
+            }
+        }
+    }
 }

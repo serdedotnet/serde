@@ -66,6 +66,109 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
         }
 
         [Fact]
+        public Task NullableRefField()
+        {
+            var src = @"
+[Serde.GenerateDeserialize]
+partial struct S
+{
+    public string? F;
+}";
+            return VerifyDeserialize(src, "S", @"
+#nullable enable
+using Serde;
+
+partial struct S : Serde.IDeserialize<S>
+{
+    static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
+    {
+        var visitor = new SerdeVisitor();
+        var fieldNames = new[]{""F""};
+        return deserializer.DeserializeType<S, SerdeVisitor>(""S"", fieldNames, visitor);
+    }
+
+    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
+    {
+        public string ExpectedTypeName => ""S"";
+        S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
+        {
+            Serde.Option<string?> f = default;
+            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            {
+                switch (key)
+                {
+                    case ""F"":
+                        f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            S newType = new S()
+            {F = f.GetValueOrThrow(""F""), };
+            return newType;
+        }
+    }
+}");
+        }
+
+        [Fact]
+        public Task DeserializeMissing()
+        {
+            var src = @"
+using Serde;
+[GenerateDeserialize]
+readonly partial record struct SetToNull
+{
+    public string Present { get; init; }
+    [SerdeMemberOptions(NullIfMissing = true)]
+    public string? Missing { get; init; }
+} ";
+            return VerifyDeserialize(src, "SetToNull", @"
+#nullable enable
+using Serde;
+
+partial record struct SetToNull : Serde.IDeserialize<SetToNull>
+{
+    static SetToNull Serde.IDeserialize<SetToNull>.Deserialize<D>(ref D deserializer)
+    {
+        var visitor = new SerdeVisitor();
+        var fieldNames = new[]{""Present"", ""Missing""};
+        return deserializer.DeserializeType<SetToNull, SerdeVisitor>(""SetToNull"", fieldNames, visitor);
+    }
+
+    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<SetToNull>
+    {
+        public string ExpectedTypeName => ""SetToNull"";
+        SetToNull Serde.IDeserializeVisitor<SetToNull>.VisitDictionary<D>(ref D d)
+        {
+            Serde.Option<string> present = default;
+            Serde.Option<string?> missing = default;
+            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            {
+                switch (key)
+                {
+                    case ""Present"":
+                        present = d.GetNextValue<string, StringWrap>();
+                        break;
+                    case ""Missing"":
+                        missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            SetToNull newType = new SetToNull()
+            {Present = present.GetValueOrThrow(""Present""), Missing = missing.GetValueOrDefault(null), };
+            return newType;
+        }
+    }
+}");
+        }
+
+        [Fact]
         public Task Array()
         {
             var src = @"

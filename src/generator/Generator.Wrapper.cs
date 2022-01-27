@@ -71,15 +71,17 @@ namespace Serde
         {
             switch (type)
             {
+                case { NullableAnnotation: NullableAnnotation.Annotated }:
+                    return MakeWrappedExpression(
+                        $"NullableRefWrap.{usage.GetName()}",
+                        ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
+                        context,
+                        usage);
                 case IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }:
                     return MakeWrappedExpression($"ArrayWrap.{usage.GetName()}", ImmutableArray.Create(elemType), context, usage);
 
-                case INamedTypeSymbol t:
-                    if (TryGetWrapperName(t, context, usage) is {} tuple)
-                    {
-                        return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage);
-                    }
-                    break;
+                case INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is {} tuple:
+                    return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage);
             }
             return null;
         }
@@ -129,7 +131,7 @@ namespace Serde
                 // Otherwise we'll need to wrap the element type as well e.g.,
                 //      ArrayWrap<`elemType`, `elemTypeWrapper`>
 
-                var primWrapper = TryGetPrimitiveWrapper(elemType);
+                var primWrapper = TryGetPrimitiveWrapper(elemType, usage);
                 TypeSyntax? wrapperName = primWrapper is not null
                     ? IdentifierName(primWrapper)
                     : TryGetCompoundWrapper(elemType, context, usage);
@@ -155,10 +157,15 @@ namespace Serde
             GeneratorExecutionContext context,
             SerdeUsage usage)
         {
+            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return ("NullableRefWrap", ImmutableArray.Create(typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated)));
+            }
             if (typeSymbol is INamedTypeSymbol named && TryGetWellKnownType(named, context) is {} wk)
             {
                 return (wk.ToWrapper(usage), named.TypeArguments);
             }
+
             // Check if it implements well-known interfaces
             foreach (var iface in WellKnownTypes.GetAvailableInterfacesInOrder(context))
             {

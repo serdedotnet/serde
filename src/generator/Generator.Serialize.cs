@@ -109,14 +109,7 @@ namespace Serde
                     receiverExpr,
                     IdentifierName(m.Name));
 
-                // Always prefer a direct implementation of ISerialize
-                if (ImplementsSerde(memberType, context, SerdeUsage.Serialize))
-                {
-                    return memberExpr;
-                }
-
-                // Try using a wrapper
-                return TrySerializeWithWrapper(memberType, m, context, memberExpr);
+                return MakeSerializeArgument(memberType, m, context, memberExpr);
             }
 
             // Make a statement like `type.SerializeField("member.Name", value)`
@@ -131,28 +124,20 @@ namespace Serde
                     }.Select(Argument)))));
         }
 
-        private static ExpressionSyntax? TrySerializeWithWrapper(
-            ITypeSymbol type,
-            DataMemberSymbol member,
-            GeneratorExecutionContext context,
-            ExpressionSyntax memberExpr)
-        {
-            return TrySerializeBuiltIn(type, member, context, memberExpr);
-        }
-
-        /// SerdeDn provides wrappers for primitives and common types in the framework. If found,
-        /// we generate and initialize the wrapper.
+        /// <summary>
+        /// Constructs the argument to a ISerializer.Serialize call, i.e. constructs a term which
+        /// implements ISerialize.  SerdeDn provides wrappers for primitives and common types in the
+        /// framework. If found, we generate and initialize the wrapper.
         /// </summary>
-        private static ExpressionSyntax? TrySerializeBuiltIn(
+        private static ExpressionSyntax? MakeSerializeArgument(
             ITypeSymbol type,
             DataMemberSymbol member,
             GeneratorExecutionContext context,
             ExpressionSyntax memberExpr)
         {
             var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(memberExpr) }));
-            // Priority:
 
-            // 1. an explicit wrap
+            // 1. Check for an explicit wrapper
 
             var attr = TryGetExplicitWrapper(member);
             if (attr is { ConstructorArguments: { Length: 1 } attrArgs } &&
@@ -174,9 +159,16 @@ namespace Serde
                 }
             }
 
-            // 2. A wrapper for a built-in primitive (non-generic type)
+            // 3. Check for a direct implementation of ISerialize
 
-            var wrapperName = TryGetPrimitiveWrapper(type);
+            if (ImplementsSerde(type, context, SerdeUsage.Serialize))
+            {
+                return memberExpr;
+            }
+
+            // 4. A wrapper for a built-in primitive (non-generic type)
+
+            var wrapperName = TryGetPrimitiveWrapper(type, SerdeUsage.Serialize);
             if (wrapperName is not null)
             {
                 return ObjectCreationExpression(
@@ -185,9 +177,11 @@ namespace Serde
                     initializer: null);
             }
 
-            // 3. A wrapper for a compound type (might need nested wrappers)
+            // 5. A wrapper for a compound type (might need nested wrappers)
+
             TypeSyntax? wrapperTypeSyntax = TryGetCompoundWrapper(type, context, SerdeUsage.Serialize)
-            // 4. Create a wrapper if appropriate
+
+            // 6. Create a wrapper if appropriate
                 ?? TryCreateWrapper(type, member, context, SerdeUsage.Serialize);
             if (wrapperTypeSyntax is not null)
             {
@@ -249,27 +243,40 @@ namespace Serde
         }
 
         // If the target is a core type, we can wrap it
-        private static string? TryGetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
+        private static string? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
         {
-            SpecialType.System_Boolean => "BoolWrap",
-            SpecialType.System_Char => "CharWrap",
-            SpecialType.System_Byte => "ByteWrap",
-            SpecialType.System_UInt16 => "UInt16Wrap",
-            SpecialType.System_UInt32 => "UInt32Wrap",
-            SpecialType.System_UInt64 => "UInt64Wrap",
-            SpecialType.System_SByte => "SByteWrap",
-            SpecialType.System_Int16 => "Int16Wrap",
-            SpecialType.System_Int32 => "Int32Wrap",
-            SpecialType.System_Int64 => "Int64Wrap",
-            SpecialType.System_String => "StringWrap",
-            _ => null
-        };
+            if (type.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return null;
+            }
+            return type.SpecialType switch
+            {
+                SpecialType.System_Boolean => "BoolWrap",
+                SpecialType.System_Char => "CharWrap",
+                SpecialType.System_Byte => "ByteWrap",
+                SpecialType.System_UInt16 => "UInt16Wrap",
+                SpecialType.System_UInt32 => "UInt32Wrap",
+                SpecialType.System_UInt64 => "UInt64Wrap",
+                SpecialType.System_SByte => "SByteWrap",
+                SpecialType.System_Int16 => "Int16Wrap",
+                SpecialType.System_Int32 => "Int32Wrap",
+                SpecialType.System_Int64 => "Int64Wrap",
+                SpecialType.System_String => "StringWrap",
+                _ => null
+            };
+        }
 
         /// <summary>
         /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
         /// </summary>
         private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
         {
+            // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
+            if (memberType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return false;
+            }
+
             // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
             // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
             var attributes = memberType.GetAttributes();
