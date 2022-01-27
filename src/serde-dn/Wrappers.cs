@@ -318,22 +318,51 @@ namespace Serde
         }
     }
 
-    public readonly partial record struct NullableRefWrap<T, TWrap>(T? Value)
-        : ISerializeWrap<T?, NullableRefWrap<T, TWrap>>, ISerialize
-        where T : class
-        where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+    public static class NullableRefWrap
     {
-        public static NullableRefWrap<T, TWrap> Create(T? t) => new NullableRefWrap<T, TWrap>(t);
-
-        void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        public readonly partial record struct SerializeImpl<T, TWrap>(T? Value)
+            : ISerializeWrap<T?, SerializeImpl<T, TWrap>>, ISerialize
+            where T : class
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
         {
-            if (Value is null)
+            public static SerializeImpl<T, TWrap> Create(T? t) => new SerializeImpl<T, TWrap>(t);
+
+            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
             {
-                serializer.SerializeNull();
+                if (Value is null)
+                {
+                    serializer.SerializeNull();
+                }
+                else
+                {
+                    serializer.SerializeNotNull(TWrap.Create(Value));
+                }
             }
-            else
+        }
+
+        public readonly partial record struct DeserializeImpl<T, TWrap>(T? Value)
+            : IDeserialize<T?>
+            where T : class
+            where TWrap : IDeserialize<T>
+        {
+            public static T? Deserialize<D>(ref D deserializer) where D : IDeserializer
             {
-                serializer.SerializeNotNull(TWrap.Create(Value));
+                return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
+            }
+
+            private sealed class Visitor : IDeserializeVisitor<T?>
+            {
+                public string ExpectedTypeName => typeof(T).ToString() + "?";
+
+                T? IDeserializeVisitor<T?>.VisitNull()
+                {
+                    return null;
+                }
+
+                T? IDeserializeVisitor<T?>.VisitNotNull<D>(ref D d)
+                {
+                    return TWrap.Deserialize(ref d);
+                }
             }
         }
     }

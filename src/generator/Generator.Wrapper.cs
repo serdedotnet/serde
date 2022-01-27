@@ -69,25 +69,19 @@ namespace Serde
 
         private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage)
         {
-            if (usage == SerdeUsage.Serialize && type.NullableAnnotation == NullableAnnotation.Annotated)
-            {
-                return MakeWrappedExpression(
-                    "NullableRefWrap",
-                    ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
-                    context,
-                    usage);
-            }
             switch (type)
             {
+                case { NullableAnnotation: NullableAnnotation.Annotated }:
+                    return MakeWrappedExpression(
+                        $"NullableRefWrap.{usage.GetName()}",
+                        ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
+                        context,
+                        usage);
                 case IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }:
                     return MakeWrappedExpression($"ArrayWrap.{usage.GetName()}", ImmutableArray.Create(elemType), context, usage);
 
-                case INamedTypeSymbol t:
-                    if (TryGetWrapperName(t, context, usage) is {} tuple)
-                    {
-                        return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage);
-                    }
-                    break;
+                case INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is {} tuple:
+                    return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage);
             }
             return null;
         }

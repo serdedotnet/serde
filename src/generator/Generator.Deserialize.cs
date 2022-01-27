@@ -201,10 +201,9 @@ namespace Serde
                         assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrThrow(\"{m.Name}\"),");
                     }
                     // Note, don't use nullable annotation as wrappers don't necessarily allow null
-                    var nonNullMemberType = m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated).ToDisplayString();
                     cases.AppendLine(@$"
             case ""{m.GetFormattedName()}"":
-                {lowerName} = d.GetNextValue<{nonNullMemberType}, {wrapperName}>();
+                {lowerName} = d.GetNextValue<{memberType}, {wrapperName}>();
                 break;");
                 }
 

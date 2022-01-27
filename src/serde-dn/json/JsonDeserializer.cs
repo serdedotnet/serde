@@ -265,6 +265,22 @@ namespace Serde.Json
 
         public T DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeString<T, V>(v);
+
+        public T DeserializeNullableRef<T, V>(V v)
+            where V : class, IDeserializeVisitor<T>
+        {
+            var reader = GetReader();
+            reader.ReadOrThrow();
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return v.VisitNull();
+            }
+            else
+            {
+                var deserializer = this;
+                return v.VisitNotNull(ref deserializer);
+            }
+        }
     }
 
     internal static class Utf8JsonReaderExtensions

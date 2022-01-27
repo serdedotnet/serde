@@ -54,7 +54,7 @@ partial struct S : Serde.ISerialize
     void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
     {
         var type = serializer.SerializeType(""S"", 1);
-        type.SerializeField(""F"", new NullableRefWrap<string, StringWrap>(this.F));
+        type.SerializeField(""F"", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.F));
         type.End();
     }
 }");

@@ -245,7 +245,7 @@ namespace Serde
         // If the target is a core type, we can wrap it
         private static string? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
         {
-            if (usage == SerdeUsage.Serialize && type.NullableAnnotation == NullableAnnotation.Annotated)
+            if (type.NullableAnnotation == NullableAnnotation.Annotated)
             {
                 return null;
             }

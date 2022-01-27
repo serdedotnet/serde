@@ -38,7 +38,6 @@ namespace Serde
     public interface IDeserializeVisitor<T>
     {
         string ExpectedTypeName { get; }
-        T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
         T VisitBool(bool b) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitChar(char c) => VisitString(c.ToString());
         T VisitByte(byte b) => VisitU64(b);
@@ -56,6 +55,8 @@ namespace Serde
             => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitDictionary<D>(ref D d) where D : IDeserializeDictionary
             => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
+        T VisitNotNull<D>(ref D d) where D : IDeserializer => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
     }
 
     public interface IDeserializeEnumerable
@@ -96,5 +97,6 @@ namespace Serde
         T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>;
         T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>;
         T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        T DeserializeNullableRef<T, V>(V v) where V : class, IDeserializeVisitor<T>;
     }
 }

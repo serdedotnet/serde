@@ -134,7 +134,7 @@ namespace Serde.Test
         public void NullableString()
         {
             string? s = null;
-            var js = Serde.Json.JsonSerializer.Serialize(new NullableRefWrap<string, StringWrap>(s));
+            var js = Serde.Json.JsonSerializer.Serialize(new NullableRefWrap.SerializeImpl<string, StringWrap>(s));
             Assert.Equal("null", js);
             js = Serde.Json.JsonSerializer.Serialize(JsonValue.Null.Instance);
             Assert.Equal("null", js);
