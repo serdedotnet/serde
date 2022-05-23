@@ -85,8 +85,8 @@ partial struct S1 : Serde.ISerialize
         type.End();
     }
 }",
-                // /0/Test0.cs(6,15): error ERR_DoesntImplementISerializable: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializable. Either implement the interface, or use a remote implementation.
-                DiagnosticResult.CompilerError("ERR_DoesntImplementISerializable").WithSpan(6, 15, 6, 16));
+                // /0/Test0.cs(6,15): error ERR_DoesntImplementInterface: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializable. Either implement the interface, or use a remote implementation.
+                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(6, 15, 6, 16));
         }
 
         [Fact]
@@ -519,6 +519,158 @@ partial class C : Serde.ISerialize
         type.End();
     }
 }");
+        }
+
+        [Fact]
+        public Task EnumMember()
+        {
+            var src = @"
+[Serde.GenerateSerialize]
+partial class C
+{
+    public ColorInt ColorInt;
+    public ColorByte ColorByte;
+    public ColorLong ColorLong;
+    public ColorULong ColorULong;
+}
+public enum ColorInt { Red = 3, Green = 5, Blue = 7 }
+public enum ColorByte : byte { Red = 3, Green = 5, Blue = 7 }
+public enum ColorLong : long { Red = 3, Green = 5, Blue = 7 }
+public enum ColorULong : ulong { Red = 3, Green = 5, Blue = 7 }
+";
+
+            return VerifyGeneratedCode(src, new[] {
+                ("Serde.ColorIntWrap", @"
+namespace Serde
+{
+    internal readonly partial record struct ColorIntWrap(ColorInt Value);
+}"),
+                ("Serde.ColorIntWrap.ISerialize", """
+
+#nullable enable
+using Serde;
+
+namespace Serde
+{
+    partial record struct ColorIntWrap : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            var name = Value switch
+            {
+                ColorInt.Red => "Red",
+                ColorInt.Green => "Green",
+                ColorInt.Blue => "Blue",
+                _ => null
+            };
+            serializer.SerializeEnumValue("ColorInt", name, new Int32Wrap((int)Value));
+        }
+    }
+}
+"""),
+                ("Serde.ColorByteWrap", @"
+namespace Serde
+{
+    internal readonly partial record struct ColorByteWrap(ColorByte Value);
+}"),
+                ("Serde.ColorByteWrap.ISerialize", """
+
+#nullable enable
+using Serde;
+
+namespace Serde
+{
+    partial record struct ColorByteWrap : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            var name = Value switch
+            {
+                ColorByte.Red => "Red",
+                ColorByte.Green => "Green",
+                ColorByte.Blue => "Blue",
+                _ => null
+            };
+            serializer.SerializeEnumValue("ColorByte", name, new ByteWrap((byte)Value));
+        }
+    }
+}
+"""),
+                ("Serde.ColorLongWrap", @"
+namespace Serde
+{
+    internal readonly partial record struct ColorLongWrap(ColorLong Value);
+}"),
+                ("Serde.ColorLongWrap.ISerialize", """
+
+#nullable enable
+using Serde;
+
+namespace Serde
+{
+    partial record struct ColorLongWrap : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            var name = Value switch
+            {
+                ColorLong.Red => "Red",
+                ColorLong.Green => "Green",
+                ColorLong.Blue => "Blue",
+                _ => null
+            };
+            serializer.SerializeEnumValue("ColorLong", name, new Int64Wrap((long)Value));
+        }
+    }
+}
+"""),
+                ("Serde.ColorULongWrap", @"
+namespace Serde
+{
+    internal readonly partial record struct ColorULongWrap(ColorULong Value);
+}"),
+                ("Serde.ColorULongWrap.ISerialize", """
+
+#nullable enable
+using Serde;
+
+namespace Serde
+{
+    partial record struct ColorULongWrap : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        {
+            var name = Value switch
+            {
+                ColorULong.Red => "Red",
+                ColorULong.Green => "Green",
+                ColorULong.Blue => "Blue",
+                _ => null
+            };
+            serializer.SerializeEnumValue("ColorULong", name, new UInt64Wrap((ulong)Value));
+        }
+    }
+}
+"""),
+                ("C.ISerialize", """
+
+#nullable enable
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    {
+        var type = serializer.SerializeType("C", 4);
+        type.SerializeField("ColorInt", new ColorIntWrap(this.ColorInt));
+        type.SerializeField("ColorByte", new ColorByteWrap(this.ColorByte));
+        type.SerializeField("ColorLong", new ColorLongWrap(this.ColorLong));
+        type.SerializeField("ColorULong", new ColorULongWrap(this.ColorULong));
+        type.End();
+    }
+}
+"""),
+            });
         }
 
         private static Task VerifySerialize(

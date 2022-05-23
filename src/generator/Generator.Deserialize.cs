@@ -43,12 +43,6 @@ namespace Serde
         {
             var stmts = new List<StatementSyntax>();
 
-            // Generate statements:
-            // var visitor = new 'GeneratedVisitorName'();
-            //
-            // var fieldNames = new[] { 'field1', 'field2', 'field3' ... };
-            // return deserializer.DeserializeType<'TypeName', 'GeneratedVisitorName'>('TypeName', fieldNames, visitor);
-
             // var visitor = new 'GeneratedVisitorName'();
             stmts.Add(LocalDeclarationStatement(
                 VariableDeclaration(
@@ -63,10 +57,23 @@ namespace Serde
                     })
                 )));
 
+
+            // Generate statements:
+            // var visitor = new 'GeneratedVisitorName'();
+
+            // Three options:
+            // 1. Built-in type
+            // 2. Enum type
+            // 3. Custom type
+            //
+            // var fieldNames = new[] { 'field1', 'field2', 'field3' ... };
+            // return deserializer.DeserializeType<'TypeName', 'GeneratedVisitorName'>('TypeName', fieldNames, visitor);
+
             var serdeName = SerdeBuiltInName(typeSymbol.SpecialType);
             var typeSyntax = ParseTypeName(typeSymbol.ToString());
             if (serdeName is not null)
             {
+                // Built-in type
                 stmts.Add(ReturnStatement(InvocationExpression(
                     QualifiedName(
                         IdentifierName("deserializer"),
@@ -83,8 +90,28 @@ namespace Serde
                     }))
                 )));
             }
+            else if (typeSymbol.TypeKind == TypeKind.Enum)
+            {
+                // 2. Enum type
+                stmts.Add(ReturnStatement(InvocationExpression(
+                    QualifiedName(
+                        IdentifierName("deserializer"),
+                        GenericName(
+                            Identifier("DeserializeString"),
+                            TypeArgumentList(SeparatedList(new TypeSyntax[] {
+                                typeSyntax,
+                                IdentifierName(GeneratedVisitorName)
+                            }))
+                        )
+                    ),
+                    ArgumentList(SeparatedList(new[] {
+                        Argument(IdentifierName("visitor"))
+                    }))
+                )));
+            }
             else
             {
+                // 3. Custom type
                 var members = SymbolUtilities.GetPublicDataMembers(typeSymbol);
                 var namesArray = ImplicitArrayCreationExpression(InitializerExpression(
                     SyntaxKind.ArrayInitializerExpression,
@@ -145,9 +172,10 @@ namespace Serde
             ));
 
             var typeName = typeSyntax.ToString();
+            var typeMembers = new List<MemberDeclarationSyntax>();
             // Members:
             //     public string ExpectedTypeName => 'typeName';
-            var property = PropertyDeclaration(
+            typeMembers.Add(PropertyDeclaration(
                 attributeLists: default,
                 modifiers: new SyntaxTokenList(new[] { Token(SyntaxKind.PublicKeyword) }),
                 type: PredefinedType(Token(SyntaxKind.StringKeyword)),
@@ -156,13 +184,42 @@ namespace Serde
                 accessorList: null,
                 expressionBody: ArrowExpressionClause(StringLiteral(typeName)),
                 initializer: null,
-                semicolonToken: Token(SyntaxKind.SemicolonToken));
+                semicolonToken: Token(SyntaxKind.SemicolonToken)));
+
+            // Three cases
+            // 1. Built-in type
+            // 2. Enum type
+            // 3. Custom type
 
             var serdeName = SerdeBuiltInName(type.SpecialType);
-            string methodText;
             if (serdeName is not null)
             {
-                methodText = $"{typeName} IDeserializeVisitor<{typeName}>.Visit{serdeName}({typeName} x) => x;";
+                var methodText = $"{typeName} IDeserializeVisitor<{typeName}>.Visit{serdeName}({typeName} x) => x;";
+                typeMembers.Add(ParseMemberDeclaration(methodText)!);
+            }
+            else if (type.TypeKind == TypeKind.Enum)
+            {
+                var cases = new StringBuilder();
+                foreach (var m in SymbolUtilities.GetPublicDataMembers(type))
+                {
+                    cases.Append(@$"
+        case ""{m.Name}"":
+            enumValue = {typeName}.{m.Name};
+            break;");
+                }
+                var methodText = @$"
+{typeName} Serde.IDeserializeVisitor<{typeName}>.VisitString(string s)
+{{
+    {typeName} enumValue;
+    switch (s)
+    {{
+{cases.ToString()}
+        default:
+            throw new InvalidDeserializeValueException(""Unexpected enum field name: "" + s);
+    }}
+    return enumValue;
+}}";
+                typeMembers.Add(ParseMemberDeclaration(methodText)!);
             }
             else
             {
@@ -172,7 +229,7 @@ namespace Serde
                 var members = SymbolUtilities.GetPublicDataMembers(type);
                 foreach (var m in members)
                 {
-                    string? wrapperName = null;
+                    string wrapperName;
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
                     if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
                     {
@@ -189,6 +246,17 @@ namespace Serde
                     else if (TryCreateWrapper(m.Type, m, context, SerdeUsage.Deserialize) is {} wrap)
                     {
                         wrapperName = wrap.ToString();
+                    }
+                    else
+                    {
+                        // No built-in handling and doesn't implement ISerializable, error
+                        context.ReportDiagnostic(CreateDiagnostic(
+                            DiagId.ERR_DoesntImplementInterface,
+                            m.Locations[0],
+                            m.Symbol,
+                            memberType,
+                            "Serde.IDeserializable"));
+                        wrapperName = memberType;
                     }
                     var lowerName = m.Name.ToLowerInvariant();
                     locals.AppendLine($"Serde.Option<{memberType}> {lowerName} = default;");
@@ -211,7 +279,7 @@ namespace Serde
                     ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + key + \"'\");"
                     : "break;";
 
-                methodText = @$"
+                var methodText = @$"
 {typeName} Serde.IDeserializeVisitor<{typeName}>.VisitDictionary<D>(ref D d)
 {{
     {locals}
@@ -229,12 +297,8 @@ namespace Serde
     }};
     return newType;
 }}";
+                typeMembers.Add(ParseMemberDeclaration(methodText)!);
             }
-
-            var typeMembers = List(new MemberDeclarationSyntax[] {
-                property,
-                ParseMemberDeclaration(methodText)!
-            });
 
             // private sealed class SerdeVisitor : IDeserializeVisitor<'typeName'>
             // {
@@ -249,7 +313,7 @@ namespace Serde
                 typeParameterList: null,
                 baseList: BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) })),
                 constraintClauses: default,
-                members: typeMembers);
+                members: List(typeMembers));
         }
     }
 }

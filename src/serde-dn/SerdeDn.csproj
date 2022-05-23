@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
@@ -21,6 +21,9 @@
   <ItemGroup>
     <ProjectReference Include="../generator/SerdeGenerator.csproj" ReferenceOutputAssembly="false" />
     <None Include="$(BaseOutputPath)/../SerdeGenerator/Release/netstandard2.0/SerdeGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StaticCs" Version="0.1.0" />
   </ItemGroup>
 
 </Project>

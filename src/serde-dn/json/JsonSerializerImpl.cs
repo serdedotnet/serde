@@ -52,6 +52,15 @@ namespace Serde.Json
             t.Serialize<JsonSerializerImpl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref this);
         }
 
+        public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
+        {
+            if (valueName is null)
+            {
+                throw new InvalidOperationException($"Cannot serialize unnamed enum value '{value}' of enum '{enumName}'");
+            }
+            _writer.WriteStringValue(valueName);
+        }
+
         public SerializeType SerializeType(string name, int numFields)
         {
             _writer.WriteStartObject();
@@ -177,6 +186,9 @@ namespace Serde.Json
             {
                 StringResult = s;
             }
+
+            public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
+                => throw new KeyNotStringException();
 
             public ISerializeDictionary SerializeDictionary(int? length) => throw new KeyNotStringException();
 
