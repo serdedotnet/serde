@@ -3,8 +3,6 @@
 SerdeDn is a port of the popular [serde.rs](https://serde.rs) Rust serialization/deserialization
 library to .NET.
 
-SerdeDn only supports serialization at the moment. Deserialization support is under construction.
-
 Start by adding the `serde-dn` NuGet package:
 
 ```bash
