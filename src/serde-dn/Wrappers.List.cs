@@ -9,19 +9,8 @@ namespace Serde
 {
     internal static class EnumerableHelpers
     {
-        public static void SerializeSpan<
-            T,
-            TWrap,
-            TSerializer,
-            TSerializeType,
-            TSerializeEnumerable,
-            TSerializeDictionary
-            >(ReadOnlySpan<T> arr, ref TSerializer serializer)
+        public static void SerializeSpan<T, TWrap>(ReadOnlySpan<T> arr, ISerializer serializer)
             where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
         {
             var enumerable = serializer.SerializeEnumerable(arr.Length);
             foreach (var item in arr)
@@ -32,18 +21,8 @@ namespace Serde
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeList<
-            T,
-            TWrap,
-            TSerializer,
-            TSerializeType,
-            TSerializeEnumerable,
-            TSerializeDictionary>(List<T> list, ref TSerializer serializer)
+        public static void SerializeList<T, TWrap>(List<T> list, ISerializer serializer)
             where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
         {
             var enumerable = serializer.SerializeEnumerable(list.Count);
             foreach (var item in list)
@@ -55,18 +34,8 @@ namespace Serde
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeIList<
-            T,
-            TWrap,
-            TSerializer,
-            TSerializeType,
-            TSerializeEnumerable,
-            TSerializeDictionary>(IList<T> list, ref TSerializer serializer)
+        public static void SerializeIList<T, TWrap>(IList<T> list, ISerializer serializer)
             where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary
         {
             var enumerable = serializer.SerializeEnumerable(list.Count);
             foreach (var item in list)
@@ -82,8 +51,7 @@ namespace Serde
     {
         public static IdWrap<T> Create(T t) => new IdWrap<T>(t);
 
-        void ISerialize.Serialize<TSerializer, Type, Enumerable, Dictionary>(ref TSerializer serializer)
-            => Value.Serialize<TSerializer, Type, Enumerable, Dictionary>(ref serializer);
+        void ISerialize.Serialize(ISerializer serializer) => Value.Serialize(serializer);
     }
 
     public static class ArrayWrap
@@ -94,8 +62,8 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(T[] t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize<TSerializer, Type, Enumerable, Dictionary>(ref TSerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap, TSerializer, Type, Enumerable, Dictionary>(Value, ref serializer);
+            void ISerialize.Serialize(ISerializer serializer)
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(Value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
@@ -146,8 +114,8 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(List<T> t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize<TSerializer, Type, Enumerable, Dictionary>(ref TSerializer serializer)
-                => EnumerableHelpers.SerializeList<T, TWrap, TSerializer, Type, Enumerable, Dictionary>(Value, ref serializer);
+            void ISerialize.Serialize(ISerializer serializer)
+                => EnumerableHelpers.SerializeList<T, TWrap>(Value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
@@ -195,8 +163,8 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(ImmutableArray<T> t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize<TSerializer, Type, Enumerable, Dictionary>(ref TSerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap, TSerializer, Type, Enumerable, Dictionary>(Value.AsSpan(), ref serializer);
+            void ISerialize.Serialize(ISerializer serializer)
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(Value.AsSpan(), serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>

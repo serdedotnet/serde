@@ -25,7 +25,7 @@ using Serde;
 
 partial struct Rgb : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""Rgb"", 3);
         type.SerializeField(""Red"", new ByteWrap(this.Red));
@@ -51,7 +51,7 @@ using Serde;
 
 partial struct S : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""S"", 1);
         type.SerializeField(""F"", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.F));
@@ -79,7 +79,7 @@ using Serde;
 
 partial struct S1 : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""S1"", 1);
         type.End();
@@ -122,7 +122,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""IntArr"", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
@@ -147,7 +147,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
@@ -172,7 +172,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
@@ -213,7 +213,7 @@ partial class TestCase15
 {
     partial class Class0 : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""Class0"", 2);
             type.SerializeField(""Field0"", new ArrayWrap.SerializeImpl<TestCase15.Class1, IdWrap<TestCase15.Class1>>(this.Field0));
@@ -230,7 +230,7 @@ partial class TestCase15
 {
     partial class Class1 : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""Class1"", 2);
             type.SerializeField(""Field0"", new Int32Wrap(this.Field0));
@@ -265,7 +265,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""Map"", new DictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.Map));
@@ -301,7 +301,7 @@ using Serde;
 
 partial record C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""X"", new Int32Wrap(this.X));
@@ -314,7 +314,7 @@ using Serde;
 
 partial class C2 : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C2"", 1);
         type.SerializeField(""Map"", new DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>(this.Map));
@@ -411,7 +411,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""RDictionary"", new IDictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.RDictionary));
@@ -443,7 +443,7 @@ public struct SWrap : ISerialize
     {
         _s = s;
     }
-    void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void ISerialize.Serialize(ISerializer serializer)
     {
         serializer.SerializeI32(_s.X);
         serializer.SerializeI32(_s.Y);
@@ -461,7 +461,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""S"", new SWrap(this.S));
@@ -493,7 +493,7 @@ public struct SWrap<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SWrap<T, TWrap>
     {
         _s = s;
     }
-    void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""S"", 1);
         type.SerializeField(""S"", TWrap.Create(_s.Field));
@@ -512,7 +512,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""S"", new SWrap<int, Int32Wrap>(this.S));
@@ -554,7 +554,7 @@ namespace Serde
 {
     partial record struct ColorIntWrap : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var name = Value switch
             {
@@ -582,7 +582,7 @@ namespace Serde
 {
     partial record struct ColorByteWrap : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var name = Value switch
             {
@@ -610,7 +610,7 @@ namespace Serde
 {
     partial record struct ColorLongWrap : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var name = Value switch
             {
@@ -638,7 +638,7 @@ namespace Serde
 {
     partial record struct ColorULongWrap : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var name = Value switch
             {
@@ -659,7 +659,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType("C", 4);
         type.SerializeField("ColorInt", new ColorIntWrap(this.ColorInt));

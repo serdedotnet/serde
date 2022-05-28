@@ -97,11 +97,7 @@ namespace Serde.Test
             {
                 _d = d;
             }
-            public void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-                where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-                where TSerializeType : ISerializeType
-                where TSerializeEnumerable : ISerializeEnumerable
-                where TSerializeDictionary : ISerializeDictionary
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(_d.Count);
                 foreach (var (k,v) in _d)

@@ -2,11 +2,7 @@
 
 public interface ISerialize
 {
-    void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-        where TSerializeType : ISerializeType
-        where TSerializeEnumerable : ISerializeEnumerable
-        where TSerializeDictionary : ISerializeDictionary
-        where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>;
+    void Serialize(ISerializer serializer);
 }
 
 public interface ISerializeType
@@ -29,14 +25,7 @@ public interface ISerializeDictionary
     void End();
 }
 
-public interface ISerializer<
-    out TSerializeType,
-    out TSerializeEnumerable,
-    out TSerializeDictionary
-    >
-    where TSerializeType : ISerializeType
-    where TSerializeEnumerable : ISerializeEnumerable
-    where TSerializeDictionary : ISerializeDictionary
+public interface ISerializer
 {
     void SerializeBool(bool b);
     void SerializeChar(char c);
@@ -55,7 +44,7 @@ public interface ISerializer<
     void SerializeNotNull<T>(T t) where T : notnull, ISerialize;
     void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize;
 
-    TSerializeType SerializeType(string name, int numFields);
-    TSerializeEnumerable SerializeEnumerable(int? length);
-    TSerializeDictionary SerializeDictionary(int? length);
+    ISerializeType SerializeType(string name, int numFields);
+    ISerializeEnumerable SerializeEnumerable(int? length);
+    ISerializeDictionary SerializeDictionary(int? length);
 }

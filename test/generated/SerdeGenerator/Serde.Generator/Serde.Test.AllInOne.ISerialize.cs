@@ -6,7 +6,7 @@ namespace Serde.Test
 {
     partial record AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType("AllInOne", 15);
             type.SerializeField("BoolField", new BoolWrap(this.BoolField));

@@ -8,16 +8,12 @@ namespace Serde.Json
 {
     partial record JsonValue : ISerialize
     {
-        public abstract void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-            where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-            where TSerializeType : ISerializeType
-            where TSerializeEnumerable : ISerializeEnumerable
-            where TSerializeDictionary : ISerializeDictionary;
+        public abstract void Serialize(ISerializer serializer);
 
 
         partial record Number
         {
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            public override void Serialize(ISerializer serializer)
             {
                 serializer.SerializeDouble(Value);
             }
@@ -25,7 +21,7 @@ namespace Serde.Json
 
         partial record Bool
         {
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            public override void Serialize(ISerializer serializer)
             {
                 serializer.SerializeBool(Value);
             }
@@ -33,7 +29,7 @@ namespace Serde.Json
 
         partial record String
         {
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            public override void Serialize(ISerializer serializer)
             {
                 serializer.SerializeString(Value);
             }
@@ -49,7 +45,7 @@ namespace Serde.Json
                 : this(members.ToImmutableDictionary(t => t.FieldName, t => t.Value))
             { }
 
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            public override void Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("", Members.Count);
                 foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
@@ -66,7 +62,7 @@ namespace Serde.Json
                 : this(elements.ToImmutableArray())
             { }
 
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            public override void Serialize(ISerializer serializer)
             {
                 var enumerable = serializer.SerializeEnumerable(Elements.Length);
                 foreach (var element in Elements)
@@ -79,7 +75,7 @@ namespace Serde.Json
 
         partial record Null
         {
-            public override void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            public override void Serialize(ISerializer serializer)
             {
                 serializer.SerializeNull();
             }

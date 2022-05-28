@@ -8,7 +8,7 @@ namespace Serde.Json
 {
     public sealed class KeyNotStringException : Exception { }
 
-    public sealed partial class JsonSerializer
+    public sealed partial class JsonSerializer : ISerializer
     {
         /// <summary>
         /// Serialize the given type to a string.
@@ -17,8 +17,8 @@ namespace Serde.Json
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
             using var writer = new Utf8JsonWriter(bufferWriter);
-            var serializer = new JsonSerializerImpl(writer);
-            s.Serialize<JsonSerializerImpl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref serializer);
+            var serializer = new JsonSerializer(writer);
+            s.Serialize(serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }

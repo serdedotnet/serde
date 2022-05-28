@@ -69,7 +69,7 @@ using Serde;
 
 partial struct PointWrap : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""Point"", 2);
         type.SerializeField(""X"", new Int32Wrap(_point.X));
@@ -147,7 +147,7 @@ namespace Serde
 {
     partial record struct BitVector32SectionWrap : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""Section"", 2);
             type.SerializeField(""Mask"", new Int16Wrap(Value.Mask));
@@ -162,7 +162,7 @@ using Serde;
 
 partial class C : Serde.ISerialize
 {
-    void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+    void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
         type.SerializeField(""S"", new BitVector32SectionWrap(this.S));

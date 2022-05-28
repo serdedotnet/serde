@@ -8,7 +8,7 @@ namespace Serde.Test
     {
         partial class NullableFields : Serde.ISerialize
         {
-            void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            void Serde.ISerialize.Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("NullableFields", 2);
                 type.SerializeField("S", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.S));
