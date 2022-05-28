@@ -6,7 +6,7 @@ namespace Serde
 {
     partial record struct AllInOneColorEnumWrap : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var name = Value switch
             {

@@ -123,13 +123,8 @@ namespace Serde
                 explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
                     QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
                 identifier: Identifier("Serialize"),
-                typeParameterList: TypeParameterList(SeparatedList(new[] {
-                    TypeParameter("TSerializer"),
-                    TypeParameter("TSerializeType"),
-                    TypeParameter("TSerializeEnumerable"),
-                    TypeParameter("TSerializeDictionary")
-                    })),
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer", byRef: true) })),
+                typeParameterList: null,
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("ISerializer", "serializer") })),
                 constraintClauses: default,
                 body: Block(statements),
                 expressionBody: null)
