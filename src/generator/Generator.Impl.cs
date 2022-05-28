@@ -49,11 +49,6 @@ namespace Serde
             ExpressionSyntax receiverExpr,
             GeneratorExecutionContext context)
         {
-            if (receiverType.TypeKind == TypeKind.Enum)
-            {
-                return;
-            }
-
             var typeName = typeDeclContext.Name;
             string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
                 .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))

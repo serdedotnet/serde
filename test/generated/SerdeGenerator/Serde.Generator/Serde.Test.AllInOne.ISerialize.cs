@@ -8,7 +8,7 @@ namespace Serde.Test
     {
         void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
         {
-            var type = serializer.SerializeType("AllInOne", 14);
+            var type = serializer.SerializeType("AllInOne", 15);
             type.SerializeField("BoolField", new BoolWrap(this.BoolField));
             type.SerializeField("CharField", new CharWrap(this.CharField));
             type.SerializeField("ByteField", new ByteWrap(this.ByteField));
@@ -23,6 +23,7 @@ namespace Serde.Test
             type.SerializeField("IntArr", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
             type.SerializeField("NestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
             type.SerializeField("IntImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
+            type.SerializeField("Color", new AllInOneColorEnumWrap(this.Color));
             type.End();
         }
     }

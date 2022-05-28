@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serde
 {
@@ -27,6 +29,8 @@ namespace Serde
                 })
                 .Select(m => new DataMemberSymbol(m, format)).ToList();
         }
+
+        public static TypeSyntax ToFqnSyntax(this INamedTypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
 
         internal static TypeOptions GetTypeOptions(ITypeSymbol type)
         {

@@ -134,6 +134,7 @@ partial class C
             return VerifyGeneratedCode(src, new[] {
                 ("Serde.BitVector32SectionWrap", @"
 using Section = System.Collections.Specialized.BitVector32.Section;
+
 namespace Serde
 {
     internal readonly partial record struct BitVector32SectionWrap(Section Value);
@@ -184,6 +185,7 @@ partial class C
             return VerifyGeneratedCode(src, new[] {
                 ("Serde.BitVector32SectionWrap", @"
 using Section = System.Collections.Specialized.BitVector32.Section;
+
 namespace Serde
 {
     internal readonly partial record struct BitVector32SectionWrap(Section Value);

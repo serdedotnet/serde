@@ -22,5 +22,8 @@
     <ProjectReference Include="../generator/SerdeGenerator.csproj" ReferenceOutputAssembly="false" />
     <None Include="$(BaseOutputPath)/../SerdeGenerator/Release/netstandard2.0/SerdeGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StaticCs" Version="0.1.0" />
+  </ItemGroup>
 
 </Project>
