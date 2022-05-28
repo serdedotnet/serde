@@ -1,13 +1,13 @@
 
 namespace Serde;
 
-internal readonly record struct TypeOptions
+internal readonly record struct TypeOptions()
 {
     public bool DenyUnknownMembers { get; init; } = false;
     public MemberFormat MemberFormat { get; init; } = MemberFormat.None;
 }
 
-internal readonly record struct MemberOptions
+internal readonly record struct MemberOptions()
 {
     public bool NullIfMissing { get; init; } = false;
 }

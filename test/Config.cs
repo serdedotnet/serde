@@ -14,9 +14,9 @@ namespace Serde.Test
     {
         public static ReferenceAssemblies LatestTfRefs =>
 			new ReferenceAssemblies (
-				"net6.0",
-				new PackageIdentity ("Microsoft.NETCore.App.Ref", "6.0.0-preview.7.21368.2"),
-				Path.Combine ("ref", "net6.0"))
+				"net7.0",
+				new PackageIdentity ("Microsoft.NETCore.App.Ref", "7.0.0-preview.4.22229.4"),
+				Path.Combine ("ref", "net7.0"))
 			.WithNuGetConfigFilePath (Path.Combine (
                 GetDirectoryPath(),
                 "..",
