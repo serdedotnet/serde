@@ -67,10 +67,25 @@ namespace Serde.Json
             return this;
         }
 
-        public ISerializeEnumerable SerializeEnumerable(int? count)
+        public ISerializeEnumerable SerializeEnumerable(string typeName, int? count)
         {
             _writer.WriteStartArray();
-            return this;
+            return new SerializeEnumerableImpl(this);
+        }
+
+        private sealed class SerializeEnumerableImpl : ISerializeEnumerable
+        {
+            private readonly JsonSerializer _s;
+            public SerializeEnumerableImpl(JsonSerializer s) { _s = s; }
+            void ISerializeEnumerable.SerializeElement<T>(T value)
+            {
+                value.Serialize(_s);
+            }
+
+            void ISerializeEnumerable.End()
+            {
+                _s._writer.WriteEndArray();
+            }
         }
 
         public ISerializeDictionary SerializeDictionary(int? count)
@@ -91,19 +106,6 @@ namespace Serde.Json
         void ISerializeType.End()
         {
             _writer.WriteEndObject();
-        }
-    }
-
-    partial class JsonSerializer : ISerializeEnumerable
-    {
-        void ISerializeEnumerable.SerializeElement<T>(T value)
-        {
-            value.Serialize(this);
-        }
-
-        void ISerializeEnumerable.End()
-        {
-            _writer.WriteEndArray();
         }
     }
 
@@ -161,7 +163,7 @@ namespace Serde.Json
 
             public ISerializeDictionary SerializeDictionary(int? length) => throw new KeyNotStringException();
 
-            public ISerializeEnumerable SerializeEnumerable(int? length) => throw new KeyNotStringException();
+            public ISerializeEnumerable SerializeEnumerable(string typeName, int? length) => throw new KeyNotStringException();
 
             public ISerializeType SerializeType(string name, int numFields) => throw new KeyNotStringException();
 
