@@ -64,7 +64,7 @@ namespace Serde.Json
 
             public override void Serialize(ISerializer serializer)
             {
-                var enumerable = serializer.SerializeEnumerable(Elements.Length);
+                var enumerable = serializer.SerializeEnumerable("JsonValue", Elements.Length);
                 foreach (var element in Elements)
                 {
                     enumerable.SerializeElement(element);

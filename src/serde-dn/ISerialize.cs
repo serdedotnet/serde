@@ -45,6 +45,6 @@ public interface ISerializer
     void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize;
 
     ISerializeType SerializeType(string name, int numFields);
-    ISerializeEnumerable SerializeEnumerable(int? length);
+    ISerializeEnumerable SerializeEnumerable(string typeName, int? length);
     ISerializeDictionary SerializeDictionary(int? length);
 }
