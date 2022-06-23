@@ -133,11 +133,9 @@ partial class C
 }";
             return VerifyGeneratedCode(src, new[] {
                 ("Serde.BitVector32SectionWrap", @"
-using Section = System.Collections.Specialized.BitVector32.Section;
-
 namespace Serde
 {
-    internal readonly partial record struct BitVector32SectionWrap(Section Value);
+    internal readonly partial record struct BitVector32SectionWrap(System.Collections.Specialized.BitVector32.Section Value);
 }"),
                 ("Serde.BitVector32SectionWrap.ISerialize", @"
 #nullable enable
@@ -184,11 +182,9 @@ partial class C
 }";
             return VerifyGeneratedCode(src, new[] {
                 ("Serde.BitVector32SectionWrap", @"
-using Section = System.Collections.Specialized.BitVector32.Section;
-
 namespace Serde
 {
-    internal readonly partial record struct BitVector32SectionWrap(Section Value);
+    internal readonly partial record struct BitVector32SectionWrap(System.Collections.Specialized.BitVector32.Section Value);
 }"),
                 ("Serde.BitVector32SectionWrap.IDeserialize", @"
 #nullable enable

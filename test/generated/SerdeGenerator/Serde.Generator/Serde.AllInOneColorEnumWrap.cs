@@ -1,7 +1,5 @@
 ﻿
-using ColorEnum = Serde.Test.AllInOne.ColorEnum;
-
 namespace Serde
 {
-    internal readonly partial record struct AllInOneColorEnumWrap(ColorEnum Value);
+    internal readonly partial record struct AllInOneColorEnumWrap(Serde.Test.AllInOne.ColorEnum Value);
 }

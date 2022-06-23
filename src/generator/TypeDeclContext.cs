@@ -27,6 +27,9 @@ namespace Serde
             {
                 switch (parent)
                 {
+                    case FileScopedNamespaceDeclarationSyntax ns:
+                        nsNames.Add(ns.Name.ToString());
+                        break;
                     case NamespaceDeclarationSyntax ns:
                         nsNames.Add(ns.Name.ToString());
                         break;

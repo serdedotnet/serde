@@ -525,6 +525,8 @@ partial class C : Serde.ISerialize
         public Task EnumMember()
         {
             var src = @"
+namespace Some.Nested.Namespace;
+
 [Serde.GenerateSerialize]
 partial class C
 {
@@ -543,7 +545,7 @@ public enum ColorULong : ulong { Red = 3, Green = 5, Blue = 7 }
                 ("Serde.ColorIntWrap", @"
 namespace Serde
 {
-    internal readonly partial record struct ColorIntWrap(ColorInt Value);
+    internal readonly partial record struct ColorIntWrap(Some.Nested.Namespace.ColorInt Value);
 }"),
                 ("Serde.ColorIntWrap.ISerialize", """
 
@@ -558,9 +560,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                ColorInt.Red => "Red",
-                ColorInt.Green => "Green",
-                ColorInt.Blue => "Blue",
+                Some.Nested.Namespace.ColorInt.Red => "Red",
+                Some.Nested.Namespace.ColorInt.Green => "Green",
+                Some.Nested.Namespace.ColorInt.Blue => "Blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorInt", name, new Int32Wrap((int)Value));
@@ -571,7 +573,7 @@ namespace Serde
                 ("Serde.ColorByteWrap", @"
 namespace Serde
 {
-    internal readonly partial record struct ColorByteWrap(ColorByte Value);
+    internal readonly partial record struct ColorByteWrap(Some.Nested.Namespace.ColorByte Value);
 }"),
                 ("Serde.ColorByteWrap.ISerialize", """
 
@@ -586,9 +588,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                ColorByte.Red => "Red",
-                ColorByte.Green => "Green",
-                ColorByte.Blue => "Blue",
+                Some.Nested.Namespace.ColorByte.Red => "Red",
+                Some.Nested.Namespace.ColorByte.Green => "Green",
+                Some.Nested.Namespace.ColorByte.Blue => "Blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorByte", name, new ByteWrap((byte)Value));
@@ -599,7 +601,7 @@ namespace Serde
                 ("Serde.ColorLongWrap", @"
 namespace Serde
 {
-    internal readonly partial record struct ColorLongWrap(ColorLong Value);
+    internal readonly partial record struct ColorLongWrap(Some.Nested.Namespace.ColorLong Value);
 }"),
                 ("Serde.ColorLongWrap.ISerialize", """
 
@@ -614,9 +616,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                ColorLong.Red => "Red",
-                ColorLong.Green => "Green",
-                ColorLong.Blue => "Blue",
+                Some.Nested.Namespace.ColorLong.Red => "Red",
+                Some.Nested.Namespace.ColorLong.Green => "Green",
+                Some.Nested.Namespace.ColorLong.Blue => "Blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorLong", name, new Int64Wrap((long)Value));
@@ -627,7 +629,7 @@ namespace Serde
                 ("Serde.ColorULongWrap", @"
 namespace Serde
 {
-    internal readonly partial record struct ColorULongWrap(ColorULong Value);
+    internal readonly partial record struct ColorULongWrap(Some.Nested.Namespace.ColorULong Value);
 }"),
                 ("Serde.ColorULongWrap.ISerialize", """
 
@@ -642,9 +644,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                ColorULong.Red => "Red",
-                ColorULong.Green => "Green",
-                ColorULong.Blue => "Blue",
+                Some.Nested.Namespace.ColorULong.Red => "Red",
+                Some.Nested.Namespace.ColorULong.Green => "Green",
+                Some.Nested.Namespace.ColorULong.Blue => "Blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorULong", name, new UInt64Wrap((ulong)Value));
@@ -652,21 +654,24 @@ namespace Serde
     }
 }
 """),
-                ("C.ISerialize", """
+                ("Some.Nested.Namespace.C.ISerialize", """
 
 #nullable enable
 using Serde;
 
-partial class C : Serde.ISerialize
+namespace Some.Nested.Namespace
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    partial class C : Serde.ISerialize
     {
-        var type = serializer.SerializeType("C", 4);
-        type.SerializeField("ColorInt", new ColorIntWrap(this.ColorInt));
-        type.SerializeField("ColorByte", new ColorByteWrap(this.ColorByte));
-        type.SerializeField("ColorLong", new ColorLongWrap(this.ColorLong));
-        type.SerializeField("ColorULong", new ColorULongWrap(this.ColorULong));
-        type.End();
+        void Serde.ISerialize.Serialize(ISerializer serializer)
+        {
+            var type = serializer.SerializeType("C", 4);
+            type.SerializeField("ColorInt", new ColorIntWrap(this.ColorInt));
+            type.SerializeField("ColorByte", new ColorByteWrap(this.ColorByte));
+            type.SerializeField("ColorLong", new ColorLongWrap(this.ColorLong));
+            type.SerializeField("ColorULong", new ColorULongWrap(this.ColorULong));
+            type.End();
+        }
     }
 }
 """),
