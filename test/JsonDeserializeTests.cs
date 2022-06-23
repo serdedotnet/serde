@@ -203,5 +203,36 @@ namespace Serde.Test
             [SerdeMemberOptions(NullIfMissing = true)]
             public string? Missing { get; init; }
         }
+
+        [GenerateDeserialize]
+        private partial class NullableFields
+        {
+            public string? S = null;
+            public Dictionary<string, string?> Dict = new() {
+                ["abc"] = null,
+                ["def"] = "def"
+            };
+        }
+
+        [Fact]
+        public void NullableFieldsTest()
+        {
+            var src = @"
+{
+    ""S"": null,
+    ""Dict"": {
+        ""def"": ""def"",
+        ""abc"": null
+    }
+}";
+            var de = Serde.Json.JsonSerializer.Deserialize<NullableFields>(src);
+            var s = new NullableFields();
+            Assert.Equal(s.S, de.S);
+            foreach (var (k, v) in s.Dict)
+            {
+                Assert.Equal(v, de.Dict[k]);
+            }
+            Assert.Equal(s.Dict.Count, de.Dict.Count);
+        }
     }
 }

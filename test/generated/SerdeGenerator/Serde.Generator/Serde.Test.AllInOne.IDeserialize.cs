@@ -9,7 +9,7 @@ namespace Serde.Test
         static Serde.Test.AllInOne Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            var fieldNames = new[]{"BoolField", "CharField", "ByteField", "UShortField", "UIntField", "ULongField", "SByteField", "ShortField", "IntField", "LongField", "StringField", "IntArr", "NestedArr", "IntImm"};
+            var fieldNames = new[]{"BoolField", "CharField", "ByteField", "UShortField", "UIntField", "ULongField", "SByteField", "ShortField", "IntField", "LongField", "StringField", "IntArr", "NestedArr", "IntImm", "Color"};
             return deserializer.DeserializeType<Serde.Test.AllInOne, SerdeVisitor>("AllInOne", fieldNames, visitor);
         }
 
@@ -32,6 +32,7 @@ namespace Serde.Test
                 Serde.Option<int[]> intarr = default;
                 Serde.Option<int[][]> nestedarr = default;
                 Serde.Option<System.Collections.Immutable.ImmutableArray<int>> intimm = default;
+                Serde.Option<Serde.Test.AllInOne.ColorEnum> color = default;
                 while (d.TryGetNextKey<string, StringWrap>(out string? key))
                 {
                     switch (key)
@@ -78,13 +79,16 @@ namespace Serde.Test
                         case "IntImm":
                             intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
+                        case "Color":
+                            color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
+                            break;
                         default:
                             break;
                     }
                 }
 
                 Serde.Test.AllInOne newType = new Serde.Test.AllInOne()
-                {BoolField = boolfield.GetValueOrThrow("BoolField"), CharField = charfield.GetValueOrThrow("CharField"), ByteField = bytefield.GetValueOrThrow("ByteField"), UShortField = ushortfield.GetValueOrThrow("UShortField"), UIntField = uintfield.GetValueOrThrow("UIntField"), ULongField = ulongfield.GetValueOrThrow("ULongField"), SByteField = sbytefield.GetValueOrThrow("SByteField"), ShortField = shortfield.GetValueOrThrow("ShortField"), IntField = intfield.GetValueOrThrow("IntField"), LongField = longfield.GetValueOrThrow("LongField"), StringField = stringfield.GetValueOrThrow("StringField"), IntArr = intarr.GetValueOrThrow("IntArr"), NestedArr = nestedarr.GetValueOrThrow("NestedArr"), IntImm = intimm.GetValueOrThrow("IntImm"), };
+                {BoolField = boolfield.GetValueOrThrow("BoolField"), CharField = charfield.GetValueOrThrow("CharField"), ByteField = bytefield.GetValueOrThrow("ByteField"), UShortField = ushortfield.GetValueOrThrow("UShortField"), UIntField = uintfield.GetValueOrThrow("UIntField"), ULongField = ulongfield.GetValueOrThrow("ULongField"), SByteField = sbytefield.GetValueOrThrow("SByteField"), ShortField = shortfield.GetValueOrThrow("ShortField"), IntField = intfield.GetValueOrThrow("IntField"), LongField = longfield.GetValueOrThrow("LongField"), StringField = stringfield.GetValueOrThrow("StringField"), IntArr = intarr.GetValueOrThrow("IntArr"), NestedArr = nestedarr.GetValueOrThrow("NestedArr"), IntImm = intimm.GetValueOrThrow("IntImm"), Color = color.GetValueOrThrow("Color"), };
                 return newType;
             }
         }

@@ -16,7 +16,8 @@ namespace Serde.Test
             var allInOnePath = Path.Combine(Path.GetDirectoryName(curPath)!, "AllInOneSrc.cs");
 
             var src = File.ReadAllText(allInOnePath);
-            var serializeSrc = @"
+            var serializeSrc = """
+
 #nullable enable
 using Serde;
 
@@ -24,27 +25,29 @@ namespace Serde.Test
 {
     partial record AllInOne : Serde.ISerialize
     {
-        void Serde.ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+        void Serde.ISerialize.Serialize(ISerializer serializer)
         {
-            var type = serializer.SerializeType(""AllInOne"", 14);
-            type.SerializeField(""BoolField"", new BoolWrap(this.BoolField));
-            type.SerializeField(""CharField"", new CharWrap(this.CharField));
-            type.SerializeField(""ByteField"", new ByteWrap(this.ByteField));
-            type.SerializeField(""UShortField"", new UInt16Wrap(this.UShortField));
-            type.SerializeField(""UIntField"", new UInt32Wrap(this.UIntField));
-            type.SerializeField(""ULongField"", new UInt64Wrap(this.ULongField));
-            type.SerializeField(""SByteField"", new SByteWrap(this.SByteField));
-            type.SerializeField(""ShortField"", new Int16Wrap(this.ShortField));
-            type.SerializeField(""IntField"", new Int32Wrap(this.IntField));
-            type.SerializeField(""LongField"", new Int64Wrap(this.LongField));
-            type.SerializeField(""StringField"", new StringWrap(this.StringField));
-            type.SerializeField(""IntArr"", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
-            type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
-            type.SerializeField(""IntImm"", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
+            var type = serializer.SerializeType("AllInOne", 15);
+            type.SerializeField("BoolField", new BoolWrap(this.BoolField));
+            type.SerializeField("CharField", new CharWrap(this.CharField));
+            type.SerializeField("ByteField", new ByteWrap(this.ByteField));
+            type.SerializeField("UShortField", new UInt16Wrap(this.UShortField));
+            type.SerializeField("UIntField", new UInt32Wrap(this.UIntField));
+            type.SerializeField("ULongField", new UInt64Wrap(this.ULongField));
+            type.SerializeField("SByteField", new SByteWrap(this.SByteField));
+            type.SerializeField("ShortField", new Int16Wrap(this.ShortField));
+            type.SerializeField("IntField", new Int32Wrap(this.IntField));
+            type.SerializeField("LongField", new Int64Wrap(this.LongField));
+            type.SerializeField("StringField", new StringWrap(this.StringField));
+            type.SerializeField("IntArr", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
+            type.SerializeField("NestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
+            type.SerializeField("IntImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
+            type.SerializeField("Color", new AllInOneColorEnumWrap(this.Color));
             type.End();
         }
     }
-}";
+}
+""";
             var deserializeSrc = @"
 #nullable enable
 using Serde;
@@ -56,7 +59,7 @@ namespace Serde.Test
         static Serde.Test.AllInOne Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            var fieldNames = new[]{""BoolField"", ""CharField"", ""ByteField"", ""UShortField"", ""UIntField"", ""ULongField"", ""SByteField"", ""ShortField"", ""IntField"", ""LongField"", ""StringField"", ""IntArr"", ""NestedArr"", ""IntImm""};
+            var fieldNames = new[]{""BoolField"", ""CharField"", ""ByteField"", ""UShortField"", ""UIntField"", ""ULongField"", ""SByteField"", ""ShortField"", ""IntField"", ""LongField"", ""StringField"", ""IntArr"", ""NestedArr"", ""IntImm"", ""Color""};
             return deserializer.DeserializeType<Serde.Test.AllInOne, SerdeVisitor>(""AllInOne"", fieldNames, visitor);
         }
 
@@ -79,6 +82,7 @@ namespace Serde.Test
                 Serde.Option<int[]> intarr = default;
                 Serde.Option<int[][]> nestedarr = default;
                 Serde.Option<System.Collections.Immutable.ImmutableArray<int>> intimm = default;
+                Serde.Option<Serde.Test.AllInOne.ColorEnum> color = default;
                 while (d.TryGetNextKey<string, StringWrap>(out string? key))
                 {
                     switch (key)
@@ -125,13 +129,16 @@ namespace Serde.Test
                         case ""IntImm"":
                             intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
+                        case ""Color"":
+                            color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
+                            break;
                         default:
                             break;
                     }
                 }
 
                 Serde.Test.AllInOne newType = new Serde.Test.AllInOne()
-                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), IntArr = intarr.GetValueOrThrow(""IntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), };
+                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), IntArr = intarr.GetValueOrThrow(""IntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), Color = color.GetValueOrThrow(""Color""), };
                 return newType;
             }
         }
@@ -139,8 +146,80 @@ namespace Serde.Test
 }";
 
             return GeneratorTestUtils.VerifyGeneratedCode(src, new[] {
+                ("Serde.AllInOneColorEnumWrap", @"
+using ColorEnum = Serde.Test.AllInOne.ColorEnum;
+
+namespace Serde
+{
+    internal readonly partial record struct AllInOneColorEnumWrap(ColorEnum Value);
+}"),
+                ("Serde.AllInOneColorEnumWrap.ISerialize", """
+
+#nullable enable
+using Serde;
+
+namespace Serde
+{
+    partial record struct AllInOneColorEnumWrap : Serde.ISerialize
+    {
+        void Serde.ISerialize.Serialize(ISerializer serializer)
+        {
+            var name = Value switch
+            {
+                Serde.Test.AllInOne.ColorEnum.Red => "Red",
+                Serde.Test.AllInOne.ColorEnum.Blue => "Blue",
+                Serde.Test.AllInOne.ColorEnum.Green => "Green",
+                _ => null
+            };
+            serializer.SerializeEnumValue("ColorEnum", name, new Int32Wrap((int)Value));
+        }
+    }
+}
+"""),
                 ("Serde.Test.AllInOne.ISerialize", serializeSrc),
-                ("Serde.Test.AllInOne.IDeserialize", deserializeSrc)
+                ("Serde.AllInOneColorEnumWrap.IDeserialize", """
+
+#nullable enable
+using Serde;
+
+namespace Serde
+{
+    partial record struct AllInOneColorEnumWrap : Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>
+    {
+        static Serde.Test.AllInOne.ColorEnum Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize<D>(ref D deserializer)
+        {
+            var visitor = new SerdeVisitor();
+            return deserializer.DeserializeString<Serde.Test.AllInOne.ColorEnum, SerdeVisitor>(visitor);
+        }
+
+        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne.ColorEnum>
+        {
+            public string ExpectedTypeName => "Serde.Test.AllInOne.ColorEnum";
+            Serde.Test.AllInOne.ColorEnum Serde.IDeserializeVisitor<Serde.Test.AllInOne.ColorEnum>.VisitString(string s)
+            {
+                Serde.Test.AllInOne.ColorEnum enumValue;
+                switch (s)
+                {
+                    case "Red":
+                        enumValue = Serde.Test.AllInOne.ColorEnum.Red;
+                        break;
+                    case "Blue":
+                        enumValue = Serde.Test.AllInOne.ColorEnum.Blue;
+                        break;
+                    case "Green":
+                        enumValue = Serde.Test.AllInOne.ColorEnum.Green;
+                        break;
+                    default:
+                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
+                }
+
+                return enumValue;
+            }
+        }
+    }
+}
+"""),
+                ("Serde.Test.AllInOne.IDeserialize", deserializeSrc),
             });
 
             static string GetPath([CallerFilePath] string path = "") => path;
@@ -175,7 +254,8 @@ namespace Serde.Test
   ""IntImm"": [
     1,
     2
-  ]
+  ],
+  ""Color"": ""Blue""
 }";
         private static readonly AllInOne Deserialized = new AllInOne()
         {

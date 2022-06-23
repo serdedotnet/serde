@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -9,7 +10,7 @@ using static Serde.Json.JsonValue;
 
 namespace Serde.Test
 {
-    public class JsonSerializerTests
+    public partial class JsonSerializerTests
     {
         internal static string PrettyPrint(string json)
         {
@@ -96,11 +97,7 @@ namespace Serde.Test
             {
                 _d = d;
             }
-            public void Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
-                where TSerializer : ISerializer<TSerializeType, TSerializeEnumerable, TSerializeDictionary>
-                where TSerializeType : ISerializeType
-                where TSerializeEnumerable : ISerializeEnumerable
-                where TSerializeDictionary : ISerializeDictionary
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(_d.Count);
                 foreach (var (k,v) in _d)
@@ -127,6 +124,41 @@ namespace Serde.Test
             {
                 Assert.Equal(d[k], v);
             }
+        }
+
+        [Fact]
+        public void NullableString()
+        {
+            string? s = null;
+            var js = Serde.Json.JsonSerializer.Serialize(new NullableRefWrap.SerializeImpl<string, StringWrap>(s));
+            Assert.Equal("null", js);
+            js = Serde.Json.JsonSerializer.Serialize(JsonValue.Null.Instance);
+            Assert.Equal("null", js);
+        }
+
+        [GenerateSerialize]
+        private partial class NullableFields
+        {
+            public string? S = null;
+            public Dictionary<string, string?> D = new() {
+                ["abc"] = null,
+                ["def"] = "def"
+            };
+        }
+
+        [Fact]
+        public void NullableFieldsTest()
+        {
+            var s = new NullableFields();
+            var js = Serde.Json.JsonSerializer.Serialize(s);
+            var de = System.Text.Json.JsonSerializer.Deserialize<NullableFields>(js);
+            Debug.Assert(de != null);
+            Assert.Equal(s.S, de.S);
+            foreach (var (k, v) in s.D)
+            {
+                Assert.Equal(v, de.D[k]);
+            }
+            Assert.Equal(s.D.Count, de.D.Count);
         }
     }
 }

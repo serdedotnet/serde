@@ -21,18 +21,59 @@ namespace Serde
             ExpressionSyntax receiverExpr)
         {
             var statements = new List<StatementSyntax>();
-
             var fieldsAndProps = SymbolUtilities.GetPublicDataMembers(receiverType);
 
-            // The generated body of ISerialize is
-            // `var type = serializer.SerializeType("TypeName", numFields)`
-            // type.SerializeField("FieldName", receiver.FieldValue);
-            // type.End();
+            if (receiverType.TypeKind == TypeKind.Enum)
+            {
+                // For enums, the generated body should look like
+                // ```
+                // var name = receiver switch
+                // {
+                //   Enum.Case1 => "Case1",
+                //   Enum.Case2 => "Case2",
+                //   _ => null
+                // };
+                // serializer.SerializeEnumValue("Enum", name, receiver);
+                var enumType = ((INamedTypeSymbol)receiverType);
+                var typeSyntax = enumType.ToFqnSyntax();
+                var cases = fieldsAndProps.Select(m => SwitchExpressionArm(
+                        ConstantPattern(QualifiedName((NameSyntax)typeSyntax, IdentifierName(m.Name))),
+                        whenClause: null,
+                        expression: StringLiteral(m.Name)));
+                cases = cases.Concat(new[] { SwitchExpressionArm(
+                    DiscardPattern(),
+                    whenClause: null,
+                    LiteralExpression(SyntaxKind.NullLiteralExpression, Token(SyntaxKind.NullKeyword))) });
+                statements.Add(LocalDeclarationStatement(VariableDeclaration(
+                    IdentifierName("var"),
+                    SeparatedList(new[] { VariableDeclarator(
+                        Identifier("name"),
+                        argumentList: null,
+                        EqualsValueClause(SwitchExpression(receiverExpr, SeparatedList(cases)))) }))));
+                var wrapperName = TryGetPrimitiveWrapper(enumType.EnumUnderlyingType!, SerdeUsage.Serialize)!;
+                statements.Add(ExpressionStatement(InvocationExpression(
+                    QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeEnumValue")),
+                    ArgumentList(SeparatedList(new[] {
+                        Argument(StringLiteral(receiverType.Name)),
+                        Argument(IdentifierName("name")),
+                        Argument(ObjectCreationExpression(
+                            IdentifierName(wrapperName),
+                            ArgumentList(SeparatedList(new[] { Argument(CastExpression(enumType.EnumUnderlyingType!.ToFqnSyntax(), receiverExpr)) })),
+                            null))
+                    }))
+                )));
+            }
+            else
+            {
+                // The generated body of ISerialize is
+                // `var type = serializer.SerializeType("TypeName", numFields)`
+                // type.SerializeField("FieldName", receiver.FieldValue);
+                // type.End();
 
-            // `var type = serializer.SerializeType("TypeName", numFields)`
-            statements.Add(LocalDeclarationStatement(VariableDeclaration(
-                IdentifierName(Identifier("var")),
-                SeparatedList(new[] {
+                // `var type = serializer.SerializeType("TypeName", numFields)`
+                statements.Add(LocalDeclarationStatement(VariableDeclaration(
+                    IdentifierName(Identifier("var")),
+                    SeparatedList(new[] {
                     VariableDeclarator(
                         Identifier("type"),
                         argumentList: null,
@@ -43,34 +84,36 @@ namespace Serde
                             }))
                         ))
                     )
-                })
-            )));
+                    })
+                )));
 
-            foreach (var m in fieldsAndProps)
-            {
-                var memberType = m.Type;
-                // Generate statements of the form `type.SerializeField("FieldName", FieldValue)`
-                var expr = TryMakeSerializeFieldExpr(m, memberType, context, receiverExpr);
-                if (expr is null)
+                foreach (var m in fieldsAndProps)
                 {
-                    // No built-in handling and doesn't implement ISerializable, error
-                    context.ReportDiagnostic(CreateDiagnostic(
-                        DiagId.ERR_DoesntImplementISerializable,
-                        m.Locations[0],
-                        m.Symbol,
-                        memberType));
+                    var memberType = m.Type;
+                    // Generate statements of the form `type.SerializeField("FieldName", FieldValue)`
+                    var expr = TryMakeSerializeFieldExpr(m, memberType, context, receiverExpr);
+                    if (expr is null)
+                    {
+                        // No built-in handling and doesn't implement ISerializable, error
+                        context.ReportDiagnostic(CreateDiagnostic(
+                            DiagId.ERR_DoesntImplementInterface,
+                            m.Locations[0],
+                            m.Symbol,
+                            memberType,
+                            "Serde.ISerializable"));
+                    }
+                    else
+                    {
+                        statements.Add(MakeSerializeFieldStmt(m, expr));
+                    }
                 }
-                else
-                {
-                    statements.Add(MakeSerializeFieldStmt(m, expr));
-                }
+
+                // `type.End();`
+                statements.Add(ExpressionStatement(InvocationExpression(
+                    QualifiedName(IdentifierName("type"), IdentifierName("End")),
+                    ArgumentList()
+                )));
             }
-
-            // `type.End();`
-            statements.Add(ExpressionStatement(InvocationExpression(
-                QualifiedName(IdentifierName("type"), IdentifierName("End")),
-                ArgumentList()
-            )));
 
             // Generate method `void ISerialize.Serialize(ISerializer serializer) { ... }`
             var members = new[] { MethodDeclaration(
@@ -80,13 +123,8 @@ namespace Serde
                 explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
                     QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
                 identifier: Identifier("Serialize"),
-                typeParameterList: TypeParameterList(SeparatedList(new[] {
-                    TypeParameter("TSerializer"),
-                    TypeParameter("TSerializeType"),
-                    TypeParameter("TSerializeEnumerable"),
-                    TypeParameter("TSerializeDictionary")
-                    })),
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("TSerializer", "serializer", byRef: true) })),
+                typeParameterList: null,
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("ISerializer", "serializer") })),
                 constraintClauses: default,
                 body: Block(statements),
                 expressionBody: null)
@@ -109,14 +147,7 @@ namespace Serde
                     receiverExpr,
                     IdentifierName(m.Name));
 
-                // Always prefer a direct implementation of ISerialize
-                if (ImplementsSerde(memberType, context, SerdeUsage.Serialize))
-                {
-                    return memberExpr;
-                }
-
-                // Try using a wrapper
-                return TrySerializeWithWrapper(memberType, m, context, memberExpr);
+                return MakeSerializeArgument(memberType, m, context, memberExpr);
             }
 
             // Make a statement like `type.SerializeField("member.Name", value)`
@@ -131,28 +162,20 @@ namespace Serde
                     }.Select(Argument)))));
         }
 
-        private static ExpressionSyntax? TrySerializeWithWrapper(
-            ITypeSymbol type,
-            DataMemberSymbol member,
-            GeneratorExecutionContext context,
-            ExpressionSyntax memberExpr)
-        {
-            return TrySerializeBuiltIn(type, member, context, memberExpr);
-        }
-
-        /// SerdeDn provides wrappers for primitives and common types in the framework. If found,
-        /// we generate and initialize the wrapper.
+        /// <summary>
+        /// Constructs the argument to a ISerializer.Serialize call, i.e. constructs a term which
+        /// implements ISerialize.  SerdeDn provides wrappers for primitives and common types in the
+        /// framework. If found, we generate and initialize the wrapper.
         /// </summary>
-        private static ExpressionSyntax? TrySerializeBuiltIn(
+        private static ExpressionSyntax? MakeSerializeArgument(
             ITypeSymbol type,
             DataMemberSymbol member,
             GeneratorExecutionContext context,
             ExpressionSyntax memberExpr)
         {
             var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(memberExpr) }));
-            // Priority:
 
-            // 1. an explicit wrap
+            // 1. Check for an explicit wrapper
 
             var attr = TryGetExplicitWrapper(member);
             if (attr is { ConstructorArguments: { Length: 1 } attrArgs } &&
@@ -174,9 +197,16 @@ namespace Serde
                 }
             }
 
-            // 2. A wrapper for a built-in primitive (non-generic type)
+            // 2. Check for a direct implementation of ISerialize
 
-            var wrapperName = TryGetPrimitiveWrapper(type);
+            if (ImplementsSerde(type, context, SerdeUsage.Serialize))
+            {
+                return memberExpr;
+            }
+
+            // 3. A wrapper for a built-in primitive (non-generic type)
+
+            var wrapperName = TryGetPrimitiveWrapper(type, SerdeUsage.Serialize);
             if (wrapperName is not null)
             {
                 return ObjectCreationExpression(
@@ -185,9 +215,10 @@ namespace Serde
                     initializer: null);
             }
 
-            // 3. A wrapper for a compound type (might need nested wrappers)
+            // 4. A wrapper for a compound type (might need nested wrappers)
+
             TypeSyntax? wrapperTypeSyntax = TryGetCompoundWrapper(type, context, SerdeUsage.Serialize)
-            // 4. Create a wrapper if appropriate
+                // 5. Create a wrapper if appropriate
                 ?? TryCreateWrapper(type, member, context, SerdeUsage.Serialize);
             if (wrapperTypeSyntax is not null)
             {
@@ -202,7 +233,7 @@ namespace Serde
 
         private static TypeSyntax? TryCreateWrapper(ITypeSymbol type, DataMemberSymbol m, GeneratorExecutionContext context, SerdeUsage usage)
         {
-            if (type is { DeclaringSyntaxReferences: { Length: > 0 } } or
+            if (type is ({ TypeKind: not TypeKind.Enum } and { DeclaringSyntaxReferences: { Length: > 0 } }) or
                         { CanBeReferencedByName: false } or
                         { OriginalDefinition: INamedTypeSymbol { Arity: > 0 } })
             {
@@ -219,11 +250,16 @@ namespace Serde
             var wrapperFqn = $"Serde.{wrapperName}";
             var argName = "Value";
             var src = @$"
-using {typeName} = {type.ToDisplayString()};
 namespace Serde
 {{
     internal readonly partial record struct {wrapperName}({typeName} {argName});
 }}";
+            if (typeName != allTypes)
+            {
+                src = @$"
+using {typeName} = {type.ToDisplayString()};
+" + src;
+            }
 
             // Check if we've already created this wrapper
             if (_registry.TryAdd(context.Compilation, wrapperFqn))
@@ -249,27 +285,40 @@ namespace Serde
         }
 
         // If the target is a core type, we can wrap it
-        private static string? TryGetPrimitiveWrapper(ITypeSymbol type) => type.SpecialType switch
+        private static string? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
         {
-            SpecialType.System_Boolean => "BoolWrap",
-            SpecialType.System_Char => "CharWrap",
-            SpecialType.System_Byte => "ByteWrap",
-            SpecialType.System_UInt16 => "UInt16Wrap",
-            SpecialType.System_UInt32 => "UInt32Wrap",
-            SpecialType.System_UInt64 => "UInt64Wrap",
-            SpecialType.System_SByte => "SByteWrap",
-            SpecialType.System_Int16 => "Int16Wrap",
-            SpecialType.System_Int32 => "Int32Wrap",
-            SpecialType.System_Int64 => "Int64Wrap",
-            SpecialType.System_String => "StringWrap",
-            _ => null
-        };
+            if (type.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return null;
+            }
+            return type.SpecialType switch
+            {
+                SpecialType.System_Boolean => "BoolWrap",
+                SpecialType.System_Char => "CharWrap",
+                SpecialType.System_Byte => "ByteWrap",
+                SpecialType.System_UInt16 => "UInt16Wrap",
+                SpecialType.System_UInt32 => "UInt32Wrap",
+                SpecialType.System_UInt64 => "UInt64Wrap",
+                SpecialType.System_SByte => "SByteWrap",
+                SpecialType.System_Int16 => "Int16Wrap",
+                SpecialType.System_Int32 => "Int32Wrap",
+                SpecialType.System_Int64 => "Int64Wrap",
+                SpecialType.System_String => "StringWrap",
+                _ => null
+            };
+        }
 
         /// <summary>
         /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
         /// </summary>
         private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
         {
+            // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
+            if (memberType.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return false;
+            }
+
             // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
             // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
             var attributes = memberType.GetAttributes();

@@ -8,17 +8,17 @@ namespace Serde.Json
     // Using a mutable struct allows for an efficient low-allocation implementation of the
     // ISerializer interface, but mutable structs are easy to misuse in C#, so hide the
     // implementation for now.
-    internal partial struct JsonSerializerImpl
+    partial class JsonSerializer
     {
         internal readonly Utf8JsonWriter _writer;
-        public JsonSerializerImpl(Utf8JsonWriter writer)
+        public JsonSerializer(Utf8JsonWriter writer)
         {
             _writer = writer;
         }
     }
 
     // Implementations of ISerializer
-    partial struct JsonSerializerImpl : ISerializer<SerializeType, SerializeEnumerable, SerializeDictionary>
+    partial class JsonSerializer : ISerializer
     {
         public void SerializeBool(bool b) => _writer.WriteBooleanValue(b);
 
@@ -45,106 +45,92 @@ namespace Serde.Json
         public void SerializeDouble(double d) => _writer.WriteNumberValue(d);
 
         public void SerializeString(string s) => _writer.WriteStringValue(s);
+        public void SerializeNull() => _writer.WriteNullValue();
 
-        public SerializeType SerializeType(string name, int numFields)
+        public void SerializeNotNull<T>(T t) where T : notnull, ISerialize
         {
-            _writer.WriteStartObject();
-            return new SerializeType(ref this);
+            t.Serialize(this);
         }
 
-        public SerializeEnumerable SerializeEnumerable(int? count)
+        public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
+        {
+            if (valueName is null)
+            {
+                throw new InvalidOperationException($"Cannot serialize unnamed enum value '{value}' of enum '{enumName}'");
+            }
+            _writer.WriteStringValue(valueName);
+        }
+
+        public ISerializeType SerializeType(string name, int numFields)
+        {
+            _writer.WriteStartObject();
+            return this;
+        }
+
+        public ISerializeEnumerable SerializeEnumerable(string typeName, int? count)
         {
             _writer.WriteStartArray();
-            return new SerializeEnumerable(ref this);
+            return new SerializeEnumerableImpl(this);
         }
 
-        public SerializeDictionary SerializeDictionary(int? count)
+        private sealed class SerializeEnumerableImpl : ISerializeEnumerable
+        {
+            private readonly JsonSerializer _s;
+            public SerializeEnumerableImpl(JsonSerializer s) { _s = s; }
+            void ISerializeEnumerable.SerializeElement<T>(T value)
+            {
+                value.Serialize(_s);
+            }
+
+            void ISerializeEnumerable.End()
+            {
+                _s._writer.WriteEndArray();
+            }
+        }
+
+        public ISerializeDictionary SerializeDictionary(int? count)
         {
             _writer.WriteStartObject();
-            return new SerializeDictionary(ref this);
+            return this;
         }
     }
 
-    internal struct SerializeType : ISerializeType
+    partial class JsonSerializer : ISerializeType
     {
-        private JsonSerializerImpl _impl;
-        public SerializeType(ref JsonSerializerImpl impl)
-        {
-            // Copies Impl, since we can't hold a ref. This forces the persistant state to be a
-            // reference type, but that works for now.
-            _impl = impl;
-        }
-
         void ISerializeType.SerializeField<T>(string name, T value)
         {
-            _impl._writer.WritePropertyName(name);
-            value.Serialize<JsonSerializerImpl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref _impl);
+            _writer.WritePropertyName(name);
+            value.Serialize(this);
         }
 
-        public void End()
+        void ISerializeType.End()
         {
-            _impl._writer.WriteEndObject();
+            _writer.WriteEndObject();
         }
     }
 
-    struct SerializeEnumerable : ISerializeEnumerable
+    partial class JsonSerializer : ISerializeDictionary
     {
-        private JsonSerializerImpl _impl;
-        public SerializeEnumerable(ref JsonSerializerImpl impl)
-        {
-            // Copies Impl, since we can't hold a ref. This forces the persistant state to be a
-            // reference type, but that works for now.
-            _impl = impl;
-        }
-
-        void ISerializeEnumerable.SerializeElement<T>(T value)
-        {
-            value.Serialize<JsonSerializerImpl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref _impl);
-        }
-
-        void ISerializeEnumerable.End()
-        {
-            _impl._writer.WriteEndArray();
-        }
-    }
-
-    struct SerializeDictionary : ISerializeDictionary
-    {
-        private JsonSerializerImpl _impl;
-        public SerializeDictionary(ref JsonSerializerImpl impl)
-        {
-            // Copies Impl, since we can't hold a ref. This forces the persistant state to be a
-            // reference type, but that works for now.
-            _impl = impl;
-        }
         void ISerializeDictionary.SerializeValue<T>(T value)
         {
-            value.Serialize<JsonSerializerImpl, SerializeType, SerializeEnumerable, SerializeDictionary>(ref _impl);
+            value.Serialize(this);
         }
-        public void End()
+        void ISerializeDictionary.End()
         {
-            _impl._writer.WriteEndObject();
+            _writer.WriteEndObject();
         }
 
         void ISerializeDictionary.SerializeKey<T>(T key)
         {
             // Grab a string value. Box to prevent internal copying and losing side-effects
-            ISerializer<ISerializeType, ISerializeEnumerable, ISerializeDictionary> keySerializer = new KeySerializer();
-            key.Serialize<
-                ISerializer<ISerializeType, ISerializeEnumerable, ISerializeDictionary>,
-                ISerializeType,
-                ISerializeEnumerable,
-                ISerializeDictionary>(ref keySerializer);
-            _impl._writer.WritePropertyName(((KeySerializer)keySerializer).StringResult!);
+            ISerializer keySerializer = new KeySerializer();
+            key.Serialize(keySerializer);
+            _writer.WritePropertyName(((KeySerializer)keySerializer).StringResult!);
         }
 
-        private struct KeySerializer : ISerializer<ISerializeType, ISerializeEnumerable, ISerializeDictionary>
+        private class KeySerializer : ISerializer
         {
-            public string? StringResult;
-            public KeySerializer(int dummy)
-            {
-                StringResult = null;
-            }
+            public string? StringResult = null;
 
             public void SerializeBool(bool b) => throw new KeyNotStringException();
             public void SerializeChar(char c) => throw new KeyNotStringException();
@@ -172,11 +158,18 @@ namespace Serde.Json
                 StringResult = s;
             }
 
+            public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
+                => throw new KeyNotStringException();
+
             public ISerializeDictionary SerializeDictionary(int? length) => throw new KeyNotStringException();
 
-            public ISerializeEnumerable SerializeEnumerable(int? length) => throw new KeyNotStringException();
+            public ISerializeEnumerable SerializeEnumerable(string typeName, int? length) => throw new KeyNotStringException();
 
             public ISerializeType SerializeType(string name, int numFields) => throw new KeyNotStringException();
+
+            public void SerializeNull() => throw new KeyNotStringException();
+
+            public void SerializeNotNull<T>(T t) where T : notnull, ISerialize => throw new KeyNotStringException();
         }
     }
 }

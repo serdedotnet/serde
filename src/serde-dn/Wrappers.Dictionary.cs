@@ -19,7 +19,7 @@ namespace Serde
                 _dict = dict;
             }
 
-            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            void ISerialize.Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(_dict.Count);
                 foreach (var (k, v) in _dict)
@@ -81,7 +81,7 @@ namespace Serde
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            void ISerialize.Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);
                 foreach (var (k, v) in Value)
@@ -106,7 +106,7 @@ namespace Serde
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IReadOnlyDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-            void ISerialize.Serialize<TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary>(ref TSerializer serializer)
+            void ISerialize.Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);
                 foreach (var (k, v) in Value)

@@ -30,6 +30,15 @@ namespace Serde.Test
 
         public ImmutableArray<int> IntImm;
 
+        public ColorEnum Color = ColorEnum.Blue;
+
+        public enum ColorEnum
+        {
+            Red = 1,
+            Blue = 3,
+            Green = 5
+        }
+
         public bool Equals(AllInOne? other)
         {
             return other is not null &&
@@ -47,7 +56,8 @@ namespace Serde.Test
                 IntArr.AsSpan().SequenceEqual(other.IntArr.AsSpan()) &&
                 NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
                     new Comparer()) &&
-                IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan());
+                IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan()); // &&
+                //Color == other.Color;
         }
         private sealed class Comparer : IEqualityComparer<int[]>
         {

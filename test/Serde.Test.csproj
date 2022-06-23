@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
@@ -19,12 +19,12 @@
   <ItemGroup>
     <PackageReference Include="FsCheck" Version="2.15.3" />
     <PackageReference Include="FsCheck.Xunit" Version="2.15.3" />
-    <PackageReference Include="Microsoft.NETCore.App.Ref" Version="5.0.0">
+    <PackageReference Include="Microsoft.NETCore.App.Ref" Version="7.0.0-preview.4.22229.4">
       <ExcludeAssets>all</ExcludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit" Version="1.0.1-*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit" Version="1.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.0.0-6.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.0-6.final" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
