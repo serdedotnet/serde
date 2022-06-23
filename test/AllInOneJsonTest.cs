@@ -147,11 +147,9 @@ namespace Serde.Test
 
             return GeneratorTestUtils.VerifyGeneratedCode(src, new[] {
                 ("Serde.AllInOneColorEnumWrap", @"
-using ColorEnum = Serde.Test.AllInOne.ColorEnum;
-
 namespace Serde
 {
-    internal readonly partial record struct AllInOneColorEnumWrap(ColorEnum Value);
+    internal readonly partial record struct AllInOneColorEnumWrap(Serde.Test.AllInOne.ColorEnum Value);
 }"),
                 ("Serde.AllInOneColorEnumWrap.ISerialize", """
 
