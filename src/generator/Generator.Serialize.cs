@@ -252,14 +252,8 @@ namespace Serde
             var src = @$"
 namespace Serde
 {{
-    internal readonly partial record struct {wrapperName}({typeName} {argName});
+    internal readonly partial record struct {wrapperName}({type.ToDisplayString()} {argName});
 }}";
-            if (typeName != allTypes)
-            {
-                src = @$"
-using {typeName} = {type.ToDisplayString()};
-" + src;
-            }
 
             // Check if we've already created this wrapper
             if (_registry.TryAdd(context.Compilation, wrapperFqn))
