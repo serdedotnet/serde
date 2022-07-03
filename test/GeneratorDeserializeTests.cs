@@ -57,7 +57,7 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
                 }
             }
 
-            Rgb newType = new Rgb()
+            var newType = new Rgb()
             {Red = red.GetValueOrThrow(""Red""), Green = green.GetValueOrThrow(""Green""), Blue = blue.GetValueOrThrow(""Blue""), };
             return newType;
         }
@@ -105,7 +105,7 @@ partial struct S : Serde.IDeserialize<S>
                 }
             }
 
-            S newType = new S()
+            var newType = new S()
             {F = f.GetValueOrThrow(""F""), };
             return newType;
         }
@@ -160,7 +160,7 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
                 }
             }
 
-            SetToNull newType = new SetToNull()
+            var newType = new SetToNull()
             {Present = present.GetValueOrThrow(""Present""), Missing = missing.GetValueOrDefault(null), };
             return newType;
         }
@@ -209,7 +209,7 @@ partial struct ArrayField : Serde.IDeserialize<ArrayField>
                 }
             }
 
-            ArrayField newType = new ArrayField()
+            var newType = new ArrayField()
             {IntArr = intarr.GetValueOrThrow(""IntArr""), };
             return newType;
         }
@@ -468,7 +468,7 @@ partial class C : Serde.IDeserialize<C>
                 }
             }
 
-            C newType = new C()
+            var newType = new C()
             {ColorInt = colorint.GetValueOrThrow("ColorInt"), ColorByte = colorbyte.GetValueOrThrow("ColorByte"), ColorLong = colorlong.GetValueOrThrow("ColorLong"), ColorULong = colorulong.GetValueOrThrow("ColorULong"), };
             return newType;
         }

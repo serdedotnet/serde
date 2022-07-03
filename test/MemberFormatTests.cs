@@ -151,7 +151,7 @@ partial struct S : Serde.IDeserialize<S>
                 }
             }
 
-            S newType = new S()
+            var newType = new S()
             {One = one.GetValueOrThrow("One"), TwoWord = twoword.GetValueOrThrow("TwoWord"), };
             return newType;
         }

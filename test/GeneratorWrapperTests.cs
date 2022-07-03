@@ -112,7 +112,7 @@ partial struct PointWrap : Serde.IDeserialize<Point>
                 }
             }
 
-            Point newType = new Point()
+            var newType = new Point()
             {X = x.GetValueOrThrow(""X""), Y = y.GetValueOrThrow(""Y""), };
             return newType;
         }
@@ -223,7 +223,7 @@ namespace Serde
                     }
                 }
 
-                System.Collections.Specialized.BitVector32.Section newType = new System.Collections.Specialized.BitVector32.Section()
+                var newType = new System.Collections.Specialized.BitVector32.Section()
                 {Mask = mask.GetValueOrThrow(""Mask""), Offset = offset.GetValueOrThrow(""Offset""), };
                 return newType;
             }
@@ -261,7 +261,7 @@ partial class C : Serde.IDeserialize<C>
                 }
             }
 
-            C newType = new C()
+            var newType = new C()
             {S = s.GetValueOrThrow(""S""), };
             return newType;
         }
