@@ -40,6 +40,8 @@ public sealed class SerdeTypeOptions : Attribute
 public sealed class SerdeMemberOptions : Attribute
 {
     public bool NullIfMissing { get; init; } = false;
+
+    public string? Rename { get; init; } = null;
 }
 
 public enum MemberFormat : byte
