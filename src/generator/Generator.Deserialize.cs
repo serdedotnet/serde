@@ -213,7 +213,7 @@ namespace Serde
     {typeName} enumValue;
     switch (s)
     {{
-{cases.ToString()}
+{cases}
         default:
             throw new InvalidDeserializeValueException(""Unexpected enum field name: "" + s);
     }}
@@ -223,81 +223,7 @@ namespace Serde
             }
             else
             {
-                var cases = new StringBuilder();
-                var locals = new StringBuilder();
-                var assignments = new StringBuilder();
-                var members = SymbolUtilities.GetPublicDataMembers(type);
-                foreach (var m in members)
-                {
-                    string wrapperName;
-                    var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                    if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
-                    {
-                        wrapperName = memberType;
-                    }
-                    else if (TryGetPrimitiveWrapper(m.Type, SerdeUsage.Deserialize) is {} primWrap)
-                    {
-                        wrapperName = primWrap;
-                    }
-                    else if (TryGetCompoundWrapper(m.Type, context, SerdeUsage.Deserialize) is {} compound)
-                    {
-                        wrapperName = compound.ToString();
-                    }
-                    else if (TryCreateWrapper(m.Type, m, context, SerdeUsage.Deserialize) is {} wrap)
-                    {
-                        wrapperName = wrap.ToString();
-                    }
-                    else
-                    {
-                        // No built-in handling and doesn't implement ISerializable, error
-                        context.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_DoesntImplementInterface,
-                            m.Locations[0],
-                            m.Symbol,
-                            memberType,
-                            "Serde.IDeserializable"));
-                        wrapperName = memberType;
-                    }
-                    var lowerName = m.Name.ToLowerInvariant();
-                    locals.AppendLine($"Serde.Option<{memberType}> {lowerName} = default;");
-                    if (m.NullIfMissing)
-                    {
-                        assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrDefault(null),");
-                    }
-                    else
-                    {
-                        assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrThrow(\"{m.Name}\"),");
-                    }
-                    // Note, don't use nullable annotation as wrappers don't necessarily allow null
-                    cases.AppendLine(@$"
-            case ""{m.GetFormattedName()}"":
-                {lowerName} = d.GetNextValue<{memberType}, {wrapperName}>();
-                break;");
-                }
-
-                string unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
-                    ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + key + \"'\");"
-                    : "break;";
-
-                var methodText = @$"
-{typeName} Serde.IDeserializeVisitor<{typeName}>.VisitDictionary<D>(ref D d)
-{{
-    {locals}
-    while (d.TryGetNextKey<string, StringWrap>(out string? key))
-    {{
-        switch (key)
-        {{
-{cases.ToString()}
-            default:
-                {unknownMemberBehavior}
-        }}
-    }}
-    {typeName} newType = new {typeName}() {{
-        {assignments}
-    }};
-    return newType;
-}}";
-                typeMembers.Add(ParseMemberDeclaration(methodText)!);
+                GenerateCustomTypeVisitor(type, context, typeName, typeMembers);
             }
 
             // private sealed class SerdeVisitor : IDeserializeVisitor<'typeName'>
@@ -315,5 +241,165 @@ namespace Serde
                 constraintClauses: default,
                 members: List(typeMembers));
         }
+
+        private static void GenerateCustomTypeVisitor(ITypeSymbol type, GeneratorExecutionContext context, string typeName, List<MemberDeclarationSyntax> typeMembers)
+        {
+            var cases = new StringBuilder();
+            var locals = new StringBuilder();
+            var members = SymbolUtilities.GetPublicDataMembers(type);
+            foreach (var m in members)
+            {
+                string wrapperName;
+                var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
+                if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
+                {
+                    wrapperName = memberType;
+                }
+                else if (TryGetPrimitiveWrapper(m.Type, SerdeUsage.Deserialize) is { } primWrap)
+                {
+                    wrapperName = primWrap;
+                }
+                else if (TryGetCompoundWrapper(m.Type, context, SerdeUsage.Deserialize) is { } compound)
+                {
+                    wrapperName = compound.ToString();
+                }
+                else if (TryCreateWrapper(m.Type, m, context, SerdeUsage.Deserialize) is { } wrap)
+                {
+                    wrapperName = wrap.ToString();
+                }
+                else
+                {
+                    // No built-in handling and doesn't implement ISerializable, error
+                    context.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_DoesntImplementInterface,
+                        m.Locations[0],
+                        m.Symbol,
+                        memberType,
+                        "Serde.IDeserializable"));
+                    wrapperName = memberType;
+                }
+                var localName = GetLocalName(m);
+                locals.AppendLine($"Serde.Option<{memberType}> {localName} = default;");
+                // Note, don't use nullable annotation as wrappers don't necessarily allow null
+                cases.AppendLine(@$"
+            case ""{m.GetFormattedName()}"":
+                {localName} = d.GetNextValue<{memberType}, {wrapperName}>();
+                break;");
+            }
+
+            string unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
+                ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + key + \"'\");"
+                : "break;";
+
+            string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members);
+            var methodText = $$"""
+{{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
+{
+    {{locals}}
+    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+    {
+        switch (key)
+        {
+{{cases}}
+            default:
+                {{unknownMemberBehavior}}
+        }
+    }
+    {{typeCreationExpr}}
+    return newType;
+}
+""";
+            typeMembers.Add(ParseMemberDeclaration(methodText)!);
+        }
+
+        /// <summary>
+        /// If the type has a parameterless constructor then we will use that and just set
+        /// each member in the initializer. If there is no parameterlss constructor, there
+        /// must be a constructor signature as specified by the ConstructorSignature property
+        /// in the SerdeTypeOptions.
+        /// </summary>
+        private static string GenerateTypeCreation(GeneratorExecutionContext context, string typeName, ITypeSymbol type, List<DataMemberSymbol> members)
+        {
+            var targetSignature = SymbolUtilities.GetTypeOptions(type).ConstructorSignature;
+            var targetTuple = targetSignature as INamedTypeSymbol;
+            var ctors = type.GetMembers(".ctor");
+            IMethodSymbol? targetCtor = null;
+            IMethodSymbol? parameterLessCtor = null;
+            foreach (var ctorSymbol in ctors)
+            {
+                if (ctorSymbol is IMethodSymbol ctorMethod)
+                {
+                    if (targetTuple is not null && ctorMethod.Parameters.Length == targetTuple.TupleElements.Length)
+                    {
+                        bool mismatch = false;
+                        for(int i = 0; i < targetTuple.TupleElements.Length; i++)
+                        {
+                            var elem = targetTuple.TupleElements[i];
+                            var param = ctorMethod.Parameters[i];
+                            if (!elem.Type.Equals(param.Type, SymbolEqualityComparer.Default))
+                            {
+                                mismatch = true;
+                                break;
+                            }
+                        }
+                        if (!mismatch)
+                        {
+                            targetCtor = ctorMethod;
+                            break;
+                        }
+                    }
+                    if (ctorMethod is { Parameters.Length: 0 })
+                    {
+                        parameterLessCtor = ctorMethod;
+                        if (targetSignature is null)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (targetSignature is not null && targetCtor is null)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_CantFindConstructorSignature, type.Locations[0]));
+                return "";
+            }
+
+            var assignmentMembers = new List<DataMemberSymbol>(members);
+            var assignments = new StringBuilder();
+            var parameters = new StringBuilder();
+            if (targetCtor is not null)
+            {
+                foreach (var p in targetCtor.Parameters)
+                {
+                    var index = assignmentMembers.FindIndex(m => m.Name == p.Name);
+                    if (parameters.Length != 0)
+                    {
+                        parameters.Append(", ");
+                    }
+                    parameters.Append(GetMemberAccess(assignmentMembers[index]));
+                    assignmentMembers.RemoveAt(index);
+                }
+            }
+
+            foreach (var m in assignmentMembers)
+            {
+                assignments.AppendLine($"{m.Name} = {GetMemberAccess(m)},");
+            }
+
+            return $$"""
+    var newType = new {{typeName}}({{parameters}}) {
+        {{assignments}}
+    };
+""";
+            static string GetMemberAccess(DataMemberSymbol m)
+            {
+                var localName = GetLocalName(m);
+                return m.NullIfMissing
+                    ? $"{localName}.GetValueOrDefault(null)"
+                    : $"{localName}.GetValueOrThrow(\"{m.Name}\")";
+            }
+        }
+
+        private static string GetLocalName(DataMemberSymbol m) => m.Name.ToLower();
     }
 }

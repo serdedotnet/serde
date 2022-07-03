@@ -84,22 +84,26 @@ namespace Serde
                 }
                 if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeTypeOptions))
                 {
-                    foreach (var named in attr.NamedArguments)
+                    foreach ((string name, TypedConstant argument) in attr.NamedArguments)
                     {
-                        var value = named.Value.Value!;
-                        options = named switch {
-                            { Key: "MemberFormat",
-                                Value: {
+                        var value = argument.Value!;
+                        options = (name, argument) switch {
+                            (nameof(TypeOptions.MemberFormat),
+                                {
                                     Kind: TypedConstantKind.Enum,
                                     Type.Name: nameof(MemberFormat)
-                                }
-                            } => options with { MemberFormat = (MemberFormat)value },
-                            { Key: "DenyUnknownMembers",
-                                Value: {
+                                }) => options with { MemberFormat = (MemberFormat)value },
+                            (nameof(TypeOptions.DenyUnknownMembers),
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { DenyUnknownMembers = (bool)value },
+                            ) => options with { DenyUnknownMembers = (bool)value },
+                            ( nameof(TypeOptions.ConstructorSignature),
+                                {
+                                    Kind: TypedConstantKind.Type,
+                                }
+                            ) => options with { ConstructorSignature = (ITypeSymbol)value },
                             _ => options
                         };
                     }

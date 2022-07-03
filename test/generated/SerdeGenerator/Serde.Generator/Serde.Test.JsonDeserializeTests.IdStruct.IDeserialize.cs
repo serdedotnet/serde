@@ -33,7 +33,7 @@ namespace Serde.Test
                         }
                     }
 
-                    Serde.Test.JsonDeserializeTests.IdStruct newType = new Serde.Test.JsonDeserializeTests.IdStruct()
+                    var newType = new Serde.Test.JsonDeserializeTests.IdStruct()
                     {Id = id.GetValueOrThrow("Id"), };
                     return newType;
                 }

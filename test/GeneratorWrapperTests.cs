@@ -112,7 +112,7 @@ partial struct PointWrap : Serde.IDeserialize<Point>
                 }
             }
 
-            Point newType = new Point()
+            var newType = new Point()
             {X = x.GetValueOrThrow(""X""), Y = y.GetValueOrThrow(""Y""), };
             return newType;
         }
@@ -223,7 +223,7 @@ namespace Serde
                     }
                 }
 
-                System.Collections.Specialized.BitVector32.Section newType = new System.Collections.Specialized.BitVector32.Section()
+                var newType = new System.Collections.Specialized.BitVector32.Section()
                 {Mask = mask.GetValueOrThrow(""Mask""), Offset = offset.GetValueOrThrow(""Offset""), };
                 return newType;
             }
@@ -261,7 +261,7 @@ partial class C : Serde.IDeserialize<C>
                 }
             }
 
-            C newType = new C()
+            var newType = new C()
             {S = s.GetValueOrThrow(""S""), };
             return newType;
         }
@@ -272,6 +272,61 @@ partial class C : Serde.IDeserialize<C>
     // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,55): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
     DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 55, 39, 61).WithArguments("System.Collections.Specialized.BitVector32.Section.Offset"));
 
+        }
+
+        [Fact]
+        public Task PositionalRecordDeserialize()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+[SerdeTypeOptions(ConstructorSignature = typeof((int, string)))]
+partial record R(int A, string B);
+""";
+            return VerifyGeneratedCode(src, "R.IDeserialize", """
+
+#nullable enable
+using Serde;
+
+partial record R : Serde.IDeserialize<R>
+{
+    static R Serde.IDeserialize<R>.Deserialize<D>(ref D deserializer)
+    {
+        var visitor = new SerdeVisitor();
+        var fieldNames = new[]{"A", "B"};
+        return deserializer.DeserializeType<R, SerdeVisitor>("R", fieldNames, visitor);
+    }
+
+    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<R>
+    {
+        public string ExpectedTypeName => "R";
+        R Serde.IDeserializeVisitor<R>.VisitDictionary<D>(ref D d)
+        {
+            Serde.Option<int> a = default;
+            Serde.Option<string> b = default;
+            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            {
+                switch (key)
+                {
+                    case "A":
+                        a = d.GetNextValue<int, Int32Wrap>();
+                        break;
+                    case "B":
+                        b = d.GetNextValue<string, StringWrap>();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            var newType = new R(a.GetValueOrThrow("A"), b.GetValueOrThrow("B"))
+            {};
+            return newType;
+        }
+    }
+}
+""");
         }
     }
 }
