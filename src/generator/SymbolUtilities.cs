@@ -27,10 +27,50 @@ namespace Serde
                     DeclaredAccessibility: Accessibility.Public,
                     Kind: SymbolKind.Field or SymbolKind.Property,
                 })
-                .Select(m => new DataMemberSymbol(m, format)).ToList();
+                .Select(m => new DataMemberSymbol(m, GetTypeOptions(type), GetMemberOptions(m))).ToList();
         }
 
         public static TypeSyntax ToFqnSyntax(this INamedTypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
+
+        public static MemberOptions GetMemberOptions(ISymbol member)
+        {
+            var options = new MemberOptions();
+            foreach (var attr in member.GetAttributes())
+            {
+                var attrClass = attr.AttributeClass;
+                if (attrClass is null)
+                {
+                    continue;
+                }
+                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeMemberOptions))
+                {
+                    foreach (var named in attr.NamedArguments)
+                    {
+                        var value = named.Value.Value!;
+                        options = named switch
+                        {
+                            {
+                                Key: nameof(MemberOptions.NullIfMissing),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with { NullIfMissing = (bool)value },
+                            {
+                                Key: nameof(MemberOptions.Rename),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_String
+                                }
+                            } => options with { Rename = (string)value },
+                            _ => options
+                        };
+                    }
+                    break;
+                }
+            }
+            return options;
+        }
 
         internal static TypeOptions GetTypeOptions(ITypeSymbol type)
         {
@@ -47,27 +87,21 @@ namespace Serde
                     foreach (var named in attr.NamedArguments)
                     {
                         var value = named.Value.Value!;
-                        switch (named)
-                        {
-                            case { Key: "MemberFormat",
+                        options = named switch {
+                            { Key: "MemberFormat",
                                 Value: {
                                     Kind: TypedConstantKind.Enum,
-                                    Type: { Name: "MemberFormat" }
-                                } }:
-                                options = options with {
-                                    MemberFormat = (MemberFormat)value
-                                };
-                                break;
-                            case { Key: "DenyUnknownMembers",
+                                    Type.Name: nameof(MemberFormat)
+                                }
+                            } => options with { MemberFormat = (MemberFormat)value },
+                            { Key: "DenyUnknownMembers",
                                 Value: {
                                     Kind: TypedConstantKind.Primitive,
-                                    Type: { SpecialType: SpecialType.System_Boolean }
-                                }}:
-                                options = options with {
-                                    DenyUnknownMembers = (bool)value
-                                };
-                                break;
-                        }
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with { DenyUnknownMembers = (bool)value },
+                            _ => options
+                        };
                     }
                     break;
                 }

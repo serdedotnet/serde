@@ -260,7 +260,7 @@ namespace Serde
                     }
                     var lowerName = m.Name.ToLowerInvariant();
                     locals.AppendLine($"Serde.Option<{memberType}> {lowerName} = default;");
-                    if (m.GetMemberOptions().NullIfMissing)
+                    if (m.NullIfMissing)
                     {
                         assignments.AppendLine($"{m.Name} = {lowerName}.GetValueOrDefault(null),");
                     }
