@@ -34,6 +34,11 @@ public sealed class SerdeTypeOptions : Attribute
     /// Override the formatting for members.
     /// </summary>
     public MemberFormat MemberFormat { get; init; } = MemberFormat.None;
+    /// <summary>
+    /// Pick the constructor used for deserialization. Expects a tuple with the same types as
+    /// the desired parameter list of the desired constructor.
+    /// </summary>
+    public Type? ConstructorSignature { get; init; }
 }
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]

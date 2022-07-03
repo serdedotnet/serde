@@ -37,7 +37,7 @@ namespace Serde.Test
                         }
                     }
 
-                    Serde.Test.JsonDeserializeTests.SetToNull newType = new Serde.Test.JsonDeserializeTests.SetToNull()
+                    var newType = new Serde.Test.JsonDeserializeTests.SetToNull()
                     {Present = present.GetValueOrThrow("Present"), Missing = missing.GetValueOrDefault(null), };
                     return newType;
                 }

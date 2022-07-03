@@ -37,7 +37,7 @@ namespace Serde.Test
                         }
                     }
 
-                    Serde.Test.MemberFormatTests.S1 newType = new Serde.Test.MemberFormatTests.S1()
+                    var newType = new Serde.Test.MemberFormatTests.S1()
                     {One = one.GetValueOrThrow("One"), TwoWord = twoword.GetValueOrThrow("TwoWord"), };
                     return newType;
                 }

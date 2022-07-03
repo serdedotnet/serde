@@ -33,7 +33,7 @@ namespace Serde.Test
                         }
                     }
 
-                    Serde.Test.JsonDeserializeTests.ExtraMembers newType = new Serde.Test.JsonDeserializeTests.ExtraMembers()
+                    var newType = new Serde.Test.JsonDeserializeTests.ExtraMembers()
                     {b = b.GetValueOrThrow("b"), };
                     return newType;
                 }

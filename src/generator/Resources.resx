@@ -126,4 +126,7 @@
   <data name="ERR_CantWrapSpecialType" xml:space="preserve">
     <value>The type '{0}' can't be automatically wrapped because it is a built-in type.</value>
   </data>
+  <data name="ERR_CantFindConstructorSignature" xml:space="preserve">
+    <value>Could not find a constructor with the target signature listed by the ConstructorSignature parameter.</value>
+  </data>
 </root>

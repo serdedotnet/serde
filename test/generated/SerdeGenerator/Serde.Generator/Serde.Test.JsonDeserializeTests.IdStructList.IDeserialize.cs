@@ -37,7 +37,7 @@ namespace Serde.Test
                         }
                     }
 
-                    Serde.Test.JsonDeserializeTests.IdStructList newType = new Serde.Test.JsonDeserializeTests.IdStructList()
+                    var newType = new Serde.Test.JsonDeserializeTests.IdStructList()
                     {Count = count.GetValueOrThrow("Count"), List = list.GetValueOrThrow("List"), };
                     return newType;
                 }
