@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="generator.html"><strong aria-hidden="true">2.</strong> Using the source generator</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="wrappers.html"><strong aria-hidden="true">2.1.</strong> Wrappers</a></li></ol></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -187,6 +187,39 @@ partial record SampleClass
     public string Y = &quot;sample&quot;;
 }
 </code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="using-the-source-generator"><a class="header" href="#using-the-source-generator">Using the source generator</a></h1>
+<p>Serde-dn is type-safe, meaning that it requires every serializing type to implement <code>ISerialize</code> or <code>IDeserialize</code> and <em>always</em> uses an interface implementation for controlling serialization.</p>
+<p>For types you control, you could implement those interfaces manually, but most cases can be solved by using the built-in source generator. To have the source generator implement the appropriate interface, start by making the type <code>partial</code>. For example, if you had a struct or class like</p>
+<pre><code class="language-C#">class SampleClass
+{
+  ...
+}
+</code></pre>
+<p>you would add the <code>partial</code> keyword before the class definition, i.e.</p>
+<pre><code class="language-C#">partial class SampleClass
+{
+  ...
+}
+</code></pre>
+<p>Next, add the <code>[GenerateSerialize]</code> and/or the <code>[GenerateDeserialize]</code> attribute.</p>
+<pre><code class="language-C#">[GenerateSerialize]
+partial class SampleClass
+{
+  ...
+}
+</code></pre>
+<p>By default, this will include all the public properties <em>and</em> public fields. The types of the fields and properties must also implement ISerialize. Many of the most common types, like <code>int</code>, <code>string</code>, or even <code>List&lt;string&gt;</code>, have built-in support from serde-dn and already have ISerialize implementations. If any of those public fields or properties have a type that you control, they will also need to implement <code>ISerialize</code> or <code>IDeserialize</code>. This is also true for nested references, e.g. <code>List&lt;MyOtherType&gt;</code>.</p>
+<p>If you don't control any of the types you need to serialize or deserialize (i.e., they are defined in another assembly that you can't modify) you'll need to use a <em>wrapper</em> to implement the interface. See <a href="./wrappers.html">wrappers</a> for more info.</p>
+<p>To serialize or deserialize this type, you'll need to pass it into the appropriate serializer or deserializer. For example, serde-dn includes
+a JSON serializer <code>Serde.Json.JsonSerializer</code> which defines <code>Serialize</code> and <code>Deserialize</code> static methods. Serialize takes an instance of <code>ISerialize</code> as a parameter, while <code>Deserialize</code> takes a type implementing <code>IDeserialize</code> as a <em>type</em> parameter. In both cases, all you need is to implement the appropriate interface on your type.</p>
+<h2 id="additional-ideserialize-requirements"><a class="header" href="#additional-ideserialize-requirements">Additional IDeserialize requirements</a></h2>
+<p>Serde-dn is type safe and always uses reflection-free C# code. Thus, to implement IDeserialize the type must have an accessible constructor and accessible members.</p>
+<p>By default, serde-dn requires</p>
+<ol>
+<li>A parameterless constructor</li>
+<li>All fields and properties are writable during creation.</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="wrappers"><a class="header" href="#wrappers">Wrappers</a></h1>
 
                     </main>
 
