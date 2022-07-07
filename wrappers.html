@@ -145,14 +145,16 @@
                     <main>
                         <h1 id="wrappers"><a class="header" href="#wrappers">Wrappers</a></h1>
 <p>Wrappers are an essential part of the serde-dn design. Many types aren't under user control and won't be able to implement the <code>ISerialize</code> or <code>IDeserialize</code> interfaces directly. Instead, simple wrapper structs are used to proxy the target type.</p>
+<p>Often, wrappers will be created for you as necessary. If you are serializing a type you define, the source generator will automatically create wrappers for nested external types. However, wrappers will never be automatically created for types in your source code. If you control the type, it must implement the required interfaces directly.</p>
 <h2 id="creating-a-wrapper-type"><a class="header" href="#creating-a-wrapper-type">Creating a wrapper type</a></h2>
 <p>By convention, wrappers are named <code>&lt;OriginalTypeName&gt;Wrap</code> and are always placed in the <code>Serde</code> namespace. Since wrappers are normal C#, you could choose to implement the <code>ISerialize</code> or <code>IDeserialize</code> logic yourself, just as you would for a custom implementation on your own type. However, the serde-dn source generator also has support for generating implementations for wrappers.</p>
 <p>To use implement via source generator do the following:</p>
-<pre><code>1. Create a wrapper type (often a struct) named `&lt;OriginalTypeName&gt;Wrap` in the `Serde` namespace.
-1. Make it `partial`.
-1. Add a field or property to store the wrapped instance.
-1. Add the `[GenerateWrapper]` attribute and pass it the name of your field or property as a string (maybe using `nameof`)
-</code></pre>
+<ol>
+<li>Create a wrapper type (often a struct) named <code>&lt;OriginalTypeName&gt;Wrap</code> in the <code>Serde</code> namespace.</li>
+<li>Make it <code>partial</code>.</li>
+<li>Add a field or property to store the wrapped instance.</li>
+<li>Add the <code>[GenerateWrapper]</code> attribute and pass it the name of your field or property as a string (maybe using <code>nameof</code>)</li>
+</ol>
 <p>The &quot;records&quot; feature is particularly useful for this:</p>
 <pre><code class="language-C#">using Serde;
 
