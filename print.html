@@ -189,29 +189,34 @@ partial record SampleClass
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="using-the-source-generator"><a class="header" href="#using-the-source-generator">Using the source generator</a></h1>
 <p>Serde-dn is type-safe, meaning that it requires every serializing type to implement <code>ISerialize</code> or <code>IDeserialize</code> and <em>always</em> uses an interface implementation for controlling serialization.</p>
-<p>For types you control, you could implement those interfaces manually, but most cases can be solved by using the built-in source generator. To have the source generator implement the appropriate interface, start by making the type <code>partial</code>. For example, if you had a struct or class like</p>
+<p>For types you control, you could implement those interfaces manually, but most cases can be solved by using the built-in source generator. Two changes are required to use the source generator:</p>
+<ol>
+<li>Make the type <code>partial</code>.</li>
+<li>Add the <code>GenerateSerialize</code> or <code>GenerateDeserialize</code> attribute.</li>
+</ol>
+<p>For example,</p>
 <pre><code class="language-C#">class SampleClass
 {
   ...
 }
 </code></pre>
-<p>you would add the <code>partial</code> keyword before the class definition, i.e.</p>
-<pre><code class="language-C#">partial class SampleClass
-{
-  ...
-}
-</code></pre>
-<p>Next, add the <code>[GenerateSerialize]</code> and/or the <code>[GenerateDeserialize]</code> attribute.</p>
+<p>would become</p>
 <pre><code class="language-C#">[GenerateSerialize]
 partial class SampleClass
 {
   ...
 }
 </code></pre>
-<p>By default, this will include all the public properties <em>and</em> public fields. The types of the fields and properties must also implement ISerialize. Many of the most common types, like <code>int</code>, <code>string</code>, or even <code>List&lt;string&gt;</code>, have built-in support from serde-dn and already have ISerialize implementations. If any of those public fields or properties have a type that you control, they will also need to implement <code>ISerialize</code> or <code>IDeserialize</code>. This is also true for nested references, e.g. <code>List&lt;MyOtherType&gt;</code>.</p>
+<p>By default, the source generator will include all the public properties <em>and</em> public fields. The field or property types must either,</p>
+<ol>
+<li>Be a serde-dn built-in type, like <code>int</code> or <code>string</code>.</li>
+<li>If the type is in the current assembly, implement <code>I(De)Serialize</code>.</li>
+<li>Be defined in an external assembly, where the source generator will automatically wrap the type (see <a href="./wrappers.html">generated wrappers</a>).</li>
+<li>Define a <a href="./wrappers.html">wrapper type</a> in the current assembly named <code>&lt;TypeName&gt;Wrap</code> in the <code>Serde</code> namespace.</li>
+<li>Specify a custom wrapper.</li>
+</ol>
+<p>The types of the fields and properties must also implement ISerialize. Many of the most common types, like <code>int</code>, <code>string</code>, or even <code>List&lt;string&gt;</code>, have built-in support from serde-dn and already have ISerialize implementations. If any of those public fields or properties have a type that you control, they will also need to implement <code>ISerialize</code> or <code>IDeserialize</code>. This is also true for nested references, e.g. <code>List&lt;MyOtherType&gt;</code>.</p>
 <p>If you don't control any of the types you need to serialize or deserialize (i.e., they are defined in another assembly that you can't modify) you'll need to use a <em>wrapper</em> to implement the interface. See <a href="./wrappers.html">wrappers</a> for more info.</p>
-<p>To serialize or deserialize this type, you'll need to pass it into the appropriate serializer or deserializer. For example, serde-dn includes
-a JSON serializer <code>Serde.Json.JsonSerializer</code> which defines <code>Serialize</code> and <code>Deserialize</code> static methods. Serialize takes an instance of <code>ISerialize</code> as a parameter, while <code>Deserialize</code> takes a type implementing <code>IDeserialize</code> as a <em>type</em> parameter. In both cases, all you need is to implement the appropriate interface on your type.</p>
 <h2 id="additional-ideserialize-requirements"><a class="header" href="#additional-ideserialize-requirements">Additional IDeserialize requirements</a></h2>
 <p>Serde-dn is type safe and always uses reflection-free C# code. Thus, to implement IDeserialize the type must have an accessible constructor and accessible members.</p>
 <p>By default, serde-dn requires</p>
@@ -219,7 +224,30 @@ a JSON serializer <code>Serde.Json.JsonSerializer</code> which defines <code>Ser
 <li>A parameterless constructor</li>
 <li>All fields and properties are writable during creation.</li>
 </ol>
+<p>If this isn't possible, the constructor used and the properties can be configured through the <code>SerdeTypeOptions</code> attribute.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="wrappers"><a class="header" href="#wrappers">Wrappers</a></h1>
+<p>Wrappers are an essential part of the serde-dn design. Many types aren't under user control and won't be able to implement the <code>ISerialize</code> or <code>IDeserialize</code> interfaces directly. Instead, simple wrapper structs are used to proxy the target type.</p>
+<h2 id="creating-a-wrapper-type"><a class="header" href="#creating-a-wrapper-type">Creating a wrapper type</a></h2>
+<p>By convention, wrappers are named <code>&lt;OriginalTypeName&gt;Wrap</code> and are always placed in the <code>Serde</code> namespace. Since wrappers are normal C#, you could choose to implement the <code>ISerialize</code> or <code>IDeserialize</code> logic yourself, just as you would for a custom implementation on your own type. However, the serde-dn source generator also has support for generating implementations for wrappers.</p>
+<p>To use implement via source generator do the following:</p>
+<pre><code>1. Create a wrapper type (often a struct) named `&lt;OriginalTypeName&gt;Wrap` in the `Serde` namespace.
+1. Make it `partial`.
+1. Add a field or property to store the wrapped instance.
+1. Add the `[GenerateWrapper]` attribute and pass it the name of your field or property as a string (maybe using `nameof`)
+</code></pre>
+<p>The &quot;records&quot; feature is particularly useful for this:</p>
+<pre><code class="language-C#">using Serde;
+
+// Type we can't modify
+class ExternalClass { ... }
+
+namespace Serde
+{
+    [GenerateWrapper(nameof(Value))]
+    partial readonly record struct ExternalClassWrap(ExternalClass Value);
+}
+</code></pre>
+<p>By default, this will implement both <code>ISerialize</code> and <code>IDeserialize</code> in the wrapper.</p>
 
                     </main>
 
