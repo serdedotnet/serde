@@ -2,7 +2,12 @@
 
 Serde-dn is type-safe, meaning that it requires every serializing type to implement `ISerialize` or `IDeserialize` and *always* uses an interface implementation for controlling serialization.
 
-For types you control, you could implement those interfaces manually, but most cases can be solved by using the built-in source generator. To have the source generator implement the appropriate interface, start by making the type `partial`. For example, if you had a struct or class like
+For types you control, you could implement those interfaces manually, but most cases can be solved by using the built-in source generator. Two changes are required to use the source generator:
+
+  1. Make the type `partial`.
+  2. Add the `GenerateSerialize` or `GenerateDeserialize` attribute.
+
+For example,
 
 ```C#
 class SampleClass
@@ -11,16 +16,7 @@ class SampleClass
 }
 ```
 
-you would add the `partial` keyword before the class definition, i.e.
-
-```C#
-partial class SampleClass
-{
-  ...
-}
-```
-
-Next, add the `[GenerateSerialize]` and/or the `[GenerateDeserialize]` attribute.
+would become
 
 ```C#
 [GenerateSerialize]
@@ -30,17 +26,25 @@ partial class SampleClass
 }
 ```
 
-By default, this will include all the public properties *and* public fields. The types of the fields and properties must also implement ISerialize. Many of the most common types, like `int`, `string`, or even `List<string>`, have built-in support from serde-dn and already have ISerialize implementations. If any of those public fields or properties have a type that you control, they will also need to implement `ISerialize` or `IDeserialize`. This is also true for nested references, e.g. `List<MyOtherType>`.
+By default, the source generator will include all the public properties *and* public fields. The field or property types must either,
+
+  1. Be a serde-dn built-in type, like `int` or `string`.
+  1. If the type is in the current assembly, implement `I(De)Serialize`.
+  1. Be defined in an external assembly, where the source generator will automatically wrap the type (see [generated wrappers](./wrappers.md)).
+  1. Define a [wrapper type](./wrappers.md) in the current assembly named `<TypeName>Wrap` in the `Serde` namespace.
+  1. Specify a custom wrapper.
+
+The types of the fields and properties must also implement ISerialize. Many of the most common types, like `int`, `string`, or even `List<string>`, have built-in support from serde-dn and already have ISerialize implementations. If any of those public fields or properties have a type that you control, they will also need to implement `ISerialize` or `IDeserialize`. This is also true for nested references, e.g. `List<MyOtherType>`.
 
 If you don't control any of the types you need to serialize or deserialize (i.e., they are defined in another assembly that you can't modify) you'll need to use a *wrapper* to implement the interface. See [wrappers](./wrappers.md) for more info.
-
-To serialize or deserialize this type, you'll need to pass it into the appropriate serializer or deserializer. For example, serde-dn includes
-a JSON serializer `Serde.Json.JsonSerializer` which defines `Serialize` and `Deserialize` static methods. Serialize takes an instance of `ISerialize` as a parameter, while `Deserialize` takes a type implementing `IDeserialize` as a *type* parameter. In both cases, all you need is to implement the appropriate interface on your type.
 
 ## Additional IDeserialize requirements
 
 Serde-dn is type safe and always uses reflection-free C# code. Thus, to implement IDeserialize the type must have an accessible constructor and accessible members.
 
 By default, serde-dn requires
+
   1. A parameterless constructor
   2. All fields and properties are writable during creation.
+
+If this isn't possible, the constructor used and the properties can be configured through the `SerdeTypeOptions` attribute.
