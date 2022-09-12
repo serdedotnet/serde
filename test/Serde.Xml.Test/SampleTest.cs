@@ -4,6 +4,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 using Xunit;
+using System.Globalization;
 
 namespace Serde.Test;
 
@@ -78,7 +79,7 @@ public partial class SampleTest
     <State>WA</State>
     <Zip>00000</Zip>
   </ShipTo>
-  <OrderDate>Thursday, January 1, 1970</OrderDate>
+  <OrderDate>Thursday, 01 January 1970</OrderDate>
   <Items>
     <OrderedItem>
       <ItemName>Widget S</ItemName>
@@ -111,7 +112,7 @@ public partial class SampleTest
         };
         // Set ShipTo and BillTo to the same addressee.
         po.ShipTo = billAddress;
-        po.OrderDate = System.DateTime.UnixEpoch.ToLongDateString();
+        po.OrderDate = DateTime.UnixEpoch.ToString("D", CultureInfo.InvariantCulture);
 
         // Create an OrderedItem object.
         var i1 = new OrderedItem()
