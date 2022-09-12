@@ -7,6 +7,11 @@ using System.Linq;
 
 namespace Serde.Test
 {
+
+    public partial class GenericType<T>
+    {
+        public int Field;
+    }
     [GenerateSerialize]
     [GenerateDeserialize]
     public sealed partial record AllInOne
@@ -23,9 +28,11 @@ namespace Serde.Test
         public int IntField;
         public long LongField;
 
-        public string StringField = null!;
+        public string StringField = "StringValue";
 
-        public int[] IntArr = null!;
+        public string? NullStringField = null;
+
+        public uint[] UIntArr = null!;
         public int[][] NestedArr = null!;
 
         public ImmutableArray<int> IntImm;
@@ -39,6 +46,7 @@ namespace Serde.Test
             Green = 5
         }
 
+        // implement Equals to do deep equals for the collections
         public bool Equals(AllInOne? other)
         {
             return other is not null &&
@@ -53,7 +61,8 @@ namespace Serde.Test
                 IntField == other.IntField &&
                 LongField == other.LongField &&
                 StringField == other.StringField &&
-                IntArr.AsSpan().SequenceEqual(other.IntArr.AsSpan()) &&
+                NullStringField == other.NullStringField &&
+                UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
                 NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
                     new Comparer()) &&
                 IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan()); // &&
@@ -76,5 +85,27 @@ namespace Serde.Test
         {
             return base.GetHashCode();
         }
+
+        internal static readonly AllInOne Sample = new AllInOne()
+        {
+            BoolField = true,
+            CharField = '#',
+            ByteField = byte.MaxValue,
+            UShortField = ushort.MaxValue,
+            UIntField = uint.MaxValue,
+            ULongField = ulong.MaxValue,
+
+            SByteField = sbyte.MaxValue,
+            ShortField = short.MaxValue,
+            IntField = int.MaxValue,
+            LongField = long.MaxValue,
+
+            StringField = "StringValue",
+
+            UIntArr = new uint[] { 1, 2, 3 },
+            NestedArr = new[] { new[] { 1 }, new[] { 2 } },
+
+            IntImm = ImmutableArray.Create<int>(1, 2)
+        };
     }
 }

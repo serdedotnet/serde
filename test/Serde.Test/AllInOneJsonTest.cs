@@ -27,7 +27,7 @@ namespace Serde.Test
     {
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
-            var type = serializer.SerializeType("AllInOne", 15);
+            var type = serializer.SerializeType("AllInOne", 16);
             type.SerializeField("BoolField", new BoolWrap(this.BoolField));
             type.SerializeField("CharField", new CharWrap(this.CharField));
             type.SerializeField("ByteField", new ByteWrap(this.ByteField));
@@ -39,7 +39,8 @@ namespace Serde.Test
             type.SerializeField("IntField", new Int32Wrap(this.IntField));
             type.SerializeField("LongField", new Int64Wrap(this.LongField));
             type.SerializeField("StringField", new StringWrap(this.StringField));
-            type.SerializeField("IntArr", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
+            type.SerializeField("NullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField));
+            type.SerializeField("UIntArr", new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
             type.SerializeField("NestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
             type.SerializeField("IntImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
             type.SerializeField("Color", new AllInOneColorEnumWrap(this.Color));
@@ -59,7 +60,7 @@ namespace Serde.Test
         static Serde.Test.AllInOne Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            var fieldNames = new[]{""BoolField"", ""CharField"", ""ByteField"", ""UShortField"", ""UIntField"", ""ULongField"", ""SByteField"", ""ShortField"", ""IntField"", ""LongField"", ""StringField"", ""IntArr"", ""NestedArr"", ""IntImm"", ""Color""};
+            var fieldNames = new[]{""BoolField"", ""CharField"", ""ByteField"", ""UShortField"", ""UIntField"", ""ULongField"", ""SByteField"", ""ShortField"", ""IntField"", ""LongField"", ""StringField"", ""NullStringField"", ""UIntArr"", ""NestedArr"", ""IntImm"", ""Color""};
             return deserializer.DeserializeType<Serde.Test.AllInOne, SerdeVisitor>(""AllInOne"", fieldNames, visitor);
         }
 
@@ -79,7 +80,8 @@ namespace Serde.Test
                 Serde.Option<int> intfield = default;
                 Serde.Option<long> longfield = default;
                 Serde.Option<string> stringfield = default;
-                Serde.Option<int[]> intarr = default;
+                Serde.Option<string?> nullstringfield = default;
+                Serde.Option<uint[]> uintarr = default;
                 Serde.Option<int[][]> nestedarr = default;
                 Serde.Option<System.Collections.Immutable.ImmutableArray<int>> intimm = default;
                 Serde.Option<Serde.Test.AllInOne.ColorEnum> color = default;
@@ -120,8 +122,11 @@ namespace Serde.Test
                         case ""StringField"":
                             stringfield = d.GetNextValue<string, StringWrap>();
                             break;
-                        case ""IntArr"":
-                            intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                        case ""NullStringField"":
+                            nullstringfield = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                            break;
+                        case ""UIntArr"":
+                            uintarr = d.GetNextValue<uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>();
                             break;
                         case ""NestedArr"":
                             nestedarr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
@@ -138,7 +143,7 @@ namespace Serde.Test
                 }
 
                 var newType = new Serde.Test.AllInOne()
-                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), IntArr = intarr.GetValueOrThrow(""IntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), Color = color.GetValueOrThrow(""Color""), };
+                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), NullStringField = nullstringfield.GetValueOrThrow(""NullStringField""), UIntArr = uintarr.GetValueOrThrow(""UIntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), Color = color.GetValueOrThrow(""Color""), };
                 return newType;
             }
         }
@@ -223,25 +228,26 @@ namespace Serde
             static string GetPath([CallerFilePath] string path = "") => path;
         }
 
-        private const string Serialized = @"
+        private const string Serialized = """
 {
-  ""BoolField"": true,
-  ""CharField"": ""#"",
-  ""ByteField"": 255,
-  ""UShortField"": 65535,
-  ""UIntField"": 4294967295,
-  ""ULongField"": 18446744073709551615,
-  ""SByteField"": 127,
-  ""ShortField"": 32767,
-  ""IntField"": 2147483647,
-  ""LongField"": 9223372036854775807,
-  ""StringField"": ""StringValue"",
-  ""IntArr"": [
+  "BoolField": true,
+  "CharField": "#",
+  "ByteField": 255,
+  "UShortField": 65535,
+  "UIntField": 4294967295,
+  "ULongField": 18446744073709551615,
+  "SByteField": 127,
+  "ShortField": 32767,
+  "IntField": 2147483647,
+  "LongField": 9223372036854775807,
+  "StringField": "StringValue",
+  "NullStringField": null,
+  "UIntArr": [
     1,
     2,
     3
   ],
-  ""NestedArr"": [
+  "NestedArr": [
     [
       1
     ],
@@ -249,38 +255,18 @@ namespace Serde
       2
     ]
   ],
-  ""IntImm"": [
+  "IntImm": [
     1,
     2
   ],
-  ""Color"": ""Blue""
-}";
-        private static readonly AllInOne Deserialized = new AllInOne()
-        {
-            BoolField = true,
-            CharField = '#',
-            ByteField = byte.MaxValue,
-            UShortField = ushort.MaxValue,
-            UIntField = uint.MaxValue,
-            ULongField = ulong.MaxValue,
-
-            SByteField = sbyte.MaxValue,
-            ShortField = short.MaxValue,
-            IntField = int.MaxValue,
-            LongField = long.MaxValue,
-
-            StringField = "StringValue",
-
-            IntArr = new[] { 1, 2, 3 },
-            NestedArr = new[] { new[] { 1 }, new[] { 2 } },
-
-            IntImm = ImmutableArray.Create<int>(1, 2)
-        };
+  "Color": "Blue"
+}
+""";
 
         [Fact]
         public void SerializeTest()
         {
-            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.Serialize(Deserialized));
+            var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.Serialize(AllInOne.Sample));
             Assert.Equal(Serialized.Trim(), actual);
         }
 
@@ -288,7 +274,7 @@ namespace Serde
         public void DeserializeTest()
         {
             var actual = JsonSerializer.Deserialize<AllInOne>(Serialized);
-            Assert.Equal(Deserialized, actual);
+            Assert.Equal(AllInOne.Sample, actual);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Serde
 {
     public partial class Generator : ISourceGenerator
     {
-        private static (MethodDeclarationSyntax[], BaseListSyntax) GenerateSerializeImpl(
+        private static (MemberDeclarationSyntax[], BaseListSyntax) GenerateSerializeImpl(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
             ExpressionSyntax receiverExpr)
@@ -116,18 +116,19 @@ namespace Serde
             }
 
             // Generate method `void ISerialize.Serialize(ISerializer serializer) { ... }`
-            var members = new[] { MethodDeclaration(
-                attributeLists: default,
-                modifiers: default,
-                PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
-                    QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
-                identifier: Identifier("Serialize"),
-                typeParameterList: null,
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("ISerializer", "serializer") })),
-                constraintClauses: default,
-                body: Block(statements),
-                expressionBody: null)
+            var members = new MemberDeclarationSyntax[] {
+                MethodDeclaration(
+                    attributeLists: default,
+                    modifiers: default,
+                    PredefinedType(Token(SyntaxKind.VoidKeyword)),
+                    explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
+                        QualifiedName(IdentifierName("Serde"), IdentifierName("ISerialize"))),
+                    identifier: Identifier("Serialize"),
+                    typeParameterList: null,
+                    parameterList: ParameterList(SeparatedList(new[] { Parameter("ISerializer", "serializer") })),
+                    constraintClauses: default,
+                    body: Block(statements),
+                    expressionBody: null)
             };
             var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] {
                     SimpleBaseType(QualifiedName(
@@ -152,14 +153,62 @@ namespace Serde
 
             // Make a statement like `type.SerializeField("member.Name", value)`
             static ExpressionStatementSyntax MakeSerializeFieldStmt(DataMemberSymbol member, ExpressionSyntax value)
-                => ExpressionStatement(InvocationExpression(
-                    // type.SerializeField
-                    QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
-                    ArgumentList(SeparatedList(new ExpressionSyntax[] {
+            {
+                var arguments = new List<ExpressionSyntax>() {
                         // "FieldName"
                         LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(member.GetFormattedName())),
+                        // Value
                         value
-                    }.Select(Argument)))));
+                };
+
+                // If the member is marked as providing attributes we will need to create an array of the
+                // attributes and pass it as the last argument
+                if (member.ProvideAttributes)
+                {
+                    var attributeExpressions = member.Attributes.SelectNotNull(attributeData =>
+                    {
+                        if (attributeData.AttributeClass is not {} attrClass)
+                        {
+                            return null;
+                        }
+
+                        // Construct the positional arguments to the attribute constructor
+                        var args = attributeData.ConstructorArguments
+                            .Select(a => Argument(ParseExpression(a.ToCSharpString()))).ToList();
+
+                        // Construct the named arguments to the attribute constructor
+                        var assignments = attributeData.NamedArguments.Select(pair =>
+                            (ExpressionSyntax)AssignmentExpression(
+                                SyntaxKind.SimpleAssignmentExpression,
+                                IdentifierName(pair.Key),
+                                ParseExpression(pair.Value.ToCSharpString()))).ToList();
+
+                        return (ExpressionSyntax)ObjectCreationExpression(
+                            attrClass.ToFqnSyntax(),
+                            ArgumentList(SeparatedList(args)),
+                            InitializerExpression(
+                                SyntaxKind.ObjectInitializerExpression,
+                                SeparatedList(assignments)));
+                    }).ToList();
+
+                    if (attributeExpressions.Count > 0)
+                    {
+                        arguments.Add(ArrayCreationExpression(
+                            ArrayType(
+                                ParseTypeName("System.Attribute"),
+                                SingletonList(ArrayRankSpecifier(
+                                    SingletonSeparatedList((ExpressionSyntax)OmittedArraySizeExpression())))),
+                            InitializerExpression(
+                                SyntaxKind.ArrayInitializerExpression,
+                                SeparatedList(attributeExpressions))));
+                    }
+                }
+
+                return ExpressionStatement(InvocationExpression(
+                    // type.SerializeField
+                    QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
+                    ArgumentList(SeparatedList(arguments.Select(Argument)))));
+            }
         }
 
         /// <summary>
@@ -298,6 +347,9 @@ namespace Serde
                 SpecialType.System_Int32 => "Int32Wrap",
                 SpecialType.System_Int64 => "Int64Wrap",
                 SpecialType.System_String => "StringWrap",
+                SpecialType.System_Single => "FloatWrap",
+                SpecialType.System_Double => "DoubleWrap",
+                SpecialType.System_Decimal => "DecimalWrap",
                 _ => null
             };
         }

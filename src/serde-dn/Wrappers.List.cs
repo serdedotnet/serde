@@ -63,7 +63,7 @@ namespace Serde
             public static SerializeImpl<T, TWrap> Create(T[] t) => new SerializeImpl<T, TWrap>(t);
 
             void ISerialize.Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T).Name, Value, serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), Value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
@@ -75,7 +75,7 @@ namespace Serde
             }
             private sealed class SerdeVisitor : IDeserializeVisitor<T[]>
             {
-                string IDeserializeVisitor<T[]>.ExpectedTypeName => typeof(T).ToString() + "[]";
+                string IDeserializeVisitor<T[]>.ExpectedTypeName => typeof(T[]).ToString();
 
                 T[] IDeserializeVisitor<T[]>.VisitEnumerable<D>(ref D d)
                 {
@@ -115,7 +115,7 @@ namespace Serde
             public static SerializeImpl<T, TWrap> Create(List<T> t) => new SerializeImpl<T, TWrap>(t);
 
             void ISerialize.Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeList<T, TWrap>(typeof(T).Name, Value, serializer);
+                => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), Value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
@@ -127,7 +127,7 @@ namespace Serde
             }
             private sealed class SerdeVisitor : IDeserializeVisitor<List<T>>
             {
-                string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T).ToString() + "[]";
+                string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T[]).ToString();
 
                 List<T> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(ref D d)
                 {
@@ -164,7 +164,7 @@ namespace Serde
             public static SerializeImpl<T, TWrap> Create(ImmutableArray<T> t) => new SerializeImpl<T, TWrap>(t);
 
             void ISerialize.Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T).Name, Value.AsSpan(), serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), Value.AsSpan(), serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
@@ -179,7 +179,7 @@ namespace Serde
 
             private sealed class Visitor : IDeserializeVisitor<ImmutableArray<T>>
             {
-                public string ExpectedTypeName => "ImmutableArray<" + typeof(T).ToString() + ">";
+                public string ExpectedTypeName => typeof(ImmutableArray<T>).ToString();
                 ImmutableArray<T> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(ref D d)
                 {
                     ImmutableArray<T>.Builder builder;
