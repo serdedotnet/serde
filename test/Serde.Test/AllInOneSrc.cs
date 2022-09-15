@@ -7,13 +7,15 @@ using System.Linq;
 
 namespace Serde.Test
 {
-
     public partial class GenericType<T>
     {
         public int Field;
     }
+
+#if !DISABLE_SRC_GEN
     [GenerateSerialize]
     [GenerateDeserialize]
+#endif
     public sealed partial record AllInOne
     {
         public bool BoolField;
@@ -107,5 +109,40 @@ namespace Serde.Test
 
             IntImm = ImmutableArray.Create<int>(1, 2)
         };
+
+        internal const string SampleJson = """
+{
+  "BoolField": true,
+  "CharField": "#",
+  "ByteField": 255,
+  "UShortField": 65535,
+  "UIntField": 4294967295,
+  "ULongField": 18446744073709551615,
+  "SByteField": 127,
+  "ShortField": 32767,
+  "IntField": 2147483647,
+  "LongField": 9223372036854775807,
+  "StringField": "StringValue",
+  "NullStringField": null,
+  "UIntArr": [
+    1,
+    2,
+    3
+  ],
+  "NestedArr": [
+    [
+      1
+    ],
+    [
+      2
+    ]
+  ],
+  "IntImm": [
+    1,
+    2
+  ],
+  "Color": "Blue"
+}
+""";
     }
 }
