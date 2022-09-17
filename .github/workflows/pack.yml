@@ -13,7 +13,7 @@ jobs:
       with:
         dotnet-version: 7.0.100-preview.5.22307.18
     - name: Pack
-      run: dotnet pack -warnaserror -c Release
+      run: ./build.sh --pack
     - name: Upload package
       uses: actions/upload-artifact@v2
       with:

@@ -21,4 +21,4 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -warnaserror
     - name: Test
-      run: cd test && dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal

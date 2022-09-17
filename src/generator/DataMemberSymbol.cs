@@ -12,15 +12,17 @@ namespace Serde
     internal readonly struct DataMemberSymbol
     {
         private readonly ISymbol _symbol;
-        private readonly MemberFormat _format;
+        private readonly TypeOptions _typeOptions;
+        private readonly MemberOptions _memberOptions;
 
-        public DataMemberSymbol(ISymbol symbol, MemberFormat format)
+        public DataMemberSymbol(ISymbol symbol, TypeOptions typeOptions, MemberOptions memberOptions)
         {
             Debug.Assert(symbol is
                 IFieldSymbol or
-                IPropertySymbol { Parameters: { Length: 0 }});
+                IPropertySymbol { Parameters.Length: 0 });
             _symbol = symbol;
-            _format = format;
+            _typeOptions = typeOptions;
+            _memberOptions = memberOptions;
         }
 
         public ISymbol Symbol => _symbol;
@@ -43,15 +45,28 @@ namespace Serde
 
         public string Name => _symbol.Name;
 
+        public bool NullIfMissing => _memberOptions.NullIfMissing;
+
+        public bool ProvideAttributes => _memberOptions.ProvideAttributes;
+
+        public ImmutableArray<AttributeData> Attributes => _symbol.GetAttributes();
+
+        /// <summary>
+        /// Retrieves the name of the member after formatting options are applied.
+        /// </summary>
         public string GetFormattedName()
         {
-            if (_format == MemberFormat.None)
+            if (_memberOptions.Rename is { } renamed)
+            {
+                return renamed;
+            }
+            if (_typeOptions.MemberFormat == MemberFormat.None)
             {
                 return Name;
             }
             var parts = ParseMemberName(Name);
             var builder = new StringBuilder();
-            switch (_format)
+            switch (_typeOptions.MemberFormat)
             {
                 case MemberFormat.CamelCase:
                     {
@@ -125,39 +140,5 @@ namespace Serde
             }
         }
 
-        internal MemberOptions GetMemberOptions()
-        {
-            var options = new MemberOptions();
-            foreach (var attr in _symbol.GetAttributes())
-            {
-                var attrClass = attr.AttributeClass;
-                if (attrClass is null)
-                {
-                    continue;
-                }
-                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeMemberOptions))
-                {
-                    foreach (var named in attr.NamedArguments)
-                    {
-                        var value = named.Value.Value!;
-                        switch (named)
-                        {
-                            case {
-                                Key: nameof(MemberOptions.NullIfMissing),
-                                Value: {
-                                    Kind: TypedConstantKind.Primitive,
-                                    Type: { SpecialType: SpecialType.System_Boolean }
-                                } }:
-                                options = options with {
-                                    NullIfMissing = (bool)value
-                                };
-                                break;
-                        }
-                    }
-                    break;
-                }
-            }
-            return options;
-        }
     }
 }
