@@ -27,8 +27,8 @@
     </PackageReference>
 
     <ProjectReference Include="../../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\..\src\serde-xml\SerdeXml.csproj" />
-    <ProjectReference Include="..\..\src\serde-dn\SerdeDn.csproj" />
+    <ProjectReference Include="..\..\src\serde-xml\Serde.Xml.csproj" />
+    <ProjectReference Include="..\..\src\serde\Serde.csproj" />
   </ItemGroup>
 
 

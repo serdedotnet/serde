@@ -14,6 +14,6 @@ jobs:
       with:
         dotnet-version: 7.0.100-preview.5.22307.18
     - name: Pack
-      run: dotnet pack -warnaserror -c Release
+      run: ./build.sh --pack
     - name: Publish package
-      run: dotnet nuget push -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json artifacts/pack/serde-dn.*.nupkg
+      run: dotnet nuget push -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json artifacts/pack/*.nupkg

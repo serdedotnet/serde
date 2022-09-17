@@ -3,13 +3,11 @@
 Serde-dn is a port of the popular [serde.rs](https://serde.rs) Rust ***ser***ialization/***de***serialization
 library to .NET.
 
-For an overview, see [Overview](https://agocke.github.io/serde-dn/overview.html).
+It is a multi-format serialization provider, meaning that it can support multiple output formats.
 
-Start by adding the `serde-dn` NuGet package:
+This package contains the core Serde library and support for JSON. Additional NuGet packages can provide support for additional formats.
 
-```bash
-dotnet add package serde --prerelease
-```
+## Getting started
 
 Serde-dn uses C# 11 features, so until .NET 7 is released it requires the following flags to be added to the `csproj` file:
 
