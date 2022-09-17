@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <IsPackable>false</IsPackable>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGetizer" Version="0.9.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="StaticCs" Version="0.2.0">
+      <Pack>false</Pack>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
