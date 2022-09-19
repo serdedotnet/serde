@@ -9,15 +9,17 @@ internal readonly record struct TypeOptions()
     public bool DenyUnknownMembers { get; init; } = false;
     public MemberFormat MemberFormat { get; init; } = MemberFormat.None;
     public ITypeSymbol? ConstructorSignature { get; init; } = null;
+    public bool SerializeNull { get; init; } = false;
 }
 
 internal readonly record struct MemberOptions()
 {
-    public bool NullIfMissing { get; init; } = false;
+    public bool ThrowIfMissing { get; init; } = false;
 
     public string? Rename { get; init; } = null;
 
     public bool ProvideAttributes { get; init; } = false;
+    public bool? SerializeNull { get; init; } = null;
 }
 
 // Keep in sync with copy in serde

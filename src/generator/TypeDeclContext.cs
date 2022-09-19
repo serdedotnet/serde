@@ -16,6 +16,7 @@ namespace Serde
         public string Name { get; init; }
         public List<string> NamespaceNames { get; init; }
         public List<(string Name, SyntaxKind Kind)> ParentTypeInfo { get; init; }
+        public TypeParameterListSyntax? TypeParameterList { get; init; }
 
         public TypeDeclContext(TypeDeclarationSyntax typeDecl)
         {
@@ -40,6 +41,7 @@ namespace Serde
             }
             NamespaceNames = nsNames;
             ParentTypeInfo = parentTypeInfos;
+            TypeParameterList = typeDecl.TypeParameterList;
         }
 
         /// <summary>

@@ -106,7 +106,7 @@ partial struct S : Serde.IDeserialize<S>
             }
 
             var newType = new S()
-            {F = f.GetValueOrThrow(""F""), };
+            {F = f.GetValueOrDefault(null), };
             return newType;
         }
     }
@@ -122,10 +122,12 @@ using Serde;
 readonly partial record struct SetToNull
 {
     public string Present { get; init; }
-    [SerdeMemberOptions(NullIfMissing = true)]
     public string? Missing { get; init; }
+    [SerdeMemberOptions(ThrowIfMissing = true)]
+    public string? ThrowMissing { get; init; }
 } ";
-            return VerifyDeserialize(src, "SetToNull", @"
+            return VerifyDeserialize(src, "SetToNull", """
+
 #nullable enable
 using Serde;
 
@@ -134,26 +136,30 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
     static SetToNull Serde.IDeserialize<SetToNull>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{""Present"", ""Missing""};
-        return deserializer.DeserializeType<SetToNull, SerdeVisitor>(""SetToNull"", fieldNames, visitor);
+        var fieldNames = new[]{"Present", "Missing", "ThrowMissing"};
+        return deserializer.DeserializeType<SetToNull, SerdeVisitor>("SetToNull", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<SetToNull>
     {
-        public string ExpectedTypeName => ""SetToNull"";
+        public string ExpectedTypeName => "SetToNull";
         SetToNull Serde.IDeserializeVisitor<SetToNull>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<string> present = default;
             Serde.Option<string?> missing = default;
+            Serde.Option<string?> throwmissing = default;
             while (d.TryGetNextKey<string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
-                    case ""Present"":
+                    case "Present":
                         present = d.GetNextValue<string, StringWrap>();
                         break;
-                    case ""Missing"":
+                    case "Missing":
                         missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        break;
+                    case "ThrowMissing":
+                        throwmissing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
                         break;
@@ -161,11 +167,12 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
             }
 
             var newType = new SetToNull()
-            {Present = present.GetValueOrThrow(""Present""), Missing = missing.GetValueOrDefault(null), };
+            {Present = present.GetValueOrThrow("Present"), Missing = missing.GetValueOrDefault(null), ThrowMissing = throwmissing.GetValueOrThrow("ThrowMissing"), };
             return newType;
         }
     }
-}");
+}
+""");
         }
 
         [Fact]

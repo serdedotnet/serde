@@ -16,6 +16,33 @@ public interface ISerializeType
     void End();
 }
 
+public static class ISerializeTypeExt
+{
+    public static void SerializeFieldIfNotNull<T, U>(
+        this ISerializeType serializeType,
+        string name,
+        T value,
+        U rawValue) where T : ISerialize
+        => SerializeFieldIfNotNull(serializeType, name, value, rawValue, ReadOnlySpan<Attribute>.Empty);
+
+    public static void SerializeFieldIfNotNull<T, U>(
+        this ISerializeType serializeType,
+        string name,
+        T value,
+        U rawValue,
+        ReadOnlySpan<Attribute> attributes) where T : ISerialize
+    {
+        if (rawValue is null)
+        {
+            serializeType.SkipField(name);
+        }
+        else
+        {
+            serializeType.SerializeField(name, value, attributes);
+        }
+    }
+}
+
 public interface ISerializeEnumerable
 {
     void SerializeElement<T>(T value) where T : ISerialize;

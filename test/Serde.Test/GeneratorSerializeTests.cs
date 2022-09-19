@@ -37,27 +37,39 @@ partial struct Rgb : Serde.ISerialize
         }
 
         [Fact]
-        public Task NullableRefField()
+        public Task NullableFields()
         {
             var src = @"
-[Serde.GenerateSerialize]
-partial struct S
+using Serde;
+[GenerateSerialize]
+partial struct S<T1, T2, T3>
+    where T1 : ISerialize
+    where T2 : ISerialize?
+    where T3 : class, ISerialize
 {
-    public string? F;
+    public string? F1;
+    public T1 F2;
+    public T2 F3;
+    public T3? F4;
 }";
-            return VerifySerialize(src, "S", @"
+            return VerifySerialize(src, "S", """
+
 #nullable enable
 using Serde;
 
-partial struct S : Serde.ISerialize
+partial struct S<T1, T2, T3> : Serde.ISerialize
 {
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
-        var type = serializer.SerializeType(""S"", 1);
-        type.SerializeField(""F"", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.F));
+        var type = serializer.SerializeType("S", 4);
+        type.SerializeFieldIfNotNull("F1", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.F1), this.F1);
+        type.SerializeField("F2", this.F2);
+        type.SerializeField("F3", this.F3);
+        type.SerializeFieldIfNotNull("F4", new NullableRefWrap.SerializeImpl<T3, IdWrap<T3>>(this.F4), this.F4);
         type.End();
     }
-}");
+}
+""");
         }
 
         [Fact]
@@ -85,7 +97,7 @@ partial struct S1 : Serde.ISerialize
         type.End();
     }
 }",
-                // /0/Test0.cs(6,15): error ERR_DoesntImplementInterface: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializable. Either implement the interface, or use a remote implementation.
+                // /0/Test0.cs(6,15): error ERR_DoesntImplementInterface: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a remote implementation.
                 DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(6, 15, 6, 16));
         }
 

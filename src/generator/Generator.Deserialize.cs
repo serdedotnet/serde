@@ -29,7 +29,7 @@ namespace Serde
             ));
 
             // Generate members for ISerialize.Deserialize implementation
-            var method = GenerateDeserializeMethod(interfaceSyntax, receiverType);
+            var method = GenerateDeserializeMethod(context, interfaceSyntax, receiverType);
             var visitorType = GenerateVisitor(receiverType, typeSyntax, context);
             var members = new MemberDeclarationSyntax[] { method, visitorType };
             var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) }));
@@ -38,6 +38,7 @@ namespace Serde
 
         // Generate method `void ISerialize.Deserialize(IDeserializer deserializer) { ... }`
         private static MethodDeclarationSyntax GenerateDeserializeMethod(
+            GeneratorExecutionContext context,
             QualifiedNameSyntax interfaceSyntax,
             ITypeSymbol typeSymbol)
         {
@@ -269,13 +270,13 @@ namespace Serde
                 }
                 else
                 {
-                    // No built-in handling and doesn't implement ISerializable, error
+                    // No built-in handling and doesn't implement IDeserialize, error
                     context.ReportDiagnostic(CreateDiagnostic(
                         DiagId.ERR_DoesntImplementInterface,
                         m.Locations[0],
                         m.Symbol,
                         memberType,
-                        "Serde.IDeserializable"));
+                        "Serde.IDeserialize"));
                     wrapperName = memberType;
                 }
                 var localName = GetLocalName(m);
@@ -394,9 +395,9 @@ namespace Serde
             static string GetMemberAccess(DataMemberSymbol m)
             {
                 var localName = GetLocalName(m);
-                return m.NullIfMissing
-                    ? $"{localName}.GetValueOrDefault(null)"
-                    : $"{localName}.GetValueOrThrow(\"{m.Name}\")";
+                return !m.IsNullable || m.ThrowIfMissing
+                    ? $"{localName}.GetValueOrThrow(\"{m.Name}\")"
+                    : $"{localName}.GetValueOrDefault(null)";
             }
         }
 

@@ -34,7 +34,7 @@ namespace Serde
                 //   _ => null
                 // };
                 // serializer.SerializeEnumValue("Enum", name, receiver);
-                var enumType = ((INamedTypeSymbol)receiverType);
+                var enumType = (INamedTypeSymbol)receiverType;
                 var typeSyntax = enumType.ToFqnSyntax();
                 var cases = fieldsAndProps.Select(m => SwitchExpressionArm(
                         ConstantPattern(QualifiedName((NameSyntax)typeSyntax, IdentifierName(m.Name))),
@@ -94,17 +94,17 @@ namespace Serde
                     var expr = TryMakeSerializeFieldExpr(m, memberType, context, receiverExpr);
                     if (expr is null)
                     {
-                        // No built-in handling and doesn't implement ISerializable, error
+                        // No built-in handling and doesn't implement ISerialize, error
                         context.ReportDiagnostic(CreateDiagnostic(
                             DiagId.ERR_DoesntImplementInterface,
                             m.Locations[0],
                             m.Symbol,
                             memberType,
-                            "Serde.ISerializable"));
+                            "Serde.ISerialize"));
                     }
                     else
                     {
-                        statements.Add(MakeSerializeFieldStmt(m, expr));
+                        statements.Add(MakeSerializeFieldStmt(m, expr, receiverExpr));
                     }
                 }
 
@@ -137,22 +137,18 @@ namespace Serde
                 }));
             return (members, baseList);
 
-            ExpressionSyntax? TryMakeSerializeFieldExpr(
+            static ExpressionSyntax? TryMakeSerializeFieldExpr(
                 DataMemberSymbol m,
                 ITypeSymbol memberType,
                 GeneratorExecutionContext context,
                 ExpressionSyntax receiverExpr)
             {
-                var memberExpr = MemberAccessExpression(
-                    SyntaxKind.SimpleMemberAccessExpression,
-                    receiverExpr,
-                    IdentifierName(m.Name));
-
+                var memberExpr = MakeMemberAccessExpr(m, receiverExpr);
                 return MakeSerializeArgument(memberType, m, context, memberExpr);
             }
 
             // Make a statement like `type.SerializeField("member.Name", value)`
-            static ExpressionStatementSyntax MakeSerializeFieldStmt(DataMemberSymbol member, ExpressionSyntax value)
+            static ExpressionStatementSyntax MakeSerializeFieldStmt(DataMemberSymbol member, ExpressionSyntax value, ExpressionSyntax receiver)
             {
                 var arguments = new List<ExpressionSyntax>() {
                         // "FieldName"
@@ -161,13 +157,27 @@ namespace Serde
                         value
                 };
 
+                string methodName;
+                if (!member.SerializeNull &&
+                    (member.NullableAnnotation == NullableAnnotation.Annotated
+                     || member.Type.SpecialType == SpecialType.System_Nullable_T))
+                {
+                    // Use SerializeFieldIfNotNull if it's not been disabled and the field is nullable
+                    arguments.Add(MakeMemberAccessExpr(member, receiver));
+                    methodName = "SerializeFieldIfNotNull";
+                }
+                else
+                {
+                    methodName = "SerializeField";
+                }
+
                 // If the member is marked as providing attributes we will need to create an array of the
                 // attributes and pass it as the last argument
                 if (member.ProvideAttributes)
                 {
                     var attributeExpressions = member.Attributes.SelectNotNull(attributeData =>
                     {
-                        if (attributeData.AttributeClass is not {} attrClass)
+                        if (attributeData.AttributeClass is not { } attrClass)
                         {
                             return null;
                         }
@@ -206,7 +216,7 @@ namespace Serde
 
                 return ExpressionStatement(InvocationExpression(
                     // type.SerializeField
-                    QualifiedName(IdentifierName("type"), IdentifierName("SerializeField")),
+                    QualifiedName(IdentifierName("type"), IdentifierName(methodName)),
                     ArgumentList(SeparatedList(arguments.Select(Argument)))));
             }
         }
@@ -392,9 +402,10 @@ namespace Serde
             }
 
             var serdeSymbol = context.Compilation.GetTypeByMetadataName(usage == SerdeUsage.Serialize
-                ? "Serde.ISerialize`4"
-                : "Serde.IDeserialize`1");
-            if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default))
+                ? "Serde.ISerialize"
+                : "Serde.IDeserialize");
+            if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
+                || (memberType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
             {
                 return true;
             }
@@ -414,5 +425,11 @@ namespace Serde
 
         private static LiteralExpressionSyntax StringLiteral(string text)
             => LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(text));
+
+        private static MemberAccessExpressionSyntax MakeMemberAccessExpr(DataMemberSymbol m, ExpressionSyntax receiverExpr)
+            => MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                receiverExpr,
+                IdentifierName(m.Name));
     }
 }
