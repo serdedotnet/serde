@@ -3,6 +3,9 @@ name: publish
 on:
   push:
     branches: [ release ]
+  release:
+    types: [ published ]
+
 jobs:
   pack:
     runs-on: ubuntu-latest
