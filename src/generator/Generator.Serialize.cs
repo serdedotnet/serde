@@ -89,9 +89,8 @@ namespace Serde
 
                 foreach (var m in fieldsAndProps)
                 {
-                    var memberType = m.Type;
                     // Generate statements of the form `type.SerializeField("FieldName", FieldValue)`
-                    var expr = TryMakeSerializeFieldExpr(m, memberType, context, receiverExpr);
+                    var expr = TryMakeSerializeFieldExpr(m, context, receiverExpr);
                     if (expr is null)
                     {
                         // No built-in handling and doesn't implement ISerialize, error
@@ -99,7 +98,7 @@ namespace Serde
                             DiagId.ERR_DoesntImplementInterface,
                             m.Locations[0],
                             m.Symbol,
-                            memberType,
+                            m.Type,
                             "Serde.ISerialize"));
                     }
                     else
@@ -139,12 +138,11 @@ namespace Serde
 
             static ExpressionSyntax? TryMakeSerializeFieldExpr(
                 DataMemberSymbol m,
-                ITypeSymbol memberType,
                 GeneratorExecutionContext context,
                 ExpressionSyntax receiverExpr)
             {
                 var memberExpr = MakeMemberAccessExpr(m, receiverExpr);
-                return MakeSerializeArgument(memberType, m, context, memberExpr);
+                return MakeSerializeArgument(m, context, memberExpr);
             }
 
             // Make a statement like `type.SerializeField("member.Name", value)`
@@ -158,9 +156,7 @@ namespace Serde
                 };
 
                 string methodName;
-                if (!member.SerializeNull &&
-                    (member.NullableAnnotation == NullableAnnotation.Annotated
-                     || member.Type.SpecialType == SpecialType.System_Nullable_T))
+                if (member.IsNullable && !member.SerializeNull)
                 {
                     // Use SerializeFieldIfNotNull if it's not been disabled and the field is nullable
                     arguments.Add(MakeMemberAccessExpr(member, receiver));
@@ -227,7 +223,6 @@ namespace Serde
         /// framework. If found, we generate and initialize the wrapper.
         /// </summary>
         private static ExpressionSyntax? MakeSerializeArgument(
-            ITypeSymbol type,
             DataMemberSymbol member,
             GeneratorExecutionContext context,
             ExpressionSyntax memberExpr)
@@ -258,14 +253,14 @@ namespace Serde
 
             // 2. Check for a direct implementation of ISerialize
 
-            if (ImplementsSerde(type, context, SerdeUsage.Serialize))
+            if (ImplementsSerde(member.Type, context, SerdeUsage.Serialize))
             {
                 return memberExpr;
             }
 
             // 3. A wrapper for a built-in primitive (non-generic type)
 
-            var wrapperName = TryGetPrimitiveWrapper(type, SerdeUsage.Serialize);
+            var wrapperName = TryGetPrimitiveWrapper(member.Type, SerdeUsage.Serialize);
             if (wrapperName is not null)
             {
                 return ObjectCreationExpression(
@@ -276,9 +271,9 @@ namespace Serde
 
             // 4. A wrapper for a compound type (might need nested wrappers)
 
-            TypeSyntax? wrapperTypeSyntax = TryGetCompoundWrapper(type, context, SerdeUsage.Serialize)
+            TypeSyntax? wrapperTypeSyntax = TryGetCompoundWrapper(member.Type, context, SerdeUsage.Serialize)
                 // 5. Create a wrapper if appropriate
-                ?? TryCreateWrapper(type, member, context, SerdeUsage.Serialize);
+                ?? TryCreateWrapper(member, context, SerdeUsage.Serialize);
             if (wrapperTypeSyntax is not null)
             {
                 return ObjectCreationExpression(
@@ -290,9 +285,10 @@ namespace Serde
             return null;
         }
 
-        private static TypeSyntax? TryCreateWrapper(ITypeSymbol type, DataMemberSymbol m, GeneratorExecutionContext context, SerdeUsage usage)
+        private static TypeSyntax? TryCreateWrapper(DataMemberSymbol m, GeneratorExecutionContext context, SerdeUsage usage)
         {
-            if (type is ({ TypeKind: not TypeKind.Enum } and { DeclaringSyntaxReferences: { Length: > 0 } }) or
+            var type = m.Type;
+            if (type is ({ TypeKind: not TypeKind.Enum } and { DeclaringSyntaxReferences.Length: > 0 }) or
                         { CanBeReferencedByName: false } or
                         { OriginalDefinition: INamedTypeSymbol { Arity: > 0 } })
             {
@@ -370,7 +366,8 @@ namespace Serde
         private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
         {
             // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
-            if (memberType.NullableAnnotation == NullableAnnotation.Annotated)
+            if (memberType.NullableAnnotation == NullableAnnotation.Annotated ||
+                memberType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
             {
                 return false;
             }

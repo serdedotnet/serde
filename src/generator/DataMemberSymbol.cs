@@ -31,9 +31,44 @@ namespace Serde
             Symbol = symbol;
             _typeOptions = typeOptions;
             _memberOptions = memberOptions;
-            var type = GetType(symbol);
-            IsNullable = type.NullableAnnotation == NullableAnnotation.Annotated ||
-                type.SpecialType == SpecialType.System_Nullable_T;
+            this.IsNullable = IsNullable(symbol);
+
+            // Assumes that the symbol is in a nullable-enabled context, and lack of annotation
+            // means not-nullable
+            static bool IsNullable(ISymbol symbol)
+            {
+                var type = GetType(symbol);
+                if (type.NullableAnnotation == NullableAnnotation.Annotated ||
+                    type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                {
+                    return true;
+                }
+
+                if (type.IsValueType)
+                {
+                    return false;
+                }
+
+                if (type is ITypeParameterSymbol param)
+                {
+                    if (param.HasNotNullConstraint)
+                    {
+                        return false;
+                    }
+                    foreach (var ann in param.ConstraintNullableAnnotations)
+                    {
+                        if (ann == NullableAnnotation.Annotated)
+                        {
+                            return true;
+                        }
+                    }
+                    if (param.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
         public ITypeSymbol Type => GetType(Symbol);

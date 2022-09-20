@@ -264,7 +264,7 @@ namespace Serde
                 {
                     wrapperName = compound.ToString();
                 }
-                else if (TryCreateWrapper(m.Type, m, context, SerdeUsage.Deserialize) is { } wrap)
+                else if (TryCreateWrapper(m, context, SerdeUsage.Deserialize) is { } wrap)
                 {
                     wrapperName = wrap.ToString();
                 }
