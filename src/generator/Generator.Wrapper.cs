@@ -69,21 +69,41 @@ namespace Serde
 
         private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage)
         {
-            switch (type)
+            return type switch
             {
-                case { NullableAnnotation: NullableAnnotation.Annotated }:
-                    return MakeWrappedExpression(
+                { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } =>
+                    MakeWrappedExpression(
+                        $"NullableWrap.{usage.GetName()}",
+                        ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
+                        context,
+                        usage),
+
+                // This is rather subtle. One might think that we would want to use a
+                // NullableRefWrapper for any reference type that could contain null. In fact, we
+                // only want to use one if the type in question is actually annotated as nullable.
+                // The difference comes down to type parameters. If a type parameter is constrained
+                // as `class?` then it is both a reference type and nullable, but we don't want to
+                // use a wrapper for it. The reason why is that in we don't know the actual
+                // "underlying" type and couldn't dispatch to the underlying type's ISerialize
+                // implementation. Instead, for type parameters that aren't actually "annotated" as
+                // nullable (i.e., "T?") we must rely on the type parameter itself implementing
+                // ISerialize, and therefore the substitution to provide the appropriate nullable
+                // wrapper.
+                { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated} =>
+                    MakeWrappedExpression(
                         $"NullableRefWrap.{usage.GetName()}",
                         ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                         context,
-                        usage);
-                case IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }:
-                    return MakeWrappedExpression($"ArrayWrap.{usage.GetName()}", ImmutableArray.Create(elemType), context, usage);
+                        usage),
 
-                case INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is {} tuple:
-                    return MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage);
-            }
-            return null;
+                IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }
+                    => MakeWrappedExpression($"ArrayWrap.{usage.GetName()}", ImmutableArray.Create(elemType), context, usage),
+
+                INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is { } tuple
+                    => MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage),
+
+                _ => null,
+            };
         }
 
         private static TypeSyntax? MakeWrappedExpression(

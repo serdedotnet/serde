@@ -11,45 +11,93 @@ namespace Serde
     /// </summary>
     internal readonly struct DataMemberSymbol
     {
-        private readonly ISymbol _symbol;
         private readonly TypeOptions _typeOptions;
         private readonly MemberOptions _memberOptions;
 
-        public DataMemberSymbol(ISymbol symbol, TypeOptions typeOptions, MemberOptions memberOptions)
+        /// <summary>
+        /// The field or property may contain null.
+        /// </summary>
+        public bool IsNullable { get; }
+        public ISymbol Symbol { get; }
+
+        public DataMemberSymbol(
+            ISymbol symbol,
+            TypeOptions typeOptions,
+            MemberOptions memberOptions)
         {
             Debug.Assert(symbol is
                 IFieldSymbol or
                 IPropertySymbol { Parameters.Length: 0 });
-            _symbol = symbol;
+            Symbol = symbol;
             _typeOptions = typeOptions;
             _memberOptions = memberOptions;
+            this.IsNullable = IsNullable(symbol);
+
+            // Assumes that the symbol is in a nullable-enabled context, and lack of annotation
+            // means not-nullable
+            static bool IsNullable(ISymbol symbol)
+            {
+                var type = GetType(symbol);
+                if (type.NullableAnnotation == NullableAnnotation.Annotated ||
+                    type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                {
+                    return true;
+                }
+
+                if (type.IsValueType)
+                {
+                    return false;
+                }
+
+                if (type is ITypeParameterSymbol param)
+                {
+                    if (param.HasNotNullConstraint)
+                    {
+                        return false;
+                    }
+                    foreach (var ann in param.ConstraintNullableAnnotations)
+                    {
+                        if (ann == NullableAnnotation.Annotated)
+                        {
+                            return true;
+                        }
+                    }
+                    if (param.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
-        public ISymbol Symbol => _symbol;
+        public ITypeSymbol Type => GetType(Symbol);
 
-        public ITypeSymbol Type => _symbol switch
+        private static ITypeSymbol GetType(ISymbol symbol) => symbol switch
         {
             IFieldSymbol f => f.Type,
             IPropertySymbol p => p.Type,
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        public NullableAnnotation NullableAnnotation => _symbol switch
+        public NullableAnnotation NullableAnnotation => Symbol switch
         {
             IFieldSymbol f => f.NullableAnnotation,
             IPropertySymbol p => p.NullableAnnotation,
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        public ImmutableArray<Location> Locations => _symbol.Locations;
+        public ImmutableArray<Location> Locations => Symbol.Locations;
 
-        public string Name => _symbol.Name;
+        public string Name => Symbol.Name;
 
-        public bool NullIfMissing => _memberOptions.NullIfMissing;
+        public bool ThrowIfMissing => _memberOptions.ThrowIfMissing;
 
         public bool ProvideAttributes => _memberOptions.ProvideAttributes;
 
-        public ImmutableArray<AttributeData> Attributes => _symbol.GetAttributes();
+        public bool SerializeNull => _memberOptions.SerializeNull ?? _typeOptions.SerializeNull;
+
+        public ImmutableArray<AttributeData> Attributes => Symbol.GetAttributes();
 
         /// <summary>
         /// Retrieves the name of the member after formatting options are applied.
@@ -139,6 +187,5 @@ namespace Serde
                 }
             }
         }
-
     }
 }

@@ -81,7 +81,7 @@ namespace Serde
                     _ => throw ExceptionUtilities.Unreachable
                 }),
                 identifier: Identifier(typeName),
-                typeParameterList: null,
+                typeParameterList: typeDeclContext.TypeParameterList,
                 baseList: baseList,
                 constraintClauses: default,
                 openBraceToken: Token(SyntaxKind.OpenBraceToken),

@@ -50,12 +50,12 @@ namespace Serde
                         options = named switch
                         {
                             {
-                                Key: nameof(MemberOptions.NullIfMissing),
+                                Key: nameof(MemberOptions.ThrowIfMissing),
                                 Value: {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { NullIfMissing = (bool)value },
+                            } => options with { ThrowIfMissing = (bool)value },
                             {
                                 Key: nameof(MemberOptions.Rename),
                                 Value: {

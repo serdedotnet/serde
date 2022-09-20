@@ -200,9 +200,28 @@ namespace Serde.Test
         private readonly partial record struct SetToNull
         {
             public string Present { get; init; }
-            [SerdeMemberOptions(NullIfMissing = true)]
             public string? Missing { get; init; }
         }
+
+        [GenerateDeserialize]
+        private readonly partial record struct ThrowMissing
+        {
+            public string Present { get; init; }
+            [SerdeMemberOptions(ThrowIfMissing = true)]
+            public string? Missing { get; init; }
+        }
+
+        [Fact]
+        public void ThrowIfMissing()
+        {
+            var src = @"
+{
+    ""Present"": ""abc"",
+    ""Extra"": ""def""
+}";
+            Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
+        }
+
 
         [GenerateDeserialize]
         private partial class NullableFields
@@ -219,7 +238,6 @@ namespace Serde.Test
         {
             var src = @"
 {
-    ""S"": null,
     ""Dict"": {
         ""def"": ""def"",
         ""abc"": null

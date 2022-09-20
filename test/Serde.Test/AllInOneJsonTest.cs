@@ -39,7 +39,7 @@ namespace Serde.Test
             type.SerializeField("IntField", new Int32Wrap(this.IntField));
             type.SerializeField("LongField", new Int64Wrap(this.LongField));
             type.SerializeField("StringField", new StringWrap(this.StringField));
-            type.SerializeField("NullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField));
+            type.SerializeFieldIfNotNull("NullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField), this.NullStringField);
             type.SerializeField("UIntArr", new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
             type.SerializeField("NestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
             type.SerializeField("IntImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
@@ -143,7 +143,7 @@ namespace Serde.Test
                 }
 
                 var newType = new Serde.Test.AllInOne()
-                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), NullStringField = nullstringfield.GetValueOrThrow(""NullStringField""), UIntArr = uintarr.GetValueOrThrow(""UIntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), Color = color.GetValueOrThrow(""Color""), };
+                {BoolField = boolfield.GetValueOrThrow(""BoolField""), CharField = charfield.GetValueOrThrow(""CharField""), ByteField = bytefield.GetValueOrThrow(""ByteField""), UShortField = ushortfield.GetValueOrThrow(""UShortField""), UIntField = uintfield.GetValueOrThrow(""UIntField""), ULongField = ulongfield.GetValueOrThrow(""ULongField""), SByteField = sbytefield.GetValueOrThrow(""SByteField""), ShortField = shortfield.GetValueOrThrow(""ShortField""), IntField = intfield.GetValueOrThrow(""IntField""), LongField = longfield.GetValueOrThrow(""LongField""), StringField = stringfield.GetValueOrThrow(""StringField""), NullStringField = nullstringfield.GetValueOrDefault(null), UIntArr = uintarr.GetValueOrThrow(""UIntArr""), NestedArr = nestedarr.GetValueOrThrow(""NestedArr""), IntImm = intimm.GetValueOrThrow(""IntImm""), Color = color.GetValueOrThrow(""Color""), };
                 return newType;
             }
         }
@@ -241,7 +241,6 @@ namespace Serde
   "IntField": 2147483647,
   "LongField": 9223372036854775807,
   "StringField": "StringValue",
-  "NullStringField": null,
   "UIntArr": [
     1,
     2,

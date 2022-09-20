@@ -22,7 +22,6 @@ namespace Serde.Test
   <IntField>2147483647</IntField>
   <LongField>9223372036854775807</LongField>
   <StringField>StringValue</StringField>
-  <NullStringField />
   <UIntArr>
     <int>1</int>
     <int>2</int>

@@ -38,7 +38,7 @@ namespace Serde.Test
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.NullableFields()
-                    {S = s.GetValueOrThrow("S"), Dict = dict.GetValueOrThrow("Dict"), };
+                    {S = s.GetValueOrDefault(null), Dict = dict.GetValueOrThrow("Dict"), };
                     return newType;
                 }
             }

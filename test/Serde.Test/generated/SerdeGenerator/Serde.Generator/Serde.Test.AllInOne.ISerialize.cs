@@ -20,7 +20,7 @@ namespace Serde.Test
             type.SerializeField("IntField", new Int32Wrap(this.IntField));
             type.SerializeField("LongField", new Int64Wrap(this.LongField));
             type.SerializeField("StringField", new StringWrap(this.StringField));
-            type.SerializeField("NullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField));
+            type.SerializeFieldIfNotNull("NullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField), this.NullStringField);
             type.SerializeField("UIntArr", new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
             type.SerializeField("NestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
             type.SerializeField("IntImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));

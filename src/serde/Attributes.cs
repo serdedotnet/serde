@@ -39,12 +39,22 @@ public sealed class SerdeTypeOptions : Attribute
     /// the desired parameter list of the desired constructor.
     /// </summary>
     public Type? ConstructorSignature { get; init; }
+    /// <summary>
+    /// The default behavior for null is to skip serialization. Set this to true to force
+    /// serialization.
+    /// </summary>
+    public bool SerializeNull { get; init; } = false;
 }
 
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 public sealed class SerdeMemberOptions : Attribute
 {
-    public bool NullIfMissing { get; init; } = false;
+    /// <summary>
+    /// Throw an exception if the target field is not present when deserializing.  This is the
+    /// default behavior for fields of non-nullable types, while the default behavior for nullable
+    /// types is to set the field to null.
+    /// </summary>
+    public bool ThrowIfMissing { get; init; } = false;
 
     /// <summary>
     /// Use the given name instead of the name of the field or property.
@@ -56,6 +66,12 @@ public sealed class SerdeMemberOptions : Attribute
     /// serializer.
     /// </summary>
     public bool ProvideAttributes { get; init; } = false;
+
+    /// <summary>
+    /// The default behavior for null is to skip serialization. Set this to true to force
+    /// serialization.
+    /// </summary>
+    public bool SerializeNull { get; init; } = false;
 }
 
 public enum MemberFormat : byte

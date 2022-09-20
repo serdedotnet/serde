@@ -37,27 +37,90 @@ partial struct Rgb : Serde.ISerialize
         }
 
         [Fact]
-        public Task NullableRefField()
+        public Task NullableRefFields()
         {
             var src = @"
-[Serde.GenerateSerialize]
-partial struct S
+using System;
+using Serde;
+
+[GenerateSerialize]
+partial struct S<T1, T2, T3, T4, T5>
+    where T1 : ISerialize
+    where T2 : ISerialize?
+    where T3 : class, ISerialize
+    where T4 : class?, ISerialize
 {
-    public string? F;
+    public string? FS;
+    public T1 F1;
+    public T2 F2;
+    public T3? F3;
+    public T4 F4;
 }";
-            return VerifySerialize(src, "S", @"
+            return VerifySerialize(src, "S", """
+
 #nullable enable
 using Serde;
 
-partial struct S : Serde.ISerialize
+partial struct S<T1, T2, T3, T4, T5> : Serde.ISerialize
 {
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
-        var type = serializer.SerializeType(""S"", 1);
-        type.SerializeField(""F"", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.F));
+        var type = serializer.SerializeType("S", 5);
+        type.SerializeFieldIfNotNull("FS", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.FS), this.FS);
+        type.SerializeField("F1", this.F1);
+        type.SerializeFieldIfNotNull("F2", this.F2, this.F2);
+        type.SerializeFieldIfNotNull("F3", new NullableRefWrap.SerializeImpl<T3, IdWrap<T3>>(this.F3), this.F3);
+        type.SerializeFieldIfNotNull("F4", this.F4, this.F4);
         type.End();
     }
-}");
+}
+""");
+        }
+
+        [Fact]
+        public Task NullableFields()
+        {
+            var src = """
+using Serde;
+[GenerateSerialize]
+partial struct S<T1, T2, TSerialize>
+    where T1 : int?
+    where T2 : TSerialize?
+    where TSerialize : struct, ISerialize
+{
+    public int? FI;
+    public T1 F1;
+    public T2 F2;
+    public TSerialize? F3;
+}
+""";
+            var errors = new[] {
+                //0/Test0.cs(4,16): error CS0701: 'int?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.
+                DiagnosticResult.CompilerError("CS0701").WithSpan(4, 16, 4, 20).WithArguments("int?"),
+                // /0/Test0.cs(5,16): error CS0701: 'TSerialize?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.
+                DiagnosticResult.CompilerError("CS0701").WithSpan(5, 16, 5, 27).WithArguments("TSerialize?"),
+                // /0/Test0.cs(9,15): error ERR_DoesntImplementInterface: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
+                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(9, 15, 9, 17),
+                // /0/Test0.cs(10,15): error ERR_DoesntImplementInterface: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
+                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(10, 15, 10, 17),
+            };
+
+            return VerifySerialize(src, "S", """
+
+#nullable enable
+using Serde;
+
+partial struct S<T1, T2, TSerialize> : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType("S", 4);
+        type.SerializeFieldIfNotNull("FI", new NullableWrap.SerializeImpl<int, Int32Wrap>(this.FI), this.FI);
+        type.SerializeFieldIfNotNull("F3", new NullableWrap.SerializeImpl<TSerialize, IdWrap<TSerialize>>(this.F3), this.F3);
+        type.End();
+    }
+}
+""", errors);
         }
 
         [Fact]
@@ -85,7 +148,7 @@ partial struct S1 : Serde.ISerialize
         type.End();
     }
 }",
-                // /0/Test0.cs(6,15): error ERR_DoesntImplementInterface: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializable. Either implement the interface, or use a remote implementation.
+                // /0/Test0.cs(6,15): error ERR_DoesntImplementInterface: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a remote implementation.
                 DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(6, 15, 6, 16));
         }
 

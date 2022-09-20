@@ -15,7 +15,7 @@ namespace Serde.Test
                 {}, new Serde.SerdeMemberOptions()
                 {ProvideAttributes = true}});
                 type.SerializeField("Line1", new StringWrap(this.Line1));
-                type.SerializeField("City", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.City));
+                type.SerializeFieldIfNotNull("City", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.City), this.City);
                 type.SerializeField("State", new StringWrap(this.State));
                 type.SerializeField("Zip", new StringWrap(this.Zip));
                 type.End();
