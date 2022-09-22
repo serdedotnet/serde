@@ -43,8 +43,10 @@ namespace Serde
     {
         private static readonly GeneratorRegistry _registry = new GeneratorRegistry();
 
+        /// <inheritdoc/>
         public void Initialize(GeneratorInitializationContext context) { }
 
+        /// <inheritdoc/>
         public void Execute(GeneratorExecutionContext context)
         {
             var walker = new TypeWalker(this, context);

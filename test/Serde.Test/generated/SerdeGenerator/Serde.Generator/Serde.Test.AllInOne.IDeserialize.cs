@@ -38,52 +38,52 @@ namespace Serde.Test
                 {
                     switch (key)
                     {
-                        case "BoolField":
+                        case "boolField":
                             boolfield = d.GetNextValue<bool, BoolWrap>();
                             break;
-                        case "CharField":
+                        case "charField":
                             charfield = d.GetNextValue<char, CharWrap>();
                             break;
-                        case "ByteField":
+                        case "byteField":
                             bytefield = d.GetNextValue<byte, ByteWrap>();
                             break;
-                        case "UShortField":
+                        case "uShortField":
                             ushortfield = d.GetNextValue<ushort, UInt16Wrap>();
                             break;
-                        case "UIntField":
+                        case "uIntField":
                             uintfield = d.GetNextValue<uint, UInt32Wrap>();
                             break;
-                        case "ULongField":
+                        case "uLongField":
                             ulongfield = d.GetNextValue<ulong, UInt64Wrap>();
                             break;
-                        case "SByteField":
+                        case "sByteField":
                             sbytefield = d.GetNextValue<sbyte, SByteWrap>();
                             break;
-                        case "ShortField":
+                        case "shortField":
                             shortfield = d.GetNextValue<short, Int16Wrap>();
                             break;
-                        case "IntField":
+                        case "intField":
                             intfield = d.GetNextValue<int, Int32Wrap>();
                             break;
-                        case "LongField":
+                        case "longField":
                             longfield = d.GetNextValue<long, Int64Wrap>();
                             break;
-                        case "StringField":
+                        case "stringField":
                             stringfield = d.GetNextValue<string, StringWrap>();
                             break;
-                        case "NullStringField":
+                        case "nullStringField":
                             nullstringfield = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                             break;
-                        case "UIntArr":
+                        case "uIntArr":
                             uintarr = d.GetNextValue<uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>();
                             break;
-                        case "NestedArr":
+                        case "nestedArr":
                             nestedarr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
                             break;
-                        case "IntImm":
+                        case "intImm":
                             intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
-                        case "Color":
+                        case "color":
                             color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
                             break;
                         default:

@@ -188,8 +188,8 @@ namespace Serde.Test
         {
             var src = @"
 {
-    ""Present"": ""abc"",
-    ""Extra"": ""def""
+    ""present"": ""abc"",
+    ""extra"": ""def""
 }";
             var result = JsonSerializer.Deserialize<SetToNull>(src);
             Assert.Equal("abc", result.Present);
@@ -216,8 +216,8 @@ namespace Serde.Test
         {
             var src = @"
 {
-    ""Present"": ""abc"",
-    ""Extra"": ""def""
+    ""present"": ""abc"",
+    ""extra"": ""def""
 }";
             Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
         }
@@ -238,7 +238,7 @@ namespace Serde.Test
         {
             var src = @"
 {
-    ""Dict"": {
+    ""dict"": {
         ""def"": ""def"",
         ""abc"": null
     }

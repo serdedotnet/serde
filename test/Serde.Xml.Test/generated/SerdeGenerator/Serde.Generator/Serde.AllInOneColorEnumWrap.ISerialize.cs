@@ -10,9 +10,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                Serde.Test.AllInOne.ColorEnum.Red => "Red",
-                Serde.Test.AllInOne.ColorEnum.Blue => "Blue",
-                Serde.Test.AllInOne.ColorEnum.Green => "Green",
+                Serde.Test.AllInOne.ColorEnum.Red => "red",
+                Serde.Test.AllInOne.ColorEnum.Blue => "blue",
+                Serde.Test.AllInOne.ColorEnum.Green => "green",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorEnum", name, new Int32Wrap((int)Value));

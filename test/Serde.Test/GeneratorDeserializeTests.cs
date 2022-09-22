@@ -43,13 +43,13 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             {
                 switch (key)
                 {
-                    case ""Red"":
+                    case ""red"":
                         red = d.GetNextValue<byte, ByteWrap>();
                         break;
-                    case ""Green"":
+                    case ""green"":
                         green = d.GetNextValue<byte, ByteWrap>();
                         break;
-                    case ""Blue"":
+                    case ""blue"":
                         blue = d.GetNextValue<byte, ByteWrap>();
                         break;
                     default:
@@ -97,7 +97,7 @@ partial struct S : Serde.IDeserialize<S>
             {
                 switch (key)
                 {
-                    case ""F"":
+                    case ""f"":
                         f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
@@ -152,13 +152,13 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
             {
                 switch (key)
                 {
-                    case "Present":
+                    case "present":
                         present = d.GetNextValue<string, StringWrap>();
                         break;
-                    case "Missing":
+                    case "missing":
                         missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
-                    case "ThrowMissing":
+                    case "throwMissing":
                         throwmissing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
@@ -208,7 +208,7 @@ partial struct ArrayField : Serde.IDeserialize<ArrayField>
             {
                 switch (key)
                 {
-                    case ""IntArr"":
+                    case ""intArr"":
                         intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                         break;
                     default:
@@ -271,13 +271,13 @@ namespace Serde
                 ColorInt enumValue;
                 switch (s)
                 {
-                    case "Red":
+                    case "red":
                         enumValue = ColorInt.Red;
                         break;
-                    case "Green":
+                    case "green":
                         enumValue = ColorInt.Green;
                         break;
-                    case "Blue":
+                    case "blue":
                         enumValue = ColorInt.Blue;
                         break;
                     default:
@@ -318,13 +318,13 @@ namespace Serde
                 ColorByte enumValue;
                 switch (s)
                 {
-                    case "Red":
+                    case "red":
                         enumValue = ColorByte.Red;
                         break;
-                    case "Green":
+                    case "green":
                         enumValue = ColorByte.Green;
                         break;
-                    case "Blue":
+                    case "blue":
                         enumValue = ColorByte.Blue;
                         break;
                     default:
@@ -365,13 +365,13 @@ namespace Serde
                 ColorLong enumValue;
                 switch (s)
                 {
-                    case "Red":
+                    case "red":
                         enumValue = ColorLong.Red;
                         break;
-                    case "Green":
+                    case "green":
                         enumValue = ColorLong.Green;
                         break;
-                    case "Blue":
+                    case "blue":
                         enumValue = ColorLong.Blue;
                         break;
                     default:
@@ -412,13 +412,13 @@ namespace Serde
                 ColorULong enumValue;
                 switch (s)
                 {
-                    case "Red":
+                    case "red":
                         enumValue = ColorULong.Red;
                         break;
-                    case "Green":
+                    case "green":
                         enumValue = ColorULong.Green;
                         break;
-                    case "Blue":
+                    case "blue":
                         enumValue = ColorULong.Blue;
                         break;
                     default:
@@ -458,16 +458,16 @@ partial class C : Serde.IDeserialize<C>
             {
                 switch (key)
                 {
-                    case "ColorInt":
+                    case "colorInt":
                         colorint = d.GetNextValue<ColorInt, ColorIntWrap>();
                         break;
-                    case "ColorByte":
+                    case "colorByte":
                         colorbyte = d.GetNextValue<ColorByte, ColorByteWrap>();
                         break;
-                    case "ColorLong":
+                    case "colorLong":
                         colorlong = d.GetNextValue<ColorLong, ColorLongWrap>();
                         break;
-                    case "ColorULong":
+                    case "colorULong":
                         colorulong = d.GetNextValue<ColorULong, ColorULongWrap>();
                         break;
                     default:

@@ -37,7 +37,7 @@ namespace Serde.Test
 
         public ImmutableArray<int> IntImm;
 
-        public ColorEnum Color = ColorEnum.Blue;
+        public ColorEnum Color;
 
         public enum ColorEnum
         {
@@ -65,8 +65,8 @@ namespace Serde.Test
                 UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
                 NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
                     new Comparer()) &&
-                IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan()); // &&
-                //Color == other.Color;
+                IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan()) &&
+                Color == other.Color;
         }
         private sealed class Comparer : IEqualityComparer<int[]>
         {
@@ -105,7 +105,9 @@ namespace Serde.Test
             UIntArr = new uint[] { 1, 2, 3 },
             NestedArr = new[] { new[] { 1 }, new[] { 2 } },
 
-            IntImm = ImmutableArray.Create<int>(1, 2)
+            IntImm = ImmutableArray.Create<int>(1, 2),
+
+            Color = ColorEnum.Blue
         };
     }
 }

@@ -20,13 +20,13 @@ namespace Serde
                 Serde.Test.AllInOne.ColorEnum enumValue;
                 switch (s)
                 {
-                    case "Red":
+                    case "red":
                         enumValue = Serde.Test.AllInOne.ColorEnum.Red;
                         break;
-                    case "Blue":
+                    case "blue":
                         enumValue = Serde.Test.AllInOne.ColorEnum.Blue;
                         break;
-                    case "Green":
+                    case "green":
                         enumValue = Serde.Test.AllInOne.ColorEnum.Green;
                         break;
                     default:

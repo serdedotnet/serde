@@ -28,22 +28,22 @@ namespace Serde.Test
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType("AllInOne", 16);
-            type.SerializeField("BoolField", new BoolWrap(this.BoolField));
-            type.SerializeField("CharField", new CharWrap(this.CharField));
-            type.SerializeField("ByteField", new ByteWrap(this.ByteField));
-            type.SerializeField("UShortField", new UInt16Wrap(this.UShortField));
-            type.SerializeField("UIntField", new UInt32Wrap(this.UIntField));
-            type.SerializeField("ULongField", new UInt64Wrap(this.ULongField));
-            type.SerializeField("SByteField", new SByteWrap(this.SByteField));
-            type.SerializeField("ShortField", new Int16Wrap(this.ShortField));
-            type.SerializeField("IntField", new Int32Wrap(this.IntField));
-            type.SerializeField("LongField", new Int64Wrap(this.LongField));
-            type.SerializeField("StringField", new StringWrap(this.StringField));
-            type.SerializeFieldIfNotNull("NullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField), this.NullStringField);
-            type.SerializeField("UIntArr", new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
-            type.SerializeField("NestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
-            type.SerializeField("IntImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
-            type.SerializeField("Color", new AllInOneColorEnumWrap(this.Color));
+            type.SerializeField("boolField", new BoolWrap(this.BoolField));
+            type.SerializeField("charField", new CharWrap(this.CharField));
+            type.SerializeField("byteField", new ByteWrap(this.ByteField));
+            type.SerializeField("uShortField", new UInt16Wrap(this.UShortField));
+            type.SerializeField("uIntField", new UInt32Wrap(this.UIntField));
+            type.SerializeField("uLongField", new UInt64Wrap(this.ULongField));
+            type.SerializeField("sByteField", new SByteWrap(this.SByteField));
+            type.SerializeField("shortField", new Int16Wrap(this.ShortField));
+            type.SerializeField("intField", new Int32Wrap(this.IntField));
+            type.SerializeField("longField", new Int64Wrap(this.LongField));
+            type.SerializeField("stringField", new StringWrap(this.StringField));
+            type.SerializeFieldIfNotNull("nullStringField", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField), this.NullStringField);
+            type.SerializeField("uIntArr", new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
+            type.SerializeField("nestedArr", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
+            type.SerializeField("intImm", new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
+            type.SerializeField("color", new AllInOneColorEnumWrap(this.Color));
             type.End();
         }
     }
@@ -89,52 +89,52 @@ namespace Serde.Test
                 {
                     switch (key)
                     {
-                        case ""BoolField"":
+                        case ""boolField"":
                             boolfield = d.GetNextValue<bool, BoolWrap>();
                             break;
-                        case ""CharField"":
+                        case ""charField"":
                             charfield = d.GetNextValue<char, CharWrap>();
                             break;
-                        case ""ByteField"":
+                        case ""byteField"":
                             bytefield = d.GetNextValue<byte, ByteWrap>();
                             break;
-                        case ""UShortField"":
+                        case ""uShortField"":
                             ushortfield = d.GetNextValue<ushort, UInt16Wrap>();
                             break;
-                        case ""UIntField"":
+                        case ""uIntField"":
                             uintfield = d.GetNextValue<uint, UInt32Wrap>();
                             break;
-                        case ""ULongField"":
+                        case ""uLongField"":
                             ulongfield = d.GetNextValue<ulong, UInt64Wrap>();
                             break;
-                        case ""SByteField"":
+                        case ""sByteField"":
                             sbytefield = d.GetNextValue<sbyte, SByteWrap>();
                             break;
-                        case ""ShortField"":
+                        case ""shortField"":
                             shortfield = d.GetNextValue<short, Int16Wrap>();
                             break;
-                        case ""IntField"":
+                        case ""intField"":
                             intfield = d.GetNextValue<int, Int32Wrap>();
                             break;
-                        case ""LongField"":
+                        case ""longField"":
                             longfield = d.GetNextValue<long, Int64Wrap>();
                             break;
-                        case ""StringField"":
+                        case ""stringField"":
                             stringfield = d.GetNextValue<string, StringWrap>();
                             break;
-                        case ""NullStringField"":
+                        case ""nullStringField"":
                             nullstringfield = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                             break;
-                        case ""UIntArr"":
+                        case ""uIntArr"":
                             uintarr = d.GetNextValue<uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>();
                             break;
-                        case ""NestedArr"":
+                        case ""nestedArr"":
                             nestedarr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
                             break;
-                        case ""IntImm"":
+                        case ""intImm"":
                             intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
-                        case ""Color"":
+                        case ""color"":
                             color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
                             break;
                         default:
@@ -169,9 +169,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                Serde.Test.AllInOne.ColorEnum.Red => "Red",
-                Serde.Test.AllInOne.ColorEnum.Blue => "Blue",
-                Serde.Test.AllInOne.ColorEnum.Green => "Green",
+                Serde.Test.AllInOne.ColorEnum.Red => "red",
+                Serde.Test.AllInOne.ColorEnum.Blue => "blue",
+                Serde.Test.AllInOne.ColorEnum.Green => "green",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorEnum", name, new Int32Wrap((int)Value));
@@ -203,13 +203,13 @@ namespace Serde
                 Serde.Test.AllInOne.ColorEnum enumValue;
                 switch (s)
                 {
-                    case "Red":
+                    case "red":
                         enumValue = Serde.Test.AllInOne.ColorEnum.Red;
                         break;
-                    case "Blue":
+                    case "blue":
                         enumValue = Serde.Test.AllInOne.ColorEnum.Blue;
                         break;
-                    case "Green":
+                    case "green":
                         enumValue = Serde.Test.AllInOne.ColorEnum.Green;
                         break;
                     default:
@@ -230,23 +230,23 @@ namespace Serde
 
         private const string Serialized = """
 {
-  "BoolField": true,
-  "CharField": "#",
-  "ByteField": 255,
-  "UShortField": 65535,
-  "UIntField": 4294967295,
-  "ULongField": 18446744073709551615,
-  "SByteField": 127,
-  "ShortField": 32767,
-  "IntField": 2147483647,
-  "LongField": 9223372036854775807,
-  "StringField": "StringValue",
-  "UIntArr": [
+  "boolField": true,
+  "charField": "#",
+  "byteField": 255,
+  "uShortField": 65535,
+  "uIntField": 4294967295,
+  "uLongField": 18446744073709551615,
+  "sByteField": 127,
+  "shortField": 32767,
+  "intField": 2147483647,
+  "longField": 9223372036854775807,
+  "stringField": "StringValue",
+  "uIntArr": [
     1,
     2,
     3
   ],
-  "NestedArr": [
+  "nestedArr": [
     [
       1
     ],
@@ -254,11 +254,11 @@ namespace Serde
       2
     ]
   ],
-  "IntImm": [
+  "intImm": [
     1,
     2
   ],
-  "Color": "Blue"
+  "color": "blue"
 }
 """;
 
