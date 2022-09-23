@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="generator.html"><strong aria-hidden="true">2.</strong> Using the source generator</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="wrappers.html"><strong aria-hidden="true">2.1.</strong> Wrappers</a></li></ol></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="generator.html"><strong aria-hidden="true">2.</strong> Using the source generator</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="wrappers.html"><strong aria-hidden="true">2.1.</strong> Wrappers</a></li><li class="chapter-item expanded "><a href="options.html"><strong aria-hidden="true">2.2.</strong> Configuration options</a></li></ol></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -250,6 +250,40 @@ namespace Serde
 }
 </code></pre>
 <p>By default, this will implement both <code>ISerialize</code> and <code>IDeserialize</code> in the wrapper.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="configuration-options"><a class="header" href="#configuration-options">Configuration options</a></h1>
+<p>Serde-dn provides a variety of options that can be specified via attributes to configure the generated serialization and deserialization implementations.</p>
+<p>To apply options to an entire type and all its members, use <code>[SerdeTypeOptions]</code>. To apply options to one member in particular, use <code>[SerdeMemberOptions]</code>.</p>
+<h2 id="type-options"><a class="header" href="#type-options">Type options</a></h2>
+<p>Note that these options only apply to the target type, not the type of nested members (including ones which have wrappers auto-generated). To provide options for member types the attribute will also need to be applied to them (or their wrapper).</p>
+<ul>
+<li>
+<p><code>[SerdeTypeOptions(MemberFormat = ...)]</code>
+<code>MemberFormat.CamelCase</code> by default. Renames all the fields or properties of the generated implementation according to the given format. The possible formats are &quot;camelCase&quot;, &quot;PascalCase&quot;, &quot;kebab-case&quot;, and &quot;none&quot;. &quot;none&quot; means that the members should not be renamed.</p>
+</li>
+<li>
+<p><code>[SerdeTypeOptions(SerializeNull = false)]</code>
+<code>false</code> by default. When false, serialization for members will be skipped if the value is null. When true, null will be serialized like all other values.</p>
+</li>
+<li>
+<p><code>[SerdeTypeOptions(DenyUnknownMembers = false)]</code>
+<code>false</code> by default. When false, the generated implementation of <code>IDeserialize</code> will skip over any members in the source that aren't defined on the type. When true, an exception will be thrown if there are any unrecognized members in the source.</p>
+</li>
+</ul>
+<h2 id="member-options"><a class="header" href="#member-options">Member options</a></h2>
+<ul>
+<li>
+<p><code>[SerdeMemberOptions(ThrowIfMissing = false)]</code>
+<code>false</code> by default. When true, throws an exception if the target field is not present when deserializing.  This is the default behavior for fields of non-nullable types, while the default behavior for nullable types is to set the field to null.</p>
+</li>
+<li>
+<p><code>[SerdeMemberOptions(SerializeNull = false)]</code>
+<code>false</code> by default. When false, serialization for this member will be skipped if the value is null. When true, null will be serialized like all other values.</p>
+</li>
+<li>
+<p><code>[SerdeMemberOptions(Rename = &quot;name&quot;)]</code>
+<code>null</code> by default. When not null, renames the current member to the given argument.</p>
+</li>
+</ul>
 
                     </main>
 

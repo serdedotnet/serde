@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - serde-dn</title>
+        <title>Configuration options - serde-dn</title>
                 
 
         <!-- Custom HTML head -->
@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="overview.html" class="active"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="generator.html"><strong aria-hidden="true">2.</strong> Using the source generator</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="wrappers.html"><strong aria-hidden="true">2.1.</strong> Wrappers</a></li><li class="chapter-item expanded "><a href="options.html"><strong aria-hidden="true">2.2.</strong> Configuration options</a></li></ol></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="generator.html"><strong aria-hidden="true">2.</strong> Using the source generator</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="wrappers.html"><strong aria-hidden="true">2.1.</strong> Wrappers</a></li><li class="chapter-item expanded "><a href="options.html" class="active"><strong aria-hidden="true">2.2.</strong> Configuration options</a></li></ol></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -143,58 +143,49 @@
 
                 <div id="content" class="content">
                     <main>
-                        <div style="text-align: right;">
-  <a style="color: var(--icons);" href="https://github.com/agocke/serde-dn">View on GitHub</a>
-</div>
-<h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
-<p>Serde-dn is a .NET port of the popular <a href="https://serde.rs">serde.rs</a> Rust <strong>ser</strong>ialization/<strong>de</strong>serialization library.</p>
-<h2 id="design"><a class="header" href="#design">Design</a></h2>
-<p>Unlike many other serialization libraries, serde-dn is <em>multi-format</em>, <em>high performance</em>, <em>source-generated</em>, and fully compatible with <a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/trimming/trim-self-contained">app trimming</a> and <a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/native-aot">Native AOT</a>.</p>
-<p>Most other .NET serialization libraries rely on run-time reflection to serialize types. Serde-dn instead uses two interfaces, <code>ISerialize</code>, and <code>IDeserialize</code> to allow each type to control how it is serialized. Serde-dn uses source generation to implement these interfaces, so you almost never need to implement them manually. Source generation and interfaces avoids all run-time reflection and its overhead, and provides type safety by ensuring all requested types support serialization.</p>
-<h2 id="formats"><a class="header" href="#formats">Formats</a></h2>
-<p>Serde-dn is a multi-format serialization library, with built-in support for JSON.</p>
-<p>Serde-dn is multi-format because it separates how a type serializes itself from the knowledge of the data format. Rather than have individual interfaces for each format, serde-dn uses <code>ISerialize</code> and <code>IDeserialize</code> for all formats. Adding support for new formats comes from implementing two different interfaces: <code>ISerializer</code> and <code>IDeserializer</code>. Since each interface pair is separate, new data format support can be added via NuGet packages.</p>
-<h2 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h2>
-<p>This full sample is also available in the <a href="https://github.com/agocke/serde-dn/tree/main/samples/intro">Github repo</a>.</p>
-<p>Start by adding the <code>serde</code> NuGet package:</p>
-<pre><code class="language-bash">dotnet add package serde
-</code></pre>
-<p>Serde-dn uses C# 10 features, so until .NET 7 is released it requires the following flags to be added to the <code>csproj</code> file:</p>
-<pre><code>&lt;LangVersion&gt;preview&lt;/LangVersion&gt;
-&lt;EnablePreviewFeatures&gt;true&lt;/EnablePreviewFeatures&gt;
-</code></pre>
-<p>You can now use the <code>[GenerateSerialize]</code> and <code>[GenerateDeserialize]</code> attributes to automatically implement serialization and
-deserialization for your own types. Don't forget to mark them <code>partial</code>!</p>
-<pre><code class="language-csharp">using Serde;
-using Serde.Json;
-
-string output = JsonSerializer.Serialize(new SampleClass());
-
-// prints: {&quot;X&quot;:3,&quot;Y&quot;:&quot;sample&quot;}
-Console.WriteLine(output);
-
-var deserialized = JsonSerializer.Deserialize&lt;SampleClass&gt;(output);
-
-// prints SampleClass { X = 3, Y = sample }
-Console.WriteLine(deserialized);
-
-[GenerateSerialize, GenerateDeserialize]
-partial record SampleClass
-{
-    // automatically includes public properties and fields
-    public int X { get; init; } = 3;
-    public string Y = &quot;sample&quot;;
-}
-</code></pre>
+                        <h1 id="configuration-options"><a class="header" href="#configuration-options">Configuration options</a></h1>
+<p>Serde-dn provides a variety of options that can be specified via attributes to configure the generated serialization and deserialization implementations.</p>
+<p>To apply options to an entire type and all its members, use <code>[SerdeTypeOptions]</code>. To apply options to one member in particular, use <code>[SerdeMemberOptions]</code>.</p>
+<h2 id="type-options"><a class="header" href="#type-options">Type options</a></h2>
+<p>Note that these options only apply to the target type, not the type of nested members (including ones which have wrappers auto-generated). To provide options for member types the attribute will also need to be applied to them (or their wrapper).</p>
+<ul>
+<li>
+<p><code>[SerdeTypeOptions(MemberFormat = ...)]</code>
+<code>MemberFormat.CamelCase</code> by default. Renames all the fields or properties of the generated implementation according to the given format. The possible formats are &quot;camelCase&quot;, &quot;PascalCase&quot;, &quot;kebab-case&quot;, and &quot;none&quot;. &quot;none&quot; means that the members should not be renamed.</p>
+</li>
+<li>
+<p><code>[SerdeTypeOptions(SerializeNull = false)]</code>
+<code>false</code> by default. When false, serialization for members will be skipped if the value is null. When true, null will be serialized like all other values.</p>
+</li>
+<li>
+<p><code>[SerdeTypeOptions(DenyUnknownMembers = false)]</code>
+<code>false</code> by default. When false, the generated implementation of <code>IDeserialize</code> will skip over any members in the source that aren't defined on the type. When true, an exception will be thrown if there are any unrecognized members in the source.</p>
+</li>
+</ul>
+<h2 id="member-options"><a class="header" href="#member-options">Member options</a></h2>
+<ul>
+<li>
+<p><code>[SerdeMemberOptions(ThrowIfMissing = false)]</code>
+<code>false</code> by default. When true, throws an exception if the target field is not present when deserializing.  This is the default behavior for fields of non-nullable types, while the default behavior for nullable types is to set the field to null.</p>
+</li>
+<li>
+<p><code>[SerdeMemberOptions(SerializeNull = false)]</code>
+<code>false</code> by default. When false, serialization for this member will be skipped if the value is null. When true, null will be serialized like all other values.</p>
+</li>
+<li>
+<p><code>[SerdeMemberOptions(Rename = &quot;name&quot;)]</code>
+<code>null</code> by default. When not null, renames the current member to the given argument.</p>
+</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                        
-                                                    <a rel="next" href="generator.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
+                                                    <a rel="prev" href="wrappers.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
                             </a>
+                        
                         
                         <div style="clear: both"></div>
                     </nav>
@@ -202,10 +193,10 @@ partial record SampleClass
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                
-                                    <a rel="next" href="generator.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
+                                    <a rel="prev" href="wrappers.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
                     </a>
+                
                             </nav>
 
         </div>
