@@ -101,6 +101,7 @@ sealed class SerdeTypeOptions : Attribute
     /// the desired parameter list of the desired constructor.
     /// </summary>
     public Type? ConstructorSignature { get; init; }
+
     /// <summary>
     /// The default behavior for null is to skip serialization. Set this to true to force
     /// serialization.
