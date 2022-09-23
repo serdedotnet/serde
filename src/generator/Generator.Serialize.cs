@@ -39,7 +39,7 @@ namespace Serde
                 var cases = fieldsAndProps.Select(m => SwitchExpressionArm(
                         ConstantPattern(QualifiedName((NameSyntax)typeSyntax, IdentifierName(m.Name))),
                         whenClause: null,
-                        expression: StringLiteral(m.Name)));
+                        expression: StringLiteral(m.GetFormattedName())));
                 cases = cases.Concat(new[] { SwitchExpressionArm(
                     DiscardPattern(),
                     whenClause: null,

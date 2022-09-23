@@ -26,10 +26,10 @@ namespace Serde.Test
                     {
                         switch (key)
                         {
-                            case "S":
+                            case "s":
                                 s = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                                 break;
-                            case "Dict":
+                            case "dict":
                                 dict = d.GetNextValue<System.Collections.Generic.Dictionary<string, string?>, DictWrap.DeserializeImpl<string, StringWrap, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>>();
                                 break;
                             default:

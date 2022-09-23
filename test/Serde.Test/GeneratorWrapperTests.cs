@@ -72,8 +72,8 @@ partial struct PointWrap : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""Point"", 2);
-        type.SerializeField(""X"", new Int32Wrap(_point.X));
-        type.SerializeField(""Y"", new Int32Wrap(_point.Y));
+        type.SerializeField(""x"", new Int32Wrap(_point.X));
+        type.SerializeField(""y"", new Int32Wrap(_point.Y));
         type.End();
     }
 }"),
@@ -101,10 +101,10 @@ partial struct PointWrap : Serde.IDeserialize<Point>
             {
                 switch (key)
                 {
-                    case ""X"":
+                    case ""x"":
                         x = d.GetNextValue<int, Int32Wrap>();
                         break;
-                    case ""Y"":
+                    case ""y"":
                         y = d.GetNextValue<int, Int32Wrap>();
                         break;
                     default:
@@ -148,8 +148,8 @@ namespace Serde
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""Section"", 2);
-            type.SerializeField(""Mask"", new Int16Wrap(Value.Mask));
-            type.SerializeField(""Offset"", new Int16Wrap(Value.Offset));
+            type.SerializeField(""mask"", new Int16Wrap(Value.Mask));
+            type.SerializeField(""offset"", new Int16Wrap(Value.Offset));
             type.End();
         }
     }
@@ -163,7 +163,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""S"", new BitVector32SectionWrap(this.S));
+        type.SerializeField(""s"", new BitVector32SectionWrap(this.S));
         type.End();
     }
 }")
@@ -212,10 +212,10 @@ namespace Serde
                 {
                     switch (key)
                     {
-                        case ""Mask"":
+                        case ""mask"":
                             mask = d.GetNextValue<short, Int16Wrap>();
                             break;
-                        case ""Offset"":
+                        case ""offset"":
                             offset = d.GetNextValue<short, Int16Wrap>();
                             break;
                         default:
@@ -253,7 +253,7 @@ partial class C : Serde.IDeserialize<C>
             {
                 switch (key)
                 {
-                    case ""S"":
+                    case ""s"":
                         s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
                         break;
                     default:
@@ -309,10 +309,10 @@ partial record R : Serde.IDeserialize<R>
             {
                 switch (key)
                 {
-                    case "A":
+                    case "a":
                         a = d.GetNextValue<int, Int32Wrap>();
                         break;
-                    case "B":
+                    case "b":
                         b = d.GetNextValue<string, StringWrap>();
                         break;
                     default:
@@ -367,13 +367,13 @@ partial class Address : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType("Address", 5);
-        type.SerializeField("Name", new StringWrap(this.Name), new System.Attribute[]{new System.Xml.Serialization.XmlAttributeAttribute()
+        type.SerializeField("name", new StringWrap(this.Name), new System.Attribute[]{new System.Xml.Serialization.XmlAttributeAttribute()
         {}, new Serde.SerdeMemberOptions()
         {ProvideAttributes = true}});
-        type.SerializeField("Line1", new StringWrap(this.Line1));
-        type.SerializeField("City", new StringWrap(this.City));
-        type.SerializeField("State", new StringWrap(this.State));
-        type.SerializeField("Zip", new StringWrap(this.Zip));
+        type.SerializeField("line1", new StringWrap(this.Line1));
+        type.SerializeField("city", new StringWrap(this.City));
+        type.SerializeField("state", new StringWrap(this.State));
+        type.SerializeField("zip", new StringWrap(this.Zip));
         type.End();
     }
 }

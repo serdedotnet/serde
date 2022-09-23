@@ -8,6 +8,8 @@
 
     <PackFolder>analyzers/dotnet/cs</PackFolder>
     <PackSymbols>false</PackSymbols>
+    <DefineConstants>$(DefineConstants);SRCGEN</DefineConstants>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +26,8 @@
     <PackageReference Include="StaticCs" Version="0.2.0">
       <Pack>false</Pack>
     </PackageReference>
+
+    <Compile Include="../serde/Attributes.cs" />
   </ItemGroup>
 
 </Project>

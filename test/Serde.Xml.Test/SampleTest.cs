@@ -18,6 +18,7 @@ public partial class SampleTest
        the xsi:null attribute appears if the class instance is set to
        a null reference. */
     [GenerateSerialize]
+    [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
     //[XmlRoot("PurchaseOrder", IsNullable = false)]
     public partial record PurchaseOrder
     {
@@ -34,6 +35,7 @@ public partial class SampleTest
     }
 
     [GenerateSerialize]
+    [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
     public partial record Address
     {
         /* The XmlAttribute instructs the XmlSerializer to serialize the Name
@@ -54,6 +56,7 @@ public partial class SampleTest
     }
 
     [GenerateSerialize]
+    [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
     public partial record OrderedItem
     {
         public string ItemName = null!;

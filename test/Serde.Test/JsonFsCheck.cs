@@ -49,7 +49,10 @@ namespace Serde.Test
             }
 
             var serializeStatements = new List<string>();
-            serializeStatements.Add("var options = new System.Text.Json.JsonSerializerOptions() { IncludeFields = true };");
+            serializeStatements.Add(@"var options = new System.Text.Json.JsonSerializerOptions() {
+                IncludeFields = true,
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+            };");
             for (int i = 0; i < wrappers.Length; i++)
             {
                 var localName = "t" + i;

@@ -44,8 +44,6 @@ namespace Serde
             TypeParameterList = typeDecl.TypeParameterList;
         }
 
-        /// <summary>
-        /// Given a type, wraps it in the
         public MemberDeclarationSyntax WrapNewType(MemberDeclarationSyntax newType)
         {
             // If the original type was in a namespace or type, put this decl in the same one

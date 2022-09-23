@@ -26,10 +26,10 @@ namespace Serde.Test
                     {
                         switch (key)
                         {
-                            case "Present":
+                            case "present":
                                 present = d.GetNextValue<string, StringWrap>();
                                 break;
-                            case "Missing":
+                            case "missing":
                                 missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                                 break;
                             default:

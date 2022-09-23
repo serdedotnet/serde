@@ -28,9 +28,9 @@ partial struct Rgb : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""Rgb"", 3);
-        type.SerializeField(""Red"", new ByteWrap(this.Red));
-        type.SerializeField(""Green"", new ByteWrap(this.Green));
-        type.SerializeField(""Blue"", new ByteWrap(this.Blue));
+        type.SerializeField(""red"", new ByteWrap(this.Red));
+        type.SerializeField(""green"", new ByteWrap(this.Green));
+        type.SerializeField(""blue"", new ByteWrap(this.Blue));
         type.End();
     }
 }");
@@ -66,11 +66,11 @@ partial struct S<T1, T2, T3, T4, T5> : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType("S", 5);
-        type.SerializeFieldIfNotNull("FS", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.FS), this.FS);
-        type.SerializeField("F1", this.F1);
-        type.SerializeFieldIfNotNull("F2", this.F2, this.F2);
-        type.SerializeFieldIfNotNull("F3", new NullableRefWrap.SerializeImpl<T3, IdWrap<T3>>(this.F3), this.F3);
-        type.SerializeFieldIfNotNull("F4", this.F4, this.F4);
+        type.SerializeFieldIfNotNull("fS", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.FS), this.FS);
+        type.SerializeField("f1", this.F1);
+        type.SerializeFieldIfNotNull("f2", this.F2, this.F2);
+        type.SerializeFieldIfNotNull("f3", new NullableRefWrap.SerializeImpl<T3, IdWrap<T3>>(this.F3), this.F3);
+        type.SerializeFieldIfNotNull("f4", this.F4, this.F4);
         type.End();
     }
 }
@@ -115,8 +115,8 @@ partial struct S<T1, T2, TSerialize> : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType("S", 4);
-        type.SerializeFieldIfNotNull("FI", new NullableWrap.SerializeImpl<int, Int32Wrap>(this.FI), this.FI);
-        type.SerializeFieldIfNotNull("F3", new NullableWrap.SerializeImpl<TSerialize, IdWrap<TSerialize>>(this.F3), this.F3);
+        type.SerializeFieldIfNotNull("fI", new NullableWrap.SerializeImpl<int, Int32Wrap>(this.FI), this.FI);
+        type.SerializeFieldIfNotNull("f3", new NullableWrap.SerializeImpl<TSerialize, IdWrap<TSerialize>>(this.F3), this.F3);
         type.End();
     }
 }
@@ -188,7 +188,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""IntArr"", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
+        type.SerializeField(""intArr"", new ArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntArr));
         type.End();
     }
 }");
@@ -213,7 +213,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
+        type.SerializeField(""nestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
         type.End();
     }
 }");
@@ -238,7 +238,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""NestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
+        type.SerializeField(""nestedArr"", new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
         type.End();
     }
 }");
@@ -279,8 +279,8 @@ partial class TestCase15
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""Class0"", 2);
-            type.SerializeField(""Field0"", new ArrayWrap.SerializeImpl<TestCase15.Class1, IdWrap<TestCase15.Class1>>(this.Field0));
-            type.SerializeField(""Field1"", new ArrayWrap.SerializeImpl<bool, BoolWrap>(this.Field1));
+            type.SerializeField(""field0"", new ArrayWrap.SerializeImpl<TestCase15.Class1, IdWrap<TestCase15.Class1>>(this.Field0));
+            type.SerializeField(""field1"", new ArrayWrap.SerializeImpl<bool, BoolWrap>(this.Field1));
             type.End();
         }
     }
@@ -296,8 +296,8 @@ partial class TestCase15
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType(""Class1"", 2);
-            type.SerializeField(""Field0"", new Int32Wrap(this.Field0));
-            type.SerializeField(""Field1"", new ByteWrap(this.Field1));
+            type.SerializeField(""field0"", new Int32Wrap(this.Field0));
+            type.SerializeField(""field1"", new ByteWrap(this.Field1));
             type.End();
         }
     }
@@ -331,7 +331,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""Map"", new DictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.Map));
+        type.SerializeField(""map"", new DictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.Map));
         type.End();
     }
 }");
@@ -367,7 +367,7 @@ partial record C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""X"", new Int32Wrap(this.X));
+        type.SerializeField(""x"", new Int32Wrap(this.X));
         type.End();
     }
 }"),
@@ -380,7 +380,7 @@ partial class C2 : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C2"", 1);
-        type.SerializeField(""Map"", new DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>(this.Map));
+        type.SerializeField(""map"", new DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>(this.Map));
         type.End();
     }
 }")
@@ -477,7 +477,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""RDictionary"", new IDictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.RDictionary));
+        type.SerializeField(""rDictionary"", new IDictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>(this.RDictionary));
         type.End();
     }
 }");
@@ -527,7 +527,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""S"", new SWrap(this.S));
+        type.SerializeField(""s"", new SWrap(this.S));
         type.End();
     }
 }");
@@ -559,7 +559,7 @@ public struct SWrap<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SWrap<T, TWrap>
     void ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""S"", 1);
-        type.SerializeField(""S"", TWrap.Create(_s.Field));
+        type.SerializeField(""s"", TWrap.Create(_s.Field));
         type.End();
     }
 }
@@ -578,7 +578,7 @@ partial class C : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""S"", new SWrap<int, Int32Wrap>(this.S));
+        type.SerializeField(""s"", new SWrap<int, Int32Wrap>(this.S));
         type.End();
     }
 }");
@@ -623,9 +623,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                Some.Nested.Namespace.ColorInt.Red => "Red",
-                Some.Nested.Namespace.ColorInt.Green => "Green",
-                Some.Nested.Namespace.ColorInt.Blue => "Blue",
+                Some.Nested.Namespace.ColorInt.Red => "red",
+                Some.Nested.Namespace.ColorInt.Green => "green",
+                Some.Nested.Namespace.ColorInt.Blue => "blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorInt", name, new Int32Wrap((int)Value));
@@ -651,9 +651,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                Some.Nested.Namespace.ColorByte.Red => "Red",
-                Some.Nested.Namespace.ColorByte.Green => "Green",
-                Some.Nested.Namespace.ColorByte.Blue => "Blue",
+                Some.Nested.Namespace.ColorByte.Red => "red",
+                Some.Nested.Namespace.ColorByte.Green => "green",
+                Some.Nested.Namespace.ColorByte.Blue => "blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorByte", name, new ByteWrap((byte)Value));
@@ -679,9 +679,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                Some.Nested.Namespace.ColorLong.Red => "Red",
-                Some.Nested.Namespace.ColorLong.Green => "Green",
-                Some.Nested.Namespace.ColorLong.Blue => "Blue",
+                Some.Nested.Namespace.ColorLong.Red => "red",
+                Some.Nested.Namespace.ColorLong.Green => "green",
+                Some.Nested.Namespace.ColorLong.Blue => "blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorLong", name, new Int64Wrap((long)Value));
@@ -707,9 +707,9 @@ namespace Serde
         {
             var name = Value switch
             {
-                Some.Nested.Namespace.ColorULong.Red => "Red",
-                Some.Nested.Namespace.ColorULong.Green => "Green",
-                Some.Nested.Namespace.ColorULong.Blue => "Blue",
+                Some.Nested.Namespace.ColorULong.Red => "red",
+                Some.Nested.Namespace.ColorULong.Green => "green",
+                Some.Nested.Namespace.ColorULong.Blue => "blue",
                 _ => null
             };
             serializer.SerializeEnumValue("ColorULong", name, new UInt64Wrap((ulong)Value));
@@ -729,10 +729,10 @@ namespace Some.Nested.Namespace
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType("C", 4);
-            type.SerializeField("ColorInt", new ColorIntWrap(this.ColorInt));
-            type.SerializeField("ColorByte", new ColorByteWrap(this.ColorByte));
-            type.SerializeField("ColorLong", new ColorLongWrap(this.ColorLong));
-            type.SerializeField("ColorULong", new ColorULongWrap(this.ColorULong));
+            type.SerializeField("colorInt", new ColorIntWrap(this.ColorInt));
+            type.SerializeField("colorByte", new ColorByteWrap(this.ColorByte));
+            type.SerializeField("colorLong", new ColorLongWrap(this.ColorLong));
+            type.SerializeField("colorULong", new ColorULongWrap(this.ColorULong));
             type.End();
         }
     }

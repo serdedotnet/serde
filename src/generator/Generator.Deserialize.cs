@@ -204,7 +204,7 @@ namespace Serde
                 foreach (var m in SymbolUtilities.GetPublicDataMembers(type))
                 {
                     cases.Append(@$"
-        case ""{m.Name}"":
+        case ""{m.GetFormattedName()}"":
             enumValue = {typeName}.{m.Name};
             break;");
                 }

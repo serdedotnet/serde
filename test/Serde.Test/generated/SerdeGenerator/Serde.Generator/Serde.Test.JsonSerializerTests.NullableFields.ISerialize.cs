@@ -11,8 +11,8 @@ namespace Serde.Test
             void Serde.ISerialize.Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("NullableFields", 2);
-                type.SerializeFieldIfNotNull("S", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.S), this.S);
-                type.SerializeField("D", new DictWrap.SerializeImpl<string, StringWrap, string?, NullableRefWrap.SerializeImpl<string, StringWrap>>(this.D));
+                type.SerializeFieldIfNotNull("s", new NullableRefWrap.SerializeImpl<string, StringWrap>(this.S), this.S);
+                type.SerializeField("d", new DictWrap.SerializeImpl<string, StringWrap, string?, NullableRefWrap.SerializeImpl<string, StringWrap>>(this.D));
                 type.End();
             }
         }

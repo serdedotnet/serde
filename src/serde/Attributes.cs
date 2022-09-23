@@ -4,36 +4,98 @@ using System.Diagnostics;
 
 namespace Serde;
 
+// Silence warnings about references to Serde types that aren't referenced by the generator
+#pragma warning disable CS1574
+
+/// <summary>
+/// Generates an implementation of <see cref="Serde.ISerialize" />.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-public sealed class GenerateSerialize : Attribute
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class GenerateSerialize : Attribute
 { }
 
+/// <summary>
+/// Generates an implementation of <see cref="Serde.IDeserialize" />.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-public sealed class GenerateDeserialize : Attribute
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class GenerateDeserialize : Attribute
 { }
 
+/// <summary>
+/// Generates an implementation of both <see cref="Serde.ISerialize" /> and <see cref="Serde.IDeserialize" />.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-public sealed class GenerateSerde : Attribute
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class GenerateSerde : Attribute
 { }
 
+/// <summary>
+/// Generates the equivalent of <see cref="GenerateSerde" />, but delegated to a member of the name
+/// passed in as a parameter.
+/// </summary>
 [AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-public sealed class GenerateWrapper : Attribute
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class GenerateWrapper : Attribute
 {
-    public GenerateWrapper(string memberName) { }
-}
+    /// <summary>
+    /// The name of the member used for delegation.
+    /// </summary>
+    public string MemberName { get; }
 
+    /// <summary>
+    /// Constructor for GenerateWrapper.
+    /// </summary>
+    public GenerateWrapper(string memberName)
+    {
+        MemberName = memberName;
+    }
+}
+#pragma warning restore CS1574
+
+/// <summary>
+/// Set options for the Serde source generator for the current type.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-public sealed class SerdeTypeOptions : Attribute
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class SerdeTypeOptions : Attribute
 {
+    /// <summary>
+    /// Throw an exception during deserialization if any members not expected by the current
+    /// type are present.
+    /// </summary>
     public bool DenyUnknownMembers { get; init; } = false;
+
     /// <summary>
     /// Override the formatting for members.
     /// </summary>
-    public MemberFormat MemberFormat { get; init; } = MemberFormat.None;
+    public MemberFormat MemberFormat { get; init; } = MemberFormat.CamelCase;
+
     /// <summary>
     /// Pick the constructor used for deserialization. Expects a tuple with the same types as
     /// the desired parameter list of the desired constructor.
@@ -46,8 +108,16 @@ public sealed class SerdeTypeOptions : Attribute
     public bool SerializeNull { get; init; } = false;
 }
 
+/// <summary>
+/// Set options for the Serde source generator specific to the current member.
+/// </summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-public sealed class SerdeMemberOptions : Attribute
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class SerdeMemberOptions : Attribute
 {
     /// <summary>
     /// Throw an exception if the target field is not present when deserializing.  This is the
@@ -74,8 +144,21 @@ public sealed class SerdeMemberOptions : Attribute
     public bool SerializeNull { get; init; } = false;
 }
 
-public enum MemberFormat : byte
+/// <summary>
+/// A enumeration of all possible types of name formatting that the source generator
+/// can generate.
+/// </summary>
+#if !SRCGEN
+public
+#else
+internal
+#endif
+enum MemberFormat : byte
 {
+    /// <summary>
+    /// "camelCase"
+    /// </summary>
+    CamelCase,
     /// <summary>
     /// Use the original name of the member.
     /// </summary>
@@ -85,7 +168,7 @@ public enum MemberFormat : byte
     /// </summary>
     PascalCase,
     /// <summary>
-    /// "camelCase"
+    /// "kebab-case"
     /// </summary>
-    CamelCase
+    KebabCase,
 }

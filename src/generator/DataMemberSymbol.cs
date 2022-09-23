@@ -154,7 +154,6 @@ namespace Serde
         {
             var resultBuilder = ImmutableArray.CreateBuilder<string>();
             var wordBuilder = new StringBuilder();
-            bool wasLowercase = false;
             foreach (var c in name)
             {
                 if (c == '_')
@@ -164,14 +163,7 @@ namespace Serde
                 }
                 if (char.IsUpper(c))
                 {
-                    if (wasLowercase)
-                    {
-                        AddWordAndClear();
-                    }
-                }
-                else
-                {
-                    wasLowercase = true;
+                    AddWordAndClear();
                 }
                 wordBuilder.Append(c);
             }

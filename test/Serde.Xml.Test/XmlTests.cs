@@ -11,23 +11,23 @@ namespace Serde.Test
         private const string AllInOneSerialized = """
 <?xml version="1.0" encoding="utf-16"?>
 <AllInOne>
-  <BoolField>true</BoolField>
-  <CharField>#</CharField>
-  <ByteField>255</ByteField>
-  <UShortField>65535</UShortField>
-  <UIntField>4294967295</UIntField>
-  <ULongField>18446744073709551615</ULongField>
-  <SByteField>127</SByteField>
-  <ShortField>32767</ShortField>
-  <IntField>2147483647</IntField>
-  <LongField>9223372036854775807</LongField>
-  <StringField>StringValue</StringField>
-  <UIntArr>
+  <boolField>true</boolField>
+  <charField>#</charField>
+  <byteField>255</byteField>
+  <uShortField>65535</uShortField>
+  <uIntField>4294967295</uIntField>
+  <uLongField>18446744073709551615</uLongField>
+  <sByteField>127</sByteField>
+  <shortField>32767</shortField>
+  <intField>2147483647</intField>
+  <longField>9223372036854775807</longField>
+  <stringField>StringValue</stringField>
+  <uIntArr>
     <int>1</int>
     <int>2</int>
     <int>3</int>
-  </UIntArr>
-  <NestedArr>
+  </uIntArr>
+  <nestedArr>
     <ArrayOfArrayOfInt32>
       <ArrayOfInt32>
         <int>1</int>
@@ -36,14 +36,14 @@ namespace Serde.Test
         <int>2</int>
       </ArrayOfInt32>
     </ArrayOfArrayOfInt32>
-  </NestedArr>
-  <IntImm>
+  </nestedArr>
+  <intImm>
     <ImmutableArrayOfInt32>
       <int>1</int>
       <int>2</int>
     </ImmutableArrayOfInt32>
-  </IntImm>
-  <Color />
+  </intImm>
+  <color />
 </AllInOne>
 """;
 
@@ -67,6 +67,7 @@ namespace Serde.Test
         }
 
         [GenerateSerialize]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
         public partial class NestedArrays
         {
             public int[][][] A = new[] { new[] { new[] { 1, 2, 3 } } };
@@ -94,6 +95,7 @@ namespace Serde.Test
         }
 
         [GenerateSerialize]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
         public partial class TypeWithArrayField
         {
             public StructWithIntField[] ArrayField = new[] {
@@ -104,6 +106,7 @@ namespace Serde.Test
         }
 
         [GenerateSerialize]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
         public partial record StructWithIntField(int X)
         {
             public StructWithIntField() : this(11) { }
@@ -135,6 +138,7 @@ namespace Serde.Test
         }
 
         [GenerateSerialize]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
         public partial struct BoolStruct
         {
             public bool BoolField;
@@ -155,6 +159,7 @@ namespace Serde.Test
         }
 
         [GenerateSerialize]
+        [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
         public partial class MapTest1
         {
             public Dictionary<string, int> MapField = new Dictionary<string, int>()
