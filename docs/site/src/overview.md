@@ -10,7 +10,7 @@ Serde-dn is a .NET port of the popular [serde.rs](https://serde.rs) Rust **ser**
 
 Unlike many other serialization libraries, serde-dn is *multi-format*, *high performance*, *source-generated*, and fully compatible with [app trimming](https://docs.microsoft.com/en-us/dotnet/core/deploying/trimming/trim-self-contained) and [Native AOT](https://docs.microsoft.com/en-us/dotnet/core/deploying/native-aot).
 
-Most other .NET serialization libraries rely on run-time reflection to serialize types. Serde-dn instead uses two interfaces, `ISerialize`, and `IDeserialize` to allow each type to control how it is serialized. Serde-dn uses source generation to implement these interfaces, so you almost never needs to implement them manually. Source generation and interfaces avoids all run-time reflection and its overhead, and provides type safety by ensuring all requested types support serialization.
+Most other .NET serialization libraries rely on run-time reflection to serialize types. Serde-dn instead uses two interfaces, `ISerialize`, and `IDeserialize` to allow each type to control how it is serialized. Serde-dn uses source generation to implement these interfaces, so you almost never need to implement them manually. Source generation and interfaces avoids all run-time reflection and its overhead, and provides type safety by ensuring all requested types support serialization.
 
 ## Formats
 
@@ -23,10 +23,10 @@ Serde-dn is multi-format because it separates how a type serializes itself from 
 
 This full sample is also available in the [Github repo](https://github.com/agocke/serde-dn/tree/main/samples/intro).
 
-Start by adding the `serde-dn` NuGet package:
+Start by adding the `serde` NuGet package:
 
 ```bash
-dotnet add package serde-dn --prerelease
+dotnet add package serde
 ```
 
 Serde-dn uses C# 10 features, so until .NET 7 is released it requires the following flags to be added to the `csproj` file:
@@ -55,8 +55,8 @@ Console.WriteLine(deserialized);
 
 [GenerateSerialize, GenerateDeserialize]
 partial record SampleClass
-{     
-    // automatically includes public properties and fields  
+{
+    // automatically includes public properties and fields
     public int X { get; init; } = 3;
     public string Y = "sample";
 }
