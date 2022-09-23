@@ -7,6 +7,8 @@ To apply options to an entire type and all its members, use `[SerdeTypeOptions]`
 
 ## Type options
 
+Note that these options only apply to the target type, not the type of nested members (including ones which have wrappers auto-generated). To provide options for member types the attribute will also need to be applied to them (or their wrapper).
+
 - `[SerdeTypeOptions(MemberFormat = ...)]`
   `MemberFormat.CamelCase` by default. Renames all the fields or properties of the generated implementation according to the given format. The possible formats are "camelCase", "PascalCase", "kebab-case", and "none". "none" means that the members should not be renamed.
 
