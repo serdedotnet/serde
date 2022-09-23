@@ -150,14 +150,14 @@
 <p>Serde-dn is a .NET port of the popular <a href="https://serde.rs">serde.rs</a> Rust <strong>ser</strong>ialization/<strong>de</strong>serialization library.</p>
 <h2 id="design"><a class="header" href="#design">Design</a></h2>
 <p>Unlike many other serialization libraries, serde-dn is <em>multi-format</em>, <em>high performance</em>, <em>source-generated</em>, and fully compatible with <a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/trimming/trim-self-contained">app trimming</a> and <a href="https://docs.microsoft.com/en-us/dotnet/core/deploying/native-aot">Native AOT</a>.</p>
-<p>Most other .NET serialization libraries rely on run-time reflection to serialize types. Serde-dn instead uses two interfaces, <code>ISerialize</code>, and <code>IDeserialize</code> to allow each type to control how it is serialized. Serde-dn uses source generation to implement these interfaces, so you almost never needs to implement them manually. Source generation and interfaces avoids all run-time reflection and its overhead, and provides type safety by ensuring all requested types support serialization.</p>
+<p>Most other .NET serialization libraries rely on run-time reflection to serialize types. Serde-dn instead uses two interfaces, <code>ISerialize</code>, and <code>IDeserialize</code> to allow each type to control how it is serialized. Serde-dn uses source generation to implement these interfaces, so you almost never need to implement them manually. Source generation and interfaces avoids all run-time reflection and its overhead, and provides type safety by ensuring all requested types support serialization.</p>
 <h2 id="formats"><a class="header" href="#formats">Formats</a></h2>
 <p>Serde-dn is a multi-format serialization library, with built-in support for JSON.</p>
 <p>Serde-dn is multi-format because it separates how a type serializes itself from the knowledge of the data format. Rather than have individual interfaces for each format, serde-dn uses <code>ISerialize</code> and <code>IDeserialize</code> for all formats. Adding support for new formats comes from implementing two different interfaces: <code>ISerializer</code> and <code>IDeserializer</code>. Since each interface pair is separate, new data format support can be added via NuGet packages.</p>
 <h2 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h2>
 <p>This full sample is also available in the <a href="https://github.com/agocke/serde-dn/tree/main/samples/intro">Github repo</a>.</p>
-<p>Start by adding the <code>serde-dn</code> NuGet package:</p>
-<pre><code class="language-bash">dotnet add package serde-dn --prerelease
+<p>Start by adding the <code>serde</code> NuGet package:</p>
+<pre><code class="language-bash">dotnet add package serde
 </code></pre>
 <p>Serde-dn uses C# 10 features, so until .NET 7 is released it requires the following flags to be added to the <code>csproj</code> file:</p>
 <pre><code>&lt;LangVersion&gt;preview&lt;/LangVersion&gt;
@@ -180,8 +180,8 @@ Console.WriteLine(deserialized);
 
 [GenerateSerialize, GenerateDeserialize]
 partial record SampleClass
-{     
-    // automatically includes public properties and fields  
+{
+    // automatically includes public properties and fields
     public int X { get; init; } = 3;
     public string Y = &quot;sample&quot;;
 }
