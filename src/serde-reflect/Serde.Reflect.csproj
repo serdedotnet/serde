@@ -5,6 +5,7 @@
     <RootNamespace>Serde.Reflect</RootNamespace>
     <Nullable>enable</Nullable>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -16,9 +16,10 @@ namespace Serde
         public Type Wrapper { get; }
     }
 
-    public interface ISerializeWrap<T, TWrap> where TWrap : ISerialize
+    public interface ISerializeWrap<T, TSelf> : ISerialize
+        where TSelf : ISerializeWrap<T, TSelf>
     {
-        abstract static TWrap Create(T t); // Should be abstract static
+        abstract static TSelf Create(T t);
     }
 
     public readonly partial record struct BoolWrap(bool Value)

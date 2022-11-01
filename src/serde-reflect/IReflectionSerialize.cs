@@ -8,7 +8,9 @@ using System.Reflection;
 namespace Serde.Reflect;
 
 public interface IReflectionSerialize<
-    T> : ISerialize
+    [DynamicallyAccessedMembers(
+        DynamicallyAccessedMemberTypes.PublicFields
+        | DynamicallyAccessedMemberTypes.PublicProperties)] T> : ISerialize
     where T : IReflectionSerialize<T>
 {
     private const BindingFlags PublicInstanceFlags = BindingFlags.Public | BindingFlags.Instance;
@@ -20,34 +22,42 @@ public interface IReflectionSerialize<
         var fields = typeof(T).GetFields(PublicInstanceFlags);
         int total = props.Length + fields.Length;
         var serializeType = serializer.SerializeType(typeof(T).Name, total);
+        var nullContext = new NullabilityInfoContext();
         foreach (var p in props)
         {
-            HandleMember(p.PropertyType, p, (m, typedThis) => ((PropertyInfo)m).GetMethod!.Invoke(typedThis, Array.Empty<object>()));
+            var nullability = nullContext.Create(p);
+            HandleMember(p, p.PropertyType, nullability, (m, typedThis) => ((PropertyInfo)m).GetMethod!.Invoke(typedThis, Array.Empty<object>()));
         }
         foreach (var f in fields)
         {
-            HandleMember(f.FieldType, f, (m, typedThis) => ((FieldInfo)m).GetValue(typedThis));
+            var nullability = nullContext.Create(f);
+            HandleMember(f, f.FieldType, nullability, (m, typedThis) => ((FieldInfo)m).GetValue(typedThis));
         }
         serializeType.End();
 
         return;
 
-        void HandleMember(Type type, MemberInfo m, Func<MemberInfo, T, object?> getter)
+        void HandleMember(
+            MemberInfo m,
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type t,
+            NullabilityInfo nullability,
+            Func<MemberInfo, T, object?> getter)
         {
             var o = getter(m, typedThis);
-            switch (o)
+            if (o is null && nullability.ReadState != NullabilityState.Nullable)
             {
-                case null:
-                    // Default behavior is to not serialize null
-                    return;
-                case string s:
-                    var wrap = new StringWrap(s);
-                    serializeType.SerializeField(m.Name, wrap);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Type '{type}' of member '{m.DeclaringType}.{m.Name}' does not implement ISerialize."
-                        + " All serialized types must implement ISerialize or have a wrapper that implements ISerialize.");
+                // Default behavior is to not serialize null
+                return;
             }
+
+            if (Wrappers.TryGetWrapper(t) is {} wrap)
+            {
+                serializeType.SerializeField(m.Name, wrap(o));
+                return;
+            }
+
+            throw new InvalidOperationException($"Type '{o!.GetType()}' of member '{m.DeclaringType}.{m.Name}' does not implement ISerialize."
+                + " All serialized types must implement ISerialize or have a wrapper that implements ISerialize.");
         }
     }
 }
