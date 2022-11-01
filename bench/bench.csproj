@@ -2,20 +2,20 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
     <PackageReference Include="Newtonsoft.JSON" Version="13.0.1" />
-    <ProjectReference Include="../src/serde-dn/SerdeDn.csproj" />
+    <ProjectReference Include="../src/serde/Serde.csproj" />
     <ProjectReference Include="../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../test/AllInOneSrc.cs" />
-    <Compile Include="../test/AllInOneImpl.cs" />
+    <Compile Include="../test/Serde.Test/AllInOneSrc.cs" />
   </ItemGroup>
 
 </Project>

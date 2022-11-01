@@ -5,4 +5,4 @@ using Benchmarks;
 
 var config = DefaultConfig.Instance.AddDiagnoser(MemoryDiagnoser.Default);
 var summary = BenchmarkSwitcher.FromAssembly(typeof(JsonToString<>).Assembly)
-    .RunAll(config);
+    .Run(args, config);

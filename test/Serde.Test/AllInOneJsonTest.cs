@@ -228,51 +228,17 @@ namespace Serde
             static string GetPath([CallerFilePath] string path = "") => path;
         }
 
-        private const string Serialized = """
-{
-  "boolField": true,
-  "charField": "#",
-  "byteField": 255,
-  "uShortField": 65535,
-  "uIntField": 4294967295,
-  "uLongField": 18446744073709551615,
-  "sByteField": 127,
-  "shortField": 32767,
-  "intField": 2147483647,
-  "longField": 9223372036854775807,
-  "stringField": "StringValue",
-  "uIntArr": [
-    1,
-    2,
-    3
-  ],
-  "nestedArr": [
-    [
-      1
-    ],
-    [
-      2
-    ]
-  ],
-  "intImm": [
-    1,
-    2
-  ],
-  "color": "blue"
-}
-""";
-
         [Fact]
         public void SerializeTest()
         {
             var actual = JsonSerializerTests.PrettyPrint(JsonSerializer.Serialize(AllInOne.Sample));
-            Assert.Equal(Serialized.Trim(), actual);
+            Assert.Equal(AllInOne.SampleSerialized.Trim(), actual);
         }
 
         [Fact]
         public void DeserializeTest()
         {
-            var actual = JsonSerializer.Deserialize<AllInOne>(Serialized);
+            var actual = JsonSerializer.Deserialize<AllInOne>(AllInOne.SampleSerialized);
             Assert.Equal(AllInOne.Sample, actual);
         }
     }
