@@ -181,7 +181,7 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
             var src = @"
 using Serde;
 [GenerateDeserialize]
-partial struct ArrayField
+partial class ArrayField
 {
     public int[] IntArr = new[] { 1, 2, 3 };
 }";
@@ -189,7 +189,7 @@ partial struct ArrayField
 #nullable enable
 using Serde;
 
-partial struct ArrayField : Serde.IDeserialize<ArrayField>
+partial class ArrayField : Serde.IDeserialize<ArrayField>
 {
     static ArrayField Serde.IDeserialize<ArrayField>.Deserialize<D>(ref D deserializer)
     {
