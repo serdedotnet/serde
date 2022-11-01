@@ -13,7 +13,7 @@ namespace Serde.Test
             return deserializer.DeserializeType<Serde.Test.AllInOne, SerdeVisitor>("AllInOne", fieldNames, visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne>
         {
             public string ExpectedTypeName => "Serde.Test.AllInOne";
             Serde.Test.AllInOne Serde.IDeserializeVisitor<Serde.Test.AllInOne>.VisitDictionary<D>(ref D d)

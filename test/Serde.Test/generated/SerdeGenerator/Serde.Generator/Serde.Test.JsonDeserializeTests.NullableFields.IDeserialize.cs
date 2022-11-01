@@ -15,7 +15,7 @@ namespace Serde.Test
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.NullableFields, SerdeVisitor>("NullableFields", fieldNames, visitor);
             }
 
-            private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.NullableFields>
+            private struct SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.NullableFields>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.NullableFields";
                 Serde.Test.JsonDeserializeTests.NullableFields Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.NullableFields>.VisitDictionary<D>(ref D d)
