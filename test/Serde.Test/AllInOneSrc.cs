@@ -86,7 +86,7 @@ namespace Serde.Test
             return base.GetHashCode();
         }
 
-        internal static readonly AllInOne Sample = new AllInOne()
+        public static readonly AllInOne Sample = new AllInOne()
         {
             BoolField = true,
             CharField = '#',
@@ -109,5 +109,40 @@ namespace Serde.Test
 
             Color = ColorEnum.Blue
         };
+
+        public const string SampleSerialized = """
+{
+  "boolField": true,
+  "charField": "#",
+  "byteField": 255,
+  "uShortField": 65535,
+  "uIntField": 4294967295,
+  "uLongField": 18446744073709551615,
+  "sByteField": 127,
+  "shortField": 32767,
+  "intField": 2147483647,
+  "longField": 9223372036854775807,
+  "stringField": "StringValue",
+  "uIntArr": [
+    1,
+    2,
+    3
+  ],
+  "nestedArr": [
+    [
+      1
+    ],
+    [
+      2
+    ]
+  ],
+  "intImm": [
+    1,
+    2
+  ],
+  "color": "blue"
+}
+""";
+
     }
 }

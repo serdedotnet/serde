@@ -1,9 +1,12 @@
+
+#nullable disable
+
 using Serde;
 
 namespace Benchmarks
 {
     // the view models come from a real world app called "AllReady"
-    [GenerateSerialize]
+    [GenerateSerialize, GenerateDeserialize]
     public partial class LoginViewModel
     {
         public string Email { get; set; }
@@ -11,7 +14,7 @@ namespace Benchmarks
         public bool RememberMe { get; set; }
     }
 
-    [GenerateSerialize]
+    [GenerateSerialize, GenerateDeserialize]
     public partial class Location
     {
         public int Id { get; set; }
