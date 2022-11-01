@@ -9,31 +9,30 @@ namespace Benchmarks
 {
     [GenericTypeArguments(typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location))]
-    [GenericTypeArguments(typeof(Serde.Test.AllInOne))]
-    public class JsonToString<T> where T : Serde.ISerialize
+    public class DeserializeFromString<T> where T : Serde.IDeserialize<T>
     {
         private JsonSerializerOptions _options = null!;
-        private T value = default!;
+        private string value = null!;
 
         [GlobalSetup]
         public void Setup()
         {
             _options = new JsonSerializerOptions();
             _options.IncludeFields = true;
-            value = DataGenerator.GenerateSerialize<T>();
+            value = DataGenerator.GenerateDeserialize<T>();
         } 
 
         [Benchmark]
-        public string JsonNet() => Newtonsoft.Json.JsonConvert.SerializeObject(value);
+        public T JsonNet() => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(value);
 
         [Benchmark]
-        public string SystemText()
+        public T SystemText()
         {
-            return System.Text.Json.JsonSerializer.Serialize(value, _options);
+            return System.Text.Json.JsonSerializer.Deserialize<T>(value, _options);
         }
 
         [Benchmark]
-        public string SerdeJson() => Serde.Json.JsonSerializer.Serialize(value);
+        public T SerdeJson() => Serde.Json.JsonSerializer.Deserialize<T>(value);
 
         // DataContractJsonSerializer does not provide an API to serialize to string
         // so it's not included here (apples vs apples thing)

@@ -22,12 +22,16 @@ namespace Serde
         public static List<DataMemberSymbol> GetPublicDataMembers(ITypeSymbol type)
         {
             var format = GetTypeOptions(type).MemberFormat;
-            return type.GetMembers()
+            var members = type.GetMembers()
                 .Where(m => m is {
                     DeclaredAccessibility: Accessibility.Public,
                     Kind: SymbolKind.Field or SymbolKind.Property,
-                })
-                .Select(m => new DataMemberSymbol(m, GetTypeOptions(type), GetMemberOptions(m))).ToList();
+                });
+            if (type.TypeKind != TypeKind.Enum)
+            {
+                members = members.Where(m => !m.IsStatic);
+            }
+            return members.Select(m => new DataMemberSymbol(m, GetTypeOptions(type), GetMemberOptions(m))).ToList();
         }
 
         public static TypeSyntax ToFqnSyntax(this INamedTypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
