@@ -97,15 +97,15 @@ partial struct PointWrap : Serde.IDeserialize<Point>
         {
             Serde.Option<int> x = default;
             Serde.Option<int> y = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""x"":
-                        x = d.GetNextValue<int, Int32Wrap>();
+                        x = d.GetNextValue<D, int, Int32Wrap>();
                         break;
                     case ""y"":
-                        y = d.GetNextValue<int, Int32Wrap>();
+                        y = d.GetNextValue<D, int, Int32Wrap>();
                         break;
                     default:
                         break;
@@ -208,15 +208,15 @@ namespace Serde
             {
                 Serde.Option<short> mask = default;
                 Serde.Option<short> offset = default;
-                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
                 {
                     switch (key)
                     {
                         case ""mask"":
-                            mask = d.GetNextValue<short, Int16Wrap>();
+                            mask = d.GetNextValue<D, short, Int16Wrap>();
                             break;
                         case ""offset"":
-                            offset = d.GetNextValue<short, Int16Wrap>();
+                            offset = d.GetNextValue<D, short, Int16Wrap>();
                             break;
                         default:
                             break;
@@ -249,12 +249,12 @@ partial class C : Serde.IDeserialize<C>
         C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""s"":
-                        s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
+                        s = d.GetNextValue<D, System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
                         break;
                     default:
                         break;
@@ -305,15 +305,15 @@ partial record R : Serde.IDeserialize<R>
         {
             Serde.Option<int> a = default;
             Serde.Option<string> b = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case "a":
-                        a = d.GetNextValue<int, Int32Wrap>();
+                        a = d.GetNextValue<D, int, Int32Wrap>();
                         break;
                     case "b":
-                        b = d.GetNextValue<string, StringWrap>();
+                        b = d.GetNextValue<D, string, StringWrap>();
                         break;
                     default:
                         break;

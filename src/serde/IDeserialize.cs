@@ -60,22 +60,73 @@ namespace Serde
         T VisitNotNull<D>(ref D d) where D : IDeserializer => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
     }
 
+    /// <summary>
+    /// The stateful version of <see cref="IDeserialize{T}" />.
+    /// </summary>
+    public interface IDeserializeStateful<T>
+    {
+        T Deserialize<D>(ref D deserializer)
+            where D : IDeserializer;
+    }
+
     public interface IDeserializeEnumerable
     {
-        bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
-            where D : IDeserialize<T>;
+        bool TryGetNextStateful<T, D>(D d, [MaybeNullWhen(false)] out T next)
+            where D : IDeserializeStateful<T>;
         int? SizeOpt { get; }
     }
 
     public interface IDeserializeDictionary
     {
-        bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next)
-            where D : IDeserialize<K>;
-        V GetNextValue<V, D>() where D : IDeserialize<V>;
-        bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
-            where DK : IDeserialize<K>
-            where DV : IDeserialize<V>;
+        bool TryGetNextKeyStateful<K, D>(D d, [MaybeNullWhen(false)] out K next)
+            where D : IDeserializeStateful<K>;
+        V GetNextValueStateful<V, D>(D d) where D : IDeserializeStateful<V>;
+        bool TryGetNextEntryStateful<K, DK, V, DV>(DK dk, DV dv, [MaybeNullWhen(false)] out (K, V) next)
+            where DK : IDeserializeStateful<K>
+            where DV : IDeserializeStateful<V>;
         int? SizeOpt { get; }
+    }
+
+    public static class DeserializeStatefulExt
+    {
+        public struct DeserializeForward<T, DT> : IDeserializeStateful<T>
+            where DT : IDeserialize<T>
+        {
+            T IDeserializeStateful<T>.Deserialize<D>(ref D deserializer)
+            {
+                return DT.Deserialize(ref deserializer);
+            }
+        }
+
+        public static bool TryGetNext<TEnum, T, D>(this TEnum e, [MaybeNullWhen(false)] out T next)
+            where TEnum : IDeserializeEnumerable
+            where D : IDeserialize<T>
+        {
+            return e.TryGetNextStateful(new DeserializeForward<T, D>(), out next);
+        }
+
+        public static bool TryGetNextKey<TDict, T, D>(this TDict dict, [MaybeNullWhen(false)] out T next)
+            where TDict : IDeserializeDictionary
+            where D : IDeserialize<T>
+        {
+            return dict.TryGetNextKeyStateful<T, DeserializeForward<T, D>>(new DeserializeForward<T, D>(), out next);
+        } 
+
+        public static V GetNextValue<TDict, V, D>(this TDict dict)
+            where TDict : IDeserializeDictionary
+            where D : IDeserialize<V>
+        {
+            return dict.GetNextValueStateful<V, DeserializeForward<V, D>>(new DeserializeForward<V, D>());
+        }
+
+        public static bool TryGetNextEntry<TDict, K, DK, V, DV>(this TDict dict, [MaybeNullWhen(false)] out (K, V) next)
+            where TDict : IDeserializeDictionary
+            where DK : IDeserialize<K>
+            where DV : IDeserialize<V>
+        {
+            return dict.TryGetNextEntryStateful<K, DeserializeForward<K, DK>, V, DeserializeForward<V, DV>>(
+                new DeserializeForward<K, DK>(), new DeserializeForward<V, DV>(), out next);
+        }
     }
 
     public interface IDeserializer

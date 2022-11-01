@@ -39,18 +39,18 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             Serde.Option<byte> red = default;
             Serde.Option<byte> green = default;
             Serde.Option<byte> blue = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""red"":
-                        red = d.GetNextValue<byte, ByteWrap>();
+                        red = d.GetNextValue<D, byte, ByteWrap>();
                         break;
                     case ""green"":
-                        green = d.GetNextValue<byte, ByteWrap>();
+                        green = d.GetNextValue<D, byte, ByteWrap>();
                         break;
                     case ""blue"":
-                        blue = d.GetNextValue<byte, ByteWrap>();
+                        blue = d.GetNextValue<D, byte, ByteWrap>();
                         break;
                     default:
                         break;
@@ -93,12 +93,12 @@ partial struct S : Serde.IDeserialize<S>
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<string?> f = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""f"":
-                        f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        f = d.GetNextValue<D, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
                         break;
@@ -148,18 +148,18 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
             Serde.Option<string> present = default;
             Serde.Option<string?> missing = default;
             Serde.Option<string?> throwmissing = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case "present":
-                        present = d.GetNextValue<string, StringWrap>();
+                        present = d.GetNextValue<D, string, StringWrap>();
                         break;
                     case "missing":
-                        missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        missing = d.GetNextValue<D, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     case "throwMissing":
-                        throwmissing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        throwmissing = d.GetNextValue<D, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
                         break;
@@ -204,12 +204,12 @@ partial struct ArrayField : Serde.IDeserialize<ArrayField>
         ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<int[]> intarr = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case ""intArr"":
-                        intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                        intarr = d.GetNextValue<D, int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                         break;
                     default:
                         break;
@@ -454,21 +454,21 @@ partial class C : Serde.IDeserialize<C>
             Serde.Option<ColorByte> colorbyte = default;
             Serde.Option<ColorLong> colorlong = default;
             Serde.Option<ColorULong> colorulong = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case "colorInt":
-                        colorint = d.GetNextValue<ColorInt, ColorIntWrap>();
+                        colorint = d.GetNextValue<D, ColorInt, ColorIntWrap>();
                         break;
                     case "colorByte":
-                        colorbyte = d.GetNextValue<ColorByte, ColorByteWrap>();
+                        colorbyte = d.GetNextValue<D, ColorByte, ColorByteWrap>();
                         break;
                     case "colorLong":
-                        colorlong = d.GetNextValue<ColorLong, ColorLongWrap>();
+                        colorlong = d.GetNextValue<D, ColorLong, ColorLongWrap>();
                         break;
                     case "colorULong":
-                        colorulong = d.GetNextValue<ColorULong, ColorULongWrap>();
+                        colorulong = d.GetNextValue<D, ColorULong, ColorULongWrap>();
                         break;
                     default:
                         break;

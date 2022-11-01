@@ -22,15 +22,15 @@ namespace Serde.Test
                 {
                     Serde.Option<int> count = default;
                     Serde.Option<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>> list = default;
-                    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                    while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
                     {
                         switch (key)
                         {
                             case "count":
-                                count = d.GetNextValue<int, Int32Wrap>();
+                                count = d.GetNextValue<D, int, Int32Wrap>();
                                 break;
                             case "list":
-                                list = d.GetNextValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, ListWrap.DeserializeImpl<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>();
+                                list = d.GetNextValue<D, System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, ListWrap.DeserializeImpl<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>();
                                 break;
                             default:
                                 break;

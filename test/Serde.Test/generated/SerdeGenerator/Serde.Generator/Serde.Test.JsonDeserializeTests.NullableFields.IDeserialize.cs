@@ -22,15 +22,15 @@ namespace Serde.Test
                 {
                     Serde.Option<string?> s = default;
                     Serde.Option<System.Collections.Generic.Dictionary<string, string?>> dict = default;
-                    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                    while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
                     {
                         switch (key)
                         {
                             case "s":
-                                s = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                                s = d.GetNextValue<D, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                                 break;
                             case "dict":
-                                dict = d.GetNextValue<System.Collections.Generic.Dictionary<string, string?>, DictWrap.DeserializeImpl<string, StringWrap, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>>();
+                                dict = d.GetNextValue<D, System.Collections.Generic.Dictionary<string, string?>, DictWrap.DeserializeImpl<string, StringWrap, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>>();
                                 break;
                             default:
                                 break;

@@ -21,7 +21,7 @@ namespace Serde.Json
                 where D : IDeserializeEnumerable
             {
                 var builder = ImmutableArray.CreateBuilder<JsonValue>(d.SizeOpt ?? 3);
-                while (d.TryGetNext<JsonValue, JsonValue>(out var next))
+                while (d.TryGetNext<D, JsonValue, JsonValue>(out var next))
                 {
                     builder.Add(next);
                 }
@@ -32,7 +32,7 @@ namespace Serde.Json
                 where D : IDeserializeDictionary
             {
                 var builder = ImmutableDictionary.CreateBuilder<string, JsonValue>();
-                while (d.TryGetNextEntry<string, StringWrap, JsonValue, JsonValue>(out var next))
+                while (d.TryGetNextEntry<D, string, StringWrap, JsonValue, JsonValue>(out var next))
                 {
                     builder.Add(next.Item1, next.Item2);
                 }

@@ -137,8 +137,8 @@ namespace Serde.Json
             }
             public int? SizeOpt => null;
 
-            public bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
-                where D : IDeserialize<T>
+            public bool TryGetNextStateful<T, D>(D d, [MaybeNullWhen(false)] out T next)
+                where D : IDeserializeStateful<T>
             {
                 var reader = _deserializer.GetReader();
                 // Check if the next token is the end of the array, but don't advance the stream if not
@@ -150,7 +150,7 @@ namespace Serde.Json
                     return false;
                 }
                 // Don't save state
-                next = D.Deserialize(ref _deserializer);
+                next = d.Deserialize(ref _deserializer);
                 return true;
             }
         }
@@ -165,22 +165,23 @@ namespace Serde.Json
 
             public int? SizeOpt => null;
 
-            public bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
-                where DK : IDeserialize<K>
-                where DV : IDeserialize<V>
+            public bool TryGetNextEntryStateful<K, DK, V, DV>(DK dk, DV dv, [MaybeNullWhen(false)] out (K, V) next)
+                where DK : IDeserializeStateful<K>
+                where DV : IDeserializeStateful<V>
             {
-                // Don't save state
-                if (!TryGetNextKey<K, DK>(out K? nextKey))
+                // Don't save reader state
+                if (!TryGetNextKeyStateful<K, DK>(dk, out K? nextKey))
                 {
                     next = default;
                     return false;
                 }
-                var nextValue = GetNextValue<V, DV>();
+                var nextValue = GetNextValueStateful<V, DV>(dv);
                 next = (nextKey, nextValue);
                 return true;
             }
 
-            public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
+            public bool TryGetNextKeyStateful<K, D>(D d, [MaybeNullWhen(false)] out K next)
+                where D : IDeserializeStateful<K>
             {
                 while (true)
                 {
@@ -194,7 +195,7 @@ namespace Serde.Json
                             next = default;
                             return false;
                         case JsonTokenType.PropertyName:
-                            next = D.Deserialize(ref _deserializer);
+                            next = d.Deserialize(ref _deserializer);
                             return true;
                         default:
                             // If we aren't at a property name, we must be at a value and intending to skip it
@@ -208,9 +209,10 @@ namespace Serde.Json
                 }
             }
 
-            public V GetNextValue<V, D>() where D : IDeserialize<V>
+            public V GetNextValueStateful<V, D>(D d)
+                where D : IDeserializeStateful<V>
             {
-                return D.Deserialize(ref _deserializer);
+                return d.Deserialize(ref _deserializer);
             }
         }
 

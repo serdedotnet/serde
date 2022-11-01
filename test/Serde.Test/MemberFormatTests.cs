@@ -195,12 +195,12 @@ partial struct S : Serde.IDeserialize<S>
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<ColorEnum> e = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case "e":
-                        e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        e = d.GetNextValue<D, ColorEnum, ColorEnumWrap>();
                         break;
                     default:
                         break;
@@ -249,12 +249,12 @@ partial struct S2 : Serde.IDeserialize<S2>
         S2 Serde.IDeserializeVisitor<S2>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<ColorEnum> e = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
             {
                 switch (key)
                 {
                     case "E":
-                        e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        e = d.GetNextValue<D, ColorEnum, ColorEnumWrap>();
                         break;
                     default:
                         break;

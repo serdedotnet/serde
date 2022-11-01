@@ -284,7 +284,7 @@ namespace Serde
                 // Note, don't use nullable annotation as wrappers don't necessarily allow null
                 cases.AppendLine(@$"
             case ""{m.GetFormattedName()}"":
-                {localName} = d.GetNextValue<{memberType}, {wrapperName}>();
+                {localName} = d.GetNextValue<D, {memberType}, {wrapperName}>();
                 break;");
             }
 
@@ -297,7 +297,7 @@ namespace Serde
 {{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
 {
     {{locals}}
-    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+    while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
     {
         switch (key)
         {

@@ -84,7 +84,7 @@ namespace Serde
                         var array = new T[size];
                         for (int i = 0; i < size; i++)
                         {
-                            if (!d.TryGetNext<T, TWrap>(out T? next))
+                            if (!d.TryGetNext<D, T, TWrap>(out T? next))
                             {
                                 throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {i} items");
                             }
@@ -95,7 +95,7 @@ namespace Serde
                     else
                     {
                         var list = new List<T>();
-                        while (d.TryGetNext<T, TWrap>(out T? next))
+                        while (d.TryGetNext<D, T, TWrap>(out T? next))
                         {
                             list.Add(next);
                         }
@@ -141,7 +141,7 @@ namespace Serde
                         size = -1; // Set initial size to unknown
                         list = new List<T>();
                     }
-                    while (d.TryGetNext<T, TWrap>(out T? next))
+                    while (d.TryGetNext<D, T, TWrap>(out T? next))
                     {
                         list.Add(next);
                     }
@@ -193,7 +193,7 @@ namespace Serde
                         builder = ImmutableArray.CreateBuilder<T>();
                     }
 
-                    while (d.TryGetNext<T, TWrap>(out T? next))
+                    while (d.TryGetNext<D, T, TWrap>(out T? next))
                     {
                         builder.Add(next);
                     }

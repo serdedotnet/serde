@@ -56,7 +56,7 @@ namespace Serde
                         size = -1; // Set initial size to unknown
                         dict = new Dictionary<TKey, TValue>();
                     }
-                    while (d.TryGetNextEntry<TKey, TKeyWrap, TValue, TValueWrap>(out var next))
+                    while (d.TryGetNextEntry<D, TKey, TKeyWrap, TValue, TValueWrap>(out var next))
                     {
                         dict.Add(next.Item1, next.Item2);
                     }

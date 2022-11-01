@@ -85,57 +85,57 @@ namespace Serde.Test
                 Serde.Option<int[][]> nestedarr = default;
                 Serde.Option<System.Collections.Immutable.ImmutableArray<int>> intimm = default;
                 Serde.Option<Serde.Test.AllInOne.ColorEnum> color = default;
-                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
                 {
                     switch (key)
                     {
                         case ""boolField"":
-                            boolfield = d.GetNextValue<bool, BoolWrap>();
+                            boolfield = d.GetNextValue<D, bool, BoolWrap>();
                             break;
                         case ""charField"":
-                            charfield = d.GetNextValue<char, CharWrap>();
+                            charfield = d.GetNextValue<D, char, CharWrap>();
                             break;
                         case ""byteField"":
-                            bytefield = d.GetNextValue<byte, ByteWrap>();
+                            bytefield = d.GetNextValue<D, byte, ByteWrap>();
                             break;
                         case ""uShortField"":
-                            ushortfield = d.GetNextValue<ushort, UInt16Wrap>();
+                            ushortfield = d.GetNextValue<D, ushort, UInt16Wrap>();
                             break;
                         case ""uIntField"":
-                            uintfield = d.GetNextValue<uint, UInt32Wrap>();
+                            uintfield = d.GetNextValue<D, uint, UInt32Wrap>();
                             break;
                         case ""uLongField"":
-                            ulongfield = d.GetNextValue<ulong, UInt64Wrap>();
+                            ulongfield = d.GetNextValue<D, ulong, UInt64Wrap>();
                             break;
                         case ""sByteField"":
-                            sbytefield = d.GetNextValue<sbyte, SByteWrap>();
+                            sbytefield = d.GetNextValue<D, sbyte, SByteWrap>();
                             break;
                         case ""shortField"":
-                            shortfield = d.GetNextValue<short, Int16Wrap>();
+                            shortfield = d.GetNextValue<D, short, Int16Wrap>();
                             break;
                         case ""intField"":
-                            intfield = d.GetNextValue<int, Int32Wrap>();
+                            intfield = d.GetNextValue<D, int, Int32Wrap>();
                             break;
                         case ""longField"":
-                            longfield = d.GetNextValue<long, Int64Wrap>();
+                            longfield = d.GetNextValue<D, long, Int64Wrap>();
                             break;
                         case ""stringField"":
-                            stringfield = d.GetNextValue<string, StringWrap>();
+                            stringfield = d.GetNextValue<D, string, StringWrap>();
                             break;
                         case ""nullStringField"":
-                            nullstringfield = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                            nullstringfield = d.GetNextValue<D, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                             break;
                         case ""uIntArr"":
-                            uintarr = d.GetNextValue<uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>();
+                            uintarr = d.GetNextValue<D, uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>();
                             break;
                         case ""nestedArr"":
-                            nestedarr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
+                            nestedarr = d.GetNextValue<D, int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
                             break;
                         case ""intImm"":
-                            intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                            intimm = d.GetNextValue<D, System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
                         case ""color"":
-                            color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
+                            color = d.GetNextValue<D, Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
                             break;
                         default:
                             break;

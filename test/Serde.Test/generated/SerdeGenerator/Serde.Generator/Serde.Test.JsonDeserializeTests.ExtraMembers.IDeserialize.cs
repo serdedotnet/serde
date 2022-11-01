@@ -21,12 +21,12 @@ namespace Serde.Test
                 Serde.Test.JsonDeserializeTests.ExtraMembers Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ExtraMembers>.VisitDictionary<D>(ref D d)
                 {
                     Serde.Option<int> b = default;
-                    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                    while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
                     {
                         switch (key)
                         {
                             case "b":
-                                b = d.GetNextValue<int, Int32Wrap>();
+                                b = d.GetNextValue<D, int, Int32Wrap>();
                                 break;
                             default:
                                 break;

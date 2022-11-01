@@ -22,15 +22,15 @@ namespace Serde.Test
                 {
                     Serde.Option<string> present = default;
                     Serde.Option<string?> missing = default;
-                    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                    while (d.TryGetNextKey<D, string, StringWrap>(out string? key))
                     {
                         switch (key)
                         {
                             case "present":
-                                present = d.GetNextValue<string, StringWrap>();
+                                present = d.GetNextValue<D, string, StringWrap>();
                                 break;
                             case "missing":
-                                missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                                missing = d.GetNextValue<D, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                                 break;
                             default:
                                 break;
