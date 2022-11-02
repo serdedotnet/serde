@@ -380,7 +380,7 @@ namespace Serde
             return deserializer.DeserializeString<string, SerdeVisitor>(new SerdeVisitor());
         }
 
-        private class SerdeVisitor : IDeserializeVisitor<string>
+        private struct SerdeVisitor : IDeserializeVisitor<string>
         {
             public string ExpectedTypeName => s_typeName;
             public string VisitString(string s) => s;
