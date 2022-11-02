@@ -38,7 +38,7 @@ namespace Serde
             return deserializer.DeserializeBool<bool, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<bool>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<bool>
         {
             public string ExpectedTypeName => s_typeName;
             bool IDeserializeVisitor<bool>.VisitBool(bool x) => x;
@@ -60,7 +60,7 @@ namespace Serde
             return deserializer.DeserializeChar<char, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<char>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<char>
         {
             public string ExpectedTypeName => s_typeName;
             char IDeserializeVisitor<char>.VisitChar(char c) => c;
@@ -90,7 +90,7 @@ namespace Serde
             return deserializer.DeserializeByte<byte, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<byte>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<byte>
         {
             public string ExpectedTypeName => ByteWrap.s_typeName;
             byte IDeserializeVisitor<byte>.VisitByte(byte b)    => b;
@@ -119,7 +119,7 @@ namespace Serde
             return deserializer.DeserializeU16<ushort, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ushort>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<ushort>
         {
             public string ExpectedTypeName => s_typeName;
             ushort IDeserializeVisitor<ushort>.VisitByte(byte b)    => b;
@@ -148,7 +148,7 @@ namespace Serde
             return deserializer.DeserializeU32<uint, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<uint>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<uint>
         {
             public string ExpectedTypeName => s_typeName;
             uint IDeserializeVisitor<uint>.VisitByte(byte b)    => b;
@@ -177,7 +177,7 @@ namespace Serde
             return deserializer.DeserializeU64<ulong, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ulong>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<ulong>
         {
             public string ExpectedTypeName => s_typeName;
             ulong IDeserializeVisitor<ulong>.VisitByte(byte b)    => b;
@@ -206,7 +206,7 @@ namespace Serde
             return deserializer.DeserializeSByte<sbyte, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<sbyte>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<sbyte>
         {
             public string ExpectedTypeName => s_typeName;
             sbyte IDeserializeVisitor<sbyte>.VisitByte(byte b)    => Convert.ToSByte(b);
@@ -235,7 +235,7 @@ namespace Serde
             return deserializer.DeserializeI16<short, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<short>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<short>
         {
             public string ExpectedTypeName => s_typeName;
             short IDeserializeVisitor<short>.VisitByte(byte b)    => b;
@@ -264,7 +264,7 @@ namespace Serde
             return deserializer.DeserializeI32<int, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<int>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<int>
         {
             public string ExpectedTypeName => s_typeName;
             int IDeserializeVisitor<int>.VisitByte(byte b)    => b;
@@ -293,7 +293,7 @@ namespace Serde
             return deserializer.DeserializeI64<long, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<long>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<long>
         {
             public string ExpectedTypeName => s_typeName;
             long IDeserializeVisitor<long>.VisitByte(byte b)    => b;
@@ -321,7 +321,7 @@ namespace Serde
             return deserializer.DeserializeDouble<double, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<double>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<double>
         {
             public string ExpectedTypeName => "double";
             double IDeserializeVisitor<double>.VisitByte(byte b)    => b;
@@ -351,7 +351,7 @@ namespace Serde
             return deserializer.DeserializeDecimal<decimal, SerdeVisitor>(visitor);
         }
 
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<decimal>
+        private struct SerdeVisitor : Serde.IDeserializeVisitor<decimal>
         {
             public string ExpectedTypeName => "double";
             decimal IDeserializeVisitor<decimal>.VisitByte(byte b)    => b;
@@ -424,7 +424,7 @@ namespace Serde
                 return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
             }
 
-            private sealed class Visitor : IDeserializeVisitor<T?>
+            private struct Visitor : IDeserializeVisitor<T?>
             {
                 public string ExpectedTypeName => typeof(T).ToString() + "?";
 
@@ -473,7 +473,7 @@ namespace Serde
                 return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
             }
 
-            private sealed class Visitor : IDeserializeVisitor<T?>
+            private struct Visitor : IDeserializeVisitor<T?>
             {
                 public string ExpectedTypeName => typeof(T).ToString() + "?";
 

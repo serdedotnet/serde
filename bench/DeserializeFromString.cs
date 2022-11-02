@@ -13,7 +13,6 @@ namespace Benchmarks
     {
         private JsonSerializerOptions _options = null!;
         private string _value = null!;
-        private byte[] _utf8 = null!;
 
         [GlobalSetup]
         public void Setup()
@@ -21,7 +20,6 @@ namespace Benchmarks
             _options = new JsonSerializerOptions();
             _options.IncludeFields = true;
             _value = DataGenerator.GenerateDeserialize<T>();
-            _utf8 = System.Text.Encoding.UTF8.GetBytes(_value);
         } 
 
         [Benchmark]
@@ -36,8 +34,7 @@ namespace Benchmarks
         [Benchmark]
         public T SerdeJson()
         {
-            var deserializer = Serde.Json.JsonDeserializer.FromUtf8String(_utf8);
-            return T.Deserialize(ref deserializer);
+            return Serde.Json.JsonSerializer.Deserialize<T>(_value);
         }
 
         // DataContractJsonSerializer does not provide an API to serialize to string

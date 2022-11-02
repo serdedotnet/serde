@@ -1,5 +1,6 @@
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
@@ -34,8 +35,23 @@ namespace Serde.Json
         public static T Deserialize<T, D>(string source)
             where D : IDeserialize<T>
         {
-            var deserializer = JsonDeserializer.FromString(source);
-            return D.Deserialize(ref deserializer);
+            byte[]? tempArray = null;
+            tempArray = ArrayPool<byte>.Shared.Rent(source.Length * JsonConstants.MaxExpansionFactorWhileTranscoding);
+            try
+            {
+                int actualByteCount = JsonReaderHelper.GetUtf8FromText(source, tempArray);
+                var mem = new ReadOnlyMemory<byte>(tempArray, 0, actualByteCount);
+                var deserializer = JsonDeserializer.FromUtf8String(mem);
+                return D.Deserialize(ref deserializer);
+            }
+            finally
+            {
+                if (tempArray is not null)
+                {
+                    tempArray.AsSpan().Clear();
+                    ArrayPool<byte>.Shared.Return(tempArray);
+                }
+            }
         }
     }
 }

@@ -8,24 +8,17 @@ using System.Runtime.CompilerServices;
 
 namespace Serde.Json
 {
-    public struct JsonDeserializer : IDeserializer
+    internal struct JsonDeserializer : IDeserializer
     {
-        private byte[] _utf8Bytes;
         private Utf8JsonReader _reader;
 
-        public static JsonDeserializer FromString(string s)
-        {
-            return new JsonDeserializer(Encoding.UTF8.GetBytes(s));
-        }
-
-        public static JsonDeserializer FromUtf8String(byte[] utf8Bytes)
+        public static JsonDeserializer FromUtf8String(ReadOnlyMemory<byte> utf8Bytes)
         {
             return new JsonDeserializer(utf8Bytes);
         }
 
-        private JsonDeserializer(byte[] bytes)
+        private JsonDeserializer(ReadOnlyMemory<byte> bytes)
         {
-            _utf8Bytes = bytes;
             _reader = new Utf8JsonReader(bytes);
         }
 
@@ -70,6 +63,7 @@ namespace Serde.Json
             return v.VisitBool(b);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             _reader.ReadOrThrow();
@@ -229,6 +223,7 @@ namespace Serde.Json
         public T DeserializeIdentifier<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeString<T, V>(v);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : IDeserializeVisitor<T>
         {
             // Types are identical to dictionaries

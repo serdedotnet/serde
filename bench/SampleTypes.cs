@@ -28,11 +28,11 @@ namespace Benchmarks
         public string PhoneNumber { get; set; }
         public string Country { get; set; }
 
+        private static ReadOnlySpan<string> s_fieldNames => new[]{"Id", "Address1", "Address2", "City", "State", "PostalCode", "Name", "PhoneNumber", "Country"};
         static Location IDeserialize<Location>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            var fieldNames = new[]{"Id", "Address1", "Address2", "City", "State", "PostalCode", "Name", "PhoneNumber", "Country"};
-            return deserializer.DeserializeType<Location, SerdeVisitor>("Location", fieldNames, visitor);
+            return deserializer.DeserializeType<Location, SerdeVisitor>("Location", s_fieldNames, visitor);
         }
 
         private struct SerdeVisitor : IDeserializeVisitor<Location>
@@ -47,46 +47,58 @@ namespace Benchmarks
 
                 byte IDeserializeVisitor<byte>.VisitUtf8String(ReadOnlySpan<byte> utf8)
                 {
-                    if (utf8.SequenceEqual("id"u8))
+                    switch ((char)utf8[0])
                     {
-                        return 0;
+                        case 'i':
+                            if (utf8.SequenceEqual("id"u8))
+                            {
+                                return 0;
+                            }
+                            break;
+                        case 'a':
+                            if (utf8.SequenceEqual("address1"u8))
+                            {
+                                return 1;
+                            }
+                            if (utf8.SequenceEqual("address2"u8))
+                            {
+                                return 2;
+                            }
+                            break;
+                        case 'c':
+                            if (utf8.SequenceEqual("city"u8))
+                            {
+                                return 3;
+                            }
+                            if (utf8.SequenceEqual("country"u8))
+                            {
+                                return 8;
+                            }
+                            break;
+                        case 's':
+                            if (utf8.SequenceEqual("state"u8))
+                            {
+                                return 4;
+                            }
+                            break;
+                        case 'p':
+                            if (utf8.SequenceEqual("postalCode"u8))
+                            {
+                                return 5;
+                            }
+                            if (utf8.SequenceEqual("phoneNumber"u8))
+                            {
+                                return 7;
+                            }
+                            break;
+                        case 'n':
+                            if (utf8.SequenceEqual("name"u8))
+                            {
+                                return 6;
+                            }
+                            break;
                     }
-                    else if (utf8.SequenceEqual("address1"u8))
-                    {
-                        return 1;
-                    }
-                    else if (utf8.SequenceEqual("address2"u8))
-                    {
-                        return 2;
-                    }
-                    else if (utf8.SequenceEqual("city"u8))
-                    {
-                        return 3;
-                    }
-                    else if (utf8.SequenceEqual("state"u8))
-                    {
-                        return 4;
-                    }
-                    else if (utf8.SequenceEqual("postalCode"u8))
-                    {
-                        return 5;
-                    }
-                    else if (utf8.SequenceEqual("name"u8))
-                    {
-                        return 6;
-                    }
-                    else if (utf8.SequenceEqual("phoneNumber"u8))
-                    {
-                        return 7;
-                    }
-                    else if (utf8.SequenceEqual("country"u8))
-                    {
-                        return 8;
-                    }
-                    else
-                    {
-                        return byte.MaxValue;
-                    }
+                    return byte.MaxValue;
                 }
             }
             public string ExpectedTypeName => "Location";
