@@ -33,13 +33,25 @@ internal static class Wrappers
         }
         if (t.IsArray)
         {
-            return o => new ArrayWrap(TryGetWrapper(t.GetElementType()), (Array)o);
+            var wrap = GetWrapperOrThrow(t.GetElementType());
+            return o => new ArrayWrap(wrap, (Array)o);
         }
         if (t.GetInterface("System.Collections.Generic.IEnumerable`1") is not null)
         {
-            return o => new EnumerableWrap(TryGetWrapper(t.GenericTypeArguments[0]), (IEnumerable)o);
+            var wrap = GetWrapperOrThrow(t.GenericTypeArguments[0]);
+            return o => new EnumerableWrap(wrap, (IEnumerable)o);
         }
         return null;
+    }
+
+    private static Func<object, ISerialize> GetWrapperOrThrow(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type t)
+    {
+        if (TryGetWrapper(t) is {} wrap)
+        {
+            return wrap;
+        }
+        throw new InvalidOperationException($"Could not find wraper for type '{t}'");
     }
 
     private static Func<object, ISerialize>? TryGetPrimitiveWrapper(Type t)

@@ -49,6 +49,10 @@ public interface IReflectionDeserialize<
             var memberValues = new Dictionary<string, object>();
             while (d.TryGetNextKey<string, StringWrap>(out var fieldName))
             {
+                var prop = typeof(T).GetProperty(fieldName);
+                if (prop is not null)
+                {
+                }
                 var val = d.GetNextValue<object, ObjectWrap>();
                 memberValues.Add(fieldName, val);
             }
