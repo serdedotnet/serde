@@ -1,6 +1,7 @@
 // Contains implementations of data interfaces for core types
 
 using System;
+using System.Text;
 using System.Diagnostics;
 
 namespace Serde
@@ -384,6 +385,7 @@ namespace Serde
         {
             public string ExpectedTypeName => s_typeName;
             public string VisitString(string s) => s;
+            public string VisitUtf8String(ReadOnlySpan<byte> utf8) => Encoding.UTF8.GetString(utf8);
             string IDeserializeVisitor<string>.VisitChar(char c) => c.ToString();
         }
     }

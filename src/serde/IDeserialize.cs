@@ -1,5 +1,6 @@
 
 using System;
+using System.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -52,6 +53,7 @@ namespace Serde
         T VisitDouble(double d) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitDecimal(decimal d) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitString(string s) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        T VisitUtf8String(ReadOnlySpan<byte> s) => VisitString(Encoding.UTF8.GetString(s));
         T VisitEnumerable<D>(ref D d) where D : IDeserializeEnumerable
             => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitDictionary<D>(ref D d) where D : IDeserializeDictionary

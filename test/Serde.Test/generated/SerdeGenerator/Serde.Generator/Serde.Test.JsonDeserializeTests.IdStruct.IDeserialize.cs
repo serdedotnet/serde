@@ -15,7 +15,7 @@ namespace Serde.Test
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.IdStruct, SerdeVisitor>("IdStruct", fieldNames, visitor);
             }
 
-            private struct SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>
+            private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.IdStruct";
                 Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>.VisitDictionary<D>(ref D d)

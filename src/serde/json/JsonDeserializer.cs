@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace Serde.Json
 {
-    public sealed partial class JsonDeserializer : IDeserializer
+    public sealed class JsonDeserializer : IDeserializer
     {
         private byte[] _utf8Bytes;
         private Utf8JsonReader _reader;
@@ -214,10 +214,14 @@ namespace Serde.Json
         public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             _reader.ReadOrThrow();
-            var s = _reader.GetString();
-            return s is null
-                ? v.VisitNull()
-                : v.VisitString(s);
+            if (_reader.TokenType == JsonTokenType.Null)
+            {
+                return v.VisitNull();
+            }
+            else
+            {
+                return v.VisitUtf8String(_reader.ValueSpan);
+            }
         }
 
         public T DeserializeIdentifier<T, V>(V v) where V : IDeserializeVisitor<T>

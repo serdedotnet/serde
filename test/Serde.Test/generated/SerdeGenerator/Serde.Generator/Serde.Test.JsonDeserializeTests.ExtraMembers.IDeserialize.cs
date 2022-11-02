@@ -15,7 +15,7 @@ namespace Serde.Test
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.ExtraMembers, SerdeVisitor>("ExtraMembers", fieldNames, visitor);
             }
 
-            private struct SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ExtraMembers>
+            private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ExtraMembers>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.ExtraMembers";
                 Serde.Test.JsonDeserializeTests.ExtraMembers Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ExtraMembers>.VisitDictionary<D>(ref D d)

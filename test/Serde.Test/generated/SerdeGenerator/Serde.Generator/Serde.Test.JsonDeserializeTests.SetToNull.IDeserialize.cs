@@ -15,7 +15,7 @@ namespace Serde.Test
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.SetToNull, SerdeVisitor>("SetToNull", fieldNames, visitor);
             }
 
-            private struct SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.SetToNull>
+            private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.SetToNull>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.SetToNull";
                 Serde.Test.JsonDeserializeTests.SetToNull Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.SetToNull>.VisitDictionary<D>(ref D d)
