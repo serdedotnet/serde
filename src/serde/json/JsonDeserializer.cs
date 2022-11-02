@@ -10,8 +10,7 @@ namespace Serde.Json
     public sealed partial class JsonDeserializer : IDeserializer
     {
         private byte[] _utf8Bytes;
-        private JsonReaderState _readerState;
-        private int _offset;
+        private Utf8JsonReader _reader;
 
         public static JsonDeserializer FromString(string s)
         {
@@ -21,24 +20,12 @@ namespace Serde.Json
         private JsonDeserializer(byte[] bytes)
         {
             _utf8Bytes = bytes;
-            _readerState = default;
-            _offset = 0;
-        }
-
-        private void SaveState(in Utf8JsonReader reader)
-        {
-            _readerState = reader.CurrentState;
-            _offset += (int)reader.BytesConsumed;
-        }
-
-        private Utf8JsonReader GetReader()
-        {
-            return new Utf8JsonReader(_utf8Bytes.AsSpan()[_offset..], isFinalBlock: true, _readerState);
+            _reader = new Utf8JsonReader(bytes);
         }
 
         public T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            var reader = _reader;
             reader.ReadOrThrow();
             T result;
             switch (reader.TokenType)
@@ -65,31 +52,26 @@ namespace Serde.Json
                     break;
 
                 default:
-                    throw new InvalidDeserializeValueException($"Could not deserialize '{reader.TokenType}");
+                    throw new InvalidDeserializeValueException($"Could not deserialize '{_reader.TokenType}");
             }
             return result;
         }
 
         public T DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            bool b = reader.GetBoolean();
-            SaveState(reader);
+            _reader.ReadOrThrow();
+            bool b = _reader.GetBoolean();
             return v.VisitBool(b);
         }
 
         public T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-
-            if (reader.TokenType != JsonTokenType.StartObject)
+            _reader.ReadOrThrow();
+            if (_reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new InvalidDeserializeValueException("Expected object start");
             }
 
-            SaveState(reader);
             var map = new DeDictionary(this);
             return v.VisitDictionary(ref map);
         }
@@ -99,31 +81,25 @@ namespace Serde.Json
 
         public T DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            var d = reader.GetDouble();
-            _readerState = reader.CurrentState;
+            var d = _reader.GetDouble();
             return v.VisitDouble(d);
         }
 
         public T DeserializeDecimal<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            var d = reader.GetDecimal();
-            _readerState = reader.CurrentState;
+            var d = _reader.GetDecimal();
             return v.VisitDecimal(d);
         }
 
         public T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
+            _reader.ReadOrThrow();
 
-            if (reader.TokenType != JsonTokenType.StartArray)
+            if (_reader.TokenType != JsonTokenType.StartArray)
             {
                 throw new InvalidDeserializeValueException("Expected array start");
             }
 
-            SaveState(reader);
             var enumerable = new DeEnumerable(this);
             return v.VisitEnumerable(ref enumerable);
         }
@@ -140,12 +116,12 @@ namespace Serde.Json
             public bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
                 where D : IDeserialize<T>
             {
-                var reader = _deserializer.GetReader();
+                var reader = _deserializer._reader;
                 // Check if the next token is the end of the array, but don't advance the stream if not
                 reader.ReadOrThrow();
                 if (reader.TokenType == JsonTokenType.EndArray)
                 {
-                    _deserializer.SaveState(reader);
+                    _deserializer._reader = reader;
                     next = default;
                     return false;
                 }
@@ -169,7 +145,6 @@ namespace Serde.Json
                 where DK : IDeserialize<K>
                 where DV : IDeserialize<V>
             {
-                // Don't save state
                 if (!TryGetNextKey<K, DK>(out K? nextKey))
                 {
                     next = default;
@@ -184,14 +159,14 @@ namespace Serde.Json
             {
                 while (true)
                 {
-                    var reader = _deserializer.GetReader();
+                    var reader = _deserializer._reader;
                     reader.ReadOrThrow();
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.EndObject:
                             // Check if the next token is the end of the object, but don't advance the stream if not
-                            _deserializer.SaveState(reader);
                             next = default;
+                            _deserializer._reader = reader;
                             return false;
                         case JsonTokenType.PropertyName:
                             next = D.Deserialize(ref _deserializer);
@@ -202,7 +177,7 @@ namespace Serde.Json
                             // anything for bare tokens, but we've already read one token forward above,
                             // so we can simply save the state and continue
                             reader.Skip();
-                            _deserializer.SaveState(reader);
+                            _deserializer._reader = reader;
                             break;
                     }
                 }
@@ -226,19 +201,15 @@ namespace Serde.Json
 
         public T DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            var i64 = reader.GetInt64();
-            SaveState(reader);
+            _reader.ReadOrThrow();
+            var i64 = _reader.GetInt64();
             return v.VisitI64(i64);
         }
 
         public T DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            var s = reader.GetString();
-            SaveState(reader);
+            _reader.ReadOrThrow();
+            var s = _reader.GetString();
             return s is null
                 ? v.VisitNull()
                 : v.VisitString(s);
@@ -264,10 +235,8 @@ namespace Serde.Json
 
         public T DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            var u64 = reader.GetUInt64();
-            SaveState(reader);
+            _reader.ReadOrThrow();
+            var u64 = _reader.GetUInt64();
             return v.VisitU64(u64);
         }
 
@@ -277,9 +246,8 @@ namespace Serde.Json
         public T DeserializeNullableRef<T, V>(V v)
             where V : class, IDeserializeVisitor<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            if (reader.TokenType == JsonTokenType.Null)
+            _reader.ReadOrThrow();
+            if (_reader.TokenType == JsonTokenType.Null)
             {
                 return v.VisitNull();
             }
