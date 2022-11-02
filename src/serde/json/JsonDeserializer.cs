@@ -4,10 +4,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using System.Runtime.CompilerServices;
 
 namespace Serde.Json
 {
-    public sealed class JsonDeserializer : IDeserializer
+    public struct JsonDeserializer : IDeserializer
     {
         private byte[] _utf8Bytes;
         private Utf8JsonReader _reader;
@@ -211,6 +212,7 @@ namespace Serde.Json
             return v.VisitI64(i64);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             _reader.ReadOrThrow();

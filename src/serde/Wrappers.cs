@@ -3,6 +3,7 @@
 using System;
 using System.Text;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Serde
 {
@@ -375,6 +376,7 @@ namespace Serde
             serializer.SerializeString(Value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Deserialize<D>(ref D deserializer)
             where D : IDeserializer
         {
