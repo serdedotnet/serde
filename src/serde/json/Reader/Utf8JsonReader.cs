@@ -19,7 +19,7 @@ namespace System.Text.Json
     /// <see cref="JsonReaderState"/> and pass that in to the reader.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public partial struct Utf8JsonReader
+    internal partial struct Utf8JsonReader
     {
         private ReadOnlyMemory<byte> _buffer;
         private ReadOnlySpan<byte> GetBuffer => _buffer.Span;

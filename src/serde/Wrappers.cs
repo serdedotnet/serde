@@ -1,6 +1,7 @@
 // Contains implementations of data interfaces for core types
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -258,6 +259,7 @@ namespace Serde
         {
             serializer.SerializeI32(Value);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int Serde.IDeserialize<int>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
@@ -274,6 +276,7 @@ namespace Serde
             int IDeserializeVisitor<int>.VisitSByte(sbyte b)  => b;
             int IDeserializeVisitor<int>.VisitI16(short i16)  => i16;
             int IDeserializeVisitor<int>.VisitI32(int i32)    => i32;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             int IDeserializeVisitor<int>.VisitI64(long i64)   => Convert.ToInt32(i64);
         }
     }
@@ -385,9 +388,16 @@ namespace Serde
 
         private struct SerdeVisitor : IDeserializeVisitor<string>
         {
+            private static readonly UTF8Encoding s_utf8Encoding = new UTF8Encoding(false, true);
+
             public string ExpectedTypeName => s_typeName;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public string VisitString(string s) => s;
-            public string VisitUtf8String(ReadOnlySpan<byte> utf8) => Encoding.UTF8.GetString(utf8);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string VisitUtf8String(ReadOnlySpan<byte> utf8) 
+            {
+                return s_utf8Encoding.GetString(utf8);
+            }
             string IDeserializeVisitor<string>.VisitChar(char c) => c.ToString();
         }
     }

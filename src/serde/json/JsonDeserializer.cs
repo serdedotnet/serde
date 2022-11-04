@@ -20,6 +20,8 @@ namespace Serde.Json
         private JsonDeserializer(ReadOnlyMemory<byte> bytes)
         {
             _reader = new Utf8JsonReader(bytes);
+            // Start the reader on the first token
+            _reader.ReadOrThrow();
         }
 
         public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>
@@ -66,11 +68,11 @@ namespace Serde.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            _reader.ReadOrThrow();
             if (_reader.TokenType != JsonTokenType.StartObject)
             {
                 throw new InvalidDeserializeValueException("Expected object start");
             }
+            _reader.ReadOrThrow();
 
             var map = new DeDictionary(this);
             return v.VisitDictionary(ref map);
@@ -159,14 +161,11 @@ namespace Serde.Json
             {
                 while (true)
                 {
-                    var reader = _deserializer._reader;
-                    reader.ReadOrThrow();
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.EndObject:
                             // Check if the next token is the end of the object, but don't advance the stream if not
                             next = default;
-                            _deserializer._reader = reader;
                             return false;
                         case JsonTokenType.PropertyName:
                             next = D.Deserialize(ref _deserializer);
@@ -177,7 +176,6 @@ namespace Serde.Json
                             // anything for bare tokens, but we've already read one token forward above,
                             // so we can simply save the state and continue
                             reader.Skip();
-                            _deserializer._reader = reader;
                             break;
                     }
                 }
@@ -201,22 +199,29 @@ namespace Serde.Json
 
         public T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            _reader.ReadOrThrow();
             var i64 = _reader.GetInt64();
+            _reader.ReadOrThrow();
             return v.VisitI64(i64);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            _reader.ReadOrThrow();
             if (_reader.TokenType == JsonTokenType.Null)
             {
+                _reader.ReadOrThrow();
                 return v.VisitNull();
             }
             else
             {
-                return v.VisitUtf8String(_reader.ValueSpan);
+                var span = _reader.ValueSpan;
+                if (_reader.ValueIsEscaped)
+                {
+                    span = JsonReaderHelper.GetUnescapedSpan(span);
+                }
+                var ret = v.VisitUtf8String(span);
+                _reader.ReadOrThrow();
+                return ret;
             }
         }
 
@@ -252,9 +257,11 @@ namespace Serde.Json
         public T DeserializeNullableRef<T, V>(V v)
             where V : IDeserializeVisitor<T>
         {
-            _reader.ReadOrThrow();
-            if (_reader.TokenType == JsonTokenType.Null)
+            var reader = _reader;
+            reader.ReadOrThrow();
+            if (reader.TokenType == JsonTokenType.Null)
             {
+                _reader = reader;
                 return v.VisitNull();
             }
             else

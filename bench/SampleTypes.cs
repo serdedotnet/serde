@@ -2,6 +2,7 @@
 #nullable disable
 
 using System;
+using System.Runtime.CompilerServices;
 using Serde;
 
 namespace Benchmarks
@@ -28,11 +29,12 @@ namespace Benchmarks
         public string PhoneNumber { get; set; }
         public string Country { get; set; }
 
-        private static ReadOnlySpan<string> s_fieldNames => new[]{"Id", "Address1", "Address2", "City", "State", "PostalCode", "Name", "PhoneNumber", "Country"};
+        private static ReadOnlyMemory<string> s_fieldNames = new[]{"Id", "Address1", "Address2", "City", "State", "PostalCode", "Name", "PhoneNumber", "Country"};
+
         static Location IDeserialize<Location>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            return deserializer.DeserializeType<Location, SerdeVisitor>("Location", s_fieldNames, visitor);
+            return deserializer.DeserializeType<Location, SerdeVisitor>("Location", s_fieldNames.Span, visitor);
         }
 
         private struct SerdeVisitor : IDeserializeVisitor<Location>
@@ -40,6 +42,7 @@ namespace Benchmarks
             private struct FieldVisitor : IDeserializeVisitor<byte>, IDeserialize<byte>
             {
                 public string ExpectedTypeName => "UTF8 string";
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 static byte IDeserialize<byte>.Deserialize<D>(ref D deserializer)
                 {
                     return deserializer.DeserializeString<byte, FieldVisitor>(new FieldVisitor());

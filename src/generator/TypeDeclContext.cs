@@ -47,9 +47,8 @@ namespace Serde
         public MemberDeclarationSyntax WrapNewType(MemberDeclarationSyntax newType)
         {
             // If the original type was in a namespace or type, put this decl in the same one
-            for (int i = ParentTypeInfo.Count - 1; i >= 0; i--)
+            foreach (var (name, kind) in ParentTypeInfo)
             {
-                var (name, kind) = ParentTypeInfo[i];
                 newType = TypeDeclaration(kind, Identifier(name))
                     .WithModifiers(TokenList(Token(SyntaxKind.PartialKeyword)))
                     .WithMembers(List(new[] { newType }));

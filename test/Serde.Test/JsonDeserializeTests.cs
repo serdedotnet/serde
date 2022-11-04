@@ -255,6 +255,60 @@ namespace Serde.Test
             Assert.Equal(s.Dict.Count, de.Dict.Count);
         }
 
+
+        partial class TestCase5
+        {
+            [GenerateSerialize, GenerateDeserialize]
+            public partial record Type0
+            {
+                public Type1 Field0 { get; set; } = new Type1();
+            }
+
+            [GenerateSerialize, GenerateDeserialize]
+            public partial record Type1
+            {
+                public List<int> Field0 { get; set; } = new List<int>()
+            {int.MaxValue, int.MaxValue};
+                public Type2 Field1 { get; set; } = new Type2();
+                public Type3 Field2 { get; set; } = new Type3();
+            }
+
+            [GenerateSerialize, GenerateDeserialize]
+            public partial record Type3
+            {
+                public bool Field0 { get; set; } = false;
+            }
+
+            [GenerateSerialize, GenerateDeserialize]
+            public partial record Type2
+            {
+                public char Field0 { get; set; } = char.MaxValue;
+            }
+        }
+
+        [Fact]
+        public void CharMaxValue()
+        {
+            var src = """
+{
+    "field0": {
+        "field0": [
+            2147483647,
+            2147483647
+        ],
+        "field1": {
+            "field0": "\uFFFF"
+        },
+        "field2": {
+            "field0": false
+        }
+    }
+}
+""";
+            var de = JsonSerializer.Deserialize<TestCase5.Type0>(src);
+            Assert.Equal(char.MaxValue, de.Field0.Field1.Field0);
+        }
+
         public record Location : Serde.IDeserialize<Location>
         {
             public static readonly Location Sample = new Location

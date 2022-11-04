@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.Text.Json
 {
-    public partial struct Utf8JsonReader
+    partial struct Utf8JsonReader
     {
         /// <summary>
         /// Constructs a new <see cref="Utf8JsonReader"/> instance.

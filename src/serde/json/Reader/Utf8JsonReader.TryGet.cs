@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.Text.Json
 {
-    public partial struct Utf8JsonReader
+    partial struct Utf8JsonReader
     {
         /// <summary>
         /// Parses the current JSON token value from the source, unescaped, and transcoded as a <see cref="string"/>.
@@ -47,61 +47,6 @@ namespace System.Text.Json
             return JsonReaderHelper.TranscodeHelper(span);
         }
 
-        /// <summary>
-        /// Copies the current JSON token value from the source, unescaped as a UTF-8 string to the destination buffer.
-        /// </summary>
-        /// <param name="utf8Destination">A buffer to write the unescaped UTF-8 bytes into.</param>
-        /// <returns>The number of bytes written to <paramref name="utf8Destination"/>.</returns>
-        /// <remarks>
-        /// Unlike <see cref="GetString"/>, this method does not support <see cref="JsonTokenType.Null"/>.
-        ///
-        /// This method will throw <see cref="ArgumentException"/> if the destination buffer is too small to hold the unescaped value.
-        /// An appropriately sized buffer can be determined by consulting the length of either <see cref="ValueSpan"/> or <see cref="ValueSequence"/>,
-        /// since the unescaped result is always less than or equal to the length of the encoded strings.
-        /// </remarks>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if trying to get the value of the JSON token that is not a string
-        /// (i.e. other than <see cref="JsonTokenType.String"/> or <see cref="JsonTokenType.PropertyName"/>.
-        /// <seealso cref="TokenType" />
-        /// It will also throw when the JSON string contains invalid UTF-8 bytes, or invalid UTF-16 surrogates.
-        /// </exception>
-        /// <exception cref="ArgumentException">The destination buffer is too small to hold the unescaped value.</exception>
-        public readonly int CopyString(Span<byte> utf8Destination)
-        {
-            if (_tokenType is not (JsonTokenType.String or JsonTokenType.PropertyName))
-            {
-                ThrowHelper.ThrowInvalidOperationException_ExpectedString(_tokenType);
-            }
-
-            int bytesWritten;
-
-            if (ValueIsEscaped)
-            {
-                if (!TryCopyEscapedString(utf8Destination, out bytesWritten))
-                {
-                    utf8Destination.Slice(0, bytesWritten).Clear();
-                    ThrowHelper.ThrowArgumentException_DestinationTooShort();
-                }
-            }
-            else
-            {
-                if (HasValueSequence)
-                {
-                    ReadOnlySequence<byte> valueSequence = ValueSequence;
-                    valueSequence.CopyTo(utf8Destination);
-                    bytesWritten = (int)valueSequence.Length;
-                }
-                else
-                {
-                    ReadOnlySpan<byte> valueSpan = ValueSpan;
-                    valueSpan.CopyTo(utf8Destination);
-                    bytesWritten = valueSpan.Length;
-                }
-            }
-
-            JsonReaderHelper.ValidateUtf8(utf8Destination.Slice(0, bytesWritten));
-            return bytesWritten;
-        }
 
         /// <summary>
         /// Copies the current JSON token value from the source, unescaped, and transcoded as a UTF-16 char buffer.
