@@ -7,11 +7,17 @@ using System.Text.Json;
 
 namespace Serde.Json
 {
-    public sealed partial class JsonDeserializer : IDeserializer
+    internal partial struct JsonDeserializer : IDeserializer
     {
-        private byte[] _utf8Bytes;
-        private JsonReaderState _readerState;
-        private int _offset;
+        // Need to use a class so it can be referenced from the Enumerable and
+        // Dictionary implementations
+        private sealed class DeserializerState
+        {
+            public byte[] Utf8Bytes = null!;
+            public JsonReaderState ReaderState;
+            public int Offset;
+        }
+        private readonly DeserializerState _state;
 
         public static JsonDeserializer FromString(string s)
         {
@@ -20,20 +26,26 @@ namespace Serde.Json
 
         private JsonDeserializer(byte[] bytes)
         {
-            _utf8Bytes = bytes;
-            _readerState = default;
-            _offset = 0;
+            _state = new DeserializerState
+            {
+                Utf8Bytes = bytes,
+                ReaderState = default,
+                Offset = 0
+            };
         }
 
         private void SaveState(in Utf8JsonReader reader)
         {
-            _readerState = reader.CurrentState;
-            _offset += (int)reader.BytesConsumed;
+            _state.ReaderState = reader.CurrentState;
+            _state.Offset += (int)reader.BytesConsumed;
         }
 
         private Utf8JsonReader GetReader()
         {
-            return new Utf8JsonReader(_utf8Bytes.AsSpan()[_offset..], isFinalBlock: true, _readerState);
+            return new Utf8JsonReader(
+                _state.Utf8Bytes.AsSpan()[_state.Offset..],
+                isFinalBlock: true,
+                _state.ReaderState);
         }
 
         public T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>
@@ -101,7 +113,7 @@ namespace Serde.Json
         {
             var reader = GetReader();
             var d = reader.GetDouble();
-            _readerState = reader.CurrentState;
+            _state.ReaderState = reader.CurrentState;
             return v.VisitDouble(d);
         }
 
@@ -109,7 +121,7 @@ namespace Serde.Json
         {
             var reader = GetReader();
             var d = reader.GetDecimal();
-            _readerState = reader.CurrentState;
+            _state.ReaderState = reader.CurrentState;
             return v.VisitDecimal(d);
         }
 
