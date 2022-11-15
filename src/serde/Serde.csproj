@@ -6,9 +6,16 @@
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <IsPackable>false</IsPackable>
     <DebugType>embedded</DebugType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+       <EmbeddedResource Update="json/reader/Strings.resx">
+       <Generator>MSBuild:Compile</Generator><!-- Tell Visual Studio to run a build if the resx file changes -->
+      <StronglyTypedFileName>$(IntermediateOutputPath)\Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedClassName>SR</StronglyTypedClassName>
+     </EmbeddedResource>
     <PackageReference Include="NuGetizer" Version="0.9.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
