@@ -6,7 +6,7 @@ namespace Serde.Json
     /// <summary>
     /// This enum defines the various ways the <see cref="Utf8JsonReader"/> can deal with comments.
     /// </summary>
-    public enum JsonCommentHandling : byte
+    internal enum JsonCommentHandling : byte
     {
         /// <summary>
         /// By default, do no allow comments within the JSON input.

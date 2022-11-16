@@ -10,7 +10,7 @@ namespace Serde.Json
     /// is only ever reached in a specific <see cref="Utf8JsonReader"/> mode and is not
     /// reachable by default.
     /// </summary>
-    public enum JsonTokenType : byte
+    internal enum JsonTokenType : byte
     {
         // Do not re-order.
         // We rely on the ordering to quickly check things like IsTokenTypePrimitive

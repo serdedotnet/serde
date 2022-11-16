@@ -9,7 +9,7 @@ namespace Serde.Json
     /// <summary>
     /// Provides the ability for the user to define custom behavior when reading JSON.
     /// </summary>
-    public struct JsonReaderOptions
+    internal struct JsonReaderOptions
     {
         internal const int DefaultMaxDepth = 64;
 
