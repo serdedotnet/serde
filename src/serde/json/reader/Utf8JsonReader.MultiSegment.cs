@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace Serde.Json
 {
-    public ref partial struct Utf8JsonReader
+    partial struct Utf8JsonReader
     {
         /// <summary>
         /// Constructs a new <see cref="Utf8JsonReader"/> instance.
@@ -24,7 +24,7 @@ namespace Serde.Json
         /// </remarks>
         public Utf8JsonReader(ReadOnlySequence<byte> jsonData, bool isFinalBlock, JsonReaderState state)
         {
-            _buffer = jsonData.First.Span;
+            _buffer = jsonData.First;
 
             _isFinalBlock = isFinalBlock;
             _isInputSequence = true;
@@ -48,7 +48,7 @@ namespace Serde.Json
             TokenStartIndex = 0;
             _totalConsumed = 0;
 
-            ValueSpan = ReadOnlySpan<byte>.Empty;
+            _valueMemory = ReadOnlyMemory<byte>.Empty;
 
             _sequence = jsonData;
             HasValueSequence = false;
@@ -66,7 +66,7 @@ namespace Serde.Json
                 _currentPosition = jsonData.Start;
                 _nextPosition = _currentPosition;
 
-                bool firstSegmentIsEmpty = _buffer.Length == 0;
+                bool firstSegmentIsEmpty = GetBufferSpan.Length == 0;
                 if (firstSegmentIsEmpty)
                 {
                     // Once we find a non-empty segment, we need to set current position to it.
@@ -78,7 +78,7 @@ namespace Serde.Json
                         _currentPosition = previousNextPosition;
                         if (memory.Length != 0)
                         {
-                            _buffer = memory.Span;
+                            _buffer = memory;
                             break;
                         }
                         previousNextPosition = _nextPosition;
@@ -123,7 +123,7 @@ namespace Serde.Json
             bool retVal = false;
             HasValueSequence = false;
             ValueIsEscaped = false;
-            ValueSpan = default;
+            _valueMemory = default;
             ValueSequence = default;
 
             if (!HasMoreDataMultiSegment())
@@ -131,7 +131,7 @@ namespace Serde.Json
                 goto Done;
             }
 
-            byte first = _buffer[_consumed];
+            byte first = GetBufferSpan[_consumed];
 
             // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
             // SkipWhiteSpace only skips the whitespace characters as defined by JSON RFC 8259 section 2.
@@ -144,7 +144,7 @@ namespace Serde.Json
                 {
                     goto Done;
                 }
-                first = _buffer[_consumed];
+                first = GetBufferSpan[_consumed];
             }
 
             TokenStartIndex = BytesConsumed;
@@ -250,7 +250,7 @@ namespace Serde.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HasMoreDataMultiSegment()
         {
-            if (_consumed >= (uint)_buffer.Length)
+            if (_consumed >= (uint)GetBufferSpan.Length)
             {
                 if (_isNotPrimitive && IsLastSpan)
                 {
@@ -278,7 +278,7 @@ namespace Serde.Json
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HasMoreDataMultiSegment(ExceptionResource resource)
         {
-            if (_consumed >= (uint)_buffer.Length)
+            if (_consumed >= (uint)GetBufferSpan.Length)
             {
                 if (IsLastSpan)
                 {
@@ -326,7 +326,7 @@ namespace Serde.Json
                 _isLastSegment = !_sequence.TryGet(ref _nextPosition, out _, advance: false);
             }
 
-            _buffer = memory.Span;
+            _buffer = memory;
             _totalConsumed += _consumed;
             _consumed = 0;
 
@@ -339,7 +339,7 @@ namespace Serde.Json
             {
                 _bitStack.SetFirstBit();
                 _tokenType = JsonTokenType.StartObject;
-                ValueSpan = _buffer.Slice(_consumed, 1);
+                _valueMemory = _buffer.Slice(_consumed, 1);
                 _consumed++;
                 _bytePositionInLine++;
                 _inObject = true;
@@ -349,7 +349,7 @@ namespace Serde.Json
             {
                 _bitStack.ResetFirstBit();
                 _tokenType = JsonTokenType.StartArray;
-                ValueSpan = _buffer.Slice(_consumed, 1);
+                _valueMemory = _buffer.Slice(_consumed, 1);
                 _consumed++;
                 _bytePositionInLine++;
                 _isNotPrimitive = true;
@@ -386,7 +386,7 @@ namespace Serde.Json
             {
                 SkipWhiteSpace();
 
-                if (_consumed < _buffer.Length)
+                if (_consumed < GetBufferSpan.Length)
                 {
                     break;
                 }
@@ -463,7 +463,7 @@ namespace Serde.Json
                                 SequencePosition copy = _currentPosition;
                                 if (SkipCommentMultiSegment(out _))
                                 {
-                                    if (_consumed >= (uint)_buffer.Length)
+                                    if (_consumed >= (uint)GetBufferSpan.Length)
                                     {
                                         if (_isNotPrimitive && IsLastSpan && _tokenType != JsonTokenType.EndArray && _tokenType != JsonTokenType.EndObject)
                                         {
@@ -480,7 +480,7 @@ namespace Serde.Json
                                         }
                                     }
 
-                                    marker = _buffer[_consumed];
+                                    marker = GetBufferSpan[_consumed];
 
                                     // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
                                     if (marker <= JsonConstants.Space)
@@ -491,7 +491,7 @@ namespace Serde.Json
                                             _currentPosition = copy;
                                             return false;
                                         }
-                                        marker = _buffer[_consumed];
+                                        marker = GetBufferSpan[_consumed];
                                     }
 
                                     TokenStartIndex = BytesConsumed;
@@ -514,7 +514,8 @@ namespace Serde.Json
         // Consumes 'null', or 'true', or 'false'
         private bool ConsumeLiteralMultiSegment(ReadOnlySpan<byte> literal, JsonTokenType tokenType)
         {
-            ReadOnlySpan<byte> span = _buffer.Slice(_consumed);
+            ReadOnlyMemory<byte> memory = _buffer.Slice(_consumed);
+            var span = memory.Span;
             Debug.Assert(span.Length > 0);
             Debug.Assert(span[0] == 'n' || span[0] == 't' || span[0] == 'f');
 
@@ -531,7 +532,7 @@ namespace Serde.Json
                 return false;
             }
 
-            ValueSpan = span.Slice(0, literal.Length);
+            _valueMemory = memory.Slice(0, literal.Length);
             HasValueSequence = false;
         Done:
             _tokenType = tokenType;
@@ -594,7 +595,7 @@ namespace Serde.Json
                     span.Slice(0, amountToWrite).CopyTo(readSoFar.Slice(written));
                     written += amountToWrite;
 
-                    span = _buffer;
+                    span = GetBufferSpan;
 
                     if (span.StartsWith(leftToMatch))
                     {
@@ -683,24 +684,24 @@ namespace Serde.Json
             _tokenType = JsonTokenType.Number;
             _consumed += consumed;
 
-            if (_consumed >= (uint)_buffer.Length)
+            if (_consumed >= (uint)GetBufferSpan.Length)
             {
                 Debug.Assert(IsLastSpan);
 
                 // If there is no more data, and the JSON is not a single value, throw.
                 if (_isNotPrimitive)
                 {
-                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedEndOfDigitNotFound, _buffer[_consumed - 1]);
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedEndOfDigitNotFound, GetBufferSpan[_consumed - 1]);
                 }
             }
 
             // If there is more data and the JSON is not a single value, assert that there is an end of number delimiter.
             // Else, if either the JSON is a single value XOR if there is no more data, don't assert anything since there won't always be an end of number delimiter.
             Debug.Assert(
-                ((_consumed < _buffer.Length) &&
+                ((_consumed < GetBufferSpan.Length) &&
                 !_isNotPrimitive &&
-                JsonConstants.Delimiters.IndexOf(_buffer[_consumed]) >= 0)
-                || (_isNotPrimitive ^ (_consumed >= (uint)_buffer.Length)));
+                JsonConstants.Delimiters.IndexOf(GetBufferSpan[_consumed]) >= 0)
+                || (_isNotPrimitive ^ (_consumed >= (uint)GetBufferSpan.Length)));
 
             return true;
         }
@@ -719,7 +720,7 @@ namespace Serde.Json
                 return false;
             }
 
-            byte first = _buffer[_consumed];
+            byte first = GetBufferSpan[_consumed];
 
             // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
             // We do not validate if 'first' is an invalid JSON byte here (such as control characters).
@@ -731,7 +732,7 @@ namespace Serde.Json
                 {
                     return false;
                 }
-                first = _buffer[_consumed];
+                first = GetBufferSpan[_consumed];
             }
 
             // The next character must be a key / value separator. Validate and skip.
@@ -748,25 +749,25 @@ namespace Serde.Json
 
         private bool ConsumeStringMultiSegment()
         {
-            Debug.Assert(_buffer.Length >= _consumed + 1);
-            Debug.Assert(_buffer[_consumed] == JsonConstants.Quote);
+            Debug.Assert(GetBufferSpan.Length >= _consumed + 1);
+            Debug.Assert(GetBufferSpan[_consumed] == JsonConstants.Quote);
 
-            // Create local copy to avoid bounds checks.
-            ReadOnlySpan<byte> localBuffer = _buffer.Slice(_consumed + 1);
+            ReadOnlyMemory<byte> localMemory = _buffer.Slice(_consumed + 1);
+            var localSpan = localMemory.Span;
 
             // Vectorized search for either quote, backslash, or any control character.
             // If the first found byte is a quote, we have reached an end of string, and
             // can avoid validation.
             // Otherwise, in the uncommon case, iterate one character at a time and validate.
-            int idx = localBuffer.IndexOfQuoteOrAnyControlOrBackSlash();
+            int idx = localSpan.IndexOfQuoteOrAnyControlOrBackSlash();
 
             if (idx >= 0)
             {
-                byte foundByte = localBuffer[idx];
+                byte foundByte = localSpan[idx];
                 if (foundByte == JsonConstants.Quote)
                 {
                     _bytePositionInLine += idx + 2; // Add 2 for the start and end quotes.
-                    ValueSpan = localBuffer.Slice(0, idx);
+                    _valueMemory = localMemory.Slice(0, idx);
                     HasValueSequence = false;
                     ValueIsEscaped = false;
                     _tokenType = JsonTokenType.String;
@@ -775,14 +776,14 @@ namespace Serde.Json
                 }
                 else
                 {
-                    return ConsumeStringAndValidateMultiSegment(localBuffer, idx);
+                    return ConsumeStringAndValidateMultiSegment(localMemory, idx);
                 }
             }
             else
             {
                 if (IsLastSpan)
                 {
-                    _bytePositionInLine += localBuffer.Length + 1;  // Account for the start quote
+                    _bytePositionInLine += localSpan.Length + 1;  // Account for the start quote
                     ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfStringNotFound);
                 }
                 return ConsumeStringNextSegment();
@@ -795,7 +796,7 @@ namespace Serde.Json
 
             SequencePosition end;
             HasValueSequence = true;
-            int leftOver = _buffer.Length - _consumed;
+            int leftOver = GetBufferSpan.Length - _consumed;
 
             while (true)
             {
@@ -812,7 +813,7 @@ namespace Serde.Json
                 }
 
                 //Create local copy to avoid bounds checks.
-                ReadOnlySpan<byte> localBuffer = _buffer;
+                ReadOnlySpan<byte> localBuffer = GetBufferSpan;
                 int idx = localBuffer.IndexOfQuoteOrAnyControlOrBackSlash();
 
                 if (idx >= 0)
@@ -902,7 +903,7 @@ namespace Serde.Json
 
                                             _totalConsumed += localBuffer.Length;
 
-                                            localBuffer = _buffer;
+                                            localBuffer = GetBufferSpan;
                                             j = 0;
                                         }
                                     }
@@ -929,7 +930,7 @@ namespace Serde.Json
                             }
 
                             _totalConsumed += localBuffer.Length;
-                            localBuffer = _buffer;
+                            localBuffer = GetBufferSpan;
                             idx = 0;
                         }
 
@@ -955,8 +956,9 @@ namespace Serde.Json
         // Found a backslash or control characters which are considered invalid within a string.
         // Search through the rest of the string one byte at a time.
         // https://tools.ietf.org/html/rfc8259#section-7
-        private bool ConsumeStringAndValidateMultiSegment(ReadOnlySpan<byte> data, int idx)
+        private bool ConsumeStringAndValidateMultiSegment(ReadOnlyMemory<byte> memory, int idx)
         {
+            var data = memory.Span;
             Debug.Assert(idx >= 0 && idx < data.Length);
             Debug.Assert(data[idx] != JsonConstants.Quote);
             Debug.Assert(data[idx] == JsonConstants.BackSlash || data[idx] < JsonConstants.Space);
@@ -965,7 +967,7 @@ namespace Serde.Json
 
             SequencePosition end;
             HasValueSequence = false;
-            int leftOverFromConsumed = _buffer.Length - _consumed;
+            int leftOverFromConsumed = GetBufferSpan.Length - _consumed;
 
             _bytePositionInLine += idx + 1; // Add 1 for the first quote
 
@@ -1043,7 +1045,8 @@ namespace Serde.Json
                                     _totalConsumed += data.Length;
                                 }
 
-                                data = _buffer;
+                                memory = _buffer;
+                                data = memory.Span;
                                 j = 0;
                                 HasValueSequence = true;
                             }
@@ -1076,7 +1079,8 @@ namespace Serde.Json
                     _totalConsumed += data.Length;
                 }
 
-                data = _buffer;
+                memory = _buffer;
+                data = memory.Span;
                 idx = 0;
                 HasValueSequence = true;
             }
@@ -1095,7 +1099,7 @@ namespace Serde.Json
             {
                 _bytePositionInLine++;  // Add 1 for the end quote
                 _consumed += idx + 2;
-                ValueSpan = data.Slice(0, idx);
+                _valueMemory = memory.Slice(0, idx);
             }
 
             ValueIsEscaped = true;
@@ -1119,8 +1123,9 @@ namespace Serde.Json
         }
 
         // https://tools.ietf.org/html/rfc7159#section-6
-        private bool TryGetNumberMultiSegment(ReadOnlySpan<byte> data, out int consumed)
+        private bool TryGetNumberMultiSegment(ReadOnlyMemory<byte> memory, out int consumed)
         {
+            var data = memory.Span;
             // TODO: https://github.com/dotnet/runtime/issues/27837
             Debug.Assert(data.Length > 0);
 
@@ -1246,7 +1251,7 @@ namespace Serde.Json
             }
             else
             {
-                ValueSpan = data.Slice(0, i);
+                _valueMemory = memory.Slice(0, i);
                 consumed = i;
             }
             return true;
@@ -1281,7 +1286,7 @@ namespace Serde.Json
                     _totalConsumed += i;
                     HasValueSequence = true;
                     i = 0;
-                    data = _buffer;
+                    data = GetBufferSpan;
                 }
 
                 nextByte = data[i];
@@ -1331,7 +1336,7 @@ namespace Serde.Json
                 _totalConsumed += i;
                 HasValueSequence = true;
                 i = 0;
-                data = _buffer;
+                data = GetBufferSpan;
                 nextByte = data[i];
                 if (JsonConstants.Delimiters.IndexOf(nextByte) >= 0)
                 {
@@ -1391,7 +1396,7 @@ namespace Serde.Json
                     counter = 0;
                     HasValueSequence = true;
                     i = 0;
-                    data = _buffer;
+                    data = GetBufferSpan;
                     for (; i < data.Length; i++)
                     {
                         nextByte = data[i];
@@ -1449,7 +1454,7 @@ namespace Serde.Json
                 _totalConsumed += i;
                 HasValueSequence = true;
                 i = 0;
-                data = _buffer;
+                data = GetBufferSpan;
             }
             byte nextByte = data[i];
             if (!JsonHelpers.IsDigit(nextByte))
@@ -1484,7 +1489,7 @@ namespace Serde.Json
                 _totalConsumed += i;
                 HasValueSequence = true;
                 i = 0;
-                data = _buffer;
+                data = GetBufferSpan;
             }
 
             byte nextByte = data[i];
@@ -1512,7 +1517,7 @@ namespace Serde.Json
                     _totalConsumed += i;
                     HasValueSequence = true;
                     i = 0;
-                    data = _buffer;
+                    data = GetBufferSpan;
                 }
                 nextByte = data[i];
             }
@@ -1589,7 +1594,7 @@ namespace Serde.Json
                 _consumed++;
                 _bytePositionInLine++;
 
-                if (_consumed >= (uint)_buffer.Length)
+                if (_consumed >= (uint)GetBufferSpan.Length)
                 {
                     if (IsLastSpan)
                     {
@@ -1608,7 +1613,7 @@ namespace Serde.Json
                         return ConsumeTokenResult.NotEnoughDataRollBackState;
                     }
                 }
-                byte first = _buffer[_consumed];
+                byte first = GetBufferSpan[_consumed];
 
                 // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
                 if (first <= JsonConstants.Space)
@@ -1619,7 +1624,7 @@ namespace Serde.Json
                     {
                         return ConsumeTokenResult.NotEnoughDataRollBackState;
                     }
-                    first = _buffer[_consumed];
+                    first = GetBufferSpan[_consumed];
                 }
 
                 TokenStartIndex = BytesConsumed;
@@ -1697,7 +1702,7 @@ namespace Serde.Json
                 goto RollBack;
             }
 
-            byte first = _buffer[_consumed];
+            byte first = GetBufferSpan[_consumed];
 
             // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
             if (first <= JsonConstants.Space)
@@ -1707,7 +1712,7 @@ namespace Serde.Json
                 {
                     goto RollBack;
                 }
-                first = _buffer[_consumed];
+                first = GetBufferSpan[_consumed];
             }
 
             if (_bitStack.CurrentDepth == 0 && _tokenType != JsonTokenType.None)
@@ -1730,7 +1735,7 @@ namespace Serde.Json
                 _consumed++;
                 _bytePositionInLine++;
 
-                if (_consumed >= (uint)_buffer.Length)
+                if (_consumed >= (uint)GetBufferSpan.Length)
                 {
                     if (IsLastSpan)
                     {
@@ -1749,7 +1754,7 @@ namespace Serde.Json
                         goto RollBack;
                     }
                 }
-                first = _buffer[_consumed];
+                first = GetBufferSpan[_consumed];
 
                 // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
                 if (first <= JsonConstants.Space)
@@ -1760,7 +1765,7 @@ namespace Serde.Json
                     {
                         goto RollBack;
                     }
-                    first = _buffer[_consumed];
+                    first = GetBufferSpan[_consumed];
                 }
 
                 TokenStartIndex = BytesConsumed;
@@ -1938,7 +1943,7 @@ namespace Serde.Json
                         goto IncompleteNoRollback;
                     }
 
-                    marker = _buffer[_consumed];
+                    marker = GetBufferSpan[_consumed];
 
                     // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
                     if (marker <= JsonConstants.Space)
@@ -1948,7 +1953,7 @@ namespace Serde.Json
                         {
                             goto IncompleteNoRollback;
                         }
-                        marker = _buffer[_consumed];
+                        marker = GetBufferSpan[_consumed];
                     }
                 }
                 else
@@ -1974,7 +1979,7 @@ namespace Serde.Json
                         goto IncompleteRollback;
                     }
 
-                    marker = _buffer[_consumed];
+                    marker = GetBufferSpan[_consumed];
 
                     // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
                     if (marker <= JsonConstants.Space)
@@ -1985,7 +1990,7 @@ namespace Serde.Json
                         {
                             goto IncompleteRollback;
                         }
-                        marker = _buffer[_consumed];
+                        marker = GetBufferSpan[_consumed];
                     }
                 }
                 else
@@ -2072,7 +2077,7 @@ namespace Serde.Json
                 _consumed++;
                 _bytePositionInLine++;
 
-                if (_consumed >= (uint)_buffer.Length)
+                if (_consumed >= (uint)GetBufferSpan.Length)
                 {
                     if (IsLastSpan)
                     {
@@ -2091,7 +2096,7 @@ namespace Serde.Json
                         return ConsumeTokenResult.NotEnoughDataRollBackState;
                     }
                 }
-                marker = _buffer[_consumed];
+                marker = GetBufferSpan[_consumed];
 
                 // This check is done as an optimization to avoid calling SkipWhiteSpace when not necessary.
                 if (marker <= JsonConstants.Space)
@@ -2102,7 +2107,7 @@ namespace Serde.Json
                     {
                         return ConsumeTokenResult.NotEnoughDataRollBackState;
                     }
-                    marker = _buffer[_consumed];
+                    marker = GetBufferSpan[_consumed];
                 }
 
                 if (!SkipAllCommentsMultiSegment(ref marker, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound))
@@ -2191,7 +2196,7 @@ namespace Serde.Json
                     }
                     else
                     {
-                        ValueSpan = commentSequence.First.Span;
+                        _valueMemory = commentSequence.First;
                     }
 
                     if (_tokenType != JsonTokenType.Comment)
@@ -2223,7 +2228,7 @@ namespace Serde.Json
             _consumed++;
             _bytePositionInLine++;
             // Create local copy to avoid bounds checks.
-            ReadOnlySpan<byte> localBuffer = _buffer.Slice(_consumed);
+            ReadOnlySpan<byte> localBuffer = GetBufferSpan.Slice(_consumed);
 
             if (localBuffer.Length == 0)
             {
@@ -2243,7 +2248,7 @@ namespace Serde.Json
                     return false;
                 }
 
-                localBuffer = _buffer;
+                localBuffer = GetBufferSpan;
             }
 
             byte marker = localBuffer[0];
@@ -2289,7 +2294,7 @@ namespace Serde.Json
                     return false;
                 }
 
-                localBuffer = _buffer;
+                localBuffer = GetBufferSpan;
             }
 
             if (multiLine)
@@ -2386,7 +2391,7 @@ namespace Serde.Json
                     }
                 }
 
-                localBuffer = _buffer;
+                localBuffer = GetBufferSpan;
             }
 
             _bytePositionInLine = 0;
@@ -2580,7 +2585,7 @@ namespace Serde.Json
                         }
                     }
 
-                    localBuffer = _buffer;
+                    localBuffer = GetBufferSpan;
                     Debug.Assert(!localBuffer.IsEmpty);
                 }
             }
