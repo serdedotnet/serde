@@ -17,16 +17,19 @@ namespace Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            _options = new JsonSerializerOptions();
-            _options.IncludeFields = true;
+            _options = new JsonSerializerOptions()
+            {
+                IncludeFields = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
             value = DataGenerator.GenerateDeserialize<T>();
-        } 
+        }
 
         [Benchmark]
-        public T JsonNet() => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(value);
+        public T? JsonNet() => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(value);
 
         [Benchmark]
-        public T SystemText()
+        public T? SystemText()
         {
             return System.Text.Json.JsonSerializer.Deserialize<T>(value, _options);
         }
