@@ -13,9 +13,7 @@ namespace Serde.Json
         // Dictionary implementations
         private sealed class DeserializerState
         {
-            public byte[] Utf8Bytes = null!;
-            public JsonReaderState ReaderState;
-            public int Offset;
+            public Utf8JsonReader Reader;
         }
         private readonly DeserializerState _state;
 
@@ -28,24 +26,18 @@ namespace Serde.Json
         {
             _state = new DeserializerState
             {
-                Utf8Bytes = bytes,
-                ReaderState = default,
-                Offset = 0
+                Reader = new Utf8JsonReader(bytes, isFinalBlock: true, default)
             };
         }
 
         private void SaveState(in Utf8JsonReader reader)
         {
-            _state.ReaderState = reader.CurrentState;
-            _state.Offset += (int)reader.BytesConsumed;
+            _state.Reader = reader;
         }
 
         private Utf8JsonReader GetReader()
         {
-            return new Utf8JsonReader(
-                _state.Utf8Bytes.AsSpan()[_state.Offset..],
-                isFinalBlock: true,
-                _state.ReaderState);
+            return _state.Reader;
         }
 
         public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>
@@ -113,7 +105,7 @@ namespace Serde.Json
         {
             var reader = GetReader();
             var d = reader.GetDouble();
-            _state.ReaderState = reader.CurrentState;
+            SaveState(reader);
             return v.VisitDouble(d);
         }
 
@@ -121,7 +113,7 @@ namespace Serde.Json
         {
             var reader = GetReader();
             var d = reader.GetDecimal();
-            _state.ReaderState = reader.CurrentState;
+            SaveState(reader);
             return v.VisitDecimal(d);
         }
 
