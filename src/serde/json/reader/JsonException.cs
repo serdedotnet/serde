@@ -11,7 +11,7 @@ namespace Serde.Json
     /// or the JSON text is not compatible with the type of a property on an object.
     /// </summary>
     [Serializable]
-    public class JsonException : Exception
+    internal class JsonException : Exception
     {
         // Allow the message to mutate to avoid re-throwing and losing the StackTrace to an inner exception.
         internal string? _message;

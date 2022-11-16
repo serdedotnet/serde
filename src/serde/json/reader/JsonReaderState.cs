@@ -11,7 +11,7 @@ namespace Serde.Json
     /// this type can survive across async/await boundaries and hence this type is required to provide
     /// support for reading in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader"/>.
     /// </summary>
-    public struct JsonReaderState
+    internal struct JsonReaderState
     {
         internal long _lineNumber;
         internal long _bytePositionInLine;

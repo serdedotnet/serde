@@ -6,7 +6,7 @@ namespace Serde.Json
     /// <summary>
     ///   Specifies the data type of a JSON value.
     /// </summary>
-    public enum JsonValueKind : byte
+    internal enum JsonValueKind : byte
     {
         /// <summary>
         ///   Indicates that there is no value (as distinct from <see cref="Null"/>).
