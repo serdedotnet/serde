@@ -1,11 +1,12 @@
 
+using System.Threading.Tasks;
 using System.Collections.Immutable;
 
 namespace Serde.Json
 {
     partial record JsonValue : IDeserialize<JsonValue>
     {
-        static JsonValue IDeserialize<JsonValue>.Deserialize<D>(ref D deserializer)
+        static ValueTask<JsonValue> IDeserialize<JsonValue>.Deserialize<D>(D deserializer)
         {
             return deserializer.DeserializeAny<JsonValue, Visitor>(Visitor.Instance);
         }

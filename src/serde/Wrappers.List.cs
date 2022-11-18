@@ -1,6 +1,7 @@
 // Contains implementations of data interfaces for core types
 
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
@@ -69,7 +70,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
             where TWrap : IDeserialize<T>
         {
-            static T[] IDeserialize<T[]>.Deserialize<D>(ref D deserializer)
+            static ValueTask<T[]> IDeserialize<T[]>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeEnumerable<T[], SerdeVisitor>(new SerdeVisitor());
             }
@@ -77,7 +78,7 @@ namespace Serde
             {
                 string IDeserializeVisitor<T[]>.ExpectedTypeName => typeof(T[]).ToString();
 
-                T[] IDeserializeVisitor<T[]>.VisitEnumerable<D>(ref D d)
+                ValueTask<T[]> IDeserializeVisitor<T[]>.VisitEnumerable<D>(D d)
                 {
                     if (d.SizeOpt is int size)
                     {
@@ -121,7 +122,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
             where TWrap : IDeserialize<T>
         {
-            static List<T> IDeserialize<List<T>>.Deserialize<D>(ref D deserializer)
+            static ValueTask<List<T>> IDeserialize<List<T>>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeEnumerable<List<T>, SerdeVisitor>(new SerdeVisitor());
             }
@@ -129,7 +130,7 @@ namespace Serde
             {
                 string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T[]).ToString();
 
-                List<T> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(ref D d)
+                ValueTask<List<T>> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(D d)
                 {
                     List<T> list;
                     if (d.SizeOpt is int size)
@@ -170,7 +171,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
             where TWrap : IDeserialize<T>
         {
-            static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize<D>(ref D deserializer)
+            static ValueTask<ImmutableArray<T>> IDeserialize<ImmutableArray<T>>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeEnumerable<
                     ImmutableArray<T>,
@@ -180,7 +181,7 @@ namespace Serde
             private sealed class Visitor : IDeserializeVisitor<ImmutableArray<T>>
             {
                 public string ExpectedTypeName => typeof(ImmutableArray<T>).ToString();
-                ImmutableArray<T> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(ref D d)
+                ValueTask<ImmutableArray<T>> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(D d)
                 {
                     ImmutableArray<T>.Builder builder;
                     if (d.SizeOpt is int size)
