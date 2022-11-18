@@ -2,7 +2,9 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Serde.Json
 {
@@ -39,11 +41,11 @@ namespace Serde.Json
             return _state.Reader;
         }
 
-        public T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
-            T result;
+            await reader.ReadOrThrow();
+            ValueTask<T> result;
             switch (reader.TokenType)
             {
                 case JsonTokenType.StartArray:
@@ -70,22 +72,22 @@ namespace Serde.Json
                 default:
                     throw new InvalidDeserializeValueException($"Could not deserialize '{reader.TokenType}");
             }
-            return result;
+            return await result;
         }
 
-        public T DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
             bool b = reader.GetBoolean();
             SaveState(reader);
-            return v.VisitBool(b);
+            return ValueTask.FromResult(v.VisitBool(b));
         }
 
-        public T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
 
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -94,29 +96,29 @@ namespace Serde.Json
 
             SaveState(reader);
             var map = new DeDictionary(this);
-            return v.VisitDictionary(ref map);
+            return await v.VisitDictionary(map);
         }
 
-        public T DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeDouble<T, V>(v);
 
-        public T DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             var d = reader.GetDouble();
             SaveState(reader);
-            return v.VisitDouble(d);
+            return ValueTask.FromResult(v.VisitDouble(d));
         }
 
-        public T DeserializeDecimal<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeDecimal<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             var d = reader.GetDecimal();
             SaveState(reader);
-            return v.VisitDecimal(d);
+            return ValueTask.FromResult(v.VisitDecimal(d));
         }
 
-        public T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -128,7 +130,7 @@ namespace Serde.Json
 
             SaveState(reader);
             var enumerable = new DeEnumerable(this);
-            return v.VisitEnumerable(ref enumerable);
+            return v.VisitEnumerable(enumerable);
         }
 
         private struct DeEnumerable : IDeserializeEnumerable
@@ -140,21 +142,19 @@ namespace Serde.Json
             }
             public int? SizeOpt => null;
 
-            public bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
+            public async ValueTask<Option<T>> TryGetNext<T, D>()
                 where D : IDeserialize<T>
             {
                 var reader = _deserializer.GetReader();
                 // Check if the next token is the end of the array, but don't advance the stream if not
-                reader.ReadOrThrow();
+                await reader.ReadOrThrow();
                 if (reader.TokenType == JsonTokenType.EndArray)
                 {
                     _deserializer.SaveState(reader);
-                    next = default;
-                    return false;
+                    return default;
                 }
                 // Don't save state
-                next = D.Deserialize(ref _deserializer);
-                return true;
+                return await D.Deserialize(_deserializer);
             }
         }
 
@@ -168,37 +168,33 @@ namespace Serde.Json
 
             public int? SizeOpt => null;
 
-            public bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
+            public async ValueTask<Option<(K, V)>> TryGetNextEntry<K, DK, V, DV>()
                 where DK : IDeserialize<K>
                 where DV : IDeserialize<V>
             {
                 // Don't save state
-                if (!TryGetNextKey<K, DK>(out K? nextKey))
+                if (await TryGetNextKey<K, DK>() is var key && !key.HasValue)
                 {
-                    next = default;
-                    return false;
+                    return default;
                 }
-                var nextValue = GetNextValue<V, DV>();
-                next = (nextKey, nextValue);
-                return true;
+                var nextValue = await GetNextValue<V, DV>();
+                return (key.Value, nextValue);
             }
 
-            public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
+            public async ValueTask<Option<K>> TryGetNextKey<K, D>() where D : IDeserialize<K>
             {
                 while (true)
                 {
                     var reader = _deserializer.GetReader();
-                    reader.ReadOrThrow();
+                    await reader.ReadOrThrow();
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.EndObject:
                             // Check if the next token is the end of the object, but don't advance the stream if not
                             _deserializer.SaveState(reader);
-                            next = default;
-                            return false;
+                            return Option<K>.None;
                         case JsonTokenType.PropertyName:
-                            next = D.Deserialize(ref _deserializer);
-                            return true;
+                            return await D.Deserialize(_deserializer);
                         default:
                             // If we aren't at a property name, we must be at a value and intending to skip it
                             // Call Skip in case we are starting a new array or object. Doesn't do
@@ -211,35 +207,35 @@ namespace Serde.Json
                 }
             }
 
-            public V GetNextValue<V, D>() where D : IDeserialize<V>
+            public ValueTask<V> GetNextValue<V, D>() where D : IDeserialize<V>
             {
-                return D.Deserialize(ref _deserializer);
+                return D.Deserialize(_deserializer);
             }
         }
 
-        public T DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeI64<T, V>(v);
 
-        public T DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeI64<T, V>(v);
 
 
-        public T DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeI64<T, V>(v);
 
-        public T DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
             var i64 = reader.GetInt64();
             SaveState(reader);
             return v.VisitI64(i64);
         }
 
-        public T DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
             var s = reader.GetString();
             SaveState(reader);
             return s is null
@@ -247,61 +243,62 @@ namespace Serde.Json
                 : v.VisitString(s);
         }
 
-        public T DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeString<T, V>(v);
 
-        public T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>
         {
             // Types are identical to dictionaries
             return DeserializeDictionary<T, V>(v);
         }
 
-        public T DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeU64<T, V>(v);
 
-        public T DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeU64<T, V>(v);
 
-        public T DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeU64<T, V>(v);
 
-        public T DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
             var u64 = reader.GetUInt64();
             SaveState(reader);
             return v.VisitU64(u64);
         }
 
-        public T DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public ValueTask<T> DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>
             => DeserializeString<T, V>(v);
 
-        public T DeserializeNullableRef<T, V>(V v)
+        public async ValueTask<T> DeserializeNullableRef<T, V>(V v)
             where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
             if (reader.TokenType == JsonTokenType.Null)
             {
                 return v.VisitNull();
             }
             else
             {
-                var deserializer = this;
-                return v.VisitNotNull(ref deserializer);
+                return await v.VisitNotNull(this);
             }
         }
     }
 
     internal static class Utf8JsonReaderExtensions
     {
-        public static void ReadOrThrow(ref this Utf8JsonReader reader)
+        public static ValueTask ReadOrThrow(ref this Utf8JsonReader reader)
         {
             if (!reader.Read())
             {
                 throw new InvalidDeserializeValueException("Unexpected end of stream");
             }
+
+            return ValueTask.CompletedTask;
         }
     }
 }

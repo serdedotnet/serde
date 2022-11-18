@@ -1,6 +1,7 @@
 // Contains implementations of data interfaces for core types
 
 using System;
+using System.Threading.Tasks;
 using System.Diagnostics;
 
 namespace Serde
@@ -30,7 +31,7 @@ namespace Serde
         {
             serializer.SerializeBool(Value);
         }
-        static bool Serde.IDeserialize<bool>.Deserialize<D>(ref D deserializer)
+        static ValueTask<bool> Serde.IDeserialize<bool>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeBool<bool, SerdeVisitor>(visitor);
@@ -52,7 +53,7 @@ namespace Serde
         {
             serializer.SerializeChar(Value);
         }
-        static char Serde.IDeserialize<char>.Deserialize<D>(ref D deserializer)
+        static ValueTask<char> Serde.IDeserialize<char>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeChar<char, SerdeVisitor>(visitor);
@@ -82,7 +83,7 @@ namespace Serde
         {
             serializer.SerializeByte(Value);
         }
-        static byte Serde.IDeserialize<byte>.Deserialize<D>(ref D deserializer)
+        static ValueTask<byte> Serde.IDeserialize<byte>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeByte<byte, SerdeVisitor>(visitor);
@@ -111,7 +112,7 @@ namespace Serde
         {
             serializer.SerializeU16(Value);
         }
-        static ushort Serde.IDeserialize<ushort>.Deserialize<D>(ref D deserializer)
+        static ValueTask<ushort> Serde.IDeserialize<ushort>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeU16<ushort, SerdeVisitor>(visitor);
@@ -140,7 +141,7 @@ namespace Serde
         {
             serializer.SerializeU32(Value);
         }
-        static uint Serde.IDeserialize<uint>.Deserialize<D>(ref D deserializer)
+        static ValueTask<uint> Serde.IDeserialize<uint>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeU32<uint, SerdeVisitor>(visitor);
@@ -169,7 +170,7 @@ namespace Serde
         {
             serializer.SerializeU64(Value);
         }
-        static ulong Serde.IDeserialize<ulong>.Deserialize<D>(ref D deserializer)
+        static ValueTask<ulong> Serde.IDeserialize<ulong>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeU64<ulong, SerdeVisitor>(visitor);
@@ -198,7 +199,7 @@ namespace Serde
         {
             serializer.SerializeSByte(Value);
         }
-        static sbyte Serde.IDeserialize<sbyte>.Deserialize<D>(ref D deserializer)
+        static ValueTask<sbyte> Serde.IDeserialize<sbyte>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeSByte<sbyte, SerdeVisitor>(visitor);
@@ -227,7 +228,7 @@ namespace Serde
         {
             serializer.SerializeI16(Value);
         }
-        static short Serde.IDeserialize<short>.Deserialize<D>(ref D deserializer)
+        static ValueTask<short> Serde.IDeserialize<short>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeI16<short, SerdeVisitor>(visitor);
@@ -256,7 +257,7 @@ namespace Serde
         {
             serializer.SerializeI32(Value);
         }
-        static int Serde.IDeserialize<int>.Deserialize<D>(ref D deserializer)
+        static ValueTask<int> Serde.IDeserialize<int>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeI32<int, SerdeVisitor>(visitor);
@@ -285,7 +286,7 @@ namespace Serde
         {
             serializer.SerializeI64(Value);
         }
-        static long Serde.IDeserialize<long>.Deserialize<D>(ref D deserializer)
+        static ValueTask<long> Serde.IDeserialize<long>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeI64<long, SerdeVisitor>(visitor);
@@ -313,7 +314,7 @@ namespace Serde
         {
             serializer.SerializeDouble(Value);
         }
-        static double Serde.IDeserialize<double>.Deserialize<D>(ref D deserializer)
+        static ValueTask<double> Serde.IDeserialize<double>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeDouble<double, SerdeVisitor>(visitor);
@@ -343,7 +344,7 @@ namespace Serde
         {
             serializer.SerializeDecimal(Value);
         }
-        static decimal Serde.IDeserialize<decimal>.Deserialize<D>(ref D deserializer)
+        static ValueTask<decimal> Serde.IDeserialize<decimal>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeDecimal<decimal, SerdeVisitor>(visitor);
@@ -374,7 +375,7 @@ namespace Serde
             serializer.SerializeString(Value);
         }
 
-        public static string Deserialize<D>(ref D deserializer)
+        public static ValueTask<string> Deserialize<D>(D deserializer)
             where D : IDeserializer
         {
             return deserializer.DeserializeString<string, SerdeVisitor>(new SerdeVisitor());
@@ -415,7 +416,7 @@ namespace Serde
             where T : struct
             where TWrap : IDeserialize<T>
         {
-            public static T? Deserialize<D>(ref D deserializer) where D : IDeserializer
+            public static ValueTask<T?> Deserialize<D>(D deserializer) where D : IDeserializer
             {
                 return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
             }
@@ -429,9 +430,9 @@ namespace Serde
                     return null;
                 }
 
-                T? IDeserializeVisitor<T?>.VisitNotNull<D>(ref D d)
+                async ValueTask<T?> IDeserializeVisitor<T?>.VisitNotNull<D>(D d)
                 {
-                    return TWrap.Deserialize(ref d);
+                    return await TWrap.Deserialize(d);
                 }
             }
         }
@@ -464,7 +465,7 @@ namespace Serde
             where T : class
             where TWrap : IDeserialize<T>
         {
-            public static T? Deserialize<D>(ref D deserializer) where D : IDeserializer
+            public static ValueTask<T?> Deserialize<D>(D deserializer) where D : IDeserializer
             {
                 return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
             }
@@ -478,9 +479,9 @@ namespace Serde
                     return null;
                 }
 
-                T? IDeserializeVisitor<T?>.VisitNotNull<D>(ref D d)
+                ValueTask<T?> IDeserializeVisitor<T?>.VisitNotNull<D>(D d)
                 {
-                    return TWrap.Deserialize(ref d);
+                    return TWrap.Deserialize(d)!;
                 }
             }
         }

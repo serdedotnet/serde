@@ -151,18 +151,20 @@ namespace Serde
             return MethodDeclaration(
                 attributeLists: default,
                 modifiers: TokenList(Token(SyntaxKind.StaticKeyword)),
-                typeSyntax,
+                MakeValueTask(typeSyntax),
                 explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(interfaceSyntax),
                 identifier: Identifier("Deserialize"),
                 typeParameterList: TypeParameterList(SeparatedList(new[] {
                         TypeParameter("D"),
                     })),
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("D", "deserializer", byRef: true) })),
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("D", "deserializer") })),
                 constraintClauses: default,
                 body: Block(stmts.ToArray()),
                 expressionBody: null
                 );
         }
+        private static TypeSyntax MakeValueTask(TypeSyntax inner)
+            => ParseTypeName($"System.Threading.Tasks.ValueTask<{inner}>");
 
         private static TypeDeclarationSyntax GenerateVisitor(ITypeSymbol type, TypeSyntax typeSyntax, GeneratorExecutionContext context)
         {
@@ -284,7 +286,7 @@ namespace Serde
                 // Note, don't use nullable annotation as wrappers don't necessarily allow null
                 cases.AppendLine(@$"
             case ""{m.GetFormattedName()}"":
-                {localName} = d.GetNextValue<{memberType}, {wrapperName}>();
+                {localName} = await d.GetNextValue<{memberType}, {wrapperName}>();
                 break;");
             }
 
@@ -294,12 +296,12 @@ namespace Serde
 
             string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members);
             var methodText = $$"""
-{{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
+async System.Threading.Tasks.ValueTask<{{typeName}}> Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(D d)
 {
     {{locals}}
-    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+    while (await d.TryGetNextKey<string, StringWrap>() is var nextOpt && nextOpt.HasValue)
     {
-        switch (key)
+        switch (nextOpt.GetValueOrDefault())
         {
 {{cases}}
             default:

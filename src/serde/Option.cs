@@ -5,6 +5,8 @@ namespace Serde
 {
     public readonly struct Option<T>
     {
+        public static Option<T> None => default;
+
         private readonly T _value;
         private readonly bool _hasValue;
 

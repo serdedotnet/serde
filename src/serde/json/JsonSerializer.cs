@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -35,7 +36,9 @@ namespace Serde.Json
             where D : IDeserialize<T>
         {
             var deserializer = JsonDeserializer.FromString(source);
-            return D.Deserialize(ref deserializer);
+            var task = D.Deserialize(deserializer);
+            Debug.Assert(task.IsCompleted);
+            return task.Result;
         }
     }
 }

@@ -1,9 +1,11 @@
 // Contains implementations of data interfaces for core types
 
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using System.Net.Http.Headers;
 
 namespace Serde
 {
@@ -69,7 +71,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
             where TWrap : IDeserialize<T>
         {
-            static T[] IDeserialize<T[]>.Deserialize<D>(ref D deserializer)
+            static ValueTask<T[]> IDeserialize<T[]>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeEnumerable<T[], SerdeVisitor>(new SerdeVisitor());
             }
@@ -77,27 +79,27 @@ namespace Serde
             {
                 string IDeserializeVisitor<T[]>.ExpectedTypeName => typeof(T[]).ToString();
 
-                T[] IDeserializeVisitor<T[]>.VisitEnumerable<D>(ref D d)
+                async ValueTask<T[]> IDeserializeVisitor<T[]>.VisitEnumerable<D>(D d)
                 {
                     if (d.SizeOpt is int size)
                     {
                         var array = new T[size];
                         for (int i = 0; i < size; i++)
                         {
-                            if (!d.TryGetNext<T, TWrap>(out T? next))
+                            if (await d.TryGetNext<T, TWrap>() is var nextOpt && !nextOpt.HasValue)
                             {
                                 throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {i} items");
                             }
-                            array[i] = next;
+                            array[i] = nextOpt.GetValueOrDefault();
                         }
                         return array;
                     }
                     else
                     {
                         var list = new List<T>();
-                        while (d.TryGetNext<T, TWrap>(out T? next))
+                        while (await d.TryGetNext<T, TWrap>() is var nextOpt && nextOpt.HasValue)
                         {
-                            list.Add(next);
+                            list.Add(nextOpt.GetValueOrDefault());
                         }
                         return list.ToArray();
                     }
@@ -121,7 +123,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
             where TWrap : IDeserialize<T>
         {
-            static List<T> IDeserialize<List<T>>.Deserialize<D>(ref D deserializer)
+            static ValueTask<List<T>> IDeserialize<List<T>>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeEnumerable<List<T>, SerdeVisitor>(new SerdeVisitor());
             }
@@ -129,7 +131,7 @@ namespace Serde
             {
                 string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T[]).ToString();
 
-                List<T> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(ref D d)
+                async ValueTask<List<T>> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(D d)
                 {
                     List<T> list;
                     if (d.SizeOpt is int size)
@@ -141,9 +143,9 @@ namespace Serde
                         size = -1; // Set initial size to unknown
                         list = new List<T>();
                     }
-                    while (d.TryGetNext<T, TWrap>(out T? next))
+                    while (await d.TryGetNext<T, TWrap>() is var nextOpt && nextOpt.HasValue)
                     {
-                        list.Add(next);
+                        list.Add(nextOpt.GetValueOrDefault());
                     }
                     if (size >= 0 && list.Count != size)
                     {
@@ -170,7 +172,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
             where TWrap : IDeserialize<T>
         {
-            static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize<D>(ref D deserializer)
+            static ValueTask<ImmutableArray<T>> IDeserialize<ImmutableArray<T>>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeEnumerable<
                     ImmutableArray<T>,
@@ -180,7 +182,7 @@ namespace Serde
             private sealed class Visitor : IDeserializeVisitor<ImmutableArray<T>>
             {
                 public string ExpectedTypeName => typeof(ImmutableArray<T>).ToString();
-                ImmutableArray<T> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(ref D d)
+                async ValueTask<ImmutableArray<T>> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(D d)
                 {
                     ImmutableArray<T>.Builder builder;
                     if (d.SizeOpt is int size)
@@ -193,9 +195,9 @@ namespace Serde
                         builder = ImmutableArray.CreateBuilder<T>();
                     }
 
-                    while (d.TryGetNext<T, TWrap>(out T? next))
+                    while (await d.TryGetNext<T, TWrap>() is var nextOpt && nextOpt.HasValue)
                     {
-                        builder.Add(next);
+                        builder.Add(nextOpt.GetValueOrDefault());
                     }
                     if (size >= 0 && builder.Count != size)
                     {

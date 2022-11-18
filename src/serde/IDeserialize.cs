@@ -1,13 +1,15 @@
 
 using System;
+using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.ComponentModel.DataAnnotations;
 
 namespace Serde
 {
     public interface IDeserialize<T>
     {
-        abstract static T Deserialize<D>(ref D deserializer)
+        abstract static ValueTask<T> Deserialize<D>(D deserializer)
             where D : IDeserializer;
     }
 
@@ -52,27 +54,26 @@ namespace Serde
         T VisitDouble(double d) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitDecimal(decimal d) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitString(string s) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
-        T VisitEnumerable<D>(ref D d) where D : IDeserializeEnumerable
-            => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
-        T VisitDictionary<D>(ref D d) where D : IDeserializeDictionary
-            => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
-        T VisitNotNull<D>(ref D d) where D : IDeserializer => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
+        ValueTask<T> VisitEnumerable<D>(D d) where D : IDeserializeEnumerable
+            => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        ValueTask<T> VisitDictionary<D>(D d) where D : IDeserializeDictionary
+            => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        ValueTask<T> VisitNotNull<D>(D d) where D : IDeserializer => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
     }
 
     public interface IDeserializeEnumerable
     {
-        bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
+        ValueTask<Option<T>> TryGetNext<T, D>()
             where D : IDeserialize<T>;
         int? SizeOpt { get; }
     }
 
     public interface IDeserializeDictionary
     {
-        bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next)
-            where D : IDeserialize<K>;
-        V GetNextValue<V, D>() where D : IDeserialize<V>;
-        bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
+        ValueTask<Option<K>> TryGetNextKey<K, D>() where D : IDeserialize<K>;
+        ValueTask<V> GetNextValue<V, D>() where D : IDeserialize<V>;
+        ValueTask<Option<(K, V)>> TryGetNextEntry<K, DK, V, DV>()
             where DK : IDeserialize<K>
             where DV : IDeserialize<V>;
         int? SizeOpt { get; }
@@ -80,25 +81,25 @@ namespace Serde
 
     public interface IDeserializer
     {
-        T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeDecimal<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>;
-        T DeserializeNullableRef<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeDecimal<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>;
+        ValueTask<T> DeserializeNullableRef<T, V>(V v) where V : class, IDeserializeVisitor<T>;
     }
 }

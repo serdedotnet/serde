@@ -1,4 +1,6 @@
+using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Data;
 
 namespace Serde
 {
@@ -36,14 +38,14 @@ namespace Serde
             where TKeyWrap : IDeserialize<TKey>
             where TValueWrap : IDeserialize<TValue>
         {
-            static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize<D>(ref D deserializer)
+            static ValueTask<Dictionary<TKey, TValue>> IDeserialize<Dictionary<TKey, TValue>>.Deserialize<D>(D deserializer)
             {
                 return deserializer.DeserializeDictionary<Dictionary<TKey, TValue>, Visitor>(new Visitor());
             }
             private sealed class Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
             {
                 public string ExpectedTypeName => "Dictionary<" + typeof(TKey).Name + ", " + typeof(TValue).Name + ">";
-                public Dictionary<TKey, TValue> VisitDictionary<D>(ref D d)
+                public async ValueTask<Dictionary<TKey, TValue>> VisitDictionary<D>(D d)
                     where D : IDeserializeDictionary
                 {
                     Dictionary<TKey, TValue> dict;
@@ -56,9 +58,10 @@ namespace Serde
                         size = -1; // Set initial size to unknown
                         dict = new Dictionary<TKey, TValue>();
                     }
-                    while (d.TryGetNextEntry<TKey, TKeyWrap, TValue, TValueWrap>(out var next))
+                    while (await d.TryGetNextEntry<TKey, TKeyWrap, TValue, TValueWrap>() is { HasValue: true } nextOpt)
                     {
-                        dict.Add(next.Item1, next.Item2);
+                        var (key, value) = nextOpt.Value;
+                        dict.Add(key, value);
                     }
                     if (size >= 0 && size != dict.Count)
                     {

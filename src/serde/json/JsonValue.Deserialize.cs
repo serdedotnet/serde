@@ -1,11 +1,12 @@
 
+using System.Threading.Tasks;
 using System.Collections.Immutable;
 
 namespace Serde.Json
 {
     partial record JsonValue : IDeserialize<JsonValue>
     {
-        static JsonValue IDeserialize<JsonValue>.Deserialize<D>(ref D deserializer)
+        static ValueTask<JsonValue> IDeserialize<JsonValue>.Deserialize<D>(D deserializer)
         {
             return deserializer.DeserializeAny<JsonValue, Visitor>(Visitor.Instance);
         }
@@ -17,24 +18,25 @@ namespace Serde.Json
 
             public string ExpectedTypeName => nameof(JsonValue);
 
-            public JsonValue VisitEnumerable<D>(ref D d)
+            public async ValueTask<JsonValue> VisitEnumerable<D>(D d)
                 where D : IDeserializeEnumerable
             {
                 var builder = ImmutableArray.CreateBuilder<JsonValue>(d.SizeOpt ?? 3);
-                while (d.TryGetNext<JsonValue, JsonValue>(out var next))
+                while (await d.TryGetNext<JsonValue, JsonValue>() is var nextOpt && nextOpt.HasValue)
                 {
-                    builder.Add(next);
+                    builder.Add(nextOpt.GetValueOrDefault());
                 }
                 return new Array(builder.ToImmutable());
             }
 
-            public JsonValue VisitDictionary<D>(ref D d)
+            public async ValueTask<JsonValue> VisitDictionary<D>(D d)
                 where D : IDeserializeDictionary
             {
                 var builder = ImmutableDictionary.CreateBuilder<string, JsonValue>();
-                while (d.TryGetNextEntry<string, StringWrap, JsonValue, JsonValue>(out var next))
+                while (await d.TryGetNextEntry<string, StringWrap, JsonValue, JsonValue>() is var entryOpt && entryOpt.HasValue)
                 {
-                    builder.Add(next.Item1, next.Item2);
+                    var (k, v) = entryOpt.GetValueOrDefault();
+                    builder.Add(k, v);
                 }
                 return new Object(builder.ToImmutable());
             }
