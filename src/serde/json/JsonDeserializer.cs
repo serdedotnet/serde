@@ -48,7 +48,7 @@ namespace Serde.Json
                 _state.ReaderState);
         }
 
-        public T DeserializeAny<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -82,7 +82,7 @@ namespace Serde.Json
             return result;
         }
 
-        public T DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeBool<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -91,7 +91,7 @@ namespace Serde.Json
             return v.VisitBool(b);
         }
 
-        public T DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -106,10 +106,10 @@ namespace Serde.Json
             return v.VisitDictionary(ref map);
         }
 
-        public T DeserializeFloat<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeFloat<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeDouble<T, V>(v);
 
-        public T DeserializeDouble<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             var d = reader.GetDouble();
@@ -117,7 +117,7 @@ namespace Serde.Json
             return v.VisitDouble(d);
         }
 
-        public T DeserializeDecimal<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeDecimal<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             var d = reader.GetDecimal();
@@ -125,7 +125,7 @@ namespace Serde.Json
             return v.VisitDecimal(d);
         }
 
-        public T DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeEnumerable<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -226,17 +226,17 @@ namespace Serde.Json
             }
         }
 
-        public T DeserializeSByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeSByte<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeI64<T, V>(v);
 
-        public T DeserializeI16<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeI16<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeI64<T, V>(v);
 
 
-        public T DeserializeI32<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeI32<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeI64<T, V>(v);
 
-        public T DeserializeI64<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -245,7 +245,7 @@ namespace Serde.Json
             return v.VisitI64(i64);
         }
 
-        public T DeserializeString<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -256,25 +256,25 @@ namespace Serde.Json
                 : v.VisitString(s);
         }
 
-        public T DeserializeIdentifier<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeIdentifier<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeString<T, V>(v);
 
-        public T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : IDeserializeVisitor<T>
         {
             // Types are identical to dictionaries
             return DeserializeDictionary<T, V>(v);
         }
 
-        public T DeserializeByte<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeByte<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeU64<T, V>(v);
 
-        public T DeserializeU16<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeU16<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeU64<T, V>(v);
 
-        public T DeserializeU32<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeU32<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeU64<T, V>(v);
 
-        public T DeserializeU64<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeU64<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
@@ -283,11 +283,11 @@ namespace Serde.Json
             return v.VisitU64(u64);
         }
 
-        public T DeserializeChar<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public T DeserializeChar<T, V>(V v) where V : IDeserializeVisitor<T>
             => DeserializeString<T, V>(v);
 
         public T DeserializeNullableRef<T, V>(V v)
-            where V : class, IDeserializeVisitor<T>
+            where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
             reader.ReadOrThrow();
