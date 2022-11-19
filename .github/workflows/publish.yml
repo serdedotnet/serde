@@ -19,4 +19,4 @@ jobs:
     - name: Pack
       run: ./build.sh --pack
     - name: Publish package
-      run: dotnet nuget push -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json artifacts/pack/*.nupkg
+      run: dotnet nuget push --skip-duplicate -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json artifacts/pack/*.nupkg
