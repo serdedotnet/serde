@@ -11,13 +11,6 @@ Start by adding the `serde-dn` NuGet package:
 dotnet add package serde --prerelease
 ```
 
-Serde-dn uses C# 11 features, so until .NET 7 is released it requires the following flags to be added to the `csproj` file:
-
-```
-<LangVersion>preview</LangVersion>
-<EnablePreviewFeatures>true</EnablePreviewFeatures>
-```
-
 You can now use the `[GenerateSerialize]` and `[GenerateDeserialize]` attributes to automatically implement serialization and
 deserialization for your own types. Don't forget to mark them `partial`!
 
