@@ -469,7 +469,7 @@ namespace Serde
                 return deserializer.DeserializeNullableRef<T?, Visitor>(new Visitor());
             }
 
-            private sealed class Visitor : IDeserializeVisitor<T?>
+            private struct Visitor : IDeserializeVisitor<T?>
             {
                 public string ExpectedTypeName => typeof(T).ToString() + "?";
 

@@ -40,7 +40,7 @@ namespace Serde
             {
                 return deserializer.DeserializeDictionary<Dictionary<TKey, TValue>, Visitor>(new Visitor());
             }
-            private sealed class Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
+            private struct Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
             {
                 public string ExpectedTypeName => "Dictionary<" + typeof(TKey).Name + ", " + typeof(TValue).Name + ">";
                 public Dictionary<TKey, TValue> VisitDictionary<D>(ref D d)
