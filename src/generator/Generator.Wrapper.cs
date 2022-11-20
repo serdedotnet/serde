@@ -150,13 +150,9 @@ namespace Serde
 
                 // Otherwise we'll need to wrap the element type as well e.g.,
                 //      ArrayWrap<`elemType`, `elemTypeWrapper`>
+                var wrapper = TryGetAnyWrapper(elemType, context, usage);
 
-                var primWrapper = TryGetPrimitiveWrapper(elemType, usage);
-                TypeSyntax? wrapperName = primWrapper is not null
-                    ? IdentifierName(primWrapper)
-                    : TryGetCompoundWrapper(elemType, context, usage);
-
-                if (wrapperName is null)
+                if (wrapper is null)
                 {
                     // Could not find a wrapper
                     return null;
@@ -164,12 +160,19 @@ namespace Serde
                 else
                 {
                     wrapperTypes.Add(elemTypeSyntax);
-                    wrapperTypes.Add(wrapperName);
+                    wrapperTypes.Add(wrapper);
                 }
             }
 
             return GenericName(
                 Identifier(baseWrapperName), TypeArgumentList(SeparatedList(wrapperTypes)));
+        }
+
+        private static TypeSyntax? TryGetAnyWrapper(ITypeSymbol elemType, GeneratorExecutionContext context, SerdeUsage usage)
+        {
+            return TryGetPrimitiveWrapper(elemType, usage)
+                ?? TryGetCompoundWrapper(elemType, context, usage)
+                ?? TryCreateWrapper(elemType, context, usage);
         }
 
         private static (string WrapperName, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperName(
