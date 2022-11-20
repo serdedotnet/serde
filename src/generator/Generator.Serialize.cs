@@ -50,14 +50,14 @@ namespace Serde
                         Identifier("name"),
                         argumentList: null,
                         EqualsValueClause(SwitchExpression(receiverExpr, SeparatedList(cases)))) }))));
-                var wrapperName = TryGetPrimitiveWrapper(enumType.EnumUnderlyingType!, SerdeUsage.Serialize)!;
+                var wrapper = TryGetPrimitiveWrapper(enumType.EnumUnderlyingType!, SerdeUsage.Serialize)!;
                 statements.Add(ExpressionStatement(InvocationExpression(
                     QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeEnumValue")),
                     ArgumentList(SeparatedList(new[] {
                         Argument(StringLiteral(receiverType.Name)),
                         Argument(IdentifierName("name")),
                         Argument(ObjectCreationExpression(
-                            IdentifierName(wrapperName),
+                            wrapper,
                             ArgumentList(SeparatedList(new[] { Argument(CastExpression(enumType.EnumUnderlyingType!.ToFqnSyntax(), receiverExpr)) })),
                             null))
                     }))
@@ -258,26 +258,12 @@ namespace Serde
                 return memberExpr;
             }
 
-            // 3. A wrapper for a built-in primitive (non-generic type)
-
-            var wrapperName = TryGetPrimitiveWrapper(member.Type, SerdeUsage.Serialize);
-            if (wrapperName is not null)
+            // 3. A wrapper that implements ISerialize
+            var wrapper = TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize);
+            if (wrapper is not null)
             {
                 return ObjectCreationExpression(
-                    IdentifierName(wrapperName),
-                    argListFromMemberName,
-                    initializer: null);
-            }
-
-            // 4. A wrapper for a compound type (might need nested wrappers)
-
-            TypeSyntax? wrapperTypeSyntax = TryGetCompoundWrapper(member.Type, context, SerdeUsage.Serialize)
-                // 5. Create a wrapper if appropriate
-                ?? TryCreateWrapper(member, context, SerdeUsage.Serialize);
-            if (wrapperTypeSyntax is not null)
-            {
-                return ObjectCreationExpression(
-                    wrapperTypeSyntax,
+                    wrapper,
                     argListFromMemberName,
                     initializer: null);
             }
@@ -285,9 +271,8 @@ namespace Serde
             return null;
         }
 
-        private static TypeSyntax? TryCreateWrapper(DataMemberSymbol m, GeneratorExecutionContext context, SerdeUsage usage)
+        private static TypeSyntax? TryCreateWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage)
         {
-            var type = m.Type;
             if (type is ({ TypeKind: not TypeKind.Enum } and { DeclaringSyntaxReferences.Length: > 0 }) or
                         { CanBeReferencedByName: false } or
                         { OriginalDefinition: INamedTypeSymbol { Arity: > 0 } })
@@ -334,13 +319,13 @@ namespace Serde
         }
 
         // If the target is a core type, we can wrap it
-        private static string? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
+        private static NameSyntax? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
         {
             if (type.NullableAnnotation == NullableAnnotation.Annotated)
             {
                 return null;
             }
-            return type.SpecialType switch
+            var name = type.SpecialType switch
             {
                 SpecialType.System_Boolean => "BoolWrap",
                 SpecialType.System_Char => "CharWrap",
@@ -358,6 +343,7 @@ namespace Serde
                 SpecialType.System_Decimal => "DecimalWrap",
                 _ => null
             };
+            return name is null ? null : IdentifierName(name);
         }
 
         /// <summary>
@@ -400,7 +386,7 @@ namespace Serde
 
             var serdeSymbol = context.Compilation.GetTypeByMetadataName(usage == SerdeUsage.Serialize
                 ? "Serde.ISerialize"
-                : "Serde.IDeserialize");
+                : "Serde.IDeserialize`1");
             if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
                 || (memberType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
             {

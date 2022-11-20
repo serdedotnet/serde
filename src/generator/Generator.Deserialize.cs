@@ -256,15 +256,7 @@ namespace Serde
                 {
                     wrapperName = memberType;
                 }
-                else if (TryGetPrimitiveWrapper(m.Type, SerdeUsage.Deserialize) is { } primWrap)
-                {
-                    wrapperName = primWrap;
-                }
-                else if (TryGetCompoundWrapper(m.Type, context, SerdeUsage.Deserialize) is { } compound)
-                {
-                    wrapperName = compound.ToString();
-                }
-                else if (TryCreateWrapper(m, context, SerdeUsage.Deserialize) is { } wrap)
+                else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize) is {} wrap)
                 {
                     wrapperName = wrap.ToString();
                 }
