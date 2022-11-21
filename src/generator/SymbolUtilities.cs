@@ -19,19 +19,32 @@ namespace Serde
             _ => throw new InvalidOperationException($"Unexpected symbol {symbol}")
         };
 
-        public static List<DataMemberSymbol> GetPublicDataMembers(ITypeSymbol type)
+        public static List<DataMemberSymbol> GetDataMembers(ITypeSymbol type, SerdeUsage usage)
         {
-            var format = GetTypeOptions(type).MemberFormat;
-            var members = type.GetMembers()
-                .Where(m => m is {
-                    DeclaredAccessibility: Accessibility.Public,
-                    Kind: SymbolKind.Field or SymbolKind.Property,
-                });
-            if (type.TypeKind != TypeKind.Enum)
+            var typeOptions = GetTypeOptions(type);
+            var members = new List<DataMemberSymbol>();
+            foreach (var m in type.GetMembers())
             {
-                members = members.Where(m => !m.IsStatic);
+                if (m is not {
+                        DeclaredAccessibility: Accessibility.Public,
+                        Kind: SymbolKind.Field or SymbolKind.Property })
+                {
+                    continue;
+                }
+                if (type.TypeKind != TypeKind.Enum && m.IsStatic)
+                {
+                    continue;
+                }
+                var memberOptions = GetMemberOptions(m);
+                if (memberOptions.Skip ||
+                    (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize) ||
+                    (memberOptions.SkipDeserialize && usage == SerdeUsage.Deserialize))
+                {
+                    continue;
+                }
+                members.Add(new DataMemberSymbol(m, typeOptions, memberOptions));
             }
-            return members.Select(m => new DataMemberSymbol(m, GetTypeOptions(type), GetMemberOptions(m))).ToList();
+            return members;
         }
 
         public static TypeSyntax ToFqnSyntax(this INamedTypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
@@ -60,6 +73,7 @@ namespace Serde
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
                             } => options with { ThrowIfMissing = (bool)value },
+
                             {
                                 Key: nameof(MemberOptions.Rename),
                                 Value: {
@@ -67,6 +81,7 @@ namespace Serde
                                     Type.SpecialType: SpecialType.System_String
                                 }
                             } => options with { Rename = (string)value },
+
                             {
                                 Key: nameof(MemberOptions.ProvideAttributes),
                                 Value: {
@@ -74,6 +89,31 @@ namespace Serde
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
                             } => options with { ProvideAttributes = (bool)value },
+
+                            {
+                                Key: nameof(MemberOptions.Skip),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with { Skip = (bool)value },
+
+                            {
+                                Key: nameof(MemberOptions.SkipSerialize),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with { SkipSerialize = (bool)value },
+
+                            {
+                                Key: nameof(MemberOptions.SkipDeserialize),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with { SkipDeserialize = (bool)value },
+
                             _ => options
                         };
                     }

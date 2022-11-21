@@ -143,6 +143,21 @@ sealed class SerdeMemberOptions : Attribute
     /// serialization.
     /// </summary>
     public bool SerializeNull { get; init; } = false;
+
+    /// <summary>
+    /// Skip both serialization and deserialization of this member.
+    /// </summary>
+    public bool Skip { get; init; } = false;
+
+    /// <summary>
+    /// Skip serialization of this member.
+    /// </summary>
+    public bool SkipSerialize { get; init; } = false;
+
+    /// <summary>
+    /// Skip deserialization of this member.
+    /// </summary>
+    public bool SkipDeserialize { get; init; } = false;
 }
 
 /// <summary>
