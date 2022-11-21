@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Serde;
 
-internal readonly record struct TypeOptions()
+internal record TypeOptions
 {
     public bool DenyUnknownMembers { get; init; } = false;
     public MemberFormat MemberFormat { get; init; } = MemberFormat.CamelCase;
@@ -25,4 +25,13 @@ internal readonly record struct MemberOptions()
 
     /// <see cref="SerdeMemberOptions.ProvideAttributes" />
     public bool? SerializeNull { get; init; } = null;
+
+    /// <see cref="SerdeMemberOptions.Skip" />
+    public bool Skip { get; init; } = false;
+
+    /// <see cref="SerdeMemberOptions.SkipSerialize" />
+    public bool SkipSerialize { get; init; } = false;
+
+    /// <see cref="SerdeMemberOptions.SkipDeserialize" />
+    public bool SkipDeserialize { get; init; } = false;
 }

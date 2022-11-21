@@ -10,6 +10,103 @@ namespace Serde.Test
     public class GeneratorSerializeTests
     {
         [Fact]
+        public Task MemberSkip()
+        {
+            var src = """
+using Serde;
+[GenerateSerialize]
+partial struct Rgb
+{
+    public byte Red;
+    [SerdeMemberOptions(Skip = true)]
+    public byte Green;
+    public byte Blue;
+}
+""";
+            return VerifySerialize(src, "Rgb", """
+
+#nullable enable
+using Serde;
+
+partial struct Rgb : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType("Rgb", 2);
+        type.SerializeField("red", new ByteWrap(this.Red));
+        type.SerializeField("blue", new ByteWrap(this.Blue));
+        type.End();
+    }
+}
+""");
+        }
+
+        [Fact]
+        public Task MemberSkipSerialize()
+        {
+            var src = """
+using Serde;
+[GenerateSerialize]
+partial struct Rgb
+{
+    public byte Red;
+    [SerdeMemberOptions(SkipSerialize = true)]
+    public byte Green;
+    public byte Blue;
+}
+""";
+            return VerifySerialize(src, "Rgb", """
+
+#nullable enable
+using Serde;
+
+partial struct Rgb : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType("Rgb", 2);
+        type.SerializeField("red", new ByteWrap(this.Red));
+        type.SerializeField("blue", new ByteWrap(this.Blue));
+        type.End();
+    }
+}
+""");
+        }
+
+        [Fact]
+        public Task MemberSkipDeserialize()
+        {
+            var src = """
+using Serde;
+[GenerateSerialize]
+partial struct Rgb
+{
+    public byte Red;
+    [SerdeMemberOptions(SkipDeserialize = true)]
+    public byte Green;
+    public byte Blue;
+}
+""";
+            return VerifySerialize(src, "Rgb", """
+
+#nullable enable
+using Serde;
+
+partial struct Rgb : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType("Rgb", 3);
+        type.SerializeField("red", new ByteWrap(this.Red));
+        type.SerializeField("green", new ByteWrap(this.Green));
+        type.SerializeField("blue", new ByteWrap(this.Blue));
+        type.End();
+    }
+}
+""");
+        }
+
+        [Fact]
         public Task Rgb()
         {
             var src = @"

@@ -113,7 +113,7 @@ namespace Serde
             else
             {
                 // 3. Custom type
-                var members = SymbolUtilities.GetPublicDataMembers(typeSymbol);
+                var members = SymbolUtilities.GetDataMembers(typeSymbol, SerdeUsage.Deserialize);
                 var namesArray = ImplicitArrayCreationExpression(InitializerExpression(
                     SyntaxKind.ArrayInitializerExpression,
                     SeparatedList(members.Select(d => (ExpressionSyntax)StringLiteral(d.Name)))));
@@ -201,7 +201,7 @@ namespace Serde
             else if (type.TypeKind == TypeKind.Enum)
             {
                 var cases = new StringBuilder();
-                foreach (var m in SymbolUtilities.GetPublicDataMembers(type))
+                foreach (var m in SymbolUtilities.GetDataMembers(type, SerdeUsage.Deserialize))
                 {
                     cases.Append(@$"
         case ""{m.GetFormattedName()}"":
@@ -247,7 +247,7 @@ namespace Serde
         {
             var cases = new StringBuilder();
             var locals = new StringBuilder();
-            var members = SymbolUtilities.GetPublicDataMembers(type);
+            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Deserialize);
             foreach (var m in members)
             {
                 string wrapperName;

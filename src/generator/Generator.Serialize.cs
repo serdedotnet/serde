@@ -21,7 +21,7 @@ namespace Serde
             ExpressionSyntax receiverExpr)
         {
             var statements = new List<StatementSyntax>();
-            var fieldsAndProps = SymbolUtilities.GetPublicDataMembers(receiverType);
+            var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
 
             if (receiverType.TypeKind == TypeKind.Enum)
             {
