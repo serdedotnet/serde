@@ -1,6 +1,8 @@
 
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
@@ -113,11 +115,11 @@ namespace Serde
                 return Name;
             }
             var parts = ParseMemberName(Name);
-            var builder = new StringBuilder();
             switch (_typeOptions.MemberFormat)
             {
                 case MemberFormat.CamelCase:
                     {
+                        var builder = new StringBuilder();
                         bool first = true;
                         foreach (var part in parts)
                         {
@@ -132,22 +134,24 @@ namespace Serde
                             }
                             builder.Append(part.Substring(1).ToLowerInvariant());
                         }
+                        return builder.ToString();
                     }
-                    break;
                 case MemberFormat.PascalCase:
                     {
+                        var builder = new StringBuilder();
                         foreach (var part in parts)
                         {
                             builder.Append(char.ToUpperInvariant(part[0]));
                             builder.Append(part.Substring(1).ToLowerInvariant());
                         }
+                        return builder.ToString();
                     }
-                    break;
+                case MemberFormat.KebabCase:
+                    return string.Join("-", parts.Select(s => s.ToLowerInvariant()));
 
                 default:
-                    return Name;
+                    throw new InvalidOperationException("Invalid member format: " + _typeOptions.MemberFormat);
             }
-            return builder.ToString();
         }
 
         private static ImmutableArray<string> ParseMemberName(string name)
