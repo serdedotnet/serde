@@ -270,5 +270,81 @@ partial struct S2 : Serde.IDeserialize<S2>
 """),
             });
         }
+
+        [Fact]
+        public Task KebabCase()
+        {
+            var src = @"
+using Serde;
+
+[GenerateSerde]
+[SerdeTypeOptions(MemberFormat = MemberFormat.KebabCase)]
+partial struct S
+{
+    public int One { get; set; }
+    public int TwoWord { get; set; }
+}";
+            return VerifyGeneratedCode(src, new[] {
+                ("S.ISerialize", """
+
+#nullable enable
+using Serde;
+
+partial struct S : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType("S", 2);
+        type.SerializeField("one", new Int32Wrap(this.One));
+        type.SerializeField("two-word", new Int32Wrap(this.TwoWord));
+        type.End();
+    }
+}
+"""),
+                ("S.IDeserialize", """
+
+#nullable enable
+using Serde;
+
+partial struct S : Serde.IDeserialize<S>
+{
+    static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
+    {
+        var visitor = new SerdeVisitor();
+        var fieldNames = new[]{"One", "TwoWord"};
+        return deserializer.DeserializeType<S, SerdeVisitor>("S", fieldNames, visitor);
+    }
+
+    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
+    {
+        public string ExpectedTypeName => "S";
+        S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
+        {
+            Serde.Option<int> one = default;
+            Serde.Option<int> twoword = default;
+            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            {
+                switch (key)
+                {
+                    case "one":
+                        one = d.GetNextValue<int, Int32Wrap>();
+                        break;
+                    case "two-word":
+                        twoword = d.GetNextValue<int, Int32Wrap>();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            var newType = new S()
+            {One = one.GetValueOrThrow("One"), TwoWord = twoword.GetValueOrThrow("TwoWord"), };
+            return newType;
+        }
+    }
+}
+""")
+            });
+        }
     }
 }
