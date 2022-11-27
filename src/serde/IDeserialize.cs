@@ -5,12 +5,21 @@ using System.Runtime.CompilerServices;
 
 namespace Serde
 {
+    /// <summary>
+    /// The driving interface for deserializing a given type. This interface should be implemented
+    /// for any type that wants to be deserialized by the Serde framework. The implementation should
+    /// be independent of the format the type is being deserialized from.
+    /// </summary>
     public interface IDeserialize<T>
     {
         abstract static T Deserialize<D>(ref D deserializer)
             where D : IDeserializer;
     }
 
+    /// <summary>
+    /// Thrown from implementations of <see cref="IDeserializer" />. Indicates that an unexpected
+    /// value was seen in the input which cannot be converted to the target type.
+    /// </summary>
     public sealed class InvalidDeserializeValueException : Exception
     {
         public InvalidDeserializeValueException(string msg)

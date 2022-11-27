@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Serde.Json
 {
-    public sealed class KeyNotStringException : Exception { }
+    internal sealed class KeyNotStringException : Exception { }
 
     public sealed partial class JsonSerializer : ISerializer
     {
