@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
 
 namespace Serde
 {
@@ -62,13 +63,18 @@ namespace Serde
         {
             public string ExpectedTypeName => s_typeName;
             char IDeserializeVisitor<char>.VisitChar(char c) => c;
-            char IDeserializeVisitor<char>.VisitString(string s)
+            char IDeserializeVisitor<char>.VisitString(string s) => GetChar(s);
+            private char GetChar(string s)
             {
                 if (s.Length == 1)
                 {
                     return s[0];
                 }
                 throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+            }
+            char IDeserializeVisitor<char>.VisitUtf8Span(ReadOnlySpan<byte> s)
+            {
+                return GetChar(Encoding.UTF8.GetString(s));
             }
         }
     }
@@ -385,6 +391,7 @@ namespace Serde
             public string ExpectedTypeName => s_typeName;
             public string VisitString(string s) => s;
             string IDeserializeVisitor<string>.VisitChar(char c) => c.ToString();
+            string IDeserializeVisitor<string>.VisitUtf8Span(ReadOnlySpan<byte> s) => Encoding.UTF8.GetString(s);
         }
     }
 

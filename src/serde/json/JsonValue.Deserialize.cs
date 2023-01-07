@@ -1,5 +1,7 @@
 
+using System;
 using System.Collections.Immutable;
+using System.Text;
 
 namespace Serde.Json
 {
@@ -42,6 +44,7 @@ namespace Serde.Json
             public JsonValue VisitBool(bool b) => new Bool(b);
             public JsonValue VisitI64(long i) => new Number(i);
             public JsonValue VisitString(string s) => new String(s);
+            public JsonValue VisitUtf8Span(ReadOnlySpan<byte> s) => VisitString(Encoding.UTF8.GetString(s));
         }
     }
 }

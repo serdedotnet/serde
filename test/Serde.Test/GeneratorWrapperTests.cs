@@ -421,26 +421,18 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Test.Channel>
         {
             public string ExpectedTypeName => "Test.Channel";
-            Test.Channel Serde.IDeserializeVisitor<Test.Channel>.VisitString(string s)
+            Test.Channel Serde.IDeserializeVisitor<Test.Channel>.VisitString(string s) => s switch
             {
-                Test.Channel enumValue;
-                switch (s)
-                {
-                    case "a":
-                        enumValue = Test.Channel.A;
-                        break;
-                    case "b":
-                        enumValue = Test.Channel.B;
-                        break;
-                    case "c":
-                        enumValue = Test.Channel.C;
-                        break;
-                    default:
-                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
-                }
-
-                return enumValue;
-            }
+                "a" => Test.Channel.A,
+                "b" => Test.Channel.B,
+                "c" => Test.Channel.C,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
+            Test.Channel Serde.IDeserializeVisitor<Test.Channel>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            {
+                _ when System.MemoryExtensions.SequenceEqual(s, "a"u8) => Test.Channel.A,
+                _ when System.MemoryExtensions.SequenceEqual(s, "b"u8) => Test.Channel.B,
+                _ when System.MemoryExtensions.SequenceEqual(s, "c"u8) => Test.Channel.C,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
         }
     }
 }

@@ -200,27 +200,35 @@ namespace Serde
             }
             else if (type.TypeKind == TypeKind.Enum)
             {
-                var cases = new StringBuilder();
+                var stringCases = new StringBuilder();
+                var spanCases = new StringBuilder();
                 foreach (var m in SymbolUtilities.GetDataMembers(type, SerdeUsage.Deserialize))
                 {
-                    cases.Append(@$"
-        case ""{m.GetFormattedName()}"":
-            enumValue = {typeName}.{m.Name};
-            break;");
+                    var formatted = m.GetFormattedName();
+                    stringCases.Append($$"""
+        "{{formatted}}" => {{typeName}}.{{m.Name}},
+""");
+                    spanCases.Append($$"""
+        _ when System.MemoryExtensions.SequenceEqual(s, "{{formatted}}"u8) => {{typeName}}.{{m.Name}},
+""");
                 }
-                var methodText = @$"
-{typeName} Serde.IDeserializeVisitor<{typeName}>.VisitString(string s)
-{{
-    {typeName} enumValue;
-    switch (s)
-    {{
-{cases}
-        default:
-            throw new InvalidDeserializeValueException(""Unexpected enum field name: "" + s);
-    }}
-    return enumValue;
-}}";
+                var methodText = $$"""
+{{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitString(string s) => s switch
+    {
+{{stringCases}}
+        _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)
+    };
+""";
+
+                var spanMethodText = $$"""
+{{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+    {
+{{spanCases}}
+        _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))
+    };
+""";
                 typeMembers.Add(ParseMemberDeclaration(methodText)!);
+                typeMembers.Add(ParseMemberDeclaration(spanMethodText)!);
             }
             else
             {

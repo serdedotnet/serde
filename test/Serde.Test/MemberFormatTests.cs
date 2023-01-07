@@ -151,26 +151,18 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorEnum>
         {
             public string ExpectedTypeName => "ColorEnum";
-            ColorEnum Serde.IDeserializeVisitor<ColorEnum>.VisitString(string s)
+            ColorEnum Serde.IDeserializeVisitor<ColorEnum>.VisitString(string s) => s switch
             {
-                ColorEnum enumValue;
-                switch (s)
-                {
-                    case "red":
-                        enumValue = ColorEnum.Red;
-                        break;
-                    case "green":
-                        enumValue = ColorEnum.Green;
-                        break;
-                    case "blue":
-                        enumValue = ColorEnum.Blue;
-                        break;
-                    default:
-                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
-                }
-
-                return enumValue;
-            }
+                "red" => ColorEnum.Red,
+                "green" => ColorEnum.Green,
+                "blue" => ColorEnum.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
+            ColorEnum Serde.IDeserializeVisitor<ColorEnum>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            {
+                _ when System.MemoryExtensions.SequenceEqual(s, "red"u8) => ColorEnum.Red,
+                _ when System.MemoryExtensions.SequenceEqual(s, "green"u8) => ColorEnum.Green,
+                _ when System.MemoryExtensions.SequenceEqual(s, "blue"u8) => ColorEnum.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
         }
     }
 }
@@ -346,5 +338,5 @@ partial struct S : Serde.IDeserialize<S>
 """)
             });
         }
-    }
+   }
 }

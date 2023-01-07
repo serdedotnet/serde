@@ -446,26 +446,18 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorInt>
         {
             public string ExpectedTypeName => "ColorInt";
-            ColorInt Serde.IDeserializeVisitor<ColorInt>.VisitString(string s)
+            ColorInt Serde.IDeserializeVisitor<ColorInt>.VisitString(string s) => s switch
             {
-                ColorInt enumValue;
-                switch (s)
-                {
-                    case "red":
-                        enumValue = ColorInt.Red;
-                        break;
-                    case "green":
-                        enumValue = ColorInt.Green;
-                        break;
-                    case "blue":
-                        enumValue = ColorInt.Blue;
-                        break;
-                    default:
-                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
-                }
-
-                return enumValue;
-            }
+                "red" => ColorInt.Red,
+                "green" => ColorInt.Green,
+                "blue" => ColorInt.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
+            ColorInt Serde.IDeserializeVisitor<ColorInt>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            {
+                _ when System.MemoryExtensions.SequenceEqual(s, "red"u8) => ColorInt.Red,
+                _ when System.MemoryExtensions.SequenceEqual(s, "green"u8) => ColorInt.Green,
+                _ when System.MemoryExtensions.SequenceEqual(s, "blue"u8) => ColorInt.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
         }
     }
 }
@@ -493,26 +485,18 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorByte>
         {
             public string ExpectedTypeName => "ColorByte";
-            ColorByte Serde.IDeserializeVisitor<ColorByte>.VisitString(string s)
+            ColorByte Serde.IDeserializeVisitor<ColorByte>.VisitString(string s) => s switch
             {
-                ColorByte enumValue;
-                switch (s)
-                {
-                    case "red":
-                        enumValue = ColorByte.Red;
-                        break;
-                    case "green":
-                        enumValue = ColorByte.Green;
-                        break;
-                    case "blue":
-                        enumValue = ColorByte.Blue;
-                        break;
-                    default:
-                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
-                }
-
-                return enumValue;
-            }
+                "red" => ColorByte.Red,
+                "green" => ColorByte.Green,
+                "blue" => ColorByte.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
+            ColorByte Serde.IDeserializeVisitor<ColorByte>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            {
+                _ when System.MemoryExtensions.SequenceEqual(s, "red"u8) => ColorByte.Red,
+                _ when System.MemoryExtensions.SequenceEqual(s, "green"u8) => ColorByte.Green,
+                _ when System.MemoryExtensions.SequenceEqual(s, "blue"u8) => ColorByte.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
         }
     }
 }
@@ -540,26 +524,18 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorLong>
         {
             public string ExpectedTypeName => "ColorLong";
-            ColorLong Serde.IDeserializeVisitor<ColorLong>.VisitString(string s)
+            ColorLong Serde.IDeserializeVisitor<ColorLong>.VisitString(string s) => s switch
             {
-                ColorLong enumValue;
-                switch (s)
-                {
-                    case "red":
-                        enumValue = ColorLong.Red;
-                        break;
-                    case "green":
-                        enumValue = ColorLong.Green;
-                        break;
-                    case "blue":
-                        enumValue = ColorLong.Blue;
-                        break;
-                    default:
-                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
-                }
-
-                return enumValue;
-            }
+                "red" => ColorLong.Red,
+                "green" => ColorLong.Green,
+                "blue" => ColorLong.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
+            ColorLong Serde.IDeserializeVisitor<ColorLong>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            {
+                _ when System.MemoryExtensions.SequenceEqual(s, "red"u8) => ColorLong.Red,
+                _ when System.MemoryExtensions.SequenceEqual(s, "green"u8) => ColorLong.Green,
+                _ when System.MemoryExtensions.SequenceEqual(s, "blue"u8) => ColorLong.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
         }
     }
 }
@@ -587,26 +563,18 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorULong>
         {
             public string ExpectedTypeName => "ColorULong";
-            ColorULong Serde.IDeserializeVisitor<ColorULong>.VisitString(string s)
+            ColorULong Serde.IDeserializeVisitor<ColorULong>.VisitString(string s) => s switch
             {
-                ColorULong enumValue;
-                switch (s)
-                {
-                    case "red":
-                        enumValue = ColorULong.Red;
-                        break;
-                    case "green":
-                        enumValue = ColorULong.Green;
-                        break;
-                    case "blue":
-                        enumValue = ColorULong.Blue;
-                        break;
-                    default:
-                        throw new InvalidDeserializeValueException("Unexpected enum field name: " + s);
-                }
-
-                return enumValue;
-            }
+                "red" => ColorULong.Red,
+                "green" => ColorULong.Green,
+                "blue" => ColorULong.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
+            ColorULong Serde.IDeserializeVisitor<ColorULong>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            {
+                _ when System.MemoryExtensions.SequenceEqual(s, "red"u8) => ColorULong.Red,
+                _ when System.MemoryExtensions.SequenceEqual(s, "green"u8) => ColorULong.Green,
+                _ when System.MemoryExtensions.SequenceEqual(s, "blue"u8) => ColorULong.Blue,
+                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
         }
     }
 }
