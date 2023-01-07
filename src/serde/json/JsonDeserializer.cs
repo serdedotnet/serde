@@ -1,5 +1,6 @@
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -249,11 +250,18 @@ namespace Serde.Json
         {
             var reader = GetReader();
             reader.ReadOrThrow();
-            var s = reader.GetString();
-            SaveState(reader);
-            return s is null
-                ? v.VisitNull()
-                : v.VisitString(s);
+            if (reader.HasValueSequence || reader.ValueIsEscaped)
+            {
+                var s = reader.GetString()!;
+                SaveState(reader);
+                return v.VisitString(s);
+            }
+            else
+            {
+                var result = v.VisitUtf8Span(reader.ValueSpan);
+                SaveState(reader);
+                return result;
+            }
         }
 
         public T DeserializeIdentifier<T, V>(V v) where V : IDeserializeVisitor<T>
