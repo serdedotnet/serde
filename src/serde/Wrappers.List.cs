@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace Serde
 {
-    internal static class EnumerableHelpers
+    public static class EnumerableHelpers
     {
         public static void SerializeSpan<T, TWrap>(string typeName, ReadOnlySpan<T> arr, ISerializer serializer)
             where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize

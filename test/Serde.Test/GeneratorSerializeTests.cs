@@ -644,7 +644,63 @@ public struct S<T>
         Field = f;
     }
 }
-public struct SWrap<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SWrap<T, TWrap>>
+public static class SWrap
+{
+    public readonly struct SerializeImpl<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SerializeImpl<T, TWrap>>
+        where TWrap : struct, ISerialize, ISerializeWrap<T, TWrap>
+    {
+        public static SerializeImpl<T, TWrap> Create(S<T> t) => new(t);
+        private readonly S<T> _s;
+        public SerializeImpl(S<T> s)
+        {
+            _s = s;
+        }
+        void ISerialize.Serialize(ISerializer serializer)
+        {
+            var type = serializer.SerializeType(""S"", 1);
+            type.SerializeField(""s"", TWrap.Create(_s.Field));
+            type.End();
+        }
+    }
+}
+[GenerateSerialize]
+partial class C
+{
+    [SerdeWrap(typeof(SWrap))]
+    public S<int> S = new S<int>(5);
+}";
+            return VerifySerialize(src, "C", """
+
+#nullable enable
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType("C", 1);
+        type.SerializeField("s", new SWrap.SerializeImpl<int, Int32Wrap>(this.S));
+        type.End();
+    }
+}
+""");
+        }
+
+        [Fact]
+        public Task WrongGenericWrapperForm()
+        {
+            var src = @"
+using Serde;
+
+public struct S<T>
+{
+    public T Field;
+    public S(T f)
+    {
+        Field = f;
+    }
+}
+public readonly struct SWrap<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SWrap<T, TWrap>>
     where TWrap : struct, ISerialize, ISerializeWrap<T, TWrap>
 {
     public static SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
@@ -666,7 +722,8 @@ partial class C
     [SerdeWrap(typeof(SWrap<,>))]
     public S<int> S = new S<int>(5);
 }";
-            return VerifySerialize(src, "C", @"
+            return VerifySerialize(src, "C", """
+
 #nullable enable
 using Serde;
 
@@ -674,11 +731,16 @@ partial class C : Serde.ISerialize
 {
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
-        var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""s"", new SWrap<int, Int32Wrap>(this.S));
+        var type = serializer.SerializeType("C", 1);
         type.End();
     }
-}");
+}
+""",
+    // /0/Test0.cs(32,19): error ERR_CantFindNestedWrapper: Could not find nested type named 'SerializeImpl' inside type 'SWrap<,>'. The wrapped type 'S<T>' is generic, so the expected wrapper is a type with a SerializeImpl and DeserializeImpl nested wrappers.
+    DiagnosticResult.CompilerError("ERR_CantFindNestedWrapper").WithSpan(32, 19, 32, 20),
+    // /0/Test0.cs(32,19): error ERR_DoesntImplementInterface: The member 'C.S's return type 'S<int>' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
+    DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(32, 19, 32, 20)
+    );
         }
 
         [Fact]

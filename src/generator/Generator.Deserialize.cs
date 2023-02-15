@@ -260,7 +260,11 @@ namespace Serde
             {
                 string wrapperName;
                 var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
+                if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize) is {} explicitWrap)
+                {
+                    wrapperName = explicitWrap.ToString();
+                }
+                else if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
                 {
                     wrapperName = memberType;
                 }

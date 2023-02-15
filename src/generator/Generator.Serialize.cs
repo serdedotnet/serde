@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -231,24 +232,12 @@ namespace Serde
 
             // 1. Check for an explicit wrapper
 
-            var attr = TryGetExplicitWrapper(member);
-            if (attr is { ConstructorArguments: { Length: 1 } attrArgs } &&
-                attrArgs[0] is { Value: INamedTypeSymbol wrapperType })
+            if (TryGetExplicitWrapper(member, context, SerdeUsage.Serialize) is {} wrapper)
             {
-                var memberType = member.Type;
-                var typeArgs = memberType switch
-                {
-                    INamedTypeSymbol n => n.TypeArguments,
-                    _ => ImmutableArray<ITypeSymbol>.Empty
-                };
-                var expr = MakeWrappedExpression(wrapperType.Name, typeArgs, context, SerdeUsage.Serialize);
-                if (expr is not null)
-                {
-                    return ObjectCreationExpression(
-                        expr,
-                        argListFromMemberName,
-                        initializer: null);
-                }
+                return ObjectCreationExpression(
+                    wrapper,
+                    argListFromMemberName,
+                    initializer: null);
             }
 
             // 2. Check for a direct implementation of ISerialize
@@ -259,7 +248,7 @@ namespace Serde
             }
 
             // 3. A wrapper that implements ISerialize
-            var wrapper = TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize);
+            wrapper = TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize);
             if (wrapper is not null)
             {
                 return ObjectCreationExpression(
@@ -304,18 +293,6 @@ namespace Serde
             var typeDecl = (RecordDeclarationSyntax)((NamespaceDeclarationSyntax)tree.GetCompilationUnitRoot().Members[0]).Members[0];
             GenerateImpl(usage, new TypeDeclContext(typeDecl), type, IdentifierName(argName), context);
             return IdentifierName(wrapperName);
-        }
-
-        private static AttributeData? TryGetExplicitWrapper(DataMemberSymbol member)
-        {
-            foreach (var attr in member.Symbol.GetAttributes())
-            {
-                if (attr.AttributeClass?.Name is "SerdeWrapAttribute")
-                {
-                    return attr;
-                }
-            }
-            return null;
         }
 
         // If the target is a core type, we can wrap it

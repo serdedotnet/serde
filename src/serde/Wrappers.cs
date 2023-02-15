@@ -6,7 +6,10 @@ using System.Text;
 
 namespace Serde
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(
+        AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct,
+        AllowMultiple = false,
+        Inherited = false)]
     [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
     public sealed class SerdeWrapAttribute : Attribute
     {

@@ -12,6 +12,7 @@ namespace Serde
         ERR_TypeNotPartial = 2,
         ERR_CantWrapSpecialType = 3,
         ERR_CantFindConstructorSignature = 4,
+        ERR_CantFindNestedWrapper = 5,
     }
 }
 
@@ -26,7 +27,8 @@ namespace Serde
             ERR_DoesntImplementInterface => nameof(ERR_DoesntImplementInterface),
             ERR_TypeNotPartial => nameof(ERR_TypeNotPartial),
             ERR_CantWrapSpecialType => nameof(ERR_CantWrapSpecialType),
-            ERR_CantFindConstructorSignature => nameof(ERR_CantFindConstructorSignature)
+            ERR_CantFindConstructorSignature => nameof(ERR_CantFindConstructorSignature),
+            ERR_CantFindNestedWrapper => nameof(ERR_CantFindNestedWrapper),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)
