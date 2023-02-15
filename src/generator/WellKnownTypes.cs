@@ -104,14 +104,18 @@ namespace Serde
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        internal static string ToWrapper(this WellKnownType wk, SerdeUsage usage) => wk switch
+        internal static string ToWrapper(this WellKnownType wk, SerdeUsage usage)
         {
-            WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
-            WellKnownType.List_1 => "ListWrap",
-            WellKnownType.Dictionary_2 => "DictWrap",
-            WellKnownType.IDictionary_2 => "IDictWrap",
-            WellKnownType.IReadOnlyDictionary_2 => "IRODictWrap",
-            _ => throw ExceptionUtilities.Unreachable
-        } + "." + usage.GetName();
+            var baseName = wk switch
+            {
+                WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
+                WellKnownType.List_1 => "ListWrap",
+                WellKnownType.Dictionary_2 => "DictWrap",
+                WellKnownType.IDictionary_2 => "IDictWrap",
+                WellKnownType.IReadOnlyDictionary_2 => "IRODictWrap",
+                _ => throw ExceptionUtilities.Unreachable
+            };
+            return baseName + "." + usage.GetImplName();
+        }
     }
 }

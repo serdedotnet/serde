@@ -112,7 +112,7 @@ namespace Serde
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        public static string GetName(this SerdeUsage usage) => usage switch
+        public static string GetImplName(this SerdeUsage usage) => usage switch
         {
             SerdeUsage.Serialize => "SerializeImpl",
             SerdeUsage.Deserialize => "DeserializeImpl",

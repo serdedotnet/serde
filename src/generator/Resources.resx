@@ -129,4 +129,7 @@
   <data name="ERR_CantFindConstructorSignature" xml:space="preserve">
     <value>Could not find a constructor with the target signature listed by the ConstructorSignature parameter.</value>
   </data>
+  <data name="ERR_CantFindNestedWrapper" xml:space="preserve">
+    <value>Could not find nested type named '{0}' inside type '{1}'. The wrapped type '{2}' is generic, so the expected wrapper is a parent type with SerializeImpl and DeserializeImpl nested wrappers.</value>
+  </data>
 </root>

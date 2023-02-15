@@ -73,7 +73,7 @@ namespace Serde
             {
                 { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } =>
                     MakeWrappedExpression(
-                        $"NullableWrap.{usage.GetName()}",
+                        $"NullableWrap.{usage.GetImplName()}",
                         ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                         context,
                         usage),
@@ -91,13 +91,13 @@ namespace Serde
                 // wrapper.
                 { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated} =>
                     MakeWrappedExpression(
-                        $"NullableRefWrap.{usage.GetName()}",
+                        $"NullableRefWrap.{usage.GetImplName()}",
                         ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                         context,
                         usage),
 
                 IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }
-                    => MakeWrappedExpression($"ArrayWrap.{usage.GetName()}", ImmutableArray.Create(elemType), context, usage),
+                    => MakeWrappedExpression($"ArrayWrap.{usage.GetImplName()}", ImmutableArray.Create(elemType), context, usage),
 
                 INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is { } tuple
                     => MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage),
@@ -174,6 +174,78 @@ namespace Serde
                 ?? TryGetCompoundWrapper(elemType, context, usage)
                 ?? TryCreateWrapper(elemType, context, usage);
         }
+
+        private static TypeSyntax? TryGetExplicitWrapper(DataMemberSymbol member, GeneratorExecutionContext context, SerdeUsage usage)
+        {
+            if (TryGetExplicitWrapperType(member, usage, context) is {} wrapperType)
+            {
+                var memberType = member.Type;
+                var typeArgs = memberType switch
+                {
+                    INamedTypeSymbol n => n.TypeArguments,
+                    _ => ImmutableArray<ITypeSymbol>.Empty
+                };
+                var wrapName = wrapperType.ToString();
+                if (wrapName.IndexOf('<') is > 0 and var index)
+                {
+                    wrapName = wrapName[..index];
+                }
+                return MakeWrappedExpression(wrapName, typeArgs, context, usage);
+            }
+            return null;
+
+            // <summary>
+            // Looks to see if the given member or its type explicitly specifies a wrapper to use via
+            // the SerdeWrapAttribute or similar. If so, returns the symbol of the wrapper type.
+            // </summary>
+            static INamedTypeSymbol? TryGetExplicitWrapperType(DataMemberSymbol member, SerdeUsage usage, GeneratorExecutionContext context)
+            {
+                // Look first for a wrapper attribute on the member being serialized, and then for a
+                // wrapper attribute
+                var typeToWrap = member.Type;
+                return GetSerdeWrapAttributeArg(member.Symbol, typeToWrap, usage, context)
+                    ?? GetSerdeWrapAttributeArg(member.Type, typeToWrap, usage, context);
+
+                static INamedTypeSymbol? GetSerdeWrapAttributeArg(ISymbol symbol, ITypeSymbol typeToWrap, SerdeUsage usage, GeneratorExecutionContext context)
+                {
+                    foreach (var attr in symbol.GetAttributes())
+                    {
+                        if (attr.AttributeClass?.Name is "SerdeWrapAttribute")
+                        {
+                            if (attr is { ConstructorArguments: { Length: 1 } attrArgs } &&
+                                attrArgs[0] is { Value: INamedTypeSymbol wrapperType })
+                            {
+                                // If the typeToWrap is a generic type, we should expect that the wrapper type
+                                // is not listed directly, but instead a parent type is listed (possibly static) and
+                                // the Serialize and Deserialize wrappers are nested below.
+                                if (typeToWrap.OriginalDefinition is INamedTypeSymbol { Arity: > 0 } wrapped)
+                                {
+                                    var nestedName = (usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize") + "Impl";
+                                    var nestedTypes = wrapperType.GetTypeMembers(nestedName);
+                                    if (nestedTypes.Length != 1)
+                                    {
+                                        context.ReportDiagnostic(CreateDiagnostic(
+                                            DiagId.ERR_CantFindNestedWrapper,
+                                            symbol.Locations[0],
+                                            nestedName,
+                                            wrapperType,
+                                            wrapped));
+                                        return null;
+                                    }
+                                    return nestedTypes[0];
+                                }
+                                return wrapperType;
+                            }
+                            // Return null if the attribute is somehow incorrect
+                            // TODO: produce a warning?
+                            return null;
+                        }
+                    }
+                    return null;
+                }
+            }
+        }
+
 
         private static (string WrapperName, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperName(
             ITypeSymbol typeSymbol,
