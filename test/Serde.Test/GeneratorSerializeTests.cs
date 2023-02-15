@@ -670,6 +670,7 @@ partial class C
     public S<int> S = new S<int>(5);
 }";
             return VerifySerialize(src, "C", """
+
 #nullable enable
 using Serde;
 
