@@ -649,9 +649,9 @@ public static class SWrap
     public readonly struct SerializeImpl<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SerializeImpl<T, TWrap>>
         where TWrap : struct, ISerialize, ISerializeWrap<T, TWrap>
     {
-        public static SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
+        public static SerializeImpl<T, TWrap> Create(S<T> t) => new(t);
         private readonly S<T> _s;
-        public SWrap(S<T> s)
+        public SerializeImpl(S<T> s)
         {
             _s = s;
         }
