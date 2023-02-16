@@ -142,7 +142,7 @@ namespace Serde
 {
     partial record struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
     {
-        static ColorEnum Serde.IDeserialize<ColorEnum>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<ColorEnum> Serde.IDeserialize<ColorEnum>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString<ColorEnum, SerdeVisitor>(visitor);
@@ -182,7 +182,7 @@ using Serde;
 
 partial struct S : Serde.IDeserialize<S>
 {
-    static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<S> Serde.IDeserialize<S>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{"E"};
@@ -192,15 +192,15 @@ partial struct S : Serde.IDeserialize<S>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
     {
         public string ExpectedTypeName => "S";
-        S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<S> Serde.IDeserializeVisitor<S>.VisitDictionary<D>(D d)
         {
             Serde.Option<ColorEnum> e = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case "e":
-                        e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        e = await d.GetNextValue<ColorEnum, ColorEnumWrap>();
                         break;
                     default:
                         break;
@@ -236,7 +236,7 @@ using Serde;
 
 partial struct S2 : Serde.IDeserialize<S2>
 {
-    static S2 Serde.IDeserialize<S2>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<S2> Serde.IDeserialize<S2>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{"E"};
@@ -246,15 +246,15 @@ partial struct S2 : Serde.IDeserialize<S2>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S2>
     {
         public string ExpectedTypeName => "S2";
-        S2 Serde.IDeserializeVisitor<S2>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<S2> Serde.IDeserializeVisitor<S2>.VisitDictionary<D>(D d)
         {
             Serde.Option<ColorEnum> e = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case "E":
-                        e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        e = await d.GetNextValue<ColorEnum, ColorEnumWrap>();
                         break;
                     default:
                         break;

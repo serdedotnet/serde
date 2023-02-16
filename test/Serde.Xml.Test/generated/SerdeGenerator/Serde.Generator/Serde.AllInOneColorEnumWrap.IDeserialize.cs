@@ -6,7 +6,7 @@ namespace Serde
 {
     partial record struct AllInOneColorEnumWrap : Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>
     {
-        static Serde.Test.AllInOne.ColorEnum Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<Serde.Test.AllInOne.ColorEnum> Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString<Serde.Test.AllInOne.ColorEnum, SerdeVisitor>(visitor);

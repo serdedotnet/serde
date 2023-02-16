@@ -83,7 +83,7 @@ using Serde;
 
 partial struct PointWrap : Serde.IDeserialize<Point>
 {
-    static Point Serde.IDeserialize<Point>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<Point> Serde.IDeserialize<Point>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{""X"", ""Y""};
@@ -93,19 +93,19 @@ partial struct PointWrap : Serde.IDeserialize<Point>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Point>
     {
         public string ExpectedTypeName => ""Point"";
-        Point Serde.IDeserializeVisitor<Point>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<Point> Serde.IDeserializeVisitor<Point>.VisitDictionary<D>(D d)
         {
             Serde.Option<int> x = default;
             Serde.Option<int> y = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case ""x"":
-                        x = d.GetNextValue<int, Int32Wrap>();
+                        x = await d.GetNextValue<int, Int32Wrap>();
                         break;
                     case ""y"":
-                        y = d.GetNextValue<int, Int32Wrap>();
+                        y = await d.GetNextValue<int, Int32Wrap>();
                         break;
                     default:
                         break;
@@ -194,7 +194,7 @@ namespace Serde
 {
     partial record struct BitVector32SectionWrap : Serde.IDeserialize<System.Collections.Specialized.BitVector32.Section>
     {
-        static System.Collections.Specialized.BitVector32.Section Serde.IDeserialize<System.Collections.Specialized.BitVector32.Section>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<System.Collections.Specialized.BitVector32.Section> Serde.IDeserialize<System.Collections.Specialized.BitVector32.Section>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             var fieldNames = new[]{""Mask"", ""Offset""};
@@ -204,19 +204,19 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>
         {
             public string ExpectedTypeName => ""System.Collections.Specialized.BitVector32.Section"";
-            System.Collections.Specialized.BitVector32.Section Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>.VisitDictionary<D>(ref D d)
+            async System.Threading.Tasks.ValueTask<System.Collections.Specialized.BitVector32.Section> Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>.VisitDictionary<D>(D d)
             {
                 Serde.Option<short> mask = default;
                 Serde.Option<short> offset = default;
-                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
                 {
-                    switch (key)
+                    switch (nextOpt.GetValueOrDefault())
                     {
                         case ""mask"":
-                            mask = d.GetNextValue<short, Int16Wrap>();
+                            mask = await d.GetNextValue<short, Int16Wrap>();
                             break;
                         case ""offset"":
-                            offset = d.GetNextValue<short, Int16Wrap>();
+                            offset = await d.GetNextValue<short, Int16Wrap>();
                             break;
                         default:
                             break;
@@ -236,7 +236,7 @@ using Serde;
 
 partial class C : Serde.IDeserialize<C>
 {
-    static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<C> Serde.IDeserialize<C>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{""S""};
@@ -246,15 +246,15 @@ partial class C : Serde.IDeserialize<C>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
     {
         public string ExpectedTypeName => ""C"";
-        C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<C> Serde.IDeserializeVisitor<C>.VisitDictionary<D>(D d)
         {
             Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case ""s"":
-                        s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
+                        s = await d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
                         break;
                     default:
                         break;
@@ -291,7 +291,7 @@ using Serde;
 
 partial record R : Serde.IDeserialize<R>
 {
-    static R Serde.IDeserialize<R>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<R> Serde.IDeserialize<R>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{"A", "B"};
@@ -301,19 +301,19 @@ partial record R : Serde.IDeserialize<R>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<R>
     {
         public string ExpectedTypeName => "R";
-        R Serde.IDeserializeVisitor<R>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<R> Serde.IDeserializeVisitor<R>.VisitDictionary<D>(D d)
         {
             Serde.Option<int> a = default;
             Serde.Option<string> b = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case "a":
-                        a = d.GetNextValue<int, Int32Wrap>();
+                        a = await d.GetNextValue<int, Int32Wrap>();
                         break;
                     case "b":
-                        b = d.GetNextValue<string, StringWrap>();
+                        b = await d.GetNextValue<string, StringWrap>();
                         break;
                     default:
                         break;

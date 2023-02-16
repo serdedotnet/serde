@@ -75,13 +75,13 @@ namespace Serde.Json
             return await result;
         }
 
-        public ValueTask<T> DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeBool<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
             bool b = reader.GetBoolean();
             SaveState(reader);
-            return ValueTask.FromResult(v.VisitBool(b));
+            return v.VisitBool(b);
         }
 
         public async ValueTask<T> DeserializeDictionary<T, V>(V v) where V : class, IDeserializeVisitor<T>
@@ -118,10 +118,10 @@ namespace Serde.Json
             return ValueTask.FromResult(v.VisitDecimal(d));
         }
 
-        public ValueTask<T> DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
+        public async ValueTask<T> DeserializeEnumerable<T, V>(V v) where V : class, IDeserializeVisitor<T>
         {
             var reader = GetReader();
-            reader.ReadOrThrow();
+            await reader.ReadOrThrow();
 
             if (reader.TokenType != JsonTokenType.StartArray)
             {
@@ -130,7 +130,7 @@ namespace Serde.Json
 
             SaveState(reader);
             var enumerable = new DeEnumerable(this);
-            return v.VisitEnumerable(enumerable);
+            return await v.VisitEnumerable(enumerable);
         }
 
         private struct DeEnumerable : IDeserializeEnumerable

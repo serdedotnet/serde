@@ -24,7 +24,7 @@ using Serde;
 
 partial struct Rgb : Serde.IDeserialize<Rgb>
 {
-    static Rgb Serde.IDeserialize<Rgb>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<Rgb> Serde.IDeserialize<Rgb>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{""Red"", ""Green"", ""Blue""};
@@ -34,23 +34,23 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Rgb>
     {
         public string ExpectedTypeName => ""Rgb"";
-        Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<Rgb> Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(D d)
         {
             Serde.Option<byte> red = default;
             Serde.Option<byte> green = default;
             Serde.Option<byte> blue = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case ""red"":
-                        red = d.GetNextValue<byte, ByteWrap>();
+                        red = await d.GetNextValue<byte, ByteWrap>();
                         break;
                     case ""green"":
-                        green = d.GetNextValue<byte, ByteWrap>();
+                        green = await d.GetNextValue<byte, ByteWrap>();
                         break;
                     case ""blue"":
-                        blue = d.GetNextValue<byte, ByteWrap>();
+                        blue = await d.GetNextValue<byte, ByteWrap>();
                         break;
                     default:
                         break;
@@ -80,7 +80,7 @@ using Serde;
 
 partial struct S : Serde.IDeserialize<S>
 {
-    static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<S> Serde.IDeserialize<S>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{""F""};
@@ -90,15 +90,15 @@ partial struct S : Serde.IDeserialize<S>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
     {
         public string ExpectedTypeName => ""S"";
-        S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<S> Serde.IDeserializeVisitor<S>.VisitDictionary<D>(D d)
         {
             Serde.Option<string?> f = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case ""f"":
-                        f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        f = await d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
                         break;
@@ -133,7 +133,7 @@ using Serde;
 
 partial record struct SetToNull : Serde.IDeserialize<SetToNull>
 {
-    static SetToNull Serde.IDeserialize<SetToNull>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<SetToNull> Serde.IDeserialize<SetToNull>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{"Present", "Missing", "ThrowMissing"};
@@ -143,23 +143,23 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<SetToNull>
     {
         public string ExpectedTypeName => "SetToNull";
-        SetToNull Serde.IDeserializeVisitor<SetToNull>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<SetToNull> Serde.IDeserializeVisitor<SetToNull>.VisitDictionary<D>(D d)
         {
             Serde.Option<string> present = default;
             Serde.Option<string?> missing = default;
             Serde.Option<string?> throwmissing = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case "present":
-                        present = d.GetNextValue<string, StringWrap>();
+                        present = await d.GetNextValue<string, StringWrap>();
                         break;
                     case "missing":
-                        missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        missing = await d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     case "throwMissing":
-                        throwmissing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        throwmissing = await d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                     default:
                         break;
@@ -191,7 +191,7 @@ using Serde;
 
 partial class ArrayField : Serde.IDeserialize<ArrayField>
 {
-    static ArrayField Serde.IDeserialize<ArrayField>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<ArrayField> Serde.IDeserialize<ArrayField>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{""IntArr""};
@@ -201,15 +201,15 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ArrayField>
     {
         public string ExpectedTypeName => ""ArrayField"";
-        ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<ArrayField> Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(D d)
         {
             Serde.Option<int[]> intarr = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case ""intArr"":
-                        intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                        intarr = await d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                         break;
                     default:
                         break;
@@ -257,7 +257,7 @@ namespace Serde
 {
     partial record struct ColorIntWrap : Serde.IDeserialize<ColorInt>
     {
-        static ColorInt Serde.IDeserialize<ColorInt>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<ColorInt> Serde.IDeserialize<ColorInt>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString<ColorInt, SerdeVisitor>(visitor);
@@ -304,7 +304,7 @@ namespace Serde
 {
     partial record struct ColorByteWrap : Serde.IDeserialize<ColorByte>
     {
-        static ColorByte Serde.IDeserialize<ColorByte>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<ColorByte> Serde.IDeserialize<ColorByte>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString<ColorByte, SerdeVisitor>(visitor);
@@ -351,7 +351,7 @@ namespace Serde
 {
     partial record struct ColorLongWrap : Serde.IDeserialize<ColorLong>
     {
-        static ColorLong Serde.IDeserialize<ColorLong>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<ColorLong> Serde.IDeserialize<ColorLong>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString<ColorLong, SerdeVisitor>(visitor);
@@ -398,7 +398,7 @@ namespace Serde
 {
     partial record struct ColorULongWrap : Serde.IDeserialize<ColorULong>
     {
-        static ColorULong Serde.IDeserialize<ColorULong>.Deserialize<D>(ref D deserializer)
+        static System.Threading.Tasks.ValueTask<ColorULong> Serde.IDeserialize<ColorULong>.Deserialize<D>(D deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString<ColorULong, SerdeVisitor>(visitor);
@@ -438,7 +438,7 @@ using Serde;
 
 partial class C : Serde.IDeserialize<C>
 {
-    static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
+    static System.Threading.Tasks.ValueTask<C> Serde.IDeserialize<C>.Deserialize<D>(D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]{"ColorInt", "ColorByte", "ColorLong", "ColorULong"};
@@ -448,27 +448,27 @@ partial class C : Serde.IDeserialize<C>
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
     {
         public string ExpectedTypeName => "C";
-        C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
+        async System.Threading.Tasks.ValueTask<C> Serde.IDeserializeVisitor<C>.VisitDictionary<D>(D d)
         {
             Serde.Option<ColorInt> colorint = default;
             Serde.Option<ColorByte> colorbyte = default;
             Serde.Option<ColorLong> colorlong = default;
             Serde.Option<ColorULong> colorulong = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (await d.TryGetNextKey<string, StringWrap>()is var nextOpt && nextOpt.HasValue)
             {
-                switch (key)
+                switch (nextOpt.GetValueOrDefault())
                 {
                     case "colorInt":
-                        colorint = d.GetNextValue<ColorInt, ColorIntWrap>();
+                        colorint = await d.GetNextValue<ColorInt, ColorIntWrap>();
                         break;
                     case "colorByte":
-                        colorbyte = d.GetNextValue<ColorByte, ColorByteWrap>();
+                        colorbyte = await d.GetNextValue<ColorByte, ColorByteWrap>();
                         break;
                     case "colorLong":
-                        colorlong = d.GetNextValue<ColorLong, ColorLongWrap>();
+                        colorlong = await d.GetNextValue<ColorLong, ColorLongWrap>();
                         break;
                     case "colorULong":
-                        colorulong = d.GetNextValue<ColorULong, ColorULongWrap>();
+                        colorulong = await d.GetNextValue<ColorULong, ColorULongWrap>();
                         break;
                     default:
                         break;
