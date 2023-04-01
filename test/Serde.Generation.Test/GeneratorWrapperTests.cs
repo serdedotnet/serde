@@ -24,8 +24,8 @@ readonly partial struct StringWrap
     }
 }";
             return VerifyDiagnostics(src,
-            // /0/Test0.cs(3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
-            DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan(3, 18, 3, 28));
+            // (3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
+            DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 29));
 
         }
 
@@ -38,8 +38,8 @@ using Serde;
 partial record struct StringWrap(string Wrapped);
 ";
             return VerifyDiagnostics(src,
-            // /0/Test0.cs(3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
-            DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan(3, 18, 3, 27));
+            // (3,2): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
+            DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 28));
         }
 
         [Fact]
@@ -140,6 +140,19 @@ partial class C
     public BitVector32.Section S = new BitVector32.Section();
 }";
             return VerifyGeneratedCode(src, new[] {
+                ("C.ISerialize", @"
+#nullable enable
+using Serde;
+
+partial class C : Serde.ISerialize
+{
+    void Serde.ISerialize.Serialize(ISerializer serializer)
+    {
+        var type = serializer.SerializeType(""C"", 1);
+        type.SerializeField(""s"", new BitVector32SectionWrap(this.S));
+        type.End();
+    }
+}"),
                 ("Serde.BitVector32SectionWrap", @"
 namespace Serde
 {
@@ -162,19 +175,6 @@ namespace Serde
         }
     }
 }"),
-                ("C.ISerialize", @"
-#nullable enable
-using Serde;
-
-partial class C : Serde.ISerialize
-{
-    void Serde.ISerialize.Serialize(ISerializer serializer)
-    {
-        var type = serializer.SerializeType(""C"", 1);
-        type.SerializeField(""s"", new BitVector32SectionWrap(this.S));
-        type.End();
-    }
-}")
             });
         }
 
@@ -189,10 +189,48 @@ partial class C
     public BitVector32.Section S = new BitVector32.Section();
 }";
             return VerifyGeneratedCode(src, new[] {
-                ("Serde.BitVector32SectionWrap", @"
-namespace Serde
+                ("C.IDeserialize", @"
+#nullable enable
+using Serde;
+
+partial class C : Serde.IDeserialize<C>
 {
-    internal readonly partial record struct BitVector32SectionWrap(System.Collections.Specialized.BitVector32.Section Value);
+    static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
+    {
+        var visitor = new SerdeVisitor();
+        var fieldNames = new[]
+        {
+            ""S""
+        };
+        return deserializer.DeserializeType<C, SerdeVisitor>(""C"", fieldNames, visitor);
+    }
+
+    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
+    {
+        public string ExpectedTypeName => ""C"";
+
+        C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
+        {
+            Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
+            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            {
+                switch (key)
+                {
+                    case ""s"":
+                        s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            var newType = new C()
+            {
+                S = s.GetValueOrThrow(""S""),
+            };
+            return newType;
+        }
+    }
 }"),
                 ("Serde.BitVector32SectionWrap.IDeserialize", @"
 #nullable enable
@@ -246,53 +284,17 @@ namespace Serde
         }
     }
 }"),
-                ("C.IDeserialize", @"
-#nullable enable
-using Serde;
-
-partial class C : Serde.IDeserialize<C>
+                ("Serde.BitVector32SectionWrap", @"
+namespace Serde
 {
-    static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
-    {
-        var visitor = new SerdeVisitor();
-        var fieldNames = new[]
-        {
-            ""S""
-        };
-        return deserializer.DeserializeType<C, SerdeVisitor>(""C"", fieldNames, visitor);
-    }
+    internal readonly partial record struct BitVector32SectionWrap(System.Collections.Specialized.BitVector32.Section Value);
+}"),
+        },
+    // SerdeGenerator/Serde.SerdeImplRoslynGenerator/Serde.BitVector32SectionWrap.IDeserialize.cs(45,21): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.SerdeImplRoslynGenerator/Serde.BitVector32SectionWrap.IDeserialize.cs", 45, 21, 45, 25),
+    // SerdeGenerator/Serde.SerdeImplRoslynGenerator/Serde.BitVector32SectionWrap.IDeserialize.cs(46,21): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.SerdeImplRoslynGenerator/Serde.BitVector32SectionWrap.IDeserialize.cs", 46, 21, 46, 27));
 
-    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
-    {
-        public string ExpectedTypeName => ""C"";
-
-        C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
-        {
-            Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
-            {
-                switch (key)
-                {
-                    case ""s"":
-                        s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            var newType = new C()
-            {
-                S = s.GetValueOrThrow(""S""),
-            };
-            return newType;
-        }
-    }
-}") },
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(45,21): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 45, 21, 45, 25),
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(46,21): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 46, 21, 46, 27));
 
         }
 

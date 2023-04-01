@@ -16,12 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FsCheck" Version="2.15.3" />
-    <PackageReference Include="FsCheck.Xunit" Version="2.15.3" />
-    <PackageReference Include="Microsoft.NETCore.App.Ref" Version="7.0.0">
-      <ExcludeAssets>all</ExcludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0-1.final" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing.XUnit" Version="1.1.1" />

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using StaticCs;
 
 namespace Serde
 {
@@ -17,6 +18,7 @@ namespace Serde
         IReadOnlyDictionary_2,
     }
 
+    [Closed]
     internal enum WellKnownAttribute
     {
         GenerateSerialize,
@@ -69,7 +71,6 @@ namespace Serde
             WellKnownAttribute.GenerateWrapper => nameof(WellKnownAttribute.GenerateWrapper),
             WellKnownAttribute.SerdeTypeOptions => nameof(WellKnownAttribute.SerdeTypeOptions),
             WellKnownAttribute.SerdeMemberOptions => nameof(WellKnownAttribute.SerdeMemberOptions),
-            _ => throw ExceptionUtilities.UnexpectedValue(wk)
         };
 
         internal static bool HasMatchingName(string name, WellKnownAttribute wk)

@@ -11,7 +11,7 @@ using static Serde.Diagnostics;
 
 namespace Serde
 {
-    partial class Generator
+    partial class SerdeImplRoslynGenerator
     {
         private const string GeneratedVisitorName = "SerdeVisitor";
 

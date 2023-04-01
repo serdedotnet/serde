@@ -1,7 +1,10 @@
 
+using System.Collections;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using SerdeGenerator;
 using StaticCs;
+using static Serde.DiagId;
 
 namespace Serde
 {
@@ -14,11 +17,6 @@ namespace Serde
         ERR_CantFindConstructorSignature = 4,
         ERR_CantFindNestedWrapper = 5,
     }
-}
-
-namespace Serde
-{
-    using static Serde.DiagId;
 
     internal static class Diagnostics
     {
