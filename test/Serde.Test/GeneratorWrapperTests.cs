@@ -86,13 +86,18 @@ partial struct PointWrap : Serde.IDeserialize<Point>
     static Point Serde.IDeserialize<Point>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{""X"", ""Y""};
+        var fieldNames = new[]
+        {
+            ""X"",
+            ""Y""
+        };
         return deserializer.DeserializeType<Point, SerdeVisitor>(""Point"", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Point>
     {
         public string ExpectedTypeName => ""Point"";
+
         Point Serde.IDeserializeVisitor<Point>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<int> x = default;
@@ -113,7 +118,10 @@ partial struct PointWrap : Serde.IDeserialize<Point>
             }
 
             var newType = new Point()
-            {X = x.GetValueOrThrow(""X""), Y = y.GetValueOrThrow(""Y""), };
+            {
+                X = x.GetValueOrThrow(""X""),
+                Y = y.GetValueOrThrow(""Y""),
+            };
             return newType;
         }
     }
@@ -197,13 +205,18 @@ namespace Serde
         static System.Collections.Specialized.BitVector32.Section Serde.IDeserialize<System.Collections.Specialized.BitVector32.Section>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            var fieldNames = new[]{""Mask"", ""Offset""};
+            var fieldNames = new[]
+            {
+                ""Mask"",
+                ""Offset""
+            };
             return deserializer.DeserializeType<System.Collections.Specialized.BitVector32.Section, SerdeVisitor>(""Section"", fieldNames, visitor);
         }
 
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>
         {
             public string ExpectedTypeName => ""System.Collections.Specialized.BitVector32.Section"";
+
             System.Collections.Specialized.BitVector32.Section Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>.VisitDictionary<D>(ref D d)
             {
                 Serde.Option<short> mask = default;
@@ -224,7 +237,10 @@ namespace Serde
                 }
 
                 var newType = new System.Collections.Specialized.BitVector32.Section()
-                {Mask = mask.GetValueOrThrow(""Mask""), Offset = offset.GetValueOrThrow(""Offset""), };
+                {
+                    Mask = mask.GetValueOrThrow(""Mask""),
+                    Offset = offset.GetValueOrThrow(""Offset""),
+                };
                 return newType;
             }
         }
@@ -239,13 +255,17 @@ partial class C : Serde.IDeserialize<C>
     static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{""S""};
+        var fieldNames = new[]
+        {
+            ""S""
+        };
         return deserializer.DeserializeType<C, SerdeVisitor>(""C"", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
     {
         public string ExpectedTypeName => ""C"";
+
         C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
@@ -262,15 +282,17 @@ partial class C : Serde.IDeserialize<C>
             }
 
             var newType = new C()
-            {S = s.GetValueOrThrow(""S""), };
+            {
+                S = s.GetValueOrThrow(""S""),
+            };
             return newType;
         }
     }
 }") },
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,18): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 18, 39, 22).WithArguments("System.Collections.Specialized.BitVector32.Section.Mask"),
-    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(39,55): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
-    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 39, 55, 39, 61).WithArguments("System.Collections.Specialized.BitVector32.Section.Offset"));
+    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(45,21): error CS0200: Property or indexer 'BitVector32.Section.Mask' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 45, 21, 45, 25),
+    // SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs(46,21): error CS0200: Property or indexer 'BitVector32.Section.Offset' cannot be assigned to -- it is read only
+    DiagnosticResult.CompilerError("CS0200").WithSpan("SerdeGenerator/Serde.Generator/Serde.BitVector32SectionWrap.IDeserialize.cs", 46, 21, 46, 27));
 
         }
 
@@ -294,13 +316,18 @@ partial record R : Serde.IDeserialize<R>
     static R Serde.IDeserialize<R>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"A", "B"};
+        var fieldNames = new[]
+        {
+            "A",
+            "B"
+        };
         return deserializer.DeserializeType<R, SerdeVisitor>("R", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<R>
     {
         public string ExpectedTypeName => "R";
+
         R Serde.IDeserializeVisitor<R>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<int> a = default;
@@ -321,7 +348,8 @@ partial record R : Serde.IDeserialize<R>
             }
 
             var newType = new R(a.GetValueOrThrow("A"), b.GetValueOrThrow("B"))
-            {};
+            {
+            };
             return newType;
         }
     }
@@ -367,9 +395,7 @@ partial class Address : Serde.ISerialize
     void Serde.ISerialize.Serialize(ISerializer serializer)
     {
         var type = serializer.SerializeType("Address", 5);
-        type.SerializeField("name", new StringWrap(this.Name), new System.Attribute[]{new System.Xml.Serialization.XmlAttributeAttribute()
-        {}, new Serde.SerdeMemberOptions()
-        {ProvideAttributes = true}});
+        type.SerializeField("name", new StringWrap(this.Name), new System.Attribute[] { new System.Xml.Serialization.XmlAttributeAttribute() { }, new Serde.SerdeMemberOptions() { ProvideAttributes = true } });
         type.SerializeField("line1", new StringWrap(this.Line1));
         type.SerializeField("city", new StringWrap(this.City));
         type.SerializeField("state", new StringWrap(this.State));
@@ -421,6 +447,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Test.Channel>
         {
             public string ExpectedTypeName => "Test.Channel";
+
             Test.Channel Serde.IDeserializeVisitor<Test.Channel>.VisitString(string s) => s switch
             {
                 "a" => Test.Channel.A,
@@ -449,13 +476,17 @@ namespace Test
         static Test.ChannelList Serde.IDeserialize<Test.ChannelList>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            var fieldNames = new[]{"Channels"};
+            var fieldNames = new[]
+            {
+                "Channels"
+            };
             return deserializer.DeserializeType<Test.ChannelList, SerdeVisitor>("ChannelList", fieldNames, visitor);
         }
 
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Test.ChannelList>
         {
             public string ExpectedTypeName => "Test.ChannelList";
+
             Test.ChannelList Serde.IDeserializeVisitor<Test.ChannelList>.VisitDictionary<D>(ref D d)
             {
                 Serde.Option<System.Collections.Immutable.ImmutableArray<Test.Channel>> channels = default;
@@ -472,7 +503,9 @@ namespace Test
                 }
 
                 var newType = new Test.ChannelList()
-                {Channels = channels.GetValueOrThrow("Channels"), };
+                {
+                    Channels = channels.GetValueOrThrow("Channels"),
+                };
                 return newType;
             }
         }
