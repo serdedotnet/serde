@@ -32,13 +32,18 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
     static Rgb Serde.IDeserialize<Rgb>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"Red", "Blue"};
+        var fieldNames = new[]
+        {
+            "Red",
+            "Blue"
+        };
         return deserializer.DeserializeType<Rgb, SerdeVisitor>("Rgb", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Rgb>
     {
         public string ExpectedTypeName => "Rgb";
+
         Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<byte> red = default;
@@ -59,7 +64,10 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             }
 
             var newType = new Rgb()
-            {Red = red.GetValueOrThrow("Red"), Blue = blue.GetValueOrThrow("Blue"), };
+            {
+                Red = red.GetValueOrThrow("Red"),
+                Blue = blue.GetValueOrThrow("Blue"),
+            };
             return newType;
         }
     }
@@ -91,13 +99,18 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
     static Rgb Serde.IDeserialize<Rgb>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"Red", "Blue"};
+        var fieldNames = new[]
+        {
+            "Red",
+            "Blue"
+        };
         return deserializer.DeserializeType<Rgb, SerdeVisitor>("Rgb", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Rgb>
     {
         public string ExpectedTypeName => "Rgb";
+
         Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<byte> red = default;
@@ -118,7 +131,10 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             }
 
             var newType = new Rgb()
-            {Red = red.GetValueOrThrow("Red"), Blue = blue.GetValueOrThrow("Blue"), };
+            {
+                Red = red.GetValueOrThrow("Red"),
+                Blue = blue.GetValueOrThrow("Blue"),
+            };
             return newType;
         }
     }
@@ -150,13 +166,19 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
     static Rgb Serde.IDeserialize<Rgb>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"Red", "Green", "Blue"};
+        var fieldNames = new[]
+        {
+            "Red",
+            "Green",
+            "Blue"
+        };
         return deserializer.DeserializeType<Rgb, SerdeVisitor>("Rgb", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Rgb>
     {
         public string ExpectedTypeName => "Rgb";
+
         Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<byte> red = default;
@@ -181,7 +203,11 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             }
 
             var newType = new Rgb()
-            {Red = red.GetValueOrThrow("Red"), Green = green.GetValueOrThrow("Green"), Blue = blue.GetValueOrThrow("Blue"), };
+            {
+                Red = red.GetValueOrThrow("Red"),
+                Green = green.GetValueOrThrow("Green"),
+                Blue = blue.GetValueOrThrow("Blue"),
+            };
             return newType;
         }
     }
@@ -207,13 +233,19 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
     static Rgb Serde.IDeserialize<Rgb>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{""Red"", ""Green"", ""Blue""};
+        var fieldNames = new[]
+        {
+            ""Red"",
+            ""Green"",
+            ""Blue""
+        };
         return deserializer.DeserializeType<Rgb, SerdeVisitor>(""Rgb"", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Rgb>
     {
         public string ExpectedTypeName => ""Rgb"";
+
         Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<byte> red = default;
@@ -238,7 +270,11 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             }
 
             var newType = new Rgb()
-            {Red = red.GetValueOrThrow(""Red""), Green = green.GetValueOrThrow(""Green""), Blue = blue.GetValueOrThrow(""Blue""), };
+            {
+                Red = red.GetValueOrThrow(""Red""),
+                Green = green.GetValueOrThrow(""Green""),
+                Blue = blue.GetValueOrThrow(""Blue""),
+            };
             return newType;
         }
     }
@@ -263,13 +299,17 @@ partial struct S : Serde.IDeserialize<S>
     static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{""F""};
+        var fieldNames = new[]
+        {
+            ""F""
+        };
         return deserializer.DeserializeType<S, SerdeVisitor>(""S"", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
     {
         public string ExpectedTypeName => ""S"";
+
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<string?> f = default;
@@ -286,7 +326,9 @@ partial struct S : Serde.IDeserialize<S>
             }
 
             var newType = new S()
-            {F = f.GetValueOrDefault(null), };
+            {
+                F = f.GetValueOrDefault(null),
+            };
             return newType;
         }
     }
@@ -316,13 +358,19 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
     static SetToNull Serde.IDeserialize<SetToNull>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"Present", "Missing", "ThrowMissing"};
+        var fieldNames = new[]
+        {
+            "Present",
+            "Missing",
+            "ThrowMissing"
+        };
         return deserializer.DeserializeType<SetToNull, SerdeVisitor>("SetToNull", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<SetToNull>
     {
         public string ExpectedTypeName => "SetToNull";
+
         SetToNull Serde.IDeserializeVisitor<SetToNull>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<string> present = default;
@@ -347,7 +395,11 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
             }
 
             var newType = new SetToNull()
-            {Present = present.GetValueOrThrow("Present"), Missing = missing.GetValueOrDefault(null), ThrowMissing = throwmissing.GetValueOrThrow("ThrowMissing"), };
+            {
+                Present = present.GetValueOrThrow("Present"),
+                Missing = missing.GetValueOrDefault(null),
+                ThrowMissing = throwmissing.GetValueOrThrow("ThrowMissing"),
+            };
             return newType;
         }
     }
@@ -374,13 +426,17 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
     static ArrayField Serde.IDeserialize<ArrayField>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{""IntArr""};
+        var fieldNames = new[]
+        {
+            ""IntArr""
+        };
         return deserializer.DeserializeType<ArrayField, SerdeVisitor>(""ArrayField"", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ArrayField>
     {
         public string ExpectedTypeName => ""ArrayField"";
+
         ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<int[]> intarr = default;
@@ -397,7 +453,9 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
             }
 
             var newType = new ArrayField()
-            {IntArr = intarr.GetValueOrThrow(""IntArr""), };
+            {
+                IntArr = intarr.GetValueOrThrow(""IntArr""),
+            };
             return newType;
         }
     }
@@ -446,6 +504,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorInt>
         {
             public string ExpectedTypeName => "ColorInt";
+
             ColorInt Serde.IDeserializeVisitor<ColorInt>.VisitString(string s) => s switch
             {
                 "red" => ColorInt.Red,
@@ -485,6 +544,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorByte>
         {
             public string ExpectedTypeName => "ColorByte";
+
             ColorByte Serde.IDeserializeVisitor<ColorByte>.VisitString(string s) => s switch
             {
                 "red" => ColorByte.Red,
@@ -524,6 +584,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorLong>
         {
             public string ExpectedTypeName => "ColorLong";
+
             ColorLong Serde.IDeserializeVisitor<ColorLong>.VisitString(string s) => s switch
             {
                 "red" => ColorLong.Red,
@@ -563,6 +624,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorULong>
         {
             public string ExpectedTypeName => "ColorULong";
+
             ColorULong Serde.IDeserializeVisitor<ColorULong>.VisitString(string s) => s switch
             {
                 "red" => ColorULong.Red,
@@ -589,13 +651,20 @@ partial class C : Serde.IDeserialize<C>
     static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"ColorInt", "ColorByte", "ColorLong", "ColorULong"};
+        var fieldNames = new[]
+        {
+            "ColorInt",
+            "ColorByte",
+            "ColorLong",
+            "ColorULong"
+        };
         return deserializer.DeserializeType<C, SerdeVisitor>("C", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
     {
         public string ExpectedTypeName => "C";
+
         C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<ColorInt> colorint = default;
@@ -624,7 +693,12 @@ partial class C : Serde.IDeserialize<C>
             }
 
             var newType = new C()
-            {ColorInt = colorint.GetValueOrThrow("ColorInt"), ColorByte = colorbyte.GetValueOrThrow("ColorByte"), ColorLong = colorlong.GetValueOrThrow("ColorLong"), ColorULong = colorulong.GetValueOrThrow("ColorULong"), };
+            {
+                ColorInt = colorint.GetValueOrThrow("ColorInt"),
+                ColorByte = colorbyte.GetValueOrThrow("ColorByte"),
+                ColorLong = colorlong.GetValueOrThrow("ColorLong"),
+                ColorULong = colorulong.GetValueOrThrow("ColorULong"),
+            };
             return newType;
         }
     }

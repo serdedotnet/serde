@@ -151,6 +151,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorEnum>
         {
             public string ExpectedTypeName => "ColorEnum";
+
             ColorEnum Serde.IDeserializeVisitor<ColorEnum>.VisitString(string s) => s switch
             {
                 "red" => ColorEnum.Red,
@@ -177,13 +178,17 @@ partial struct S : Serde.IDeserialize<S>
     static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"E"};
+        var fieldNames = new[]
+        {
+            "E"
+        };
         return deserializer.DeserializeType<S, SerdeVisitor>("S", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
     {
         public string ExpectedTypeName => "S";
+
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<ColorEnum> e = default;
@@ -200,7 +205,9 @@ partial struct S : Serde.IDeserialize<S>
             }
 
             var newType = new S()
-            {E = e.GetValueOrThrow("E"), };
+            {
+                E = e.GetValueOrThrow("E"),
+            };
             return newType;
         }
     }
@@ -231,13 +238,17 @@ partial struct S2 : Serde.IDeserialize<S2>
     static S2 Serde.IDeserialize<S2>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"E"};
+        var fieldNames = new[]
+        {
+            "E"
+        };
         return deserializer.DeserializeType<S2, SerdeVisitor>("S2", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S2>
     {
         public string ExpectedTypeName => "S2";
+
         S2 Serde.IDeserializeVisitor<S2>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<ColorEnum> e = default;
@@ -254,7 +265,9 @@ partial struct S2 : Serde.IDeserialize<S2>
             }
 
             var newType = new S2()
-            {E = e.GetValueOrThrow("E"), };
+            {
+                E = e.GetValueOrThrow("E"),
+            };
             return newType;
         }
     }
@@ -303,13 +316,18 @@ partial struct S : Serde.IDeserialize<S>
     static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        var fieldNames = new[]{"One", "TwoWord"};
+        var fieldNames = new[]
+        {
+            "One",
+            "TwoWord"
+        };
         return deserializer.DeserializeType<S, SerdeVisitor>("S", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
     {
         public string ExpectedTypeName => "S";
+
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<int> one = default;
@@ -330,7 +348,10 @@ partial struct S : Serde.IDeserialize<S>
             }
 
             var newType = new S()
-            {One = one.GetValueOrThrow("One"), TwoWord = twoword.GetValueOrThrow("TwoWord"), };
+            {
+                One = one.GetValueOrThrow("One"),
+                TwoWord = twoword.GetValueOrThrow("TwoWord"),
+            };
             return newType;
         }
     }
