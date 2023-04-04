@@ -11,7 +11,11 @@ namespace Serde.Test
             static Serde.Test.JsonDeserializeTests.SetToNull Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SetToNull>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
-                var fieldNames = new[]{"Present", "Missing"};
+                var fieldNames = new[]
+                {
+                    "Present",
+                    "Missing"
+                };
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.SetToNull, SerdeVisitor>("SetToNull", fieldNames, visitor);
             }
 
@@ -38,7 +42,10 @@ namespace Serde.Test
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.SetToNull()
-                    {Present = present.GetValueOrThrow("Present"), Missing = missing.GetValueOrDefault(null), };
+                    {
+                        Present = present.GetValueOrThrow("Present"),
+                        Missing = missing.GetValueOrDefault(null),
+                    };
                     return newType;
                 }
             }

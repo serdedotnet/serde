@@ -11,7 +11,10 @@ namespace Serde.Test
             static Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStruct>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
-                var fieldNames = new[]{"Id"};
+                var fieldNames = new[]
+                {
+                    "Id"
+                };
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.IdStruct, SerdeVisitor>("IdStruct", fieldNames, visitor);
             }
 
@@ -34,7 +37,9 @@ namespace Serde.Test
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.IdStruct()
-                    {Id = id.GetValueOrThrow("Id"), };
+                    {
+                        Id = id.GetValueOrThrow("Id"),
+                    };
                     return newType;
                 }
             }

@@ -11,7 +11,11 @@ namespace Serde.Test
             static Serde.Test.JsonDeserializeTests.NullableFields Serde.IDeserialize<Serde.Test.JsonDeserializeTests.NullableFields>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
-                var fieldNames = new[]{"S", "Dict"};
+                var fieldNames = new[]
+                {
+                    "S",
+                    "Dict"
+                };
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.NullableFields, SerdeVisitor>("NullableFields", fieldNames, visitor);
             }
 
@@ -38,7 +42,10 @@ namespace Serde.Test
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.NullableFields()
-                    {S = s.GetValueOrDefault(null), Dict = dict.GetValueOrThrow("Dict"), };
+                    {
+                        S = s.GetValueOrDefault(null),
+                        Dict = dict.GetValueOrThrow("Dict"),
+                    };
                     return newType;
                 }
             }

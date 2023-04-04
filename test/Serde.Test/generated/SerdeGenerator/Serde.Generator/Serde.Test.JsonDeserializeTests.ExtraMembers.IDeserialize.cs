@@ -11,7 +11,10 @@ namespace Serde.Test
             static Serde.Test.JsonDeserializeTests.ExtraMembers Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ExtraMembers>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
-                var fieldNames = new[]{"b"};
+                var fieldNames = new[]
+                {
+                    "b"
+                };
                 return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.ExtraMembers, SerdeVisitor>("ExtraMembers", fieldNames, visitor);
             }
 
@@ -34,7 +37,9 @@ namespace Serde.Test
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.ExtraMembers()
-                    {b = b.GetValueOrThrow("b"), };
+                    {
+                        b = b.GetValueOrThrow("b"),
+                    };
                     return newType;
                 }
             }
