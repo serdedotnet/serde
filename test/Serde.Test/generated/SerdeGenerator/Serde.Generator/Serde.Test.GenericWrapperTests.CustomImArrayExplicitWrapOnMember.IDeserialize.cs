@@ -11,7 +11,10 @@ namespace Serde.Test
             static Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
-                var fieldNames = new[]{"A"};
+                var fieldNames = new[]
+                {
+                    "A"
+                };
                 return deserializer.DeserializeType<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember, SerdeVisitor>("CustomImArrayExplicitWrapOnMember", fieldNames, visitor);
             }
 
@@ -34,7 +37,9 @@ namespace Serde.Test
                     }
 
                     var newType = new Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember()
-                    {A = a.GetValueOrThrow("A"), };
+                    {
+                        A = a.GetValueOrThrow("A"),
+                    };
                     return newType;
                 }
             }
