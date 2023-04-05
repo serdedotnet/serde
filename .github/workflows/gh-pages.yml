@@ -1,5 +1,7 @@
 name: github pages
 
+permissions: write-contents
+
 on:
   push:
     branches:
