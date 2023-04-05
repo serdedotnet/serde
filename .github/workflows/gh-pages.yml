@@ -1,6 +1,6 @@
 name: github pages
 
-permissions: write-contents
+permissions: write-all
 
 on:
   push:
