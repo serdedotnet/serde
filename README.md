@@ -1,11 +1,11 @@
-# Serde-dn
+# Serde.NET
 
-Serde-dn is a port of the popular [serde.rs](https://serde.rs) Rust ***ser***ialization/***de***serialization
+Serde.NET is a port of the popular [serde.rs](https://serde.rs) Rust ***ser***ialization/***de***serialization
 library to .NET.
 
 For an overview, see [Overview](https://agocke.github.io/serde-dn/overview.html).
 
-Start by adding the `serde-dn` NuGet package:
+Start by adding the `serde` NuGet package:
 
 ```bash
 dotnet add package serde --prerelease
