@@ -76,7 +76,6 @@ Serde.Json.JsonSerializer.Deserialize<{typeName}>({serName});");
             }
 
             var body = string.Join(Environment.NewLine, serializeStatements);
-            var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
             var mainTree = SyntaxFactory.ParseSyntaxTree($@"
 using System;
 using System.Collections.Generic;
@@ -90,7 +89,7 @@ namespace Serde.Test
             {body}
         }}
     }}
-}}", parseOptions, path: "Driver.cs");
+}}", path: "Driver.cs");
 
             var allTypes = SyntaxTree(CompilationUnit(
                 externs: default,
@@ -109,7 +108,6 @@ namespace Serde.Test
                         usings: default,
                         members: List(wrappers))
                 })).NormalizeWhitespace(),
-                parseOptions,
                 path: "AllTypes.cs");
 
             var refs = new[] {
@@ -118,11 +116,11 @@ namespace Serde.Test
 
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
-               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, parseOptions, "DeepEquals.cs") },
+               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
                references: (await Config.LatestTfRefs.ResolveAsync(null, default)).Concat(refs),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
-            var driver = CSharpGeneratorDriver.Create(new[] { new Generator() }, parseOptions: parseOptions);
+            var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });
             driver.RunGeneratorsAndUpdateCompilation(
                 comp,
                 out var newComp,

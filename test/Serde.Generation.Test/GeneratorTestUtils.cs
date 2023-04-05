@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -31,13 +32,12 @@ namespace Serde.Test
             params DiagnosticResult[] diagnostics)
             => VerifyGeneratedCode(src, new[] { (typeName, expected)}, diagnostics);
 
-
         public static async Task VerifyGeneratedCode(
             string src,
             (string FileName, string Source)[] generated,
             params DiagnosticResult[] diagnostics)
         {
-            var generatorInstance = new Generator();
+            var generatorInstance = new SerdeImplRoslynGenerator();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(generatorInstance);
             var comp = await CreateCompilation(src);
             driver = driver.RunGeneratorsAndUpdateCompilation(comp, out var newComp, out _);
@@ -59,14 +59,23 @@ Expected:
 Actual:
 {FormatDiagnostics("Program.cs", resultDiags.ToArray())}
 """);
-            for (int i = 0; i < Math.Min(generated.Length, result.GeneratedTrees.Length); i++)
+            Array.Sort(generated);
+            if (generated.Length != result.GeneratedTrees.Length)
             {
-                var expected = generated[i];
-                var actual = result.GeneratedTrees[i];
-                Assert.Equal(expected.FileName, Path.GetFileNameWithoutExtension(actual.FilePath));
-                Assert.Equal(expected.Source, actual.GetText().ToString());
+                Assert.Equal(generated, result.GeneratedTrees.Select(t =>
+                    (Path.GetFileNameWithoutExtension(t.FilePath),
+                     t.GetText().ToString())));
             }
-            Assert.Equal(generated.Length, result.GeneratedTrees.Length);
+            else
+            {
+                for (int i = 0; i < Math.Min(generated.Length, result.GeneratedTrees.Length); i++)
+                {
+                    var expected = generated[i];
+                    var actual = result.GeneratedTrees[i];
+                    Assert.Equal(expected.FileName, Path.GetFileNameWithoutExtension(actual.FilePath));
+                    Assert.Equal(expected.Source, actual.GetText().ToString());
+                }
+            }
         }
 
         public static DiagnosticResult AsResult(this Diagnostic d)

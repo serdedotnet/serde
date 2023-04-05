@@ -14,7 +14,7 @@ using static Serde.WellKnownTypes;
 
 namespace Serde
 {
-    public partial class Generator : ISourceGenerator
+    public partial class SerdeImplRoslynGenerator
     {
         private static (MemberDeclarationSyntax[], BaseListSyntax) GenerateSerializeImpl(
             GeneratorExecutionContext context,
@@ -283,12 +283,7 @@ namespace Serde
 {{
     internal readonly partial record struct {wrapperName}({type.ToDisplayString()} {argName});
 }}";
-
-            // Check if we've already created this wrapper
-            if (_registry.TryAdd(context.Compilation, wrapperFqn))
-            {
-                context.AddSource(wrapperFqn, src);
-            }
+            context.AddSource(wrapperFqn, src);
             var tree = SyntaxFactory.ParseSyntaxTree(src);
             var typeDecl = (RecordDeclarationSyntax)((NamespaceDeclarationSyntax)tree.GetCompilationUnitRoot().Members[0]).Members[0];
             GenerateImpl(usage, new TypeDeclContext(typeDecl), type, IdentifierName(argName), context);

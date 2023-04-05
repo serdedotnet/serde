@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Serde
 {
@@ -10,6 +11,23 @@ namespace Serde
         public static Exception Unreachable => new InvalidOperationException("This location is thought to be unreachable");
 
         public static Exception UnexpectedValue<T>(T t) => new InvalidOperationException($"Value {t} was unexpected");
+    }
+
+    internal static class SpanExtensions
+    {
+        public static bool IsSorted<T>(this ReadOnlySpan<T> span) where T : IComparable<T>
+            => IsSorted(span, Comparer<T>.Default);
+        public static bool IsSorted<T>(this ReadOnlySpan<T> span, IComparer<T> comparer)
+        {
+            for (int i = 1; i < span.Length; i++)
+            {
+                if (comparer.Compare(span[i - 1], span[i]) > 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     internal static class Utilities

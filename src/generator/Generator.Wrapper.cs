@@ -13,11 +13,11 @@ using static Serde.WellKnownTypes;
 
 namespace Serde
 {
-    partial class Generator
+    partial class SerdeImplRoslynGenerator
     {
-        internal void GenerateWrapper(
+        internal static void GenerateWrapper(
             GeneratorExecutionContext context,
-            AttributeSyntax attributeSyntax,
+            AttributeData attributeData,
             TypeDeclarationSyntax typeDecl,
             SemanticModel model)
         {
@@ -31,13 +31,7 @@ namespace Serde
                 return;
             }
 
-            var attrArgSyntax = attributeSyntax.ArgumentList?.Arguments[0];
-            if (attrArgSyntax is null)
-            {
-                return;
-            }
-            var argValue = model.GetConstantValue(attrArgSyntax.Expression);
-            if (argValue.Value is not string memberName)
+            if (attributeData.ConstructorArguments is not [ { Value: string memberName } ])
             {
                 return;
             }
@@ -58,7 +52,7 @@ namespace Serde
             {
                 context.ReportDiagnostic(CreateDiagnostic(
                     DiagId.ERR_CantWrapSpecialType,
-                    attrArgSyntax.GetLocation(),
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
                     receiverType));
                 return;
             }

@@ -192,14 +192,14 @@ partial struct S<T1, T2, TSerialize>
 }
 """;
             var errors = new[] {
-                //0/Test0.cs(4,16): error CS0701: 'int?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.
-                DiagnosticResult.CompilerError("CS0701").WithSpan(4, 16, 4, 20).WithArguments("int?"),
-                // /0/Test0.cs(5,16): error CS0701: 'TSerialize?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.
-                DiagnosticResult.CompilerError("CS0701").WithSpan(5, 16, 5, 27).WithArguments("TSerialize?"),
-                // /0/Test0.cs(9,15): error ERR_DoesntImplementInterface: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
-                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(9, 15, 9, 17),
-                // /0/Test0.cs(10,15): error ERR_DoesntImplementInterface: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
-                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan(10, 15, 10, 17),
+                // (4,16): error CS0701: 'int?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.
+                DiagnosticResult.CompilerError("CS0701").WithSpan("", 4, 16, 4, 20),
+                // (5,16): error CS0701: 'TSerialize?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.
+                DiagnosticResult.CompilerError("CS0701").WithSpan("", 5, 16, 5, 27),
+                // (9,15): error ERR_DoesntImplementInterface: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
+                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan("", 9, 15, 9, 17),
+                // (10,15): error ERR_DoesntImplementInterface: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.
+                DiagnosticResult.CompilerError("ERR_DoesntImplementInterface").WithSpan("", 10, 15, 10, 17),
             };
 
             return VerifySerialize(src, "S", """

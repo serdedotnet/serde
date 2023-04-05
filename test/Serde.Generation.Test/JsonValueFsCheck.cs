@@ -1,5 +1,3 @@
-
-
 using System.Collections.Immutable;
 using FsCheck;
 using Serde.Json;

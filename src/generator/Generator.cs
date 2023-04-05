@@ -1,5 +1,9 @@
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,24 +42,8 @@ namespace Serde
     /// </code>
     /// </example>
     [Generator]
-
-    public partial class Generator : ISourceGenerator
+    public partial class SerdeImplRoslynGenerator : IIncrementalGenerator
     {
-        private static readonly GeneratorRegistry _registry = new GeneratorRegistry();
-
-        /// <inheritdoc/>
-        public void Initialize(GeneratorInitializationContext context) { }
-
-        /// <inheritdoc/>
-        public void Execute(GeneratorExecutionContext context)
-        {
-            var walker = new TypeWalker(this, context);
-            foreach (var tree in context.Compilation.SyntaxTrees)
-            {
-                walker.Visit(tree.GetRoot());
-            }
-        }
-
         internal static string? SerdeBuiltInName(SpecialType specialType) => specialType switch
         {
             SpecialType.System_String => "String",
@@ -75,69 +63,89 @@ namespace Serde
             _ => null
         };
 
-        private sealed class TypeWalker : CSharpSyntaxWalker
+        /// <inheritdoc />
+        public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            private readonly Generator _generator;
-            private readonly GeneratorExecutionContext _context;
-
-            public TypeWalker(Generator generator, GeneratorExecutionContext context)
+            static GenerationOutput GenerateForCtx(
+                SerdeUsage usage,
+                GeneratorAttributeSyntaxContext attrCtx,
+                CancellationToken cancelToken)
             {
-                _generator = generator;
-                _context = context;
-            }
-
-            public override void VisitClassDeclaration(ClassDeclarationSyntax node)
-            {
-                VisitTypeDecl(node);
-                base.VisitClassDeclaration(node);
-            }
-
-            public override void VisitStructDeclaration(StructDeclarationSyntax node)
-            {
-                VisitTypeDecl(node);
-                base.VisitStructDeclaration(node);
-            }
-
-            public override void VisitRecordDeclaration(RecordDeclarationSyntax node)
-            {
-                VisitTypeDecl(node);
-                base.VisitRecordDeclaration(node);
-            }
-
-            private void VisitTypeDecl(TypeDeclarationSyntax typeDecl)
-            {
-                var tree = typeDecl.SyntaxTree;
-                var context = _context;
-                foreach (var attrLists in typeDecl.AttributeLists)
+                var generationContext = new GeneratorExecutionContext(attrCtx);
+                if (usage.HasFlag(SerdeUsage.Serialize))
                 {
-                    foreach (var attr in attrLists.Attributes)
-                    {
-                        var name = attr.Name.ToString();
-                        if (WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateSerde) ||
-                            WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateSerialize))
-                        {
-                            Generator.GenerateImpl(
-                                SerdeUsage.Serialize,
-                                typeDecl,
-                                context.Compilation.GetSemanticModel(tree),
-                                context);
-                        }
-                        if (WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateSerde) ||
-                            WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateDeserialize))
-                        {
-                            Generator.GenerateImpl(
-                                SerdeUsage.Deserialize,
-                                typeDecl,
-                                context.Compilation.GetSemanticModel(tree),
-                                context);
-                        }
-                        if (WellKnownTypes.HasMatchingName(name, WellKnownAttribute.GenerateWrapper))
-                        {
-                            _generator.GenerateWrapper(context, attr, typeDecl, context.Compilation.GetSemanticModel(tree));
-                        }
-                    }
+                    SerdeImplRoslynGenerator.GenerateImpl(
+                        SerdeUsage.Serialize,
+                        (TypeDeclarationSyntax)attrCtx.TargetNode,
+                        attrCtx.SemanticModel,
+                        generationContext);
                 }
+                if (usage.HasFlag(SerdeUsage.Deserialize))
+                {
+                    SerdeImplRoslynGenerator.GenerateImpl(
+                        SerdeUsage.Deserialize,
+                        (TypeDeclarationSyntax)attrCtx.TargetNode,
+                        attrCtx.SemanticModel,
+                        generationContext);
+                }
+                return generationContext.GetOutput();
             }
+
+            var generateSerdeTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+                WellKnownAttribute.GenerateSerde.GetFqn(),
+                (_, _) => true,
+                (attrCtx, cancelToken) => GenerateForCtx(SerdeUsage.Both, attrCtx, cancelToken));
+            var generateWrapperTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+                WellKnownAttribute.GenerateWrapper.GetFqn(),
+                (_, _) => true,
+                (attrCtx, cancelToken) =>
+                {
+                    var generationContext = new GeneratorExecutionContext(attrCtx);
+                    SerdeImplRoslynGenerator.GenerateWrapper(
+                        generationContext,
+                        attrCtx.Attributes.Single(),
+                        (TypeDeclarationSyntax)attrCtx.TargetNode,
+                        attrCtx.SemanticModel);
+                    return generationContext.GetOutput();
+                });
+
+            var generateSerializeTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+                WellKnownAttribute.GenerateSerialize.GetFqn(),
+                (_, _) => true,
+                (attrCtx, cancelToken) => GenerateForCtx(SerdeUsage.Serialize, attrCtx, cancelToken));
+
+            var generateDeserializeTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+                WellKnownAttribute.GenerateDeserialize.GetFqn(),
+                (_, _) => true,
+                (attrCtx, cancelToken) => GenerateForCtx(SerdeUsage.Deserialize, attrCtx, cancelToken));
+
+            // Combine GenerateSerialize and GenerateDeserialize in case they both need to generate an identical
+            // helper type.
+            var combined = generateSerializeTypes.Collect()
+                .Combine(generateDeserializeTypes.Collect())
+                .Select(static (values, _) =>
+                {
+                    var (serialize, deserialize) = values;
+                    return new GenerationOutput(
+                        serialize.SelectMany(static o => o.Diagnostics).Concat(deserialize.SelectMany(static o => o.Diagnostics)),
+                        serialize.SelectMany(static o => o.Sources).Concat(deserialize.SelectMany(static o => o.Sources)));
+                });
+
+            var provideOutput = static (SourceProductionContext ctx, GenerationOutput output) =>
+            {
+                foreach (var d in output.Diagnostics)
+                {
+                    ctx.ReportDiagnostic(d);
+                }
+                foreach (var (fileName, content) in output.Sources)
+                {
+                    ctx.AddSource(fileName, content);
+                }
+            };
+
+            context.RegisterSourceOutput(generateWrapperTypes, provideOutput);
+            context.RegisterSourceOutput(generateSerdeTypes, provideOutput);
+            context.RegisterSourceOutput(combined, provideOutput);
         }
     }
 }
