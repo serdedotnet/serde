@@ -1,6 +1,0 @@
-[book]
-authors = ["Andy Gocke"]
-language = "en"
-multilingual = false
-src = "src"
-title = "serde-dn"
