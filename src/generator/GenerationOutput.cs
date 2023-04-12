@@ -8,7 +8,10 @@ using Microsoft.CodeAnalysis;
 
 namespace Serde;
 
-internal readonly record struct GenerationOutput
+/// <summary>
+/// The output of a single generation pass.
+/// </summary>
+public readonly record struct GenerationOutput
 {
     public ImmutableArray<Diagnostic> Diagnostics { get;}
     public ImmutableSortedSet<(string FileName, string Content)> Sources { get; }
@@ -33,5 +36,25 @@ internal readonly record struct GenerationOutput
         }
         Diagnostics = diagBuilder.ToImmutable();
         Sources = outputBuilder.ToImmutable();
+    }
+
+    public bool Equals(GenerationOutput other)
+    {
+        return Diagnostics.AsSpan().SequenceEqual(other.Diagnostics.AsSpan())
+            && Sources.SetEquals(other.Sources);
+    }
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (var diag in Diagnostics)
+        {
+            hash.Add(diag);
+        }
+        foreach (var source in Sources)
+        {
+            hash.Add(source);
+        }
+        return hash.ToHashCode();
     }
 }
