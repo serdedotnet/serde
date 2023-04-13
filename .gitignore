@@ -449,3 +449,6 @@ $RECYCLE.BIN/
 
 # Antlr
 .antlr
+
+# Verify
+*.received.*

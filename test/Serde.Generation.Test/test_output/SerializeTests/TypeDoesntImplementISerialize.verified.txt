@@ -1,0 +1,16 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (5,14)-(5,15),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      Message: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      Category: Serde
+    }
+  ]
+}
