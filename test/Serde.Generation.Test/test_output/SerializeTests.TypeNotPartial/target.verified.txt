@@ -1,0 +1,28 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_TypeNotPartial,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (3,7)-(3,8),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+      Message: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+      Category: Serde
+    },
+    {
+      Id: ERR_TypeNotPartial,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (5,6)-(5,7),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+      Message: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+      Category: Serde
+    }
+  ]
+}
