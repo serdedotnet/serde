@@ -1,6 +1,7 @@
 ﻿//HintName: S.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 partial struct S<T1, T2, T3, T4, T5> : Serde.ISerialize

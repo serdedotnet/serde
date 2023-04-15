@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.ColorByteWrap.IDeserialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde

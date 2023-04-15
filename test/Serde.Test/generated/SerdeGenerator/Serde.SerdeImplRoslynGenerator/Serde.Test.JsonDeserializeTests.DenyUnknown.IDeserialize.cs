@@ -7,9 +7,9 @@ namespace Serde.Test
 {
     partial class JsonDeserializeTests
     {
-        partial record struct ThrowMissing : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing>
+        partial record struct DenyUnknown : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown>
         {
-            static Serde.Test.JsonDeserializeTests.ThrowMissing Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing>.Deserialize<D>(ref D deserializer)
+            static Serde.Test.JsonDeserializeTests.DenyUnknown Serde.IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
                 var fieldNames = new[]
@@ -17,12 +17,12 @@ namespace Serde.Test
                     "Present",
                     "Missing"
                 };
-                return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.ThrowMissing, SerdeVisitor>("ThrowMissing", fieldNames, visitor);
+                return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.DenyUnknown, SerdeVisitor>("DenyUnknown", fieldNames, visitor);
             }
 
-            private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ThrowMissing>
+            private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.DenyUnknown>
             {
-                public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.ThrowMissing";
+                public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.DenyUnknown";
                 private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
                     public static byte Deserialize<D>(ref D deserializer)
@@ -38,12 +38,12 @@ namespace Serde.Test
                             case (byte)'m'when s.SequenceEqual("missing"u8):
                                 return 2;
                             default:
-                                return 0;
+                                throw new InvalidDeserializeValueException("Unexpected field or property name in type Serde.Test.JsonDeserializeTests.DenyUnknown: '" + System.Text.Encoding.UTF8.GetString(s) + "'");
                         }
                     }
                 }
 
-                Serde.Test.JsonDeserializeTests.ThrowMissing Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ThrowMissing>.VisitDictionary<D>(ref D d)
+                Serde.Test.JsonDeserializeTests.DenyUnknown Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.DenyUnknown>.VisitDictionary<D>(ref D d)
                 {
                     Serde.Option<string> present = default;
                     Serde.Option<string?> missing = default;
@@ -60,10 +60,10 @@ namespace Serde.Test
                         }
                     }
 
-                    var newType = new Serde.Test.JsonDeserializeTests.ThrowMissing()
+                    var newType = new Serde.Test.JsonDeserializeTests.DenyUnknown()
                     {
                         Present = present.GetValueOrThrow("Present"),
-                        Missing = missing.GetValueOrThrow("Missing"),
+                        Missing = missing.GetValueOrDefault(null),
                     };
                     return newType;
                 }

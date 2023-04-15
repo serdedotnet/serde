@@ -232,7 +232,9 @@ namespace Serde
             }
             else
             {
-                GenerateCustomTypeVisitor(type, context, typeName, typeMembers);
+                var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Deserialize);
+                typeMembers.Add(GenerateFieldNameVisitor(type, typeName, members));
+                typeMembers.Add(GenerateCustomTypeVisitor(type, typeName, context, members));
             }
 
             // private sealed class SerdeVisitor : IDeserializeVisitor<'typeName'>
@@ -251,70 +253,118 @@ namespace Serde
                 members: List(typeMembers));
         }
 
-        private static void GenerateCustomTypeVisitor(ITypeSymbol type, GeneratorExecutionContext context, string typeName, List<MemberDeclarationSyntax> typeMembers)
+        private static MemberDeclarationSyntax GenerateFieldNameVisitor(ITypeSymbol type, string typeName, List<DataMemberSymbol> members)
         {
-            var cases = new StringBuilder();
-            var locals = new StringBuilder();
-            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Deserialize);
-            foreach (var m in members)
+            var text = $$"""
+private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+{
+    public static byte Deserialize<D>(ref D deserializer) where D : IDeserializer
+        => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+
+    public string ExpectedTypeName => "string";
+
+    byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+    public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+    {
+        switch (s[0])
+        {
+            {{GetSwitchCases()}}
+        }
+    }
+}
+""";
+            string GetSwitchCases()
             {
-                string wrapperName;
-                var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize) is {} explicitWrap)
+                var cases = new StringBuilder();
+                for (int i = 0; i < members.Count; i++)
                 {
-                    wrapperName = explicitWrap.ToString();
+                    var m = members[i];
+                    var formatted = m.GetFormattedName();
+                    cases.AppendLine($"""
+                        case (byte)'{formatted[0]}' when s.SequenceEqual("{formatted}"u8):
+                            return {i+1};
+
+                        """);
                 }
-                else if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
-                {
-                    wrapperName = memberType;
-                }
-                else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize) is {} wrap)
-                {
-                    wrapperName = wrap.ToString();
-                }
-                else
-                {
-                    // No built-in handling and doesn't implement IDeserialize, error
-                    context.ReportDiagnostic(CreateDiagnostic(
-                        DiagId.ERR_DoesntImplementInterface,
-                        m.Locations[0],
-                        m.Symbol,
-                        memberType,
-                        "Serde.IDeserialize"));
-                    wrapperName = memberType;
-                }
-                var localName = GetLocalName(m);
-                locals.AppendLine($"Serde.Option<{memberType}> {localName} = default;");
-                // Note, don't use nullable annotation as wrappers don't necessarily allow null
-                cases.AppendLine(@$"
-            case ""{m.GetFormattedName()}"":
-                {localName} = d.GetNextValue<{memberType}, {wrapperName}>();
-                break;");
+                string unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
+                    ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + System.Text.Encoding.UTF8.GetString(s) + \"'\");"
+                    : "return 0;";
+                cases.AppendLine($"""
+                    default:
+                        {unknownMemberBehavior}
+                    """);
+                return cases.ToString();
             }
 
-            string unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
-                ? $"throw new InvalidDeserializeValueException(\"Unexpected field or property name in type {typeName}: '\" + key + \"'\");"
-                : "break;";
+            return ParseMemberDeclaration(text)!;
+        }
 
+        private static MemberDeclarationSyntax GenerateCustomTypeVisitor(ITypeSymbol type, string typeName, GeneratorExecutionContext context, List<DataMemberSymbol> members)
+        {
+            string cases;
+            string locals;
+            InitCasesAndLocals();
             string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members);
             var methodText = $$"""
 {{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
 {
     {{locals}}
-    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+    while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
     {
         switch (key)
         {
 {{cases}}
-            default:
-                {{unknownMemberBehavior}}
         }
     }
     {{typeCreationExpr}}
     return newType;
 }
 """;
-            typeMembers.Add(ParseMemberDeclaration(methodText)!);
+            return ParseMemberDeclaration(methodText)!;
+
+            void InitCasesAndLocals()
+            {
+                var casesBuilder = new StringBuilder();
+                var localsBuilder = new StringBuilder();
+                for (int i = 0; i < members.Count; i++)
+                {
+                    var m = members[i];
+                    string wrapperName;
+                    var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
+                    if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize) is { } explicitWrap)
+                    {
+                        wrapperName = explicitWrap.ToString();
+                    }
+                    else if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
+                    {
+                        wrapperName = memberType;
+                    }
+                    else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize) is { } wrap)
+                    {
+                        wrapperName = wrap.ToString();
+                    }
+                    else
+                    {
+                        // No built-in handling and doesn't implement IDeserialize, error
+                        context.ReportDiagnostic(CreateDiagnostic(
+                            DiagId.ERR_DoesntImplementInterface,
+                            m.Locations[0],
+                            m.Symbol,
+                            memberType,
+                            "Serde.IDeserialize"));
+                        wrapperName = memberType;
+                    }
+                    var localName = GetLocalName(m);
+                    localsBuilder.AppendLine($"Serde.Option<{memberType}> {localName} = default;");
+                    casesBuilder.AppendLine($"""
+                    case {i + 1}:
+                        {localName} = d.GetNextValue<{memberType}, {wrapperName}>();
+                        break;
+                    """);
+                }
+                cases = casesBuilder.ToString();
+                locals = localsBuilder.ToString();
+            }
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿//HintName: TestCase15.Class1.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 partial class TestCase15

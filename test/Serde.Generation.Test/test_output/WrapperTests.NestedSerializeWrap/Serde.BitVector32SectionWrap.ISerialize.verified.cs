@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.BitVector32SectionWrap.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde

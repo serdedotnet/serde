@@ -1,6 +1,7 @@
 ﻿//HintName: Test.ChannelList.IDeserialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Test
@@ -21,17 +22,34 @@ namespace Test
         {
             public string ExpectedTypeName => "Test.ChannelList";
 
+            private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+            {
+                public static byte Deserialize<D>(ref D deserializer)
+                    where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                public string ExpectedTypeName => "string";
+
+                byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+                public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+                {
+                    switch (s[0])
+                    {
+                        case (byte)'c'when s.SequenceEqual("channels"u8):
+                            return 1;
+                        default:
+                            return 0;
+                    }
+                }
+            }
+
             Test.ChannelList Serde.IDeserializeVisitor<Test.ChannelList>.VisitDictionary<D>(ref D d)
             {
                 Serde.Option<System.Collections.Immutable.ImmutableArray<Test.Channel>> channels = default;
-                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                 {
                     switch (key)
                     {
-                        case "channels":
+                        case 1:
                             channels = d.GetNextValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, ImmutableArrayWrap.DeserializeImpl<Test.Channel, ChannelWrap>>();
-                            break;
-                        default:
                             break;
                     }
                 }

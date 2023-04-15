@@ -1,6 +1,7 @@
 ﻿//HintName: Rgb.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 partial struct Rgb : Serde.ISerialize

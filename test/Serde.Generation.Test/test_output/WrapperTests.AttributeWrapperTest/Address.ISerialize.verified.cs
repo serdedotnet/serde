@@ -1,6 +1,7 @@
 ﻿//HintName: Address.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 partial class Address : Serde.ISerialize

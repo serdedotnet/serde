@@ -1,6 +1,7 @@
 ﻿//HintName: ArrayField.IDeserialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 partial class ArrayField : Serde.IDeserialize<ArrayField>
@@ -19,17 +20,34 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
     {
         public string ExpectedTypeName => "ArrayField";
 
+        private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+        {
+            public static byte Deserialize<D>(ref D deserializer)
+                where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+            public string ExpectedTypeName => "string";
+
+            byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+            public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+            {
+                switch (s[0])
+                {
+                    case (byte)'i'when s.SequenceEqual("intArr"u8):
+                        return 1;
+                    default:
+                        return 0;
+                }
+            }
+        }
+
         ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
         {
             Serde.Option<int[]> intarr = default;
-            while (d.TryGetNextKey<string, StringWrap>(out string? key))
+            while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
-                    case "intArr":
+                    case 1:
                         intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
-                        break;
-                    default:
                         break;
                 }
             }

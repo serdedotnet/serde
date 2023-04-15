@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.ColorULongWrap.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde
