@@ -458,10 +458,9 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
             {
                 assignments.AppendLine($"{m.Name} = {GetLocalName(m)},");
             }
-            var mask = (1 << members.Count) - 1;
-
+            var mask = new string('1', members.Count);
             return $$"""
-    if ({{AssignedVarName}} != 0b{{Convert.ToString(mask, 2)}})
+    if ({{AssignedVarName}} != 0b{{mask}})
     {
         throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
     }
