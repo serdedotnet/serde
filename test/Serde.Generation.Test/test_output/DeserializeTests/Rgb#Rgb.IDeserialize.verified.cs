@@ -47,30 +47,30 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
 
         Rgb Serde.IDeserializeVisitor<Rgb>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<byte> red = default;
-            Serde.Option<byte> green = default;
-            Serde.Option<byte> blue = default;
+            Serde.Option<byte> _l_red = default;
+            Serde.Option<byte> _l_green = default;
+            Serde.Option<byte> _l_blue = default;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        red = d.GetNextValue<byte, ByteWrap>();
+                        _l_red = d.GetNextValue<byte, ByteWrap>();
                         break;
                     case 2:
-                        green = d.GetNextValue<byte, ByteWrap>();
+                        _l_green = d.GetNextValue<byte, ByteWrap>();
                         break;
                     case 3:
-                        blue = d.GetNextValue<byte, ByteWrap>();
+                        _l_blue = d.GetNextValue<byte, ByteWrap>();
                         break;
                 }
             }
 
             var newType = new Rgb()
             {
-                Red = red.GetValueOrThrow("Red"),
-                Green = green.GetValueOrThrow("Green"),
-                Blue = blue.GetValueOrThrow("Blue"),
+                Red = _l_red.GetValueOrThrow("Red"),
+                Green = _l_green.GetValueOrThrow("Green"),
+                Blue = _l_blue.GetValueOrThrow("Blue"),
             };
             return newType;
         }

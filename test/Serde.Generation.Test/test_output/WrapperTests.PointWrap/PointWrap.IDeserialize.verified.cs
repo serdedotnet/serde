@@ -44,25 +44,25 @@ partial struct PointWrap : Serde.IDeserialize<Point>
 
         Point Serde.IDeserializeVisitor<Point>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<int> x = default;
-            Serde.Option<int> y = default;
+            Serde.Option<int> _l_x = default;
+            Serde.Option<int> _l_y = default;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        x = d.GetNextValue<int, Int32Wrap>();
+                        _l_x = d.GetNextValue<int, Int32Wrap>();
                         break;
                     case 2:
-                        y = d.GetNextValue<int, Int32Wrap>();
+                        _l_y = d.GetNextValue<int, Int32Wrap>();
                         break;
                 }
             }
 
             var newType = new Point()
             {
-                X = x.GetValueOrThrow("X"),
-                Y = y.GetValueOrThrow("Y"),
+                X = _l_x.GetValueOrThrow("X"),
+                Y = _l_y.GetValueOrThrow("Y"),
             };
             return newType;
         }

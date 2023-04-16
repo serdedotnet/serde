@@ -45,25 +45,25 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.DenyUnknown Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.DenyUnknown>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<string> present = default;
-                    Serde.Option<string?> missing = default;
+                    Serde.Option<string> _l_present = default;
+                    Serde.Option<string?> _l_missing = default;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
-                                present = d.GetNextValue<string, StringWrap>();
+                                _l_present = d.GetNextValue<string, StringWrap>();
                                 break;
                             case 2:
-                                missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                                _l_missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                                 break;
                         }
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.DenyUnknown()
                     {
-                        Present = present.GetValueOrThrow("Present"),
-                        Missing = missing.GetValueOrDefault(null),
+                        Present = _l_present.GetValueOrThrow("Present"),
+                        Missing = _l_missing.GetValueOrDefault(null),
                     };
                     return newType;
                 }

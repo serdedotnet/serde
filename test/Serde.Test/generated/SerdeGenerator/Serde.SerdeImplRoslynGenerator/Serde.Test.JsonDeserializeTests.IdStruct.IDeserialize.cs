@@ -42,20 +42,20 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<int> id = default;
+                    Serde.Option<int> _l_id = default;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
-                                id = d.GetNextValue<int, Int32Wrap>();
+                                _l_id = d.GetNextValue<int, Int32Wrap>();
                                 break;
                         }
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.IdStruct()
                     {
-                        Id = id.GetValueOrThrow("Id"),
+                        Id = _l_id.GetValueOrThrow("Id"),
                     };
                     return newType;
                 }

@@ -41,20 +41,20 @@ partial struct S : Serde.IDeserialize<S>
 
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<ColorEnum> e = default;
+            Serde.Option<ColorEnum> _l_e = default;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        _l_e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
                         break;
                 }
             }
 
             var newType = new S()
             {
-                E = e.GetValueOrThrow("E"),
+                E = _l_e.GetValueOrThrow("E"),
             };
             return newType;
         }

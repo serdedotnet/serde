@@ -41,20 +41,20 @@ partial class C : Serde.IDeserialize<C>
 
         C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<System.Collections.Specialized.BitVector32.Section> s = default;
+            Serde.Option<System.Collections.Specialized.BitVector32.Section> _l_s = default;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
+                        _l_s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
                         break;
                 }
             }
 
             var newType = new C()
             {
-                S = s.GetValueOrThrow("S"),
+                S = _l_s.GetValueOrThrow("S"),
             };
             return newType;
         }

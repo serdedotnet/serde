@@ -45,25 +45,25 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.IdStructList Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStructList>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<int> count = default;
-                    Serde.Option<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>> list = default;
+                    Serde.Option<int> _l_count = default;
+                    Serde.Option<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>> _l_list = default;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
-                                count = d.GetNextValue<int, Int32Wrap>();
+                                _l_count = d.GetNextValue<int, Int32Wrap>();
                                 break;
                             case 2:
-                                list = d.GetNextValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, ListWrap.DeserializeImpl<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>();
+                                _l_list = d.GetNextValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, ListWrap.DeserializeImpl<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>();
                                 break;
                         }
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.IdStructList()
                     {
-                        Count = count.GetValueOrThrow("Count"),
-                        List = list.GetValueOrThrow("List"),
+                        Count = _l_count.GetValueOrThrow("Count"),
+                        List = _l_list.GetValueOrThrow("List"),
                     };
                     return newType;
                 }

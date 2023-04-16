@@ -455,6 +455,6 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
             }
         }
 
-        private static string GetLocalName(DataMemberSymbol m) => m.Name.ToLower();
+        private static string GetLocalName(DataMemberSymbol m) => "_l_" + m.Name.ToLower();
     }
 }
