@@ -1,5 +1,6 @@
 ﻿
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde.Test

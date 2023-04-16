@@ -1,6 +1,7 @@
 ﻿//HintName: PointWrap.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 partial struct PointWrap : Serde.ISerialize

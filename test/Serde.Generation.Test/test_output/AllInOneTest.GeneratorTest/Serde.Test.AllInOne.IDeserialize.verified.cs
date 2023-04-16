@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.Test.AllInOne.IDeserialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde.Test
@@ -36,6 +37,55 @@ namespace Serde.Test
         {
             public string ExpectedTypeName => "Serde.Test.AllInOne";
 
+            private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+            {
+                public static byte Deserialize<D>(ref D deserializer)
+                    where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                public string ExpectedTypeName => "string";
+
+                byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+                public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+                {
+                    switch (s[0])
+                    {
+                        case (byte)'b'when s.SequenceEqual("boolField"u8):
+                            return 1;
+                        case (byte)'c'when s.SequenceEqual("charField"u8):
+                            return 2;
+                        case (byte)'b'when s.SequenceEqual("byteField"u8):
+                            return 3;
+                        case (byte)'u'when s.SequenceEqual("uShortField"u8):
+                            return 4;
+                        case (byte)'u'when s.SequenceEqual("uIntField"u8):
+                            return 5;
+                        case (byte)'u'when s.SequenceEqual("uLongField"u8):
+                            return 6;
+                        case (byte)'s'when s.SequenceEqual("sByteField"u8):
+                            return 7;
+                        case (byte)'s'when s.SequenceEqual("shortField"u8):
+                            return 8;
+                        case (byte)'i'when s.SequenceEqual("intField"u8):
+                            return 9;
+                        case (byte)'l'when s.SequenceEqual("longField"u8):
+                            return 10;
+                        case (byte)'s'when s.SequenceEqual("stringField"u8):
+                            return 11;
+                        case (byte)'n'when s.SequenceEqual("nullStringField"u8):
+                            return 12;
+                        case (byte)'u'when s.SequenceEqual("uIntArr"u8):
+                            return 13;
+                        case (byte)'n'when s.SequenceEqual("nestedArr"u8):
+                            return 14;
+                        case (byte)'i'when s.SequenceEqual("intImm"u8):
+                            return 15;
+                        case (byte)'c'when s.SequenceEqual("color"u8):
+                            return 16;
+                        default:
+                            return 0;
+                    }
+                }
+            }
+
             Serde.Test.AllInOne Serde.IDeserializeVisitor<Serde.Test.AllInOne>.VisitDictionary<D>(ref D d)
             {
                 Serde.Option<bool> boolfield = default;
@@ -54,59 +104,57 @@ namespace Serde.Test
                 Serde.Option<int[][]> nestedarr = default;
                 Serde.Option<System.Collections.Immutable.ImmutableArray<int>> intimm = default;
                 Serde.Option<Serde.Test.AllInOne.ColorEnum> color = default;
-                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                 {
                     switch (key)
                     {
-                        case "boolField":
+                        case 1:
                             boolfield = d.GetNextValue<bool, BoolWrap>();
                             break;
-                        case "charField":
+                        case 2:
                             charfield = d.GetNextValue<char, CharWrap>();
                             break;
-                        case "byteField":
+                        case 3:
                             bytefield = d.GetNextValue<byte, ByteWrap>();
                             break;
-                        case "uShortField":
+                        case 4:
                             ushortfield = d.GetNextValue<ushort, UInt16Wrap>();
                             break;
-                        case "uIntField":
+                        case 5:
                             uintfield = d.GetNextValue<uint, UInt32Wrap>();
                             break;
-                        case "uLongField":
+                        case 6:
                             ulongfield = d.GetNextValue<ulong, UInt64Wrap>();
                             break;
-                        case "sByteField":
+                        case 7:
                             sbytefield = d.GetNextValue<sbyte, SByteWrap>();
                             break;
-                        case "shortField":
+                        case 8:
                             shortfield = d.GetNextValue<short, Int16Wrap>();
                             break;
-                        case "intField":
+                        case 9:
                             intfield = d.GetNextValue<int, Int32Wrap>();
                             break;
-                        case "longField":
+                        case 10:
                             longfield = d.GetNextValue<long, Int64Wrap>();
                             break;
-                        case "stringField":
+                        case 11:
                             stringfield = d.GetNextValue<string, StringWrap>();
                             break;
-                        case "nullStringField":
+                        case 12:
                             nullstringfield = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                             break;
-                        case "uIntArr":
+                        case 13:
                             uintarr = d.GetNextValue<uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>();
                             break;
-                        case "nestedArr":
+                        case 14:
                             nestedarr = d.GetNextValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>();
                             break;
-                        case "intImm":
+                        case 15:
                             intimm = d.GetNextValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>();
                             break;
-                        case "color":
+                        case 16:
                             color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
-                            break;
-                        default:
                             break;
                     }
                 }

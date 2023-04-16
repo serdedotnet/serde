@@ -1,6 +1,7 @@
 ﻿//HintName: Some.Nested.Namespace.C.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Some.Nested.Namespace

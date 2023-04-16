@@ -128,7 +128,7 @@ partial class SerdeImplRoslynGenerator
 
         var tree = CompilationUnit(
             externs: default,
-            usings: List(new[] { UsingDirective(IdentifierName("Serde")) }),
+            usings: List(new[] { UsingDirective(IdentifierName("System")), UsingDirective(IdentifierName("Serde")) }),
             attributeLists: default,
             members: List<MemberDeclarationSyntax>(new[] { newType }));
         tree = tree.NormalizeWhitespace(eol: Environment.NewLine);

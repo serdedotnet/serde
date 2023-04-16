@@ -222,6 +222,24 @@ namespace Serde.Test
             Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
         }
 
+        [Fact]
+        public void DenyUnknownTest()
+        {
+            var src = @"
+{
+    ""present"": ""abc"",
+    ""extra"": ""def""
+}";
+            Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<DenyUnknown>(src));
+        }
+
+        [GenerateDeserialize]
+        [SerdeTypeOptions(DenyUnknownMembers = true)]
+        private readonly partial record struct DenyUnknown
+        {
+            public string Present { get; init; }
+            public string? Missing { get; init; }
+        }
 
         [GenerateDeserialize]
         private partial class NullableFields

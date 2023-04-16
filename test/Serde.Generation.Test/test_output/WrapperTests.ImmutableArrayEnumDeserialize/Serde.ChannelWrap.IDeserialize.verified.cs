@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.ChannelWrap.IDeserialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde

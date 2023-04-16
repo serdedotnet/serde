@@ -1,5 +1,6 @@
 ﻿
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde.Test
@@ -21,17 +22,33 @@ namespace Serde.Test
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.IdStruct";
+                private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+                {
+                    public static byte Deserialize<D>(ref D deserializer)
+                        where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                    public string ExpectedTypeName => "string";
+                    byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+                    public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+                    {
+                        switch (s[0])
+                        {
+                            case (byte)'i'when s.SequenceEqual("id"u8):
+                                return 1;
+                            default:
+                                return 0;
+                        }
+                    }
+                }
+
                 Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>.VisitDictionary<D>(ref D d)
                 {
                     Serde.Option<int> id = default;
-                    while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                    while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
-                            case "id":
+                            case 1:
                                 id = d.GetNextValue<int, Int32Wrap>();
-                                break;
-                            default:
                                 break;
                         }
                     }

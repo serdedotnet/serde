@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.BitVector32SectionWrap.IDeserialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde
@@ -22,21 +23,40 @@ namespace Serde
         {
             public string ExpectedTypeName => "System.Collections.Specialized.BitVector32.Section";
 
+            private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+            {
+                public static byte Deserialize<D>(ref D deserializer)
+                    where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                public string ExpectedTypeName => "string";
+
+                byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+                public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+                {
+                    switch (s[0])
+                    {
+                        case (byte)'m'when s.SequenceEqual("mask"u8):
+                            return 1;
+                        case (byte)'o'when s.SequenceEqual("offset"u8):
+                            return 2;
+                        default:
+                            return 0;
+                    }
+                }
+            }
+
             System.Collections.Specialized.BitVector32.Section Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>.VisitDictionary<D>(ref D d)
             {
                 Serde.Option<short> mask = default;
                 Serde.Option<short> offset = default;
-                while (d.TryGetNextKey<string, StringWrap>(out string? key))
+                while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                 {
                     switch (key)
                     {
-                        case "mask":
+                        case 1:
                             mask = d.GetNextValue<short, Int16Wrap>();
                             break;
-                        case "offset":
+                        case 2:
                             offset = d.GetNextValue<short, Int16Wrap>();
-                            break;
-                        default:
                             break;
                     }
                 }

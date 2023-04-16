@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.AllInOneColorEnumWrap.ISerialize.cs
 
 #nullable enable
+using System;
 using Serde;
 
 namespace Serde
