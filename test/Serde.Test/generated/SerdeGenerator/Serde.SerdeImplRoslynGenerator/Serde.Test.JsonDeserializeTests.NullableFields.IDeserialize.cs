@@ -45,25 +45,33 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.NullableFields Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.NullableFields>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<string?> _l_s = default;
-                    Serde.Option<System.Collections.Generic.Dictionary<string, string?>> _l_dict = default;
+                    string? _l_s = default !;
+                    System.Collections.Generic.Dictionary<string, string?> _l_dict = default !;
+                    byte _r_assignedValid = 0b1;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
                                 _l_s = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                                _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 2:
                                 _l_dict = d.GetNextValue<System.Collections.Generic.Dictionary<string, string?>, DictWrap.DeserializeImpl<string, StringWrap, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>>();
+                                _r_assignedValid |= ((byte)1) << 1;
                                 break;
                         }
                     }
 
+                    if (_r_assignedValid != 0b11)
+                    {
+                        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    }
+
                     var newType = new Serde.Test.JsonDeserializeTests.NullableFields()
                     {
-                        S = _l_s.GetValueOrDefault(null),
-                        Dict = _l_dict.GetValueOrThrow("Dict"),
+                        S = _l_s,
+                        Dict = _l_dict,
                     };
                     return newType;
                 }

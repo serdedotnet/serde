@@ -42,20 +42,27 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.ExtraMembers Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ExtraMembers>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<int> _l_b = default;
+                    int _l_b = default !;
+                    byte _r_assignedValid = 0b0;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
                                 _l_b = d.GetNextValue<int, Int32Wrap>();
+                                _r_assignedValid |= ((byte)1) << 0;
                                 break;
                         }
                     }
 
+                    if (_r_assignedValid != 0b1)
+                    {
+                        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    }
+
                     var newType = new Serde.Test.JsonDeserializeTests.ExtraMembers()
                     {
-                        b = _l_b.GetValueOrThrow("b"),
+                        b = _l_b,
                     };
                     return newType;
                 }

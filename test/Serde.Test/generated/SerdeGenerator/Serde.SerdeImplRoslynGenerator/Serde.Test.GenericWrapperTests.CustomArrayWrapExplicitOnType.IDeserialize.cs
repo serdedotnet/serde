@@ -42,20 +42,27 @@ namespace Serde.Test
 
                 Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType Serde.IDeserializeVisitor<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<Serde.Test.GenericWrapperTests.CustomImArray2<int>> _l_a = default;
+                    Serde.Test.GenericWrapperTests.CustomImArray2<int> _l_a = default !;
+                    byte _r_assignedValid = 0b0;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
                                 _l_a = d.GetNextValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Wrap.DeserializeImpl<int, Int32Wrap>>();
+                                _r_assignedValid |= ((byte)1) << 0;
                                 break;
                         }
                     }
 
+                    if (_r_assignedValid != 0b1)
+                    {
+                        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    }
+
                     var newType = new Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType()
                     {
-                        A = _l_a.GetValueOrThrow("A"),
+                        A = _l_a,
                     };
                     return newType;
                 }

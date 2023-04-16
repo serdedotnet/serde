@@ -45,25 +45,33 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.SetToNull Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.SetToNull>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<string> _l_present = default;
-                    Serde.Option<string?> _l_missing = default;
+                    string _l_present = default !;
+                    string? _l_missing = default !;
+                    byte _r_assignedValid = 0b10;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
                                 _l_present = d.GetNextValue<string, StringWrap>();
+                                _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 2:
                                 _l_missing = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                                _r_assignedValid |= ((byte)1) << 1;
                                 break;
                         }
                     }
 
+                    if (_r_assignedValid != 0b11)
+                    {
+                        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    }
+
                     var newType = new Serde.Test.JsonDeserializeTests.SetToNull()
                     {
-                        Present = _l_present.GetValueOrThrow("Present"),
-                        Missing = _l_missing.GetValueOrDefault(null),
+                        Present = _l_present,
+                        Missing = _l_missing,
                     };
                     return newType;
                 }

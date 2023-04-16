@@ -44,22 +44,30 @@ partial record R : Serde.IDeserialize<R>
 
         R Serde.IDeserializeVisitor<R>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<int> _l_a = default;
-            Serde.Option<string> _l_b = default;
+            int _l_a = default !;
+            string _l_b = default !;
+            byte _r_assignedValid = 0b0;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
                         _l_a = d.GetNextValue<int, Int32Wrap>();
+                        _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 2:
                         _l_b = d.GetNextValue<string, StringWrap>();
+                        _r_assignedValid |= ((byte)1) << 1;
                         break;
                 }
             }
 
-            var newType = new R(_l_a.GetValueOrThrow("A"), _l_b.GetValueOrThrow("B"))
+            if (_r_assignedValid != 0b11)
+            {
+                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            }
+
+            var newType = new R(_l_a, _l_b)
             {
             };
             return newType;
