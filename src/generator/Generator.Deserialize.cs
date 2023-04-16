@@ -256,7 +256,7 @@ namespace Serde
         private static MemberDeclarationSyntax GenerateFieldNameVisitor(ITypeSymbol type, string typeName, List<DataMemberSymbol> members)
         {
             var text = $$"""
-private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
 {
     public static byte Deserialize<D>(ref D deserializer) where D : IDeserializer
         => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
