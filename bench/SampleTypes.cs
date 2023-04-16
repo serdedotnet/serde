@@ -15,7 +15,7 @@ namespace Benchmarks
     }
 
     [GenerateSerialize, GenerateDeserialize]
-    public partial class Location
+    public partial record Location
     {
         public int Id { get; set; }
         public string Address1 { get; set; }
