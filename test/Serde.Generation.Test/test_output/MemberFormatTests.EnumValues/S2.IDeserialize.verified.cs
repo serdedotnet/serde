@@ -41,20 +41,27 @@ partial struct S2 : Serde.IDeserialize<S2>
 
         S2 Serde.IDeserializeVisitor<S2>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<ColorEnum> _l_e = default;
+            ColorEnum _l_e = default !;
+            byte _r_assignedValid = 0b0;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
                         _l_e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }
             }
 
+            if (_r_assignedValid != 0b1)
+            {
+                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            }
+
             var newType = new S2()
             {
-                E = _l_e.GetValueOrThrow("E"),
+                E = _l_e,
             };
             return newType;
         }

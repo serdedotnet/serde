@@ -299,16 +299,27 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
             return ParseMemberDeclaration(text)!;
         }
 
+        private const string AssignedVarName = "_r_assignedValid";
+
         private static MemberDeclarationSyntax GenerateCustomTypeVisitor(ITypeSymbol type, string typeName, GeneratorExecutionContext context, List<DataMemberSymbol> members)
         {
+            var assignedVarType = members.Count switch {
+                <= 8 => "byte",
+                <= 16 => "ushort",
+                <= 32 => "uint",
+                <= 64 => "ulong",
+                _ => throw new InvalidOperationException("Too many members in type")
+            };
             string cases;
             string locals;
+            string assignedMask;
             InitCasesAndLocals();
             string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members);
             var methodText = $$"""
 {{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
 {
     {{locals}}
+    {{assignedVarType}} {{AssignedVarName}} = {{assignedMask}};
     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
     {
         switch (key)
@@ -326,6 +337,7 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
             {
                 var casesBuilder = new StringBuilder();
                 var localsBuilder = new StringBuilder();
+                long assignedMaskValue = 0;
                 for (int i = 0; i < members.Count; i++)
                 {
                     var m = members[i];
@@ -355,15 +367,21 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
                         wrapperName = memberType;
                     }
                     var localName = GetLocalName(m);
-                    localsBuilder.AppendLine($"Serde.Option<{memberType}> {localName} = default;");
+                    localsBuilder.AppendLine($"{memberType} {localName} = default!;");
                     casesBuilder.AppendLine($"""
                     case {i + 1}:
                         {localName} = d.GetNextValue<{memberType}, {wrapperName}>();
+                        {AssignedVarName} |= (({assignedVarType})1) << {i};
                         break;
                     """);
+                    if (m.IsNullable && !m.ThrowIfMissing)
+                    {
+                        assignedMaskValue |= 1L << i;
+                    }
                 }
                 cases = casesBuilder.ToString();
                 locals = localsBuilder.ToString();
+                assignedMask = "0b" + Convert.ToString(assignedMaskValue, 2);
             }
         }
 
@@ -431,28 +449,26 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
                     {
                         parameters.Append(", ");
                     }
-                    parameters.Append(GetMemberAccess(assignmentMembers[index]));
+                    parameters.Append(GetLocalName(assignmentMembers[index]));
                     assignmentMembers.RemoveAt(index);
                 }
             }
 
             foreach (var m in assignmentMembers)
             {
-                assignments.AppendLine($"{m.Name} = {GetMemberAccess(m)},");
+                assignments.AppendLine($"{m.Name} = {GetLocalName(m)},");
             }
+            var mask = (1 << members.Count) - 1;
 
             return $$"""
+    if ({{AssignedVarName}} != 0b{{Convert.ToString(mask, 2)}})
+    {
+        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+    }
     var newType = new {{typeName}}({{parameters}}) {
         {{assignments}}
     };
 """;
-            static string GetMemberAccess(DataMemberSymbol m)
-            {
-                var localName = GetLocalName(m);
-                return !m.IsNullable || m.ThrowIfMissing
-                    ? $"{localName}.GetValueOrThrow(\"{m.Name}\")"
-                    : $"{localName}.GetValueOrDefault(null)";
-            }
         }
 
         private static string GetLocalName(DataMemberSymbol m) => "_l_" + m.Name.ToLower();

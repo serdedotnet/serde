@@ -41,20 +41,27 @@ partial struct S : Serde.IDeserialize<S>
 
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<string?> _l_f = default;
+            string? _l_f = default !;
+            byte _r_assignedValid = 0b1;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
                         _l_f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }
             }
 
+            if (_r_assignedValid != 0b1)
+            {
+                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            }
+
             var newType = new S()
             {
-                F = _l_f.GetValueOrDefault(null),
+                F = _l_f,
             };
             return newType;
         }

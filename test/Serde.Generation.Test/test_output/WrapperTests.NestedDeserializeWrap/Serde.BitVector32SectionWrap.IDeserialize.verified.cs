@@ -46,25 +46,33 @@ namespace Serde
 
             System.Collections.Specialized.BitVector32.Section Serde.IDeserializeVisitor<System.Collections.Specialized.BitVector32.Section>.VisitDictionary<D>(ref D d)
             {
-                Serde.Option<short> _l_mask = default;
-                Serde.Option<short> _l_offset = default;
+                short _l_mask = default !;
+                short _l_offset = default !;
+                byte _r_assignedValid = 0b0;
                 while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                 {
                     switch (key)
                     {
                         case 1:
                             _l_mask = d.GetNextValue<short, Int16Wrap>();
+                            _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 2:
                             _l_offset = d.GetNextValue<short, Int16Wrap>();
+                            _r_assignedValid |= ((byte)1) << 1;
                             break;
                     }
                 }
 
+                if (_r_assignedValid != 0b11)
+                {
+                    throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                }
+
                 var newType = new System.Collections.Specialized.BitVector32.Section()
                 {
-                    Mask = _l_mask.GetValueOrThrow("Mask"),
-                    Offset = _l_offset.GetValueOrThrow("Offset"),
+                    Mask = _l_mask,
+                    Offset = _l_offset,
                 };
                 return newType;
             }

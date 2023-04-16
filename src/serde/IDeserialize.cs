@@ -27,23 +27,6 @@ namespace Serde
         { }
     }
 
-    public static class OptionExt
-    {
-        public static T GetValueOrThrow<T>(this Option<T> member, [CallerArgumentExpression("member")]string paramName = "")
-        {
-            return member.HasValue
-                ? member.GetValueOrDefault()
-                : throw new InvalidDeserializeValueException($"Required member '{paramName}' was missing a value in the source");
-        }
-
-        public static T GetValueOrDefault<T>(this Option<T> member, T defaultValue)
-        {
-            return member.HasValue
-                ? member.GetValueOrDefault()
-                : defaultValue;
-        }
-    }
-
     public interface IDeserializeVisitor<T>
     {
         string ExpectedTypeName { get; }

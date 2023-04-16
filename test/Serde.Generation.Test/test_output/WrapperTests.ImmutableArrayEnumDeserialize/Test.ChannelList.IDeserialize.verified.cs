@@ -43,20 +43,27 @@ namespace Test
 
             Test.ChannelList Serde.IDeserializeVisitor<Test.ChannelList>.VisitDictionary<D>(ref D d)
             {
-                Serde.Option<System.Collections.Immutable.ImmutableArray<Test.Channel>> _l_channels = default;
+                System.Collections.Immutable.ImmutableArray<Test.Channel> _l_channels = default !;
+                byte _r_assignedValid = 0b0;
                 while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                 {
                     switch (key)
                     {
                         case 1:
                             _l_channels = d.GetNextValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, ImmutableArrayWrap.DeserializeImpl<Test.Channel, ChannelWrap>>();
+                            _r_assignedValid |= ((byte)1) << 0;
                             break;
                     }
                 }
 
+                if (_r_assignedValid != 0b1)
+                {
+                    throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                }
+
                 var newType = new Test.ChannelList()
                 {
-                    Channels = _l_channels.GetValueOrThrow("Channels"),
+                    Channels = _l_channels,
                 };
                 return newType;
             }

@@ -41,20 +41,27 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
 
         ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<int[]> _l_intarr = default;
+            int[] _l_intarr = default !;
+            byte _r_assignedValid = 0b0;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
                         _l_intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
+                        _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }
             }
 
+            if (_r_assignedValid != 0b1)
+            {
+                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            }
+
             var newType = new ArrayField()
             {
-                IntArr = _l_intarr.GetValueOrThrow("IntArr"),
+                IntArr = _l_intarr,
             };
             return newType;
         }

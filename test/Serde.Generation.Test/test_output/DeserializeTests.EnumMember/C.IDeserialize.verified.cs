@@ -50,35 +50,45 @@ partial class C : Serde.IDeserialize<C>
 
         C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<ColorInt> _l_colorint = default;
-            Serde.Option<ColorByte> _l_colorbyte = default;
-            Serde.Option<ColorLong> _l_colorlong = default;
-            Serde.Option<ColorULong> _l_colorulong = default;
+            ColorInt _l_colorint = default !;
+            ColorByte _l_colorbyte = default !;
+            ColorLong _l_colorlong = default !;
+            ColorULong _l_colorulong = default !;
+            byte _r_assignedValid = 0b0;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
                         _l_colorint = d.GetNextValue<ColorInt, ColorIntWrap>();
+                        _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 2:
                         _l_colorbyte = d.GetNextValue<ColorByte, ColorByteWrap>();
+                        _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case 3:
                         _l_colorlong = d.GetNextValue<ColorLong, ColorLongWrap>();
+                        _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 4:
                         _l_colorulong = d.GetNextValue<ColorULong, ColorULongWrap>();
+                        _r_assignedValid |= ((byte)1) << 3;
                         break;
                 }
             }
 
+            if (_r_assignedValid != 0b1111)
+            {
+                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            }
+
             var newType = new C()
             {
-                ColorInt = _l_colorint.GetValueOrThrow("ColorInt"),
-                ColorByte = _l_colorbyte.GetValueOrThrow("ColorByte"),
-                ColorLong = _l_colorlong.GetValueOrThrow("ColorLong"),
-                ColorULong = _l_colorulong.GetValueOrThrow("ColorULong"),
+                ColorInt = _l_colorint,
+                ColorByte = _l_colorbyte,
+                ColorLong = _l_colorlong,
+                ColorULong = _l_colorulong,
             };
             return newType;
         }

@@ -45,25 +45,33 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.IdStructList Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStructList>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<int> _l_count = default;
-                    Serde.Option<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>> _l_list = default;
+                    int _l_count = default !;
+                    System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct> _l_list = default !;
+                    byte _r_assignedValid = 0b0;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
                                 _l_count = d.GetNextValue<int, Int32Wrap>();
+                                _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 2:
                                 _l_list = d.GetNextValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, ListWrap.DeserializeImpl<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>();
+                                _r_assignedValid |= ((byte)1) << 1;
                                 break;
                         }
                     }
 
+                    if (_r_assignedValid != 0b11)
+                    {
+                        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    }
+
                     var newType = new Serde.Test.JsonDeserializeTests.IdStructList()
                     {
-                        Count = _l_count.GetValueOrThrow("Count"),
-                        List = _l_list.GetValueOrThrow("List"),
+                        Count = _l_count,
+                        List = _l_list,
                     };
                     return newType;
                 }
