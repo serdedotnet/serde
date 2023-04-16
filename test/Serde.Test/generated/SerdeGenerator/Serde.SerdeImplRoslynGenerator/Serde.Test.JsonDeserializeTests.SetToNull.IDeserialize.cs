@@ -23,7 +23,7 @@ namespace Serde.Test
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.SetToNull>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.SetToNull";
-                private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+                private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
                     public static byte Deserialize<D>(ref D deserializer)
                         where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
