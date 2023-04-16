@@ -42,20 +42,20 @@ namespace Serde.Test
 
                 Serde.Test.JsonDeserializeTests.ExtraMembers Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.ExtraMembers>.VisitDictionary<D>(ref D d)
                 {
-                    Serde.Option<int> b = default;
+                    Serde.Option<int> _l_b = default;
                     while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                     {
                         switch (key)
                         {
                             case 1:
-                                b = d.GetNextValue<int, Int32Wrap>();
+                                _l_b = d.GetNextValue<int, Int32Wrap>();
                                 break;
                         }
                     }
 
                     var newType = new Serde.Test.JsonDeserializeTests.ExtraMembers()
                     {
-                        b = b.GetValueOrThrow("b"),
+                        b = _l_b.GetValueOrThrow("b"),
                     };
                     return newType;
                 }

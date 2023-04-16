@@ -41,20 +41,20 @@ partial struct S : Serde.IDeserialize<S>
 
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<string?> f = default;
+            Serde.Option<string?> _l_f = default;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
+                        _l_f = d.GetNextValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>();
                         break;
                 }
             }
 
             var newType = new S()
             {
-                F = f.GetValueOrDefault(null),
+                F = _l_f.GetValueOrDefault(null),
             };
             return newType;
         }

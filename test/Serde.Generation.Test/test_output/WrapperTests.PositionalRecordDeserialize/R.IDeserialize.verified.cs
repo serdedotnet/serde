@@ -44,22 +44,22 @@ partial record R : Serde.IDeserialize<R>
 
         R Serde.IDeserializeVisitor<R>.VisitDictionary<D>(ref D d)
         {
-            Serde.Option<int> a = default;
-            Serde.Option<string> b = default;
+            Serde.Option<int> _l_a = default;
+            Serde.Option<string> _l_b = default;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        a = d.GetNextValue<int, Int32Wrap>();
+                        _l_a = d.GetNextValue<int, Int32Wrap>();
                         break;
                     case 2:
-                        b = d.GetNextValue<string, StringWrap>();
+                        _l_b = d.GetNextValue<string, StringWrap>();
                         break;
                 }
             }
 
-            var newType = new R(a.GetValueOrThrow("A"), b.GetValueOrThrow("B"))
+            var newType = new R(_l_a.GetValueOrThrow("A"), _l_b.GetValueOrThrow("B"))
             {
             };
             return newType;

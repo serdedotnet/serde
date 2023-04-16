@@ -5,5 +5,6 @@
         <BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>
         <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
         <Nullable>enable</Nullable>
+        <Deterministic>true</Deterministic>
     </PropertyGroup>
 </Project>
