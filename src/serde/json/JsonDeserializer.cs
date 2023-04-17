@@ -4,7 +4,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Text.Json;
 
 namespace Serde.Json
 {
@@ -14,9 +13,7 @@ namespace Serde.Json
         // Dictionary implementations
         private sealed class DeserializerState
         {
-            public byte[] Utf8Bytes = null!;
-            public JsonReaderState ReaderState;
-            public int Offset;
+            public Utf8JsonReader Reader;
         }
         private readonly DeserializerState _state;
 
@@ -29,24 +26,18 @@ namespace Serde.Json
         {
             _state = new DeserializerState
             {
-                Utf8Bytes = bytes,
-                ReaderState = default,
-                Offset = 0
+                Reader = new Utf8JsonReader(bytes, isFinalBlock: true, default)
             };
         }
 
         private void SaveState(in Utf8JsonReader reader)
         {
-            _state.ReaderState = reader.CurrentState;
-            _state.Offset += (int)reader.BytesConsumed;
+            _state.Reader = reader;
         }
 
         private Utf8JsonReader GetReader()
         {
-            return new Utf8JsonReader(
-                _state.Utf8Bytes.AsSpan()[_state.Offset..],
-                isFinalBlock: true,
-                _state.ReaderState);
+            return _state.Reader;
         }
 
         public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>
@@ -61,7 +52,7 @@ namespace Serde.Json
                     break;
 
                 case JsonTokenType.Number:
-                    result = DeserializeI64<T, V>(v);
+                    result = DeserializeDouble<T, V>(v);
                     break;
 
                 case JsonTokenType.StartObject:
@@ -113,16 +104,18 @@ namespace Serde.Json
         public T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
+            reader.ReadOrThrow();
             var d = reader.GetDouble();
-            _state.ReaderState = reader.CurrentState;
+            SaveState(reader);
             return v.VisitDouble(d);
         }
 
         public T DeserializeDecimal<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
+            reader.ReadOrThrow();
             var d = reader.GetDecimal();
-            _state.ReaderState = reader.CurrentState;
+            SaveState(reader);
             return v.VisitDecimal(d);
         }
 

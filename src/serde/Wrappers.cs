@@ -360,7 +360,7 @@ namespace Serde
 
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<decimal>
         {
-            public string ExpectedTypeName => "double";
+            public string ExpectedTypeName => "decimal";
             decimal IDeserializeVisitor<decimal>.VisitByte(byte b)    => b;
             decimal IDeserializeVisitor<decimal>.VisitU16(ushort u16) => u16;
             decimal IDeserializeVisitor<decimal>.VisitU32(uint u32)   => u32;
@@ -371,6 +371,7 @@ namespace Serde
             decimal IDeserializeVisitor<decimal>.VisitI64(long i64)   => i64;
             decimal IDeserializeVisitor<decimal>.VisitFloat(float f) => Convert.ToDecimal(f);
             decimal IDeserializeVisitor<decimal>.VisitDouble(double d) => Convert.ToDecimal(d);
+            decimal IDeserializeVisitor<decimal>.VisitDecimal(decimal d) => d;
         }
     }
     public readonly partial record struct StringWrap(string Value)

@@ -10,9 +10,17 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Suppress warnings about missing documentation. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="json/reader/SR.resx" LogicalName="SR.resources">
+      <Generator>MSBuild:Compile</Generator><!-- Tell Visual Studio to run a build if the resx file changes -->
+      <StronglyTypedFileName>$(IntermediateOutputPath)\SR.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedClassName>SR</StronglyTypedClassName>
+      <OutputName>SR.resources</OutputName>
+    </EmbeddedResource>
     <PackageReference Include="NuGetizer" Version="0.9.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
