@@ -52,7 +52,7 @@ namespace Serde.Json
                     break;
 
                 case JsonTokenType.Number:
-                    result = DeserializeI64<T, V>(v);
+                    result = DeserializeDecimal<T, V>(v);
                     break;
 
                 case JsonTokenType.StartObject:
