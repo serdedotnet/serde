@@ -26,6 +26,7 @@ namespace Serde.Test
     {
         public static Gen<JsonValue> GenPrimitive { get; } = Gen.OneOf(new[] {
             Arb.Generate<int>().Select(a => (JsonValue)new Number(a)),
+            Arb.Generate<double>().Where(d => double.IsFinite(d) && !double.IsNaN(d)).Select(a => (JsonValue)new Number(a)),
         });
 
         public static Gen<JsonValue> GenJsonValue(int size)

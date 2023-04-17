@@ -52,7 +52,7 @@ namespace Serde.Json
                     break;
 
                 case JsonTokenType.Number:
-                    result = DeserializeDecimal<T, V>(v);
+                    result = DeserializeDouble<T, V>(v);
                     break;
 
                 case JsonTokenType.StartObject:
@@ -104,6 +104,7 @@ namespace Serde.Json
         public T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
+            reader.ReadOrThrow();
             var d = reader.GetDouble();
             SaveState(reader);
             return v.VisitDouble(d);
@@ -112,6 +113,7 @@ namespace Serde.Json
         public T DeserializeDecimal<T, V>(V v) where V : IDeserializeVisitor<T>
         {
             var reader = GetReader();
+            reader.ReadOrThrow();
             var d = reader.GetDecimal();
             SaveState(reader);
             return v.VisitDecimal(d);

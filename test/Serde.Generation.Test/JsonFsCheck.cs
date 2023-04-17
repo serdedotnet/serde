@@ -366,6 +366,14 @@ public static class DeepEquals
         {
             public sealed override SyntaxKind SyntaxKind => SyntaxKind.IntKeyword;
         }
+        public sealed record TestDouble : TestPrimitive
+        {
+            public sealed override SyntaxKind SyntaxKind => SyntaxKind.DoubleKeyword;
+        }
+        public sealed record TestDecimal : TestPrimitive
+        {
+            public sealed override SyntaxKind SyntaxKind => SyntaxKind.DecimalKeyword;
+        }
         public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType
         {
             public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName(TypeName(typeIndex));
@@ -463,7 +471,9 @@ public static class DeepEquals
             public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf(new[] {
                     Gen.Constant<TestType>(new TestChar()),
                     Gen.Constant<TestType>(new TestBool()),
-                    Gen.Constant<TestType>(new TestInt())
+                    Gen.Constant<TestType>(new TestInt()),
+                    Gen.Constant<TestType>(new TestDouble()),
+                    Gen.Constant<TestType>(new TestDecimal()),
                 });
 
             public static Gen<TestType> GenType(int size)

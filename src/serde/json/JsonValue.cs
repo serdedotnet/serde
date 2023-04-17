@@ -27,8 +27,6 @@ namespace Serde.Json
 
         partial record Number
         {
-            public Number(long l) : this((double)l) { }
-
             public override string ToString() => Value.ToString();
         }
 
