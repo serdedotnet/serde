@@ -25,9 +25,6 @@ namespace Serde.Json
         private ReadOnlyMemory<byte> _buffer;
         private ReadOnlySpan<byte> GetBufferSpan => _buffer.Span;
 
-        private readonly bool _isFinalBlock;
-        private readonly bool _isInputSequence;
-
         private long _lineNumber;
         private long _bytePositionInLine;
 
@@ -41,15 +38,9 @@ namespace Serde.Json
         private BitStack _bitStack;
 
         private long _totalConsumed;
-        private bool _isLastSegment;
-        private readonly bool _isMultiSegment;
         private bool _trailingCommaBeforeComment;
 
-        private SequencePosition _nextPosition;
-        private SequencePosition _currentPosition;
         private readonly ReadOnlySequence<byte> _sequence;
-
-        private bool IsLastSpan => _isFinalBlock && (!_isMultiSegment || _isLastSegment);
 
         internal ReadOnlySequence<byte> OriginalSequence => _sequence;
 
@@ -81,10 +72,7 @@ namespace Serde.Json
             get
             {
 #if DEBUG
-                if (!_isInputSequence)
-                {
-                    Debug.Assert(_totalConsumed == 0);
-                }
+                Debug.Assert(_totalConsumed == 0);
 #endif
                 return _totalConsumed + _consumed;
             }
@@ -141,13 +129,6 @@ namespace Serde.Json
         public bool ValueIsEscaped { get; private set; }
 
         /// <summary>
-        /// Returns the mode of this instance of the <see cref="Utf8JsonReader"/>.
-        /// True when the reader was constructed with the input span containing the entire data to process.
-        /// False when the reader was constructed knowing that the input span may contain partial data with more data to follow.
-        /// </summary>
-        public readonly bool IsFinalBlock => _isFinalBlock;
-
-        /// <summary>
         /// Gets the value of the last processed token as a ReadOnlySpan&lt;byte&gt; slice
         /// of the input payload. If the JSON is provided within a ReadOnlySequence&lt;byte&gt;
         /// and the slice that represents the token value fits in a single segment, then
@@ -160,24 +141,6 @@ namespace Serde.Json
         /// Otherwise, the token value must be accessed from <see cref="ValueSpan"/>.
         /// </remarks>
         public ReadOnlySequence<byte> ValueSequence { get; private set; }
-
-        /// <summary>
-        /// Returns the current <see cref="SequencePosition"/> within the provided UTF-8 encoded
-        /// input ReadOnlySequence&lt;byte&gt;. If the <see cref="Utf8JsonReader"/> was constructed
-        /// with a ReadOnlySpan&lt;byte&gt; instead, this will always return a default <see cref="SequencePosition"/>.
-        /// </summary>
-        public readonly SequencePosition Position
-        {
-            get
-            {
-                if (_isInputSequence)
-                {
-                    Debug.Assert(_currentPosition.GetObject() != null);
-                    return _sequence.GetPosition(_consumed, _currentPosition);
-                }
-                return default;
-            }
-        }
 
         /// <summary>
         /// Returns the current snapshot of the <see cref="Utf8JsonReader"/> state which must
@@ -204,20 +167,15 @@ namespace Serde.Json
         /// Constructs a new <see cref="Utf8JsonReader"/> instance.
         /// </summary>
         /// <param name="jsonData">The ReadOnlySpan&lt;byte&gt; containing the UTF-8 encoded JSON text to process.</param>
-        /// <param name="isFinalBlock">True when the input span contains the entire data to process.
-        /// Set to false only if it is known that the input span contains partial data with more data to follow.</param>
         /// <param name="state">If this is the first call to the ctor, pass in a default state. Otherwise,
         /// capture the state from the previous instance of the <see cref="Utf8JsonReader"/> and pass that back.</param>
         /// <remarks>
         /// Since this type is a ref struct, it is a stack-only type and all the limitations of ref structs apply to it.
         /// This is the reason why the ctor accepts a <see cref="JsonReaderState"/>.
         /// </remarks>
-        public Utf8JsonReader(ReadOnlyMemory<byte> jsonData, bool isFinalBlock, JsonReaderState state)
+        public Utf8JsonReader(ReadOnlyMemory<byte> jsonData, JsonReaderState state)
         {
             _buffer = jsonData;
-
-            _isFinalBlock = isFinalBlock;
-            _isInputSequence = false;
 
             _lineNumber = state._lineNumber;
             _bytePositionInLine = state._bytePositionInLine;
@@ -237,13 +195,9 @@ namespace Serde.Json
             _consumed = 0;
             TokenStartIndex = 0;
             _totalConsumed = 0;
-            _isLastSegment = _isFinalBlock;
-            _isMultiSegment = false;
 
             _valueMemory = ReadOnlyMemory<byte>.Empty;
 
-            _currentPosition = default;
-            _nextPosition = default;
             _sequence = default;
             HasValueSequence = false;
             ValueSequence = ReadOnlySequence<byte>.Empty;
@@ -259,11 +213,11 @@ namespace Serde.Json
         /// </exception>
         public bool Read()
         {
-            bool retVal = _isMultiSegment ? ReadMultiSegment() : ReadSingleSegment();
+            bool retVal = ReadSingleSegment();
 
             if (!retVal)
             {
-                if (_isFinalBlock && TokenType == JsonTokenType.None)
+                if (TokenType == JsonTokenType.None)
                 {
                     ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedJsonTokens);
                 }
@@ -274,9 +228,6 @@ namespace Serde.Json
         /// <summary>
         /// Skips the children of the current JSON token.
         /// </summary>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown when the reader was given partial data with more data to follow (i.e. <see cref="IsFinalBlock"/> is false).
-        /// </exception>
         /// <exception cref="JsonException">
         /// Thrown when an invalid JSON token is encountered while skipping, according to the JSON RFC,
         /// or if the current depth exceeds the recursive limit set by the max depth.
@@ -292,19 +243,12 @@ namespace Serde.Json
         /// </remarks>
         public void Skip()
         {
-            if (!_isFinalBlock)
-            {
-                ThrowHelper.ThrowInvalidOperationException_CannotSkipOnPartial();
-            }
-
             SkipHelper();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SkipHelper()
         {
-            Debug.Assert(_isFinalBlock);
-
             if (TokenType == JsonTokenType.PropertyName)
             {
                 bool result = Read();
@@ -352,47 +296,8 @@ namespace Serde.Json
         /// </remarks>
         public bool TrySkip()
         {
-            if (_isFinalBlock)
-            {
-                SkipHelper();
-                return true;
-            }
-
-            return TrySkipHelper();
-        }
-
-        private bool TrySkipHelper()
-        {
-            Debug.Assert(!_isFinalBlock);
-
-            Utf8JsonReader restore = this;
-
-            if (TokenType == JsonTokenType.PropertyName)
-            {
-                if (!Read())
-                {
-                    goto Restore;
-                }
-            }
-
-            if (TokenType == JsonTokenType.StartObject || TokenType == JsonTokenType.StartArray)
-            {
-                int depth = CurrentDepth;
-                do
-                {
-                    if (!Read())
-                    {
-                        goto Restore;
-                    }
-                }
-                while (depth < CurrentDepth);
-            }
-
+            SkipHelper();
             return true;
-
-        Restore:
-            this = restore;
-            return false;
         }
 
         /// <summary>
@@ -886,7 +791,7 @@ namespace Serde.Json
         {
             if (_consumed >= (uint)GetBufferSpan.Length)
             {
-                if (_isNotPrimitive && IsLastSpan)
+                if (_isNotPrimitive)
                 {
                     if (_bitStack.CurrentDepth != 0)
                     {
@@ -916,10 +821,7 @@ namespace Serde.Json
         {
             if (_consumed >= (uint)GetBufferSpan.Length)
             {
-                if (IsLastSpan)
-                {
-                    ThrowHelper.ThrowJsonReaderException(ref this, resource);
-                }
+                ThrowHelper.ThrowJsonReaderException(ref this, resource);
                 return false;
             }
             return true;
@@ -1062,7 +964,7 @@ namespace Serde.Json
                                 {
                                     if (_consumed >= (uint)GetBufferSpan.Length)
                                     {
-                                        if (_isNotPrimitive && IsLastSpan && _tokenType != JsonTokenType.EndArray && _tokenType != JsonTokenType.EndObject)
+                                        if (_isNotPrimitive && _tokenType != JsonTokenType.EndArray && _tokenType != JsonTokenType.EndObject)
                                         {
                                             ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.InvalidEndOfJsonNonPrimitive);
                                         }
@@ -1143,11 +1045,8 @@ namespace Serde.Json
 
             Debug.Assert(indexOfFirstMismatch > 0 && indexOfFirstMismatch < literal.Length);
 
-            if (IsLastSpan)
-            {
-                _bytePositionInLine += indexOfFirstMismatch;
-                ThrowInvalidLiteral(span);
-            }
+            _bytePositionInLine += indexOfFirstMismatch;
+            ThrowInvalidLiteral(span);
             return false;
         }
 
@@ -1185,8 +1084,6 @@ namespace Serde.Json
 
             if (_consumed >= (uint)GetBufferSpan.Length)
             {
-                Debug.Assert(IsLastSpan);
-
                 // If there is no more data, and the JSON is not a single value, throw.
                 if (_isNotPrimitive)
                 {
@@ -1279,11 +1176,8 @@ namespace Serde.Json
             }
             else
             {
-                if (IsLastSpan)
-                {
-                    _bytePositionInLine += localSpan.Length + 1;  // Account for the start quote
-                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfStringNotFound);
-                }
+                _bytePositionInLine += localSpan.Length + 1;  // Account for the start quote
+                ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfStringNotFound);
                 return false;
             }
         }
@@ -1355,10 +1249,7 @@ namespace Serde.Json
 
             if (idx >= data.Length)
             {
-                if (IsLastSpan)
-                {
-                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfStringNotFound);
-                }
+                ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfStringNotFound);
                 _lineNumber = prevLineNumber;
                 _bytePositionInLine = prevLineBytePosition;
                 return false;
@@ -1516,11 +1407,8 @@ namespace Serde.Json
                 i++;
                 if (i >= data.Length)
                 {
-                    if (IsLastSpan)
-                    {
-                        _bytePositionInLine += i;
-                        ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
-                    }
+                    _bytePositionInLine += i;
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
                     return ConsumeNumberResult.NeedMoreData;
                 }
 
@@ -1549,17 +1437,10 @@ namespace Serde.Json
             }
             else
             {
-                if (IsLastSpan)
-                {
-                    // A payload containing a single value: "0" is valid
-                    // If we are dealing with multi-value JSON,
-                    // ConsumeNumber will validate that we have a delimiter following the "0".
-                    return ConsumeNumberResult.Success;
-                }
-                else
-                {
-                    return ConsumeNumberResult.NeedMoreData;
-                }
+                // A payload containing a single value: "0" is valid
+                // If we are dealing with multi-value JSON,
+                // ConsumeNumber will validate that we have a delimiter following the "0".
+                return ConsumeNumberResult.Success;
             }
             nextByte = data[i];
             if (nextByte != '.' && nextByte != 'E' && nextByte != 'e')
@@ -1586,17 +1467,10 @@ namespace Serde.Json
             }
             if (i >= data.Length)
             {
-                if (IsLastSpan)
-                {
-                    // A payload containing a single value of integers (e.g. "12") is valid
-                    // If we are dealing with multi-value JSON,
-                    // ConsumeNumber will validate that we have a delimiter following the integer.
-                    return ConsumeNumberResult.Success;
-                }
-                else
-                {
-                    return ConsumeNumberResult.NeedMoreData;
-                }
+                // A payload containing a single value of integers (e.g. "12") is valid
+                // If we are dealing with multi-value JSON,
+                // ConsumeNumber will validate that we have a delimiter following the integer.
+                return ConsumeNumberResult.Success;
             }
             if (JsonConstants.Delimiters.IndexOf(nextByte) >= 0)
             {
@@ -1610,11 +1484,8 @@ namespace Serde.Json
         {
             if (i >= data.Length)
             {
-                if (IsLastSpan)
-                {
-                    _bytePositionInLine += i;
-                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
-                }
+                _bytePositionInLine += i;
+                ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
                 return ConsumeNumberResult.NeedMoreData;
             }
             byte nextByte = data[i];
@@ -1632,11 +1503,8 @@ namespace Serde.Json
         {
             if (i >= data.Length)
             {
-                if (IsLastSpan)
-                {
-                    _bytePositionInLine += i;
-                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
-                }
+                _bytePositionInLine += i;
+                ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
                 return ConsumeNumberResult.NeedMoreData;
             }
 
@@ -1646,11 +1514,8 @@ namespace Serde.Json
                 i++;
                 if (i >= data.Length)
                 {
-                    if (IsLastSpan)
-                    {
-                        _bytePositionInLine += i;
-                        ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
-                    }
+                    _bytePositionInLine += i;
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.RequiredDigitNotFoundEndOfData);
                     return ConsumeNumberResult.NeedMoreData;
                 }
                 nextByte = data[i];
@@ -1726,12 +1591,9 @@ namespace Serde.Json
 
                 if (_consumed >= (uint)GetBufferSpan.Length)
                 {
-                    if (IsLastSpan)
-                    {
-                        _consumed--;
-                        _bytePositionInLine--;
-                        ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound);
-                    }
+                    _consumed--;
+                    _bytePositionInLine--;
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound);
                     return ConsumeTokenResult.NotEnoughDataRollBackState;
                 }
                 byte first = GetBufferSpan[_consumed];
@@ -1858,12 +1720,9 @@ namespace Serde.Json
 
                 if (_consumed >= (uint)GetBufferSpan.Length)
                 {
-                    if (IsLastSpan)
-                    {
-                        _consumed--;
-                        _bytePositionInLine--;
-                        ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound);
-                    }
+                    _consumed--;
+                    _bytePositionInLine--;
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound);
                     goto RollBack;
                 }
                 first = GetBufferSpan[_consumed];
@@ -2185,12 +2044,9 @@ namespace Serde.Json
 
                 if (_consumed >= (uint)GetBufferSpan.Length)
                 {
-                    if (IsLastSpan)
-                    {
-                        _consumed--;
-                        _bytePositionInLine--;
-                        ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound);
-                    }
+                    _consumed--;
+                    _bytePositionInLine--;
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfPropertyOrValueNotFound);
                     return ConsumeTokenResult.NotEnoughDataRollBackState;
                 }
                 marker = GetBufferSpan[_consumed];
@@ -2290,10 +2146,7 @@ namespace Serde.Json
                 }
             }
 
-            if (IsLastSpan)
-            {
-                ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfValueNotFound, JsonConstants.Slash);
-            }
+            ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.ExpectedStartOfValueNotFound, JsonConstants.Slash);
             return false;
         }
 
@@ -2322,29 +2175,14 @@ namespace Serde.Json
                     goto EndOfComment;
                 }
 
-                if (IsLastSpan)
-                {
-                    goto EndOfComment;
-                }
-                else
-                {
-                    // there might be LF in the next segment
-                    return false;
-                }
+                goto EndOfComment;
             }
 
-            if (IsLastSpan)
-            {
-                idx = localBuffer.Length;
-                toConsume = idx;
-                // Assume everything on this line is a comment and there is no more data.
-                _bytePositionInLine += 2 + localBuffer.Length;
-                goto Done;
-            }
-            else
-            {
-                return false;
-            }
+            idx = localBuffer.Length;
+            toConsume = idx;
+            // Assume everything on this line is a comment and there is no more data.
+            _bytePositionInLine += 2 + localBuffer.Length;
+            goto Done;
 
         EndOfComment:
             toConsume++;
@@ -2409,10 +2247,7 @@ namespace Serde.Json
                 int foundIdx = localBuffer.Slice(idx).IndexOf(JsonConstants.Slash);
                 if (foundIdx == -1)
                 {
-                    if (IsLastSpan)
-                    {
-                        ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfCommentNotFound);
-                    }
+                    ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.EndOfCommentNotFound);
                     return false;
                 }
                 if (foundIdx != 0 && localBuffer[foundIdx + idx - 1] == JsonConstants.Asterisk)
@@ -2467,10 +2302,7 @@ namespace Serde.Json
                 }
             }
 
-            if (IsLastSpan)
-            {
-                ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.UnexpectedEndOfDataWhileReadingComment);
-            }
+            ThrowHelper.ThrowJsonReaderException(ref this, ExceptionResource.UnexpectedEndOfDataWhileReadingComment);
             return false;
         }
 
