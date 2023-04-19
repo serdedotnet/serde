@@ -26,7 +26,7 @@ namespace Serde.Json
         {
             _state = new DeserializerState
             {
-                Reader = new Utf8JsonReader(bytes, isFinalBlock: true, default)
+                Reader = new Utf8JsonReader(bytes, default)
             };
         }
 
