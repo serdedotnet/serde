@@ -35,9 +35,9 @@ namespace Serde.Json
             _state.Reader = reader;
         }
 
-        private Utf8JsonReader GetReader()
+        private ref Utf8JsonReader GetReader()
         {
-            return _state.Reader;
+            return ref _state.Reader;
         }
 
         public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>
@@ -76,16 +76,15 @@ namespace Serde.Json
 
         public T DeserializeBool<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
             bool b = reader.GetBoolean();
-            SaveState(reader);
             return v.VisitBool(b);
         }
 
         public T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
 
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -93,7 +92,6 @@ namespace Serde.Json
                 throw new InvalidDeserializeValueException("Expected object start");
             }
 
-            SaveState(reader);
             var map = new DeDictionary(this);
             return v.VisitDictionary(ref map);
         }
@@ -103,25 +101,23 @@ namespace Serde.Json
 
         public T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
             var d = reader.GetDouble();
-            SaveState(reader);
             return v.VisitDouble(d);
         }
 
         public T DeserializeDecimal<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
             var d = reader.GetDecimal();
-            SaveState(reader);
             return v.VisitDecimal(d);
         }
 
         public T DeserializeEnumerable<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
 
             if (reader.TokenType != JsonTokenType.StartArray)
@@ -129,7 +125,6 @@ namespace Serde.Json
                 throw new InvalidDeserializeValueException("Expected array start");
             }
 
-            SaveState(reader);
             var enumerable = new DeEnumerable(this);
             return v.VisitEnumerable(ref enumerable);
         }
@@ -232,27 +227,24 @@ namespace Serde.Json
 
         public T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
             var i64 = reader.GetInt64();
-            SaveState(reader);
             return v.VisitI64(i64);
         }
 
         public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
             if (reader.HasValueSequence || reader.ValueIsEscaped)
             {
                 var s = reader.GetString()!;
-                SaveState(reader);
                 return v.VisitString(s);
             }
             else
             {
                 var result = v.VisitUtf8Span(reader.ValueSpan);
-                SaveState(reader);
                 return result;
             }
         }
@@ -277,10 +269,9 @@ namespace Serde.Json
 
         public T DeserializeU64<T, V>(V v) where V : IDeserializeVisitor<T>
         {
-            var reader = GetReader();
+            ref var reader = ref GetReader();
             reader.ReadOrThrow();
             var u64 = reader.GetUInt64();
-            SaveState(reader);
             return v.VisitU64(u64);
         }
 
