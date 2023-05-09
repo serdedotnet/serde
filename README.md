@@ -3,7 +3,7 @@
 Serde.NET is a port of the popular [serde.rs](https://serde.rs) Rust ***ser***ialization/***de***serialization
 library to .NET.
 
-For an overview, see [Overview](https://serde-dn.github.io/overview.html).
+For an overview, see [Overview](https://serdedotnet.github.io/overview.html).
 
 Start by adding the `serde` NuGet package:
 
