@@ -16,7 +16,11 @@ namespace Serde.Json
         public static string Serialize<T>(T s) where T : ISerialize
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
-            using var writer = new Utf8JsonWriter(bufferWriter);
+            using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
+            {
+                Indented = false,
+                SkipValidation = true
+            });
             var serializer = new JsonSerializer(writer);
             s.Serialize(serializer);
             writer.Flush();

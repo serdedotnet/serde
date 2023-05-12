@@ -12,7 +12,7 @@ namespace Serde.Test
             void Serde.ISerialize.Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("BoolStruct", 1);
-                type.SerializeField("BoolField", new BoolWrap(this.BoolField));
+                type.SerializeField("BoolField"u8, new BoolWrap(this.BoolField));
                 type.End();
             }
         }

@@ -235,6 +235,10 @@ public sealed partial class XmlSerializer : ISerializer
             value.Serialize(_parent);
             _parent._writer.WriteEndElement();
         }
+        void ISerializeType.SerializeField<T>(ReadOnlySpan<byte> name, T value)
+        {
+            SerializeField(Encoding.UTF8.GetString(name), value);
+        }
 
         public void SerializeField<T>(string name, T value, ReadOnlySpan<Attribute> attributes)
             where T : ISerialize
@@ -250,6 +254,12 @@ public sealed partial class XmlSerializer : ISerializer
                 }
             }
             SerializeField(name, value);
+        }
+
+        public void SerializeField<T>(ReadOnlySpan<byte> name, T value, ReadOnlySpan<Attribute> attributes)
+            where T : ISerialize
+        {
+            SerializeField(Encoding.UTF8.GetString(name), value, attributes);
         }
 
         public void End()

@@ -24,19 +24,20 @@ namespace Benchmarks
                 RememberMe = true
             };
 
-            static Location CreateLocation() => new Location
-            {
-                Id = 1234,
-                Address1 = "The Street Name",
-                Address2 = "20/11",
-                City = "The City",
-                State = "The State",
-                PostalCode = "abc-12",
-                Name = "Nonexisting",
-                PhoneNumber = "+0 11 222 333 44",
-                Country = "The Greatest"
-            };
         }
+
+        public static Location CreateLocation() => new Location
+        {
+            Id = 1234,
+            Address1 = "The Street Name",
+            Address2 = "20/11",
+            City = "The City",
+            State = "The State",
+            PostalCode = "abc-12",
+            Name = "Nonexisting",
+            PhoneNumber = "+0 11 222 333 44",
+            Country = "The Greatest"
+        };
 
         public static string GenerateDeserialize<T>()
         {

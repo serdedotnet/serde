@@ -12,11 +12,11 @@ namespace Serde.Test
             void Serde.ISerialize.Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("OrderedItem", 5);
-                type.SerializeField("ItemName", new StringWrap(this.ItemName));
-                type.SerializeField("Description", new StringWrap(this.Description));
-                type.SerializeField("UnitPrice", new DecimalWrap(this.UnitPrice));
-                type.SerializeField("Quantity", new Int32Wrap(this.Quantity));
-                type.SerializeField("LineTotal", new DecimalWrap(this.LineTotal));
+                type.SerializeField("ItemName"u8, new StringWrap(this.ItemName));
+                type.SerializeField("Description"u8, new StringWrap(this.Description));
+                type.SerializeField("UnitPrice"u8, new DecimalWrap(this.UnitPrice));
+                type.SerializeField("Quantity"u8, new Int32Wrap(this.Quantity));
+                type.SerializeField("LineTotal"u8, new DecimalWrap(this.LineTotal));
                 type.End();
             }
         }
