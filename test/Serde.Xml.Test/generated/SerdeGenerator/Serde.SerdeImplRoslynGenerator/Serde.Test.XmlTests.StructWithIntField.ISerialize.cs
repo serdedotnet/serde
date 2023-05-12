@@ -12,7 +12,7 @@ namespace Serde.Test
             void Serde.ISerialize.Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("StructWithIntField", 1);
-                type.SerializeField("X", new Int32Wrap(this.X));
+                type.SerializeField("X"u8, new Int32Wrap(this.X));
                 type.End();
             }
         }

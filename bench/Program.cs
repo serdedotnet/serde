@@ -14,6 +14,8 @@ var options = new JsonSerializerOptions()
     IncludeFields = true,
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 };
+var json1 = System.Text.Json.JsonSerializer.Serialize(DataGenerator.CreateLocation(), options);
+var json2 = Serde.Json.JsonSerializer.Serialize(DataGenerator.CreateLocation());
 var loc1 = System.Text.Json.JsonSerializer.Deserialize<Location>(LocationSample, options);
 var loc2 = Serde.Json.JsonSerializer.Deserialize<Location>(LocationSample);
 

@@ -12,7 +12,7 @@ namespace Serde.Test
             void Serde.ISerialize.Serialize(ISerializer serializer)
             {
                 var type = serializer.SerializeType("NestedArrays", 1);
-                type.SerializeField("A", new ArrayWrap.SerializeImpl<int[][], ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>>(this.A));
+                type.SerializeField("A"u8, new ArrayWrap.SerializeImpl<int[][], ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>>(this.A));
                 type.End();
             }
         }

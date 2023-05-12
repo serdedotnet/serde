@@ -10,8 +10,8 @@ namespace Serde.Json
     // implementation for now.
     partial class JsonSerializer
     {
-        internal readonly Utf8JsonWriter _writer;
-        public JsonSerializer(Utf8JsonWriter writer)
+        private readonly Utf8JsonWriter _writer;
+        internal JsonSerializer(Utf8JsonWriter writer)
         {
             _writer = writer;
         }
@@ -99,7 +99,7 @@ namespace Serde.Json
 
     partial class JsonSerializer : ISerializeType
     {
-        void ISerializeType.SerializeField<T>(string name, T value)
+        void ISerializeType.SerializeField<T>(ReadOnlySpan<byte> name, T value)
         {
             _writer.WritePropertyName(name);
             value.Serialize(this);
