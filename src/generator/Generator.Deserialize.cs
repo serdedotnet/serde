@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -18,7 +19,8 @@ namespace Serde
         private static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
-            ExpressionSyntax receiverExpr)
+            ExpressionSyntax receiverExpr,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             TypeSyntax typeSyntax = ParseTypeName(receiverType.ToDisplayString());
 
@@ -30,7 +32,7 @@ namespace Serde
 
             // Generate members for ISerialize.Deserialize implementation
             var method = GenerateDeserializeMethod(context, interfaceSyntax, receiverType);
-            var visitorType = GenerateVisitor(receiverType, typeSyntax, context);
+            var visitorType = GenerateVisitor(receiverType, typeSyntax, context, inProgress);
             var members = new MemberDeclarationSyntax[] { method, visitorType };
             var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) }));
             return (members, baseList);
@@ -164,7 +166,11 @@ namespace Serde
                 );
         }
 
-        private static TypeDeclarationSyntax GenerateVisitor(ITypeSymbol type, TypeSyntax typeSyntax, GeneratorExecutionContext context)
+        private static TypeDeclarationSyntax GenerateVisitor(
+            ITypeSymbol type,
+            TypeSyntax typeSyntax,
+            GeneratorExecutionContext context,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             // Serde.IDeserializeVisitor<'typeName'>
             var interfaceSyntax = QualifiedName(IdentifierName("Serde"), GenericName(
@@ -234,7 +240,7 @@ namespace Serde
             {
                 var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Deserialize);
                 typeMembers.Add(GenerateFieldNameVisitor(type, typeName, members));
-                typeMembers.Add(GenerateCustomTypeVisitor(type, typeName, context, members));
+                typeMembers.Add(GenerateCustomTypeVisitor(type, typeName, context, members, inProgress));
             }
 
             // private sealed class SerdeVisitor : IDeserializeVisitor<'typeName'>
@@ -301,7 +307,12 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
 
         private const string AssignedVarName = "_r_assignedValid";
 
-        private static MemberDeclarationSyntax GenerateCustomTypeVisitor(ITypeSymbol type, string typeName, GeneratorExecutionContext context, List<DataMemberSymbol> members)
+        private static MemberDeclarationSyntax GenerateCustomTypeVisitor(
+            ITypeSymbol type,
+            string typeName,
+            GeneratorExecutionContext context,
+            List<DataMemberSymbol> members,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             var assignedVarType = members.Count switch {
                 <= 8 => "byte",
@@ -343,7 +354,7 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
                     var m = members[i];
                     string wrapperName;
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                    if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize) is { } explicitWrap)
+                    if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
                     {
                         wrapperName = explicitWrap.ToString();
                     }
@@ -351,7 +362,7 @@ private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVi
                     {
                         wrapperName = memberType;
                     }
-                    else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize) is { } wrap)
+                    else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { } wrap)
                     {
                         wrapperName = wrap.ToString();
                     }

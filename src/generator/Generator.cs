@@ -78,7 +78,8 @@ namespace Serde
                         SerdeUsage.Serialize,
                         (TypeDeclarationSyntax)attrCtx.TargetNode,
                         attrCtx.SemanticModel,
-                        generationContext);
+                        generationContext,
+                        ImmutableList<ITypeSymbol>.Empty);
                 }
                 if (usage.HasFlag(SerdeUsage.Deserialize))
                 {
@@ -86,7 +87,8 @@ namespace Serde
                         SerdeUsage.Deserialize,
                         (TypeDeclarationSyntax)attrCtx.TargetNode,
                         attrCtx.SemanticModel,
-                        generationContext);
+                        generationContext,
+                        ImmutableList<ITypeSymbol>.Empty);
                 }
                 return generationContext.GetOutput();
             }

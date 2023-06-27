@@ -19,7 +19,8 @@ namespace Serde
         private static (MemberDeclarationSyntax[], BaseListSyntax) GenerateSerializeImpl(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
-            ExpressionSyntax receiverExpr)
+            ExpressionSyntax receiverExpr,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             var statements = new List<StatementSyntax>();
             var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
@@ -91,7 +92,7 @@ namespace Serde
                 foreach (var m in fieldsAndProps)
                 {
                     // Generate statements of the form `type.SerializeField("FieldName", FieldValue)`
-                    var expr = TryMakeSerializeFieldExpr(m, context, receiverExpr);
+                    var expr = TryMakeSerializeFieldExpr(m, context, receiverExpr, inProgress);
                     if (expr is null)
                     {
                         // No built-in handling and doesn't implement ISerialize, error
@@ -140,10 +141,11 @@ namespace Serde
             static ExpressionSyntax? TryMakeSerializeFieldExpr(
                 DataMemberSymbol m,
                 GeneratorExecutionContext context,
-                ExpressionSyntax receiverExpr)
+                ExpressionSyntax receiverExpr,
+                ImmutableList<ITypeSymbol> inProgress)
             {
                 var memberExpr = MakeMemberAccessExpr(m, receiverExpr);
-                return MakeSerializeArgument(m, context, memberExpr);
+                return MakeSerializeArgument(m, context, memberExpr, inProgress);
             }
 
             // Make a statement like `type.SerializeField("member.Name", value)`
@@ -226,13 +228,14 @@ namespace Serde
         private static ExpressionSyntax? MakeSerializeArgument(
             DataMemberSymbol member,
             GeneratorExecutionContext context,
-            ExpressionSyntax memberExpr)
+            ExpressionSyntax memberExpr,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(memberExpr) }));
 
             // 1. Check for an explicit wrapper
 
-            if (TryGetExplicitWrapper(member, context, SerdeUsage.Serialize) is {} wrapper)
+            if (TryGetExplicitWrapper(member, context, SerdeUsage.Serialize, inProgress) is {} wrapper)
             {
                 return ObjectCreationExpression(
                     wrapper,
@@ -248,7 +251,7 @@ namespace Serde
             }
 
             // 3. A wrapper that implements ISerialize
-            wrapper = TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize);
+            wrapper = TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
             if (wrapper is not null)
             {
                 return ObjectCreationExpression(
@@ -260,7 +263,11 @@ namespace Serde
             return null;
         }
 
-        private static TypeSyntax? TryCreateWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage)
+        private static TypeSyntax? TryCreateWrapper(
+            ITypeSymbol type,
+            GeneratorExecutionContext context,
+            SerdeUsage usage,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             if (type is ({ TypeKind: not TypeKind.Enum } and { DeclaringSyntaxReferences.Length: > 0 }) or
                         { CanBeReferencedByName: false } or
@@ -276,6 +283,14 @@ namespace Serde
                 allTypes = parent.Name + allTypes;
             }
             var wrapperName = $"{allTypes}Wrap";
+
+            // If we're in the process of generating this type, just return the name of the wrapper
+            // and assume it has been generated already.
+            if (inProgress.Contains(type, SymbolEqualityComparer.Default))
+            {
+                return IdentifierName(wrapperName);
+            }
+
             var wrapperFqn = $"Serde.{wrapperName}";
             var argName = "Value";
             var src = @$"
@@ -286,7 +301,13 @@ namespace Serde
             context.AddSource(wrapperFqn, src);
             var tree = SyntaxFactory.ParseSyntaxTree(src);
             var typeDecl = (RecordDeclarationSyntax)((NamespaceDeclarationSyntax)tree.GetCompilationUnitRoot().Members[0]).Members[0];
-            GenerateImpl(usage, new TypeDeclContext(typeDecl), type, IdentifierName(argName), context);
+            GenerateImpl(
+                usage,
+                new TypeDeclContext(typeDecl),
+                type,
+                IdentifierName(argName),
+                context,
+                inProgress.Add(type));
             return IdentifierName(wrapperName);
         }
 

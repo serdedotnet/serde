@@ -42,9 +42,9 @@ namespace Serde.Test
             return settings;
         });
 
-        public static Task<VerifyResult> VerifyMultiFile(string src)
+        public static Task<VerifyResult> VerifyMultiFile(string src, MetadataReference[]? additionalRefs = null)
         {
-            return VerifyGeneratedCode(src, s_cachedSettings.Value);
+            return VerifyGeneratedCode(src, s_cachedSettings.Value, additionalRefs);
         }
 
         public static Task<VerifyResult> VerifyGeneratedCode(
@@ -63,18 +63,20 @@ namespace Serde.Test
             return VerifyGeneratedCode(src, settings);
         }
 
-        private static async Task<VerifyResult> VerifyGeneratedCode(string src, VerifySettings settings)
+        public static async Task<VerifyResult> VerifyGeneratedCode(string src, VerifySettings settings, MetadataReference[]? additionalRefs = null)
         {
             var generatorInstance = new SerdeImplRoslynGenerator();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(generatorInstance);
-            var comp = await CreateCompilation(src);
+            var comp = await CreateCompilation(src, additionalRefs);
             driver = driver.RunGenerators(comp);
             return await Verifier.Verify(driver, settings);
         }
 
-        public static async Task<CSharpCompilation> CreateCompilation(string src)
+        public static async Task<CSharpCompilation> CreateCompilation(string src, MetadataReference[]? additionalRefs = null)
         {
+            additionalRefs ??= Array.Empty<MetadataReference>();
             IEnumerable<MetadataReference> refs = await Config.LatestTfRefs.ResolveAsync(null, default);
+            refs = refs.Concat(additionalRefs);
             refs = refs.Append(MetadataReference.CreateFromFile(typeof(Serde.GenerateSerialize).Assembly.Location));
             return CSharpCompilation.Create(
                 Guid.NewGuid().ToString(),

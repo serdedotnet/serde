@@ -83,11 +83,13 @@ namespace Serde.Test
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.MaxSizeType>
         {
             public string ExpectedTypeName => "Serde.Test.MaxSizeType";
+
             private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
             {
                 public static byte Deserialize<D>(ref D deserializer)
                     where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
                 public string ExpectedTypeName => "string";
+
                 byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
                 public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
                 {
