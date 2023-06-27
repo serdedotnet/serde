@@ -202,5 +202,24 @@ internal partial record struct ChannelList
 """;
             return VerifyMultiFile(src);
         }
+
+        [Fact]
+        public async Task RecursiveType()
+        {
+            var comp = await CreateCompilation("""
+public partial record Recursive
+{
+    public Recursive? Next { get; init; }
+}
+""");
+            var src = """
+using Serde;
+namespace Test;
+
+[GenerateSerde]
+public partial record Parent(Recursive R);
+""";
+            await VerifyMultiFile(src, new[] { comp.EmitToImageReference() });
+        }
     }
 }

@@ -16,6 +16,7 @@ namespace Serde
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne.ColorEnum>
         {
             public string ExpectedTypeName => "Serde.Test.AllInOne.ColorEnum";
+
             Serde.Test.AllInOne.ColorEnum Serde.IDeserializeVisitor<Serde.Test.AllInOne.ColorEnum>.VisitString(string s) => s switch
             {
                 "red" => Serde.Test.AllInOne.ColorEnum.Red,

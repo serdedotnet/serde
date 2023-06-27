@@ -57,11 +57,11 @@ namespace Serde
                 return;
             }
 
-            GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context);
-            GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context);
+            GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, ImmutableList<ITypeSymbol>.Empty);
+            GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, ImmutableList<ITypeSymbol>.Empty);
         }
 
-        private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage)
+        private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage, ImmutableList<ITypeSymbol> inProgress)
         {
             return type switch
             {
@@ -70,7 +70,8 @@ namespace Serde
                         $"NullableWrap.{usage.GetImplName()}",
                         ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                         context,
-                        usage),
+                        usage,
+                        inProgress),
 
                 // This is rather subtle. One might think that we would want to use a
                 // NullableRefWrapper for any reference type that could contain null. In fact, we
@@ -88,13 +89,19 @@ namespace Serde
                         $"NullableRefWrap.{usage.GetImplName()}",
                         ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                         context,
-                        usage),
+                        usage,
+                        inProgress),
 
                 IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }
-                    => MakeWrappedExpression($"ArrayWrap.{usage.GetImplName()}", ImmutableArray.Create(elemType), context, usage),
+                    => MakeWrappedExpression(
+                        $"ArrayWrap.{usage.GetImplName()}",
+                        ImmutableArray.Create(elemType),
+                        context,
+                        usage,
+                        inProgress),
 
                 INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is { } tuple
-                    => MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage),
+                    => MakeWrappedExpression(tuple.WrapperName, tuple.Args, context, usage, inProgress),
 
                 _ => null,
             };
@@ -104,7 +111,8 @@ namespace Serde
             string baseWrapperName,
             ImmutableArray<ITypeSymbol> elemTypes,
             GeneratorExecutionContext context,
-            SerdeUsage usage)
+            SerdeUsage usage,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             if (elemTypes.Length == 0)
             {
@@ -144,7 +152,7 @@ namespace Serde
 
                 // Otherwise we'll need to wrap the element type as well e.g.,
                 //      ArrayWrap<`elemType`, `elemTypeWrapper`>
-                var wrapper = TryGetAnyWrapper(elemType, context, usage);
+                var wrapper = TryGetAnyWrapper(elemType, context, usage, inProgress);
 
                 if (wrapper is null)
                 {
@@ -162,14 +170,22 @@ namespace Serde
                 Identifier(baseWrapperName), TypeArgumentList(SeparatedList(wrapperTypes)));
         }
 
-        private static TypeSyntax? TryGetAnyWrapper(ITypeSymbol elemType, GeneratorExecutionContext context, SerdeUsage usage)
+        private static TypeSyntax? TryGetAnyWrapper(
+            ITypeSymbol elemType,
+            GeneratorExecutionContext context,
+            SerdeUsage usage,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             return TryGetPrimitiveWrapper(elemType, usage)
-                ?? TryGetCompoundWrapper(elemType, context, usage)
-                ?? TryCreateWrapper(elemType, context, usage);
+                ?? TryGetCompoundWrapper(elemType, context, usage, inProgress)
+                ?? TryCreateWrapper(elemType, context, usage, inProgress);
         }
 
-        private static TypeSyntax? TryGetExplicitWrapper(DataMemberSymbol member, GeneratorExecutionContext context, SerdeUsage usage)
+        private static TypeSyntax? TryGetExplicitWrapper(
+            DataMemberSymbol member,
+            GeneratorExecutionContext context,
+            SerdeUsage usage,
+            ImmutableList<ITypeSymbol> inProgress)
         {
             if (TryGetExplicitWrapperType(member, usage, context) is {} wrapperType)
             {
@@ -184,7 +200,7 @@ namespace Serde
                 {
                     wrapName = wrapName[..index];
                 }
-                return MakeWrappedExpression(wrapName, typeArgs, context, usage);
+                return MakeWrappedExpression(wrapName, typeArgs, context, usage, inProgress);
             }
             return null;
 

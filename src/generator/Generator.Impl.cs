@@ -60,7 +60,8 @@ partial class SerdeImplRoslynGenerator
         SerdeUsage usage,
         TypeDeclarationSyntax typeDecl,
         SemanticModel semanticModel,
-        GeneratorExecutionContext context)
+        GeneratorExecutionContext context,
+        ImmutableList<ITypeSymbol> inProgress)
     {
         var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
         if (receiverType is null)
@@ -78,7 +79,13 @@ partial class SerdeImplRoslynGenerator
         }
 
         var receiverExpr = ThisExpression();
-        GenerateImpl(usage, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context);
+        GenerateImpl(
+            usage,
+            new TypeDeclContext(typeDecl),
+            receiverType,
+            receiverExpr,
+            context,
+            inProgress);
     }
 
     private static void GenerateImpl(
@@ -86,7 +93,8 @@ partial class SerdeImplRoslynGenerator
         TypeDeclContext typeDeclContext,
         ITypeSymbol receiverType,
         ExpressionSyntax receiverExpr,
-        GeneratorExecutionContext context)
+        GeneratorExecutionContext context,
+        ImmutableList<ITypeSymbol> inProgress)
     {
         var typeName = typeDeclContext.Name;
         string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
@@ -98,8 +106,8 @@ partial class SerdeImplRoslynGenerator
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
         {
-            SerdeUsage.Serialize => GenerateSerializeImpl(context, receiverType, receiverExpr),
-            SerdeUsage.Deserialize => GenerateDeserializeImpl(context, receiverType, receiverExpr),
+            SerdeUsage.Serialize => GenerateSerializeImpl(context, receiverType, receiverExpr, inProgress),
+            SerdeUsage.Deserialize => GenerateDeserializeImpl(context, receiverType, receiverExpr, inProgress),
             _ => throw ExceptionUtilities.Unreachable
         };
 
