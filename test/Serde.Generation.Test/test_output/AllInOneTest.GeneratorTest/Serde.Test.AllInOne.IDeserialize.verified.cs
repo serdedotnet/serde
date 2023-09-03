@@ -170,7 +170,7 @@ namespace Serde.Test
                             _r_assignedValid |= ((ushort)1) << 14;
                             break;
                         case 16:
-                            _l_color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, AllInOneColorEnumWrap>();
+                            _l_color = d.GetNextValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumWrap>();
                             _r_assignedValid |= ((ushort)1) << 15;
                             break;
                     }

@@ -50,7 +50,7 @@ namespace Test
                     switch (key)
                     {
                         case 1:
-                            _l_r = d.GetNextValue<Recursive, RecursiveWrap>();
+                            _l_r = d.GetNextValue<Recursive, Test.RecursiveWrap>();
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                     }

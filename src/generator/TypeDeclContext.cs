@@ -18,7 +18,7 @@ namespace Serde
         public List<(string Name, SyntaxKind Kind)> ParentTypeInfo { get; init; }
         public TypeParameterListSyntax? TypeParameterList { get; init; }
 
-        public TypeDeclContext(TypeDeclarationSyntax typeDecl)
+        public TypeDeclContext(BaseTypeDeclarationSyntax typeDecl)
         {
             Kind = typeDecl.Kind();
             Name = typeDecl.Identifier.ValueText;
@@ -41,7 +41,9 @@ namespace Serde
             }
             NamespaceNames = nsNames;
             ParentTypeInfo = parentTypeInfos;
-            TypeParameterList = typeDecl.TypeParameterList;
+            TypeParameterList = typeDecl is TypeDeclarationSyntax derived
+                ? derived.TypeParameterList
+                : null;
         }
 
         public MemberDeclarationSyntax WrapNewType(MemberDeclarationSyntax newType)

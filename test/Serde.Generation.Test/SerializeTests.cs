@@ -470,9 +470,13 @@ partial class C
     public ColorLong ColorLong;
     public ColorULong ColorULong;
 }
+[Serde.GenerateSerialize]
 public enum ColorInt { Red = 3, Green = 5, Blue = 7 }
+[Serde.GenerateSerialize]
 public enum ColorByte : byte { Red = 3, Green = 5, Blue = 7 }
+[Serde.GenerateSerialize]
 public enum ColorLong : long { Red = 3, Green = 5, Blue = 7 }
+[Serde.GenerateSerialize]
 public enum ColorULong : ulong { Red = 3, Green = 5, Blue = 7 }
 ";
 

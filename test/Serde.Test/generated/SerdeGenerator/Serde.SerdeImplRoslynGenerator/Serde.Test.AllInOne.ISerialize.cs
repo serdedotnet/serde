@@ -25,7 +25,7 @@ namespace Serde.Test
             type.SerializeField("uIntArr"u8, new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
             type.SerializeField("nestedArr"u8, new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
             type.SerializeField("intImm"u8, new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
-            type.SerializeField("color"u8, new AllInOneColorEnumWrap(this.Color));
+            type.SerializeField("color"u8, new Serde.Test.AllInOne.ColorEnumWrap(this.Color));
             type.End();
         }
     }

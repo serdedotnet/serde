@@ -39,6 +39,7 @@ namespace Serde.Test
 
         public ColorEnum Color;
 
+        [GenerateSerde]
         public enum ColorEnum
         {
             Red = 1,

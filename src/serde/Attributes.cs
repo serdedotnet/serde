@@ -10,7 +10,7 @@ namespace Serde;
 /// <summary>
 /// Generates an implementation of <see cref="Serde.ISerialize" />.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
 #if !SRCGEN
 public
@@ -23,7 +23,7 @@ sealed class GenerateSerialize : Attribute
 /// <summary>
 /// Generates an implementation of <see cref="Serde.IDeserialize" />.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
 #if !SRCGEN
 public
@@ -36,7 +36,7 @@ sealed class GenerateDeserialize : Attribute
 /// <summary>
 /// Generates an implementation of both <see cref="Serde.ISerialize" /> and <see cref="Serde.IDeserialize" />.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
 #if !SRCGEN
 public

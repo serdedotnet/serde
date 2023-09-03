@@ -68,7 +68,7 @@ partial struct PointWrap
         }
 
         [Fact]
-        public Task NestedSerializeWrap()
+        public Task NestedUnimplementedSerializeWrap()
         {
             var src = @"
 using System.Collections.Specialized;
@@ -85,9 +85,14 @@ partial class C
         {
             var src = @"
 using System.Collections.Specialized;
+
+[Serde.GenerateWrapper(nameof(Value))]
+internal readonly partial record struct SectionWrap(BitVector32.Section Value);
+
 [Serde.GenerateDeserialize]
 partial class C
 {
+    [Serde.SerdeWrap(typeof(SectionWrap))]
     public BitVector32.Section S = new BitVector32.Section();
 }";
             return VerifyMultiFile(src);
@@ -192,6 +197,7 @@ public partial class Address
 using System.Collections.Immutable;
 namespace Test;
 
+[Serde.GenerateDeserialize]
 public enum Channel { A, B, C }
 
 [Serde.GenerateDeserialize]
@@ -216,8 +222,13 @@ public partial record Recursive
 using Serde;
 namespace Test;
 
+[GenerateWrapper(nameof(Value))]
+internal partial record struct RecursiveWrap(Recursive Value);
+
 [GenerateSerde]
-public partial record Parent(Recursive R);
+public partial record Parent(
+    [property: SerdeWrap(typeof(RecursiveWrap)]
+    Recursive R);
 """;
             await VerifyMultiFile(src, new[] { comp.EmitToImageReference() });
         }

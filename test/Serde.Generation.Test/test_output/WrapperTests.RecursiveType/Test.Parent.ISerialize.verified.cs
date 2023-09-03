@@ -11,7 +11,7 @@ namespace Test
         void Serde.ISerialize.Serialize(ISerializer serializer)
         {
             var type = serializer.SerializeType("Parent", 1);
-            type.SerializeField("r"u8, new RecursiveWrap(this.R));
+            type.SerializeField("r"u8, new Test.RecursiveWrap(this.R));
             type.End();
         }
     }
