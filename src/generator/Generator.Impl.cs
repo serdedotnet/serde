@@ -224,9 +224,16 @@ internal readonly partial record struct {wrapperName}({typeName} Value);
             return true;
         }
 
-        var serdeSymbol = context.Compilation.GetTypeByMetadataName(usage == SerdeUsage.Serialize
-            ? "Serde.ISerialize"
-            : "Serde.IDeserialize`1");
+        INamedTypeSymbol? serdeSymbol;
+        if (usage == SerdeUsage.Serialize)
+        {
+            serdeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize");
+        }
+        else
+        {
+            var deserialize = context.Compilation.GetTypeByMetadataName("Serde.IDeserialize`1");
+            serdeSymbol = deserialize?.Construct(memberType);
+        }
         if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
             || (memberType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
         {
