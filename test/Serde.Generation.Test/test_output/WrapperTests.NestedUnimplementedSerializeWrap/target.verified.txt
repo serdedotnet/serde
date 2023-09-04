@@ -1,0 +1,16 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (5,31)-(5,32),
+      Description: ,
+      HelpLink: ,
+      MessageFormat: The member 'C.S's return type 'System.Collections.Specialized.BitVector32.Section' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      Message: The member 'C.S's return type 'System.Collections.Specialized.BitVector32.Section' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      Category: Serde
+    }
+  ]
+}

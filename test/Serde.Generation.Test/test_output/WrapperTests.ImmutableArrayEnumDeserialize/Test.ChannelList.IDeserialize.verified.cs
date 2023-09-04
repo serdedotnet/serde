@@ -50,7 +50,7 @@ namespace Test
                     switch (key)
                     {
                         case 1:
-                            _l_channels = d.GetNextValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, ImmutableArrayWrap.DeserializeImpl<Test.Channel, ChannelWrap>>();
+                            _l_channels = d.GetNextValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, ImmutableArrayWrap.DeserializeImpl<Test.Channel, Test.ChannelWrap>>();
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                     }

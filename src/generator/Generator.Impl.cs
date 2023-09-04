@@ -58,7 +58,7 @@ partial class SerdeImplRoslynGenerator
 {
     internal static void GenerateImpl(
         SerdeUsage usage,
-        TypeDeclarationSyntax typeDecl,
+        BaseTypeDeclarationSyntax typeDecl,
         SemanticModel semanticModel,
         GeneratorExecutionContext context,
         ImmutableList<ITypeSymbol> inProgress)
@@ -68,7 +68,7 @@ partial class SerdeImplRoslynGenerator
         {
             return;
         }
-        if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
+        if (!typeDecl.IsKind(SyntaxKind.EnumDeclaration) && !typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
         {
             // Type must be partial
             context.ReportDiagnostic(CreateDiagnostic(
@@ -78,7 +78,10 @@ partial class SerdeImplRoslynGenerator
             return;
         }
 
-        var receiverExpr = ThisExpression();
+        var receiverExpr = typeDecl.IsKind(SyntaxKind.EnumDeclaration)
+            ? (ExpressionSyntax)IdentifierName("Value")
+            : ThisExpression();
+
         GenerateImpl(
             usage,
             new TypeDeclContext(typeDecl),
@@ -86,6 +89,39 @@ partial class SerdeImplRoslynGenerator
             receiverExpr,
             context,
             inProgress);
+    }
+
+    private static void GenerateEnumWrapper(
+        BaseTypeDeclarationSyntax typeDecl,
+        SemanticModel semanticModel,
+        GeneratorExecutionContext context)
+    {
+        var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
+        if (receiverType is null)
+        {
+            return;
+        }
+
+        // Generate enum wrapper stub
+        var typeDeclContext = new TypeDeclContext(typeDecl);
+        var typeName = typeDeclContext.Name;
+        var wrapperName = GetWrapperName(typeName);
+        var newType = SyntaxFactory.ParseMemberDeclaration($"""
+internal readonly partial record struct {wrapperName}({typeName} Value);
+""")!;
+        newType = typeDeclContext.WrapNewType(newType);
+        string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
+            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
+            .Concat(new[] { wrapperName }));
+
+        var tree = CompilationUnit(
+            externs: default,
+            usings: default,
+            attributeLists: default,
+            members: List<MemberDeclarationSyntax>(new[] { newType }));
+        tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
+
+        context.AddSource(fullWrapperName, Environment.NewLine + tree.ToFullString());
     }
 
     private static void GenerateImpl(
@@ -101,7 +137,6 @@ partial class SerdeImplRoslynGenerator
             .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
             .Concat(new[] { typeName }));
 
-        string srcName = fullTypeName + "." + usage.GetInterfaceName();
 
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
@@ -112,25 +147,50 @@ partial class SerdeImplRoslynGenerator
         };
 
         var typeKind = typeDeclContext.Kind;
-        MemberDeclarationSyntax newType = TypeDeclaration(
-            typeKind,
-            attributes: default,
-            modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
-            keyword: Token(typeKind switch {
-                SyntaxKind.ClassDeclaration => SyntaxKind.ClassKeyword,
-                SyntaxKind.StructDeclaration => SyntaxKind.StructKeyword,
-                SyntaxKind.RecordDeclaration
-                or SyntaxKind.RecordStructDeclaration=> SyntaxKind.RecordKeyword,
-                _ => throw ExceptionUtilities.Unreachable
-            }),
-            identifier: Identifier(typeName),
-            typeParameterList: typeDeclContext.TypeParameterList,
-            baseList: baseList,
-            constraintClauses: default,
-            openBraceToken: Token(SyntaxKind.OpenBraceToken),
-            members: List(implMembers),
-            closeBraceToken: Token(SyntaxKind.CloseBraceToken),
-            semicolonToken: default);
+        MemberDeclarationSyntax newType;
+        if (typeKind == SyntaxKind.EnumDeclaration)
+        {
+            var wrapperName = GetWrapperName(typeName);
+            newType = RecordDeclaration(
+                kind: SyntaxKind.RecordStructDeclaration,
+                attributeLists: default,
+                modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
+                keyword: Token(SyntaxKind.RecordKeyword),
+                classOrStructKeyword: Token(SyntaxKind.StructKeyword),
+                identifier: Identifier(wrapperName),
+                typeParameterList: default,
+                parameterList: null,
+                baseList: baseList,
+                constraintClauses: default,
+                openBraceToken: Token(SyntaxKind.OpenBraceToken),
+                members: List(implMembers),
+                closeBraceToken: Token(SyntaxKind.CloseBraceToken),
+                semicolonToken: default);
+        }
+        else
+        {
+            newType = TypeDeclaration(
+                typeKind,
+                attributes: default,
+                modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
+                keyword: Token(typeKind switch
+                {
+                    SyntaxKind.ClassDeclaration => SyntaxKind.ClassKeyword,
+                    SyntaxKind.StructDeclaration => SyntaxKind.StructKeyword,
+                    SyntaxKind.RecordDeclaration
+                    or SyntaxKind.RecordStructDeclaration => SyntaxKind.RecordKeyword,
+                    _ => throw ExceptionUtilities.Unreachable
+                }),
+                identifier: Identifier(typeName),
+                typeParameterList: typeDeclContext.TypeParameterList,
+                baseList: baseList,
+                constraintClauses: default,
+                openBraceToken: Token(SyntaxKind.OpenBraceToken),
+                members: List(implMembers),
+                closeBraceToken: Token(SyntaxKind.CloseBraceToken),
+                semicolonToken: default);
+        }
+        var srcName = fullTypeName + "." + usage.GetInterfaceName();
 
         newType = typeDeclContext.WrapNewType(newType);
 
@@ -143,6 +203,93 @@ partial class SerdeImplRoslynGenerator
 
         context.AddSource(srcName,
             Environment.NewLine + "#nullable enable" + Environment.NewLine + tree.ToFullString());
+    }
+
+    /// <summary>
+    /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
+    /// </summary>
+    private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
+    {
+        // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
+        if (memberType.NullableAnnotation == NullableAnnotation.Annotated ||
+            memberType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+        {
+            return false;
+        }
+
+        // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
+        // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
+        if (memberType.TypeKind is not TypeKind.Enum && HasGenerateAttribute(memberType, usage))
+        {
+            return true;
+        }
+
+        var serdeSymbol = context.Compilation.GetTypeByMetadataName(usage == SerdeUsage.Serialize
+            ? "Serde.ISerialize"
+            : "Serde.IDeserialize`1");
+        if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
+            || (memberType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private static TypeSyntax? TryGetEnumWrapper(ITypeSymbol type, SerdeUsage usage)
+    {
+        if (type.TypeKind is not TypeKind.Enum)
+        {
+            return null;
+        }
+
+        // Check for the generation attributes
+        if (!HasGenerateAttribute(type, usage))
+        {
+            return null;
+        }
+
+        var wrapperName = GetWrapperName(type.Name);
+        var containing = type.ContainingType?.ToDisplayString();
+        if (containing is null && type.ContainingNamespace is { IsGlobalNamespace: false } ns)
+        {
+            containing = ns.ToDisplayString();
+        }
+        var wrapperFqn = containing is not null
+             ? containing + "." + wrapperName
+             : "global::" + wrapperName;
+
+        return SyntaxFactory.ParseTypeName(wrapperFqn);
+    }
+
+    private static string GetWrapperName(string typeName) => typeName + "Wrap";
+
+
+    private static bool HasGenerateAttribute(ITypeSymbol memberType, SerdeUsage usage)
+    {
+        var attributes = memberType.GetAttributes();
+        foreach (var attr in attributes)
+        {
+            var attrClass = attr.AttributeClass;
+            if (attrClass is null)
+            {
+                continue;
+            }
+            if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerde))
+            {
+                return true;
+            }
+            if (usage == SerdeUsage.Serialize &&
+                WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerialize))
+            {
+                return true;
+            }
+            if (usage == SerdeUsage.Deserialize &&
+                WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateDeserialize))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

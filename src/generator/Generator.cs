@@ -72,11 +72,19 @@ namespace Serde
                 CancellationToken cancelToken)
             {
                 var generationContext = new GeneratorExecutionContext(attrCtx);
+                var typeDecl = (BaseTypeDeclarationSyntax)attrCtx.TargetNode;
+                if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
+                {
+                    GenerateEnumWrapper(
+                        typeDecl,
+                        attrCtx.SemanticModel,
+                        generationContext);
+                }
                 if (usage.HasFlag(SerdeUsage.Serialize))
                 {
                     SerdeImplRoslynGenerator.GenerateImpl(
                         SerdeUsage.Serialize,
-                        (TypeDeclarationSyntax)attrCtx.TargetNode,
+                        (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
                         attrCtx.SemanticModel,
                         generationContext,
                         ImmutableList<ITypeSymbol>.Empty);
@@ -85,7 +93,7 @@ namespace Serde
                 {
                     SerdeImplRoslynGenerator.GenerateImpl(
                         SerdeUsage.Deserialize,
-                        (TypeDeclarationSyntax)attrCtx.TargetNode,
+                        (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
                         attrCtx.SemanticModel,
                         generationContext,
                         ImmutableList<ITypeSymbol>.Empty);

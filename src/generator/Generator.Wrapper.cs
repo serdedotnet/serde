@@ -57,8 +57,10 @@ namespace Serde
                 return;
             }
 
-            GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, ImmutableList<ITypeSymbol>.Empty);
-            GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, ImmutableList<ITypeSymbol>.Empty);
+            var inProgress = ImmutableList.Create(receiverType);
+
+            GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
+            GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
         }
 
         private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage, ImmutableList<ITypeSymbol> inProgress)
@@ -176,9 +178,22 @@ namespace Serde
             SerdeUsage usage,
             ImmutableList<ITypeSymbol> inProgress)
         {
+            // If we're in the process of generating a wrapper type, just return the name of the wrapper
+            // and assume it has been generated already.
+            if (inProgress.Contains(elemType, SymbolEqualityComparer.Default))
+            {
+                var typeName = elemType.Name;
+                var allTypes = typeName;
+                for (var parent = elemType.ContainingType; parent is not null; parent = parent.ContainingType)
+                {
+                    allTypes = parent.Name + allTypes;
+                }
+                var wrapperName = $"{allTypes}Wrap";
+                return IdentifierName(wrapperName);
+            }
             return TryGetPrimitiveWrapper(elemType, usage)
-                ?? TryGetCompoundWrapper(elemType, context, usage, inProgress)
-                ?? TryCreateWrapper(elemType, context, usage, inProgress);
+                ?? TryGetEnumWrapper(elemType, usage)
+                ?? TryGetCompoundWrapper(elemType, context, usage, inProgress);
         }
 
         private static TypeSyntax? TryGetExplicitWrapper(

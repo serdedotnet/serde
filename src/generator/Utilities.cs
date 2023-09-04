@@ -32,6 +32,11 @@ namespace Serde
 
     internal static class Utilities
     {
+        public static string Concat(this string recv, string other)
+        {
+            return recv + other;
+        }
+
         public static void Deconstruct<K, V>(this KeyValuePair<K, V> kvp, out K key, out V value)
         {
             key = kvp.Key;

@@ -48,7 +48,7 @@ partial class C : Serde.IDeserialize<C>
                 switch (key)
                 {
                     case 1:
-                        _l_s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, BitVector32SectionWrap>();
+                        _l_s = d.GetNextValue<System.Collections.Specialized.BitVector32.Section, SectionWrap>();
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }

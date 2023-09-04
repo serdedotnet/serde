@@ -82,6 +82,7 @@ partial struct S2
 {
     public ColorEnum E;
 }
+[GenerateSerde]
 enum ColorEnum
 {
     Red,

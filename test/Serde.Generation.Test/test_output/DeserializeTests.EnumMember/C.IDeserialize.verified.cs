@@ -60,19 +60,19 @@ partial class C : Serde.IDeserialize<C>
                 switch (key)
                 {
                     case 1:
-                        _l_colorint = d.GetNextValue<ColorInt, ColorIntWrap>();
+                        _l_colorint = d.GetNextValue<ColorInt, global::ColorIntWrap>();
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 2:
-                        _l_colorbyte = d.GetNextValue<ColorByte, ColorByteWrap>();
+                        _l_colorbyte = d.GetNextValue<ColorByte, global::ColorByteWrap>();
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case 3:
-                        _l_colorlong = d.GetNextValue<ColorLong, ColorLongWrap>();
+                        _l_colorlong = d.GetNextValue<ColorLong, global::ColorLongWrap>();
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 4:
-                        _l_colorulong = d.GetNextValue<ColorULong, ColorULongWrap>();
+                        _l_colorulong = d.GetNextValue<ColorULong, global::ColorULongWrap>();
                         _r_assignedValid |= ((byte)1) << 3;
                         break;
                 }

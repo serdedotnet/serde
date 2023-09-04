@@ -234,7 +234,6 @@ namespace Serde
             var argListFromMemberName = ArgumentList(SeparatedList(new[] { Argument(memberExpr) }));
 
             // 1. Check for an explicit wrapper
-
             if (TryGetExplicitWrapper(member, context, SerdeUsage.Serialize, inProgress) is {} wrapper)
             {
                 return ObjectCreationExpression(
@@ -244,7 +243,6 @@ namespace Serde
             }
 
             // 2. Check for a direct implementation of ISerialize
-
             if (ImplementsSerde(member.Type, context, SerdeUsage.Serialize))
             {
                 return memberExpr;
@@ -339,59 +337,19 @@ namespace Serde
             return name is null ? null : IdentifierName(name);
         }
 
-        /// <summary>
-        /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
-        /// </summary>
-        private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
-        {
-            // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
-            if (memberType.NullableAnnotation == NullableAnnotation.Annotated ||
-                memberType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-            {
-                return false;
-            }
-
-            // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
-            // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
-            var attributes = memberType.GetAttributes();
-            foreach (var attr in attributes)
-            {
-                var attrClass = attr.AttributeClass;
-                if (attrClass is null)
-                {
-                    continue;
-                }
-                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerde))
-                {
-                    return true;
-                }
-                if (usage == SerdeUsage.Serialize &&
-                    WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerialize))
-                {
-                    return true;
-                }
-                if (usage == SerdeUsage.Deserialize &&
-                    WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateDeserialize))
-                {
-                    return true;
-                }
-            }
-
-            var serdeSymbol = context.Compilation.GetTypeByMetadataName(usage == SerdeUsage.Serialize
-                ? "Serde.ISerialize"
-                : "Serde.IDeserialize`1");
-            if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
-                || (memberType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
-            {
-                return true;
-            }
-            return false;
-        }
 
         private static ParameterSyntax Parameter(string typeName, string paramName, bool byRef = false) => SyntaxFactory.Parameter(
             attributeLists: default,
             modifiers: default,
             type: byRef ? SyntaxFactory.RefType(IdentifierName(typeName)) : IdentifierName(typeName),
+            Identifier(paramName),
+            default
+        );
+
+        private static ParameterSyntax Parameter(TypeSyntax typeSyntax, string paramName) => SyntaxFactory.Parameter(
+            attributeLists: default,
+            modifiers: default,
+            type: typeSyntax,
             Identifier(paramName),
             default
         );

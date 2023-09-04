@@ -48,7 +48,7 @@ partial struct S : Serde.IDeserialize<S>
                 switch (key)
                 {
                     case 1:
-                        _l_e = d.GetNextValue<ColorEnum, ColorEnumWrap>();
+                        _l_e = d.GetNextValue<ColorEnum, global::ColorEnumWrap>();
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }
