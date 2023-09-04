@@ -68,6 +68,13 @@ namespace Serde.Test
             var generatorInstance = new SerdeImplRoslynGenerator();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(generatorInstance);
             var comp = await CreateCompilation(src, additionalRefs);
+            var diags = comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+            if (diags.Any())
+            {
+                var diagSettings = new VerifySettings(settings);
+                diagSettings.UseDirectory(settings.Directory + "_diagnostics");
+                _ = await Verifier.Verify(diags, diagSettings);
+            }
             driver = driver.RunGenerators(comp);
             return await Verifier.Verify(driver, settings);
         }

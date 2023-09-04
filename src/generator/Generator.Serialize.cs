@@ -337,7 +337,6 @@ namespace Serde
             return name is null ? null : IdentifierName(name);
         }
 
-
         private static ParameterSyntax Parameter(string typeName, string paramName, bool byRef = false) => SyntaxFactory.Parameter(
             attributeLists: default,
             modifiers: default,
