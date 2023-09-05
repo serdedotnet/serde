@@ -57,30 +57,64 @@ internal sealed class GeneratorExecutionContext
 partial class SerdeImplRoslynGenerator
 {
     internal static void GenerateImpl(
+        AttributeData attributeData,
         SerdeUsage usage,
         BaseTypeDeclarationSyntax typeDecl,
-        SemanticModel semanticModel,
+        SemanticModel model,
         GeneratorExecutionContext context,
         ImmutableList<ITypeSymbol> inProgress)
     {
-        var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
-        if (receiverType is null)
+        var typeSymbol = model.GetDeclaredSymbol(typeDecl);
+        if (typeSymbol is null)
         {
-            return;
-        }
-        if (!typeDecl.IsKind(SyntaxKind.EnumDeclaration) && !typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
-        {
-            // Type must be partial
-            context.ReportDiagnostic(CreateDiagnostic(
-                DiagId.ERR_TypeNotPartial,
-                typeDecl.Identifier.GetLocation(),
-                typeDecl.Identifier.ValueText));
             return;
         }
 
-        var receiverExpr = typeDecl.IsKind(SyntaxKind.EnumDeclaration)
-            ? (ExpressionSyntax)IdentifierName("Value")
-            : ThisExpression();
+        ITypeSymbol receiverType;
+        ExpressionSyntax receiverExpr;
+        // If the Through property is set, then we are implementing a wrapper type
+        if (attributeData.NamedArguments is [ (nameof(GenerateSerialize.Through), { Value: string memberName }) ])
+        {
+            var members = model.LookupSymbols(typeDecl.SpanStart, typeSymbol, memberName);
+            if (members.Length != 1)
+            {
+                // TODO: Error about bad lookup
+                return;
+            }
+            receiverType = SymbolUtilities.GetSymbolType(members[0]);
+            receiverExpr = IdentifierName(memberName);
+
+            if (usage.HasFlag(SerdeUsage.Serialize))
+            {
+                // If we're implementing ISerialize, also implement ISerializeWrap
+                GenerateISerializeWrapImpl(
+                    typeDecl.Identifier.ValueText,
+                    receiverType.ToDisplayString(),
+                    typeDecl,
+                    context);
+            }
+        }
+        // Enums are also always wrapped, but the attribute is on the enum itself
+        else if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
+        {
+            receiverType = typeSymbol;
+            receiverExpr = IdentifierName("Value");
+        }
+        // Just a normal interface implementation
+        else
+        {
+            if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
+            {
+                // Type must be partial
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_TypeNotPartial,
+                    typeDecl.Identifier.GetLocation(),
+                    typeDecl.Identifier.ValueText));
+                return;
+            }
+            receiverType = typeSymbol;
+            receiverExpr = ThisExpression();
+        }
 
         GenerateImpl(
             usage,
@@ -122,6 +156,34 @@ internal readonly partial record struct {wrapperName}({typeName} Value);
         tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
 
         context.AddSource(fullWrapperName, Environment.NewLine + tree.ToFullString());
+    }
+
+    private static void GenerateISerializeWrapImpl(
+        string wrapperName,
+        string wrappedName,
+        BaseTypeDeclarationSyntax typeDecl,
+        GeneratorExecutionContext context)
+    {
+        var typeDeclContext = new TypeDeclContext(typeDecl);
+        var newType = SyntaxFactory.ParseMemberDeclaration($$"""
+partial record struct {{wrapperName}}({{wrappedName}} Value) : ISerializeWrap<{{wrappedName}}, {{wrapperName}}>
+{
+    {{wrapperName}} ISerializeWrap<{{wrappedName}}, {{wrapperName}}>.Wrap({{wrappedName}} value) => new(value);
+}
+""")!;
+        newType = typeDeclContext.WrapNewType(newType);
+        string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
+            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
+            .Concat(new[] { wrapperName }));
+
+        var tree = CompilationUnit(
+            externs: default,
+            usings: default,
+            attributeLists: default,
+            members: List<MemberDeclarationSyntax>(new[] { newType }));
+        tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
+
+        context.AddSource($"{fullWrapperName}.ISerializeWrap", Environment.NewLine + tree.ToFullString());
     }
 
     private static void GenerateImpl(

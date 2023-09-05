@@ -83,6 +83,7 @@ namespace Serde
                 if (usage.HasFlag(SerdeUsage.Serialize))
                 {
                     SerdeImplRoslynGenerator.GenerateImpl(
+                        attrCtx.Attributes.Single(),
                         SerdeUsage.Serialize,
                         (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
                         attrCtx.SemanticModel,
@@ -92,6 +93,7 @@ namespace Serde
                 if (usage.HasFlag(SerdeUsage.Deserialize))
                 {
                     SerdeImplRoslynGenerator.GenerateImpl(
+                        attrCtx.Attributes.Single(),
                         SerdeUsage.Deserialize,
                         (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
                         attrCtx.SemanticModel,

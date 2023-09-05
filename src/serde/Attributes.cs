@@ -18,7 +18,13 @@ public
 internal
 #endif
 sealed class GenerateSerialize : Attribute
-{ }
+{
+    /// <summary>
+    /// If non-null, the name of the member used to implement serialization. This is used to
+    /// implement serialization for a wrapper type.
+    /// </summary>
+    public string? Through { get; init; }
+}
 
 /// <summary>
 /// Generates an implementation of <see cref="Serde.IDeserialize" />.
@@ -31,7 +37,14 @@ public
 internal
 #endif
 sealed class GenerateDeserialize : Attribute
-{ }
+{
+    /// <summary>
+    /// If non-null, the name of the member used to implement deserialization. This is used to
+    /// implement deserialization for a wrapper type.
+    /// </summary>
+    public string? Through { get; init; }
+
+}
 
 /// <summary>
 /// Generates an implementation of both <see cref="Serde.ISerialize" /> and <see cref="Serde.IDeserialize" />.
@@ -44,7 +57,13 @@ public
 internal
 #endif
 sealed class GenerateSerde : Attribute
-{ }
+{
+    /// <summary>
+    /// If non-null, the name of the member used to implement serialization and deserialization.
+    /// This is used to implement serialization and deserialization for a wrapper type.
+    /// </summary>
+    public string? Through { get; init; }
+}
 
 /// <summary>
 /// Generates the equivalent of <see cref="GenerateSerde" />, but delegated to a member of the name
@@ -72,6 +91,26 @@ sealed class GenerateWrapper : Attribute
         MemberName = memberName;
     }
 }
+
+[AttributeUsage(
+    AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct,
+    AllowMultiple = false,
+    Inherited = false)]
+[Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class SerdeWrapAttribute : Attribute
+{
+    public SerdeWrapAttribute(Type wrapper)
+    {
+        Wrapper = wrapper;
+    }
+    public Type Wrapper { get; }
+}
+
 #pragma warning restore CS1574
 
 /// <summary>
