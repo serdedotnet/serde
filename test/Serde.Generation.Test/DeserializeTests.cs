@@ -12,6 +12,20 @@ namespace Serde.Test
     public class DeserializeTests
     {
         [Fact]
+        public Task DeserializeOnlyWrap()
+        {
+            var src = """
+using Serde;
+using System.Collections.Specialized;
+
+[GenerateDeserialize(Through = nameof(Value))]
+readonly partial record struct SectionWrap(BitVector32.Section Value);
+
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
         public Task MemberSkip()
         {
             var src = """

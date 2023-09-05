@@ -12,6 +12,20 @@ namespace Serde.Test
     public class WrapperTests
     {
         [Fact]
+        public Task GenerateSerdeWrap()
+        {
+            var src = """
+using System.Collections.Specialized;
+using Serde;
+
+[GenerateSerde(Through = nameof(Value))]
+readonly partial record struct SectionWrap(BitVector32.Section Value);
+
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
         public Task StringWrap()
         {
             var src = @"
@@ -67,18 +81,6 @@ partial struct PointWrap
             return VerifyMultiFile(src);
         }
 
-        [Fact]
-        public Task NestedUnimplementedSerializeWrap()
-        {
-            var src = @"
-using System.Collections.Specialized;
-[Serde.GenerateSerialize]
-partial class C
-{
-    public BitVector32.Section S = new BitVector32.Section();
-}";
-            return VerifyMultiFile(src);
-        }
 
         [Fact]
         public Task NestedDeserializeWrap()
@@ -227,7 +229,7 @@ internal partial record struct RecursiveWrap(Recursive Value);
 
 [GenerateSerde]
 public partial record Parent(
-    [property: SerdeWrap(typeof(RecursiveWrap)]
+    [property: SerdeWrap(typeof(RecursiveWrap))]
     Recursive R);
 """;
             await VerifyMultiFile(src, new[] { comp.EmitToImageReference() });

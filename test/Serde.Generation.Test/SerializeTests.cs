@@ -13,6 +13,20 @@ namespace Serde.Test
     public class SerializeTests
     {
         [Fact]
+        public Task SerializeOnlyWrapper()
+        {
+            var src = """
+using Serde;
+using System.Collections.Specialized;
+
+[GenerateSerialize(Through = nameof(Value))]
+readonly partial record struct SectionWrap(BitVector32.Section Value);
+
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
         public Task MemberSkip()
         {
             var src = """

@@ -6,20 +6,6 @@ using System.Text;
 
 namespace Serde
 {
-    [AttributeUsage(
-        AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct,
-        AllowMultiple = false,
-        Inherited = false)]
-    [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-    public sealed class SerdeWrapAttribute : Attribute
-    {
-        public SerdeWrapAttribute(Type wrapper)
-        {
-            Wrapper = wrapper;
-        }
-        public Type Wrapper { get; }
-    }
-
     public interface ISerializeWrap<T, TWrap> where TWrap : ISerialize
     {
         abstract static TWrap Create(T t); // Should be abstract static
