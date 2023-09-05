@@ -166,9 +166,9 @@ internal readonly partial record struct {wrapperName}({typeName} Value);
     {
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var newType = SyntaxFactory.ParseMemberDeclaration($$"""
-partial record struct {{wrapperName}}({{wrappedName}} Value) : ISerializeWrap<{{wrappedName}}, {{wrapperName}}>
+partial record struct {{wrapperName}}({{wrappedName}} Value) : Serde.ISerializeWrap<{{wrappedName}}, {{wrapperName}}>
 {
-    {{wrapperName}} ISerializeWrap<{{wrappedName}}, {{wrapperName}}>.Wrap({{wrappedName}} value) => new(value);
+    {{wrapperName}} Serde.ISerializeWrap<{{wrappedName}}, {{wrapperName}}>.Wrap({{wrappedName}} value) => new(value);
 }
 """)!;
         newType = typeDeclContext.WrapNewType(newType);
