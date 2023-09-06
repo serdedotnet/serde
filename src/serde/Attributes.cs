@@ -197,6 +197,16 @@ sealed class SerdeMemberOptions : Attribute
     /// Skip deserialization of this member.
     /// </summary>
     public bool SkipDeserialize { get; init; } = false;
+
+    /// <summary>
+    /// Type to use as the wrapper for the ISerialize implementation.
+    /// </summary>
+    public Type? WrapperSerialize { get; init; } = null;
+
+    /// <summary>
+    /// Type to use as the wrapper for the IDeserialize implementation.
+    /// </summary>
+    public Type? WrapperDeserialize { get; init; } = null;
 }
 
 /// <summary>

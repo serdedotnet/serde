@@ -10,6 +10,7 @@ using System.Diagnostics;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 using static Serde.WellKnownTypes;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Serde
 {
@@ -205,6 +206,23 @@ namespace Serde
             if (TryGetExplicitWrapperType(member, usage, context) is {} wrapperType)
             {
                 var memberType = member.Type;
+                if (usage.HasFlag(SerdeUsage.Serialize))
+                {
+                    var ctor = wrapperType.Constructors.Where(c => c.Parameters.Length == 1).SingleOrDefault();
+                    if (ctor is { Parameters: [{ } typeArg] } && typeArg.Type.Equals(memberType, SymbolEqualityComparer.Default))
+                    {
+                        return ParseTypeName(wrapperType.ToDisplayString());
+                    }
+                }
+                else if (usage.HasFlag(SerdeUsage.Deserialize))
+                {
+                    var deserialize = context.Compilation.GetTypeByMetadataName("Serde.IDeserialize`1")?.Construct(memberType);
+                    if (wrapperType.Interfaces.Contains(deserialize, SymbolEqualityComparer.Default))
+                    {
+                        return ParseTypeName(wrapperType.ToDisplayString());
+                    }
+                }
+
                 var typeArgs = memberType switch
                 {
                     INamedTypeSymbol n => n.TypeArguments,
@@ -264,6 +282,24 @@ namespace Serde
                             // Return null if the attribute is somehow incorrect
                             // TODO: produce a warning?
                             return null;
+                        }
+                        else if (attr is { AttributeClass.Name: nameof(SerdeMemberOptions), NamedArguments: { } named })
+                        {
+                            foreach (var arg in named)
+                            {
+                                if (usage.HasFlag(SerdeUsage.Serialize)
+                                    && arg is { Key: nameof(SerdeMemberOptions.WrapperSerialize),
+                                                Value.Value: INamedTypeSymbol wrapperType })
+                                {
+                                    return wrapperType;
+                                }
+                                if (usage.HasFlag(SerdeUsage.Deserialize)
+                                    && arg is { Key: nameof(SerdeMemberOptions.WrapperDeserialize),
+                                                Value.Value: INamedTypeSymbol wrapperType2 })
+                                {
+                                    return wrapperType2;
+                                }
+                            }
                         }
                     }
                     return null;

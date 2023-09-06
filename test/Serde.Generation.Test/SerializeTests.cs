@@ -13,6 +13,29 @@ namespace Serde.Test
     public class SerializeTests
     {
         [Fact]
+        public Task NestedExplicitSerializeWrapper()
+        {
+            var src = """
+
+using Serde;
+using System.Collections.Immutable;
+using System.Collections.Specialized;
+
+[GenerateSerialize(Through = nameof(Value))]
+readonly partial record struct SectionWrap(BitVector32.Section Value);
+
+[GenerateSerialize]
+partial struct S
+{
+    [SerdeMemberOptions(WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BitVector32.Section, SectionWrap>))]
+    public ImmutableArray<BitVector32.Section> Sections;
+}
+
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
         public Task SerializeOnlyWrapper()
         {
             var src = """

@@ -12,6 +12,33 @@ namespace Serde.Test
     public class WrapperTests
     {
         [Fact]
+        public Task NestedExplicitWrapper()
+        {
+            var src = """
+
+using Serde;
+using System.Collections.Immutable;
+using System.Collections.Specialized;
+
+partial class Outer
+{
+    [GenerateSerde(Through = nameof(Value))]
+    readonly partial record struct SectionWrap(BitVector32.Section Value);
+}
+
+[GenerateSerde]
+partial struct S
+{
+    [SerdeMemberOptions(
+        WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BitVector32.Section, Outer.SectionWrap>),
+        WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BitVector32.Section, Outer.SectionWrap>))]
+    public ImmutableArray<BitVector32.Section> Sections;
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
         public Task GenerateSerdeWrap()
         {
             var src = """
