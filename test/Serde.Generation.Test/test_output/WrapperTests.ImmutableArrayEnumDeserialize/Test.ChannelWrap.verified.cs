@@ -2,5 +2,5 @@
 
 namespace Test
 {
-    internal readonly partial record struct ChannelWrap(Channel Value);
+    readonly partial record struct ChannelWrap(Channel Value);
 }

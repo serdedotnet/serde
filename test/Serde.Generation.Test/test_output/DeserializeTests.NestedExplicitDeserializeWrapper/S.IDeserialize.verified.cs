@@ -11,7 +11,7 @@ partial struct S : Serde.IDeserialize<S>
         var visitor = new SerdeVisitor();
         var fieldNames = new[]
         {
-            "Sections"
+            "Opts"
         };
         return deserializer.DeserializeType<S, SerdeVisitor>("S", fieldNames, visitor);
     }
@@ -31,7 +31,7 @@ partial struct S : Serde.IDeserialize<S>
             {
                 switch (s[0])
                 {
-                    case (byte)'s'when s.SequenceEqual("sections"u8):
+                    case (byte)'o'when s.SequenceEqual("opts"u8):
                         return 1;
                     default:
                         return 0;
@@ -41,14 +41,14 @@ partial struct S : Serde.IDeserialize<S>
 
         S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
-            System.Collections.Immutable.ImmutableArray<System.Collections.Specialized.BitVector32.Section> _l_sections = default !;
+            System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS> _l_opts = default !;
             byte _r_assignedValid = 0b0;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        _l_sections = d.GetNextValue<System.Collections.Immutable.ImmutableArray<System.Collections.Specialized.BitVector32.Section>, Serde.ImmutableArrayWrap.DeserializeImpl<System.Collections.Specialized.BitVector32.Section, SectionWrap>>();
+                        _l_opts = d.GetNextValue<System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS>, Serde.ImmutableArrayWrap.DeserializeImpl<System.Runtime.InteropServices.ComTypes.BIND_OPTS, OptsWrap>>();
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }
@@ -61,7 +61,7 @@ partial struct S : Serde.IDeserialize<S>
 
             var newType = new S()
             {
-                Sections = _l_sections,
+                Opts = _l_opts,
             };
             return newType;
         }

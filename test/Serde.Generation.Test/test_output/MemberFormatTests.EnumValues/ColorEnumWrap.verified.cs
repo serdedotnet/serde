@@ -1,3 +1,3 @@
 ﻿//HintName: ColorEnumWrap.cs
 
-internal readonly partial record struct ColorEnumWrap(ColorEnum Value);
+readonly partial record struct ColorEnumWrap(ColorEnum Value);

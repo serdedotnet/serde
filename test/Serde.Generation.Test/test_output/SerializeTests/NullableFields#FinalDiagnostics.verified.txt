@@ -1,0 +1,24 @@
+﻿[
+  {
+    "Id": "CS0701",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": ": (3,15)-(3,19)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0701)",
+    "MessageFormat": "'{0}' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.",
+    "Message": "'int?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.",
+    "Category": "Compiler"
+  },
+  {
+    "Id": "CS0701",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": ": (4,15)-(4,26)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0701)",
+    "MessageFormat": "'{0}' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.",
+    "Message": "'TSerialize?' is not a valid constraint. A type used as a constraint must be an interface, a non-sealed class or a type parameter.",
+    "Category": "Compiler"
+  }
+]

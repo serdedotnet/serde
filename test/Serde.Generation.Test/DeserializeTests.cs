@@ -18,30 +18,31 @@ namespace Serde.Test
 
 using Serde;
 using System.Collections.Immutable;
-using System.Collections.Specialized;
+using System.Runtime.InteropServices.ComTypes;
 
 [GenerateDeserialize(Through = nameof(Value))]
-readonly partial record struct SectionWrap(BitVector32.Section Value);
+readonly partial record struct OptsWrap(BIND_OPTS Value);
 
 [GenerateDeserialize]
 partial struct S
 {
-    [SerdeMemberOptions(WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BitVector32.Section, SectionWrap>))]
-    public ImmutableArray<BitVector32.Section> Sections;
+    [SerdeMemberOptions(WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BIND_OPTS, OptsWrap>))]
+    public ImmutableArray<BIND_OPTS> Opts;
 }
 
 """;
             return VerifyMultiFile(src);
         }
+
         [Fact]
         public Task DeserializeOnlyWrap()
         {
             var src = """
 using Serde;
-using System.Collections.Specialized;
+using System.Runtime.InteropServices.ComTypes;
 
 [GenerateDeserialize(Through = nameof(Value))]
-readonly partial record struct SectionWrap(BitVector32.Section Value);
+readonly partial record struct Wrap(BIND_OPTS Value);
 
 """;
             return VerifyDeserialize(src);

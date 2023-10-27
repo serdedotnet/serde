@@ -22,16 +22,15 @@ using System.Collections.Specialized;
 
 partial class Outer
 {
-    [GenerateSerde(Through = nameof(Value))]
-    readonly partial record struct SectionWrap(BitVector32.Section Value);
+    [GenerateSerialize(Through = nameof(Value))]
+    public readonly partial record struct SectionWrap(BitVector32.Section Value);
 }
 
-[GenerateSerde]
+[GenerateSerialize]
 partial struct S
 {
     [SerdeMemberOptions(
-        WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BitVector32.Section, Outer.SectionWrap>),
-        WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BitVector32.Section, Outer.SectionWrap>))]
+        WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BitVector32.Section, Outer.SectionWrap>))]
     public ImmutableArray<BitVector32.Section> Sections;
 }
 """;
@@ -42,11 +41,11 @@ partial struct S
         public Task GenerateSerdeWrap()
         {
             var src = """
-using System.Collections.Specialized;
+using System.Runtime.InteropServices.ComTypes;
 using Serde;
 
 [GenerateSerde(Through = nameof(Value))]
-readonly partial record struct SectionWrap(BitVector32.Section Value);
+readonly partial record struct OPTSWrap(BIND_OPTS Value);
 
 """;
             return VerifyMultiFile(src);
@@ -113,16 +112,16 @@ partial struct PointWrap
         public Task NestedDeserializeWrap()
         {
             var src = @"
-using System.Collections.Specialized;
+using System.Runtime.InteropServices.ComTypes;
 
 [Serde.GenerateWrapper(nameof(Value))]
-internal readonly partial record struct SectionWrap(BitVector32.Section Value);
+internal readonly partial record struct OPTSWrap(BIND_OPTS Value);
 
 [Serde.GenerateDeserialize]
 partial class C
 {
-    [Serde.SerdeWrap(typeof(SectionWrap))]
-    public BitVector32.Section S = new BitVector32.Section();
+    [Serde.SerdeWrap(typeof(OPTSWrap))]
+    public BIND_OPTS S = new BIND_OPTS();
 }";
             return VerifyMultiFile(src);
         }
@@ -255,9 +254,11 @@ namespace Test;
 internal partial record struct RecursiveWrap(Recursive Value);
 
 [GenerateSerde]
-public partial record Parent(
-    [property: SerdeWrap(typeof(RecursiveWrap))]
-    Recursive R);
+public partial record Parent
+{
+    [SerdeWrap(typeof(RecursiveWrap))]
+    public Recursive R { get; init; }
+}
 """;
             await VerifyMultiFile(src, new[] { comp.EmitToImageReference() });
         }
