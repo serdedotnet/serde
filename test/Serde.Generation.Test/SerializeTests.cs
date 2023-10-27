@@ -19,16 +19,18 @@ namespace Serde.Test
 
 using Serde;
 using System.Collections.Immutable;
-using System.Collections.Specialized;
+using System.Runtime.InteropServices.ComTypes;
 
-[GenerateSerialize(Through = nameof(Value))]
-readonly partial record struct SectionWrap(BitVector32.Section Value);
+[GenerateSerde(Through = nameof(Value))]
+readonly partial record struct OPTSWrap(BIND_OPTS Value);
 
-[GenerateSerialize]
+[GenerateSerde]
 partial struct S
 {
-    [SerdeMemberOptions(WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BitVector32.Section, SectionWrap>))]
-    public ImmutableArray<BitVector32.Section> Sections;
+    [SerdeMemberOptions(
+        WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BIND_OPTS, OPTSWrap>),
+        WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BIND_OPTS, OPTSWrap>))]
+    public ImmutableArray<BIND_OPTS> Opts;
 }
 
 """;
@@ -517,6 +519,24 @@ public enum ColorLong : long { Red = 3, Green = 5, Blue = 7 }
 public enum ColorULong : ulong { Red = 3, Green = 5, Blue = 7 }
 ";
 
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task NestedEnumWrapper()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+partial class C
+{
+    public Rgb? ColorOpt;
+}
+
+[GenerateSerialize]
+public enum Rgb { Red, Green, Blue }
+""";
             return VerifyMultiFile(src);
         }
 

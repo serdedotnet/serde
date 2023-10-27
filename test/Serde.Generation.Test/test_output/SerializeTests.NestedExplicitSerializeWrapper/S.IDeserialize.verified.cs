@@ -1,24 +1,24 @@
-﻿//HintName: C.IDeserialize.cs
+﻿//HintName: S.IDeserialize.cs
 
 #nullable enable
 using System;
 using Serde;
 
-partial class C : Serde.IDeserialize<C>
+partial struct S : Serde.IDeserialize<S>
 {
-    static C Serde.IDeserialize<C>.Deserialize<D>(ref D deserializer)
+    static S Serde.IDeserialize<S>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]
         {
-            "S"
+            "Opts"
         };
-        return deserializer.DeserializeType<C, SerdeVisitor>("C", fieldNames, visitor);
+        return deserializer.DeserializeType<S, SerdeVisitor>("S", fieldNames, visitor);
     }
 
-    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
+    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<S>
     {
-        public string ExpectedTypeName => "C";
+        public string ExpectedTypeName => "S";
 
         private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
         {
@@ -31,7 +31,7 @@ partial class C : Serde.IDeserialize<C>
             {
                 switch (s[0])
                 {
-                    case (byte)'s'when s.SequenceEqual("s"u8):
+                    case (byte)'o'when s.SequenceEqual("opts"u8):
                         return 1;
                     default:
                         return 0;
@@ -39,16 +39,16 @@ partial class C : Serde.IDeserialize<C>
             }
         }
 
-        C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
+        S Serde.IDeserializeVisitor<S>.VisitDictionary<D>(ref D d)
         {
-            System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = default !;
+            System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS> _l_opts = default !;
             byte _r_assignedValid = 0b0;
             while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
             {
                 switch (key)
                 {
                     case 1:
-                        _l_s = d.GetNextValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, OPTSWrap>();
+                        _l_opts = d.GetNextValue<System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS>, Serde.ImmutableArrayWrap.DeserializeImpl<System.Runtime.InteropServices.ComTypes.BIND_OPTS, OPTSWrap>>();
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                 }
@@ -59,9 +59,9 @@ partial class C : Serde.IDeserialize<C>
                 throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
             }
 
-            var newType = new C()
+            var newType = new S()
             {
-                S = _l_s,
+                Opts = _l_opts,
             };
             return newType;
         }
