@@ -72,6 +72,9 @@ public sealed partial class XmlSerializer : ISerializer
     {
     }
 
+    void ISerializer.SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
+    {}
+
     public void SerializeFloat(float f) => SerializeDouble(f);
 
     public void SerializeI16(short i16) => SerializeI64(i16);
@@ -93,6 +96,9 @@ public sealed partial class XmlSerializer : ISerializer
 
     public void SerializeNotNull<T>(T t) where T : notnull, ISerialize
         => t.Serialize(this);
+
+    void ISerializer.SerializeNotNull<T, U>(T t, U u)
+        => u.Serialize(t, this);
 
     public void SerializeNull()
     {
@@ -182,6 +188,8 @@ public sealed partial class XmlSerializer : ISerializer
         {
             value.Serialize(_serializer);
         }
+        void ISerializeEnumerable.SerializeElement<T, U>(T value, U serialize)
+            => serialize.Serialize(value, _serializer);
 
         void ISerializeEnumerable.End()
         {
@@ -260,6 +268,13 @@ public sealed partial class XmlSerializer : ISerializer
             where T : ISerialize
         {
             SerializeField(Encoding.UTF8.GetString(name), value, attributes);
+        }
+
+        void ISerializeType.SerializeField<T, U>(string name, T value, U serialize)
+        {
+            _parent._writer.WriteStartElement(name);
+            serialize.Serialize(value, _parent);
+            _parent._writer.WriteEndElement();
         }
 
         public void End()
