@@ -10,7 +10,7 @@ Console.WriteLine(bar);
 
 [GenerateDeserialize]
 partial class Foo {
-  public AbstractBar bar;
+  public required AbstractBar bar;
 }
 
 [GenerateDeserialize]
