@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Net.Http.Headers;
 
 namespace Serde
 {
     public static class DictWrap
     {
-        public readonly struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> : ISerialize,
-            ISerializeWrap<Dictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
+        public readonly struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>
+            : ISerialize, ISerialize<Dictionary<TKey, TValue>>,
+              ISerializeWrap<Dictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
             where TKey : notnull
-            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize
-            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize
+            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize, ISerialize<TKey>
+            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize, ISerialize<TValue>
         {
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(Dictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
@@ -26,6 +29,17 @@ namespace Serde
                 {
                     sd.SerializeKey(TKeyWrap.Create(k));
                     sd.SerializeValue(TValueWrap.Create(v));
+                }
+                sd.End();
+            }
+
+            void ISerialize<Dictionary<TKey, TValue>>.Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
+            {
+                var sd = serializer.SerializeDictionary(value.Count);
+                foreach (var (k, v) in value)
+                {
+                    sd.SerializeKey(k, TKeyWrap.Create(k));
+                    sd.SerializeValue(v, TValueWrap.Create(v));
                 }
                 sd.End();
             }
@@ -73,14 +87,25 @@ namespace Serde
     public static class IDictWrap
     {
         public readonly record struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(IDictionary<TKey, TValue> Value)
-            : ISerialize, ISerializeWrap<IDictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
+            : ISerialize, ISerializeWrap<IDictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>,
+              ISerialize<IDictionary<TKey, TValue>>
             where TKey : notnull
-            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize
-            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize
+            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize, ISerialize<TKey>
+            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize, ISerialize<TValue>
         {
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
+            void ISerialize<IDictionary<TKey, TValue>>.Serialize(IDictionary<TKey, TValue> value, ISerializer serializer)
+            {
+                var sd = serializer.SerializeDictionary(value.Count);
+                foreach (var (k, v) in value)
+                {
+                    sd.SerializeKey(k, TKeyWrap.Create(k));
+                    sd.SerializeValue(v, TValueWrap.Create(v));
+                }
+                sd.End();
+            }
             void ISerialize.Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);

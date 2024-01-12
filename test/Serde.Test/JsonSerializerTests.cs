@@ -95,12 +95,22 @@ namespace Serde.Test
 ]");
         }
 
-        private struct JsonDictionaryWrapper : ISerialize
+        private struct JsonDictionaryWrapper : ISerialize, ISerialize<JsonDictionaryWrapper>
         {
             private readonly Dictionary<int, int> _d;
             public JsonDictionaryWrapper(Dictionary<int, int> d)
             {
                 _d = d;
+            }
+            public void Serialize(JsonDictionaryWrapper value, ISerializer serializer)
+            {
+                var sd = serializer.SerializeDictionary(value._d.Count);
+                foreach (var (k,v) in value._d)
+                {
+                    sd.SerializeKey(new StringWrap(k.ToString()));
+                    sd.SerializeValue(new Int32Wrap(v));
+                }
+                sd.End();
             }
             public void Serialize(ISerializer serializer)
             {
@@ -135,7 +145,7 @@ namespace Serde.Test
         public void NullableString()
         {
             string? s = null;
-            var js = Serde.Json.JsonSerializer.Serialize(new NullableRefWrap.SerializeImpl<string, StringWrap>(s));
+            var js = Serde.Json.JsonSerializer.Serialize<string?, NullableRefWrap.SerializeImpl<string, StringWrap>>(s);
             Assert.Equal("null", js);
             js = Serde.Json.JsonSerializer.Serialize(JsonValue.Null.Instance);
             Assert.Equal("null", js);

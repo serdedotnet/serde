@@ -128,6 +128,18 @@ partial class SerdeImplRoslynGenerator
                 context);
         }
 
+        if (usage.HasFlag(SerdeUsage.Serialize))
+        {
+            SerializeImplRoslynGenerator.GenerateImpl(
+                usage,
+                new TypeDeclContext(typeDecl),
+                receiverType,
+                IdentifierName("value"),
+                context,
+                inProgress);
+
+        }
+
         GenerateImpl(
             usage,
             new TypeDeclContext(typeDecl),
@@ -346,7 +358,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
     private static string GetWrapperName(string typeName) => typeName + "Wrap";
 
 
-    private static bool HasGenerateAttribute(ITypeSymbol memberType, SerdeUsage usage)
+    internal static bool HasGenerateAttribute(ITypeSymbol memberType, SerdeUsage usage)
     {
         var attributes = memberType.GetAttributes();
         foreach (var attr in attributes)

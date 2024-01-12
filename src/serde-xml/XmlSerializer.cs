@@ -270,10 +270,10 @@ public sealed partial class XmlSerializer : ISerializer
             SerializeField(Encoding.UTF8.GetString(name), value, attributes);
         }
 
-        void ISerializeType.SerializeField<T, U>(string name, T value, U serialize)
+        void ISerializeType.SerializeField<T, U>(string name, T value)
         {
             _parent._writer.WriteStartElement(name);
-            serialize.Serialize(value, _parent);
+            default(U).Serialize(value, _parent);
             _parent._writer.WriteEndElement();
         }
 

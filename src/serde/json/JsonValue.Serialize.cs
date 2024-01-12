@@ -6,10 +6,14 @@ using System.Linq;
 
 namespace Serde.Json
 {
-    partial record JsonValue : ISerialize
+    partial record JsonValue : ISerialize, ISerialize<JsonValue>
     {
         public abstract void Serialize(ISerializer serializer);
 
+        void ISerialize<JsonValue>.Serialize(JsonValue value, ISerializer serializer)
+        {
+            value.Serialize(serializer);
+        }
 
         partial record Number
         {

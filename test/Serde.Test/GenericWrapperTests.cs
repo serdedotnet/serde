@@ -95,11 +95,13 @@ public sealed partial class GenericWrapperTests
     internal static partial class CustomImArrayWrap
     {
         public readonly record struct SerializeImpl<T, TWrap>(CustomImArray<T> cia)
-            : ISerialize, ISerializeWrap<CustomImArray<T>, SerializeImpl<T, TWrap>>
+            : ISerialize, ISerialize<CustomImArray<T>>, ISerializeWrap<CustomImArray<T>, SerializeImpl<T, TWrap>>
             where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
         {
             public static SerializeImpl<T, TWrap> Create(CustomImArray<T> t) => new(t);
 
+            void ISerialize<CustomImArray<T>>.Serialize(CustomImArray<T> value, ISerializer serializer)
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray<T>).ToString(), value.Backing.AsSpan(), serializer);
             void ISerialize.Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray<T>).ToString(), cia.Backing.AsSpan(), serializer);
         }
@@ -142,11 +144,13 @@ public sealed partial class GenericWrapperTests
     internal static partial class CustomImArray2Wrap
     {
         public readonly record struct SerializeImpl<T, TWrap>(CustomImArray2<T> cia)
-            : ISerialize, ISerializeWrap<CustomImArray2<T>, SerializeImpl<T, TWrap>>
+            : ISerialize, ISerialize<CustomImArray2<T>>, ISerializeWrap<CustomImArray2<T>, SerializeImpl<T, TWrap>>
             where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
         {
             public static SerializeImpl<T, TWrap> Create(CustomImArray2<T> t) => new(t);
 
+            void ISerialize<CustomImArray2<T>>.Serialize(CustomImArray2<T> value, ISerializer serializer)
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray2<T>).ToString(), value.Backing.AsSpan(), serializer);
             void ISerialize.Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray2<T>).ToString(), cia.Backing.AsSpan(), serializer);
         }
