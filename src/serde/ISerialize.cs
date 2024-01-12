@@ -8,7 +8,7 @@ public interface ISerialize
     void Serialize(ISerializer serializer);
 }
 
-public interface ISerialize<T>
+public interface ISerialize<in T>
 {
     void Serialize(T value, ISerializer serializer);
 }
@@ -27,7 +27,9 @@ public interface ISerializeType
     void SkipField(string name) { SkipField(Encoding.UTF8.GetBytes(name)); }
     void SkipField(Utf8Span name) { }
 
-    void SerializeField<T, U>(string name, T value, U serialize) where U : ISerialize<T>;
+    void SerializeField<T, U>(string name, T value) where U : struct, ISerialize<T>;
+    void SerializeField<T, U>(string name, T value, ReadOnlySpan<Attribute> attributes) where U : struct, ISerialize<T>
+        => SerializeField<T, U>(name, value);
     void End();
 }
 
@@ -78,6 +80,31 @@ public static class ISerializeTypeExt
         else
         {
             serializeType.SerializeField(name, value, attributes);
+        }
+    }
+}
+
+public static class ISerializeTypeExt2
+{
+    public static void SerializeFieldIfNotNull<T, U>(
+        this ISerializeType serializeType,
+        string name,
+        T value) where U : struct, ISerialize<T>
+        => SerializeFieldIfNotNull<T, U>(serializeType, name, value, ReadOnlySpan<Attribute>.Empty);
+
+    public static void SerializeFieldIfNotNull<T, U>(
+        this ISerializeType serializeType,
+        string name,
+        T value,
+        ReadOnlySpan<Attribute> attributes) where U : struct, ISerialize<T>
+    {
+        if (value is null)
+        {
+            serializeType.SkipField(name);
+        }
+        else
+        {
+            serializeType.SerializeField<T, U>(name, value, attributes);
         }
     }
 }

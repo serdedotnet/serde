@@ -13,7 +13,7 @@ namespace Serde.Json
         /// <summary>
         /// Serialize the given type to a string.
         /// </summary>
-        public static string Serialize<T>(T s) where T : ISerialize
+        public static string Serialize<T>(T s) where T : ISerialize, ISerialize<T>
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
             using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
@@ -23,6 +23,21 @@ namespace Serde.Json
             });
             var serializer = new JsonSerializer(writer);
             s.Serialize(serializer);
+            writer.Flush();
+            return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
+        }
+
+        public static string Serialize<T, TWrap>(T s)
+            where TWrap : struct, ISerialize<T>
+        {
+            using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
+            using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
+            {
+                Indented = false,
+                SkipValidation = true
+            });
+            var serializer = new JsonSerializer(writer);
+            default(TWrap).Serialize(s, serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }

@@ -124,10 +124,10 @@ using Serde;
 
 [GenerateSerialize]
 partial struct S<T1, T2, T3, T4, T5>
-    where T1 : ISerialize
-    where T2 : ISerialize?
-    where T3 : class, ISerialize
-    where T4 : class?, ISerialize
+    where T1 : ISerialize, ISerialize<T1>
+    where T2 : ISerialize?, ISerialize<T2>?
+    where T3 : class, ISerialize, ISerialize<T3>
+    where T4 : class?, ISerialize, ISerialize<T4>
 {
     public string? FS;
     public T1 F1;
@@ -147,7 +147,7 @@ using Serde;
 partial struct S<T1, T2, TSerialize>
     where T1 : int?
     where T2 : TSerialize?
-    where TSerialize : struct, ISerialize
+    where TSerialize : struct, ISerialize, ISerialize<TSerialize>
 {
     public int? FI;
     public T1 F1;
@@ -392,7 +392,7 @@ public struct S
         Y = y;
     }
 }
-public struct SWrap : ISerialize
+public struct SWrap : ISerialize, ISerialize<S>
 {
     private readonly S _s;
     public SWrap(S s)
@@ -403,6 +403,11 @@ public struct SWrap : ISerialize
     {
         serializer.SerializeI32(_s.X);
         serializer.SerializeI32(_s.Y);
+    }
+    void ISerialize<S>.Serialize(S value, ISerializer serializer)
+    {
+        serializer.SerializeI32(value.X);
+        serializer.SerializeI32(value.Y);
     }
 }
 [GenerateSerialize]
@@ -430,14 +435,22 @@ public struct S<T>
 }
 public static class SWrap
 {
-    public readonly struct SerializeImpl<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SerializeImpl<T, TWrap>>
-        where TWrap : struct, ISerialize, ISerializeWrap<T, TWrap>
+    public readonly struct SerializeImpl<T, TWrap>
+        : ISerialize, ISerialize<S<T>>,
+          ISerializeWrap<S<T>, SerializeImpl<T, TWrap>>
+        where TWrap : struct, ISerialize, ISerialize<T>, ISerializeWrap<T, TWrap>
     {
         public static SerializeImpl<T, TWrap> Create(S<T> t) => new(t);
         private readonly S<T> _s;
         public SerializeImpl(S<T> s)
         {
             _s = s;
+        }
+        void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
+        {
+            var type = serializer.SerializeType(""S"", 1);
+            type.SerializeField<T, TWrap>(""s"", value.Field);
+            type.End();
         }
         void ISerialize.Serialize(ISerializer serializer)
         {
@@ -470,14 +483,21 @@ public struct S<T>
         Field = f;
     }
 }
-public readonly struct SWrap<T, TWrap> : ISerialize, ISerializeWrap<S<T>, SWrap<T, TWrap>>
-    where TWrap : struct, ISerialize, ISerializeWrap<T, TWrap>
+public readonly struct SWrap<T, TWrap>
+    : ISerialize, ISerialize<T>, ISerializeWrap<S<T>, SWrap<T, TWrap>>
+    where TWrap : struct, ISerialize, ISerialize<T>, ISerializeWrap<T, TWrap>
 {
     public static SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
     private readonly S<T> _s;
     public SWrap(S<T> s)
     {
         _s = s;
+    }
+    void ISerialize<T>.Serialize(T value, ISerializer serializer)
+    {
+        var type = serializer.SerializeType(""S"", 1);
+        type.SerializeField<T, TWrap>(""s"", value);
+        type.End();
     }
     void ISerialize.Serialize(ISerializer serializer)
     {

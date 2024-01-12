@@ -9,6 +9,7 @@ using StaticCs;
 
 namespace Serde
 {
+    [Closed]
     internal enum WellKnownType
     {
         ImmutableArray_1,

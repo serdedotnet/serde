@@ -47,7 +47,7 @@ namespace Serde
             return members;
         }
 
-        public static TypeSyntax ToFqnSyntax(this INamedTypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
+        public static TypeSyntax ToFqnSyntax(this ITypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
 
         public static MemberOptions GetMemberOptions(ISymbol member)
         {

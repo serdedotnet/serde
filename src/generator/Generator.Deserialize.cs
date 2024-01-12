@@ -16,7 +16,7 @@ namespace Serde
     {
         private const string GeneratedVisitorName = "SerdeVisitor";
 
-        private static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
+        internal static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
             ExpressionSyntax receiverExpr,

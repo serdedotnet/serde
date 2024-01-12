@@ -125,9 +125,10 @@ namespace Serde.Json
             value.Serialize(this);
         }
 
-        void ISerializeType.SerializeField<T, U>(string name, T value, U serialize)
+        void ISerializeType.SerializeField<T, U>(string name, T value)
         {
             _writer.WritePropertyName(name);
+            var serialize = new U();
             serialize.Serialize(value, this);
         }
 
