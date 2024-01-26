@@ -116,7 +116,7 @@ sealed class SerdeWrapAttribute : Attribute
 /// <summary>
 /// Set options for the Serde source generator for the current type.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
 #if !SRCGEN
 public
 #else

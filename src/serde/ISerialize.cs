@@ -8,9 +8,11 @@ public interface ISerialize
     void Serialize(ISerializer serializer);
 }
 
-public interface ISerialize<in T>
+public interface ISerialize<in T> : ISerialize
 {
     void Serialize(T value, ISerializer serializer);
+
+    void ISerialize.Serialize(ISerializer serializer) => Serialize((T)this, serializer);
 }
 
 public interface ISerializeType
