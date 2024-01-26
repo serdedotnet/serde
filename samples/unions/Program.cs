@@ -1,129 +1,90 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Diagnostics;
 using Serde;
 using Serde.Json;
+using StaticCs;
 
-var json = """
-{ "bar": { "_t": "Bar1", "bar": 1 } }
-""";
-var bar = JsonSerializer.Deserialize<Foo>(json);
-Console.WriteLine(bar);
+var a = new BaseType.DerivedA { A = 1 };
+var b = new BaseType.DerivedB { B = "foo" };
+var aSerialized = JsonSerializer.Serialize(a);
+var bSerialized = JsonSerializer.Serialize(b);
 
-[GenerateDeserialize]
-partial class Foo {
-  public required AbstractBar bar;
-}
+Console.WriteLine($"a: {aSerialized}, " + (aSerialized == """{"DerivedA":{"a":1}}"""));
+Console.WriteLine($"b: {bSerialized}, " + (bSerialized == """{"DerivedB":{"b":"foo"}}"""));
 
-[GenerateDeserialize]
-partial class Bar1 : AbstractBar {
-  public int bar;
-}
+Console.WriteLine("a: " + (JsonSerializer.Deserialize<BaseType>(aSerialized) == a));
+Console.WriteLine("b: " + (JsonSerializer.Deserialize<BaseType>(bSerialized) == b));
 
-[GenerateSerde]
-partial class Bar2 : AbstractBar {
-  public double bar;
-}
-
-abstract partial class AbstractBar : IDeserialize<AbstractBar>
+[Closed]
+abstract partial record BaseType
 {
-    static AbstractBar IDeserialize<AbstractBar>.Deserialize<D>(ref D deserializer)
+    private BaseType() { }
+
+    public sealed partial record DerivedA : BaseType
     {
-        var visitor = new SerdeVisitor(deserializer);
-        var fieldNames = new[]
+        public required int A { get; init; }
+    }
+    public sealed partial record DerivedB : BaseType
+    {
+        public required string B { get; init; }
+    }
+}
+
+partial record BaseType : ISerialize<BaseType>
+{
+    public void Serialize(BaseType value, ISerializer serializer)
+    {
+        var serializeType = serializer.SerializeType("BaseType", 2);
+        switch (value)
         {
-            "bar"
-        };
-        return deserializer.DeserializeType<AbstractBar, SerdeVisitor>("AbstractBar", fieldNames, visitor);
+            case DerivedA derivedA:
+                serializeType.SerializeField<DerivedA, DerivedAWrap>(nameof(DerivedA), derivedA);
+                break;
+            case DerivedB derivedB:
+                serializeType.SerializeField<DerivedB, DerivedBWrap>(nameof(DerivedB), derivedB);
+                break;
+        }
+        serializeType.End();
     }
 
-    private sealed class SerdeVisitor : IDeserializeVisitor<AbstractBar>
+    [GenerateSerde(Through = nameof(Value))]
+    private readonly partial record struct DerivedAWrap(DerivedA Value);
+
+    [GenerateSerde(Through = nameof(Value))]
+    private readonly partial record struct DerivedBWrap(DerivedB Value);
+}
+
+partial record BaseType : IDeserialize<BaseType>
+{
+    public static BaseType Deserialize<D>(ref D deserializer) where D : IDeserializer
     {
-        private readonly IDeserializer _deserializer;
-        public SerdeVisitor(IDeserializer deserializer)
-        {
-            _deserializer = deserializer;
-        }
+        return deserializer.DeserializeDictionary<BaseType, DeserializeVisitor>(new DeserializeVisitor());
+    }
 
-        public string ExpectedTypeName => "AbstractBar";
+    [Closed]
+    [GenerateDeserialize]
+    [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
+    private enum KeyNames
+    {
+        DerivedA,
+        DerivedB,
+    }
 
-        AbstractBar IDeserializeVisitor<AbstractBar>.VisitDictionary<D>(ref D d)
+    private sealed class DeserializeVisitor : IDeserializeVisitor<BaseType>
+    {
+        public string ExpectedTypeName => nameof(BaseType);
+
+        BaseType IDeserializeVisitor<BaseType>.VisitDictionary<D>(ref D deserializer)
         {
-            var result = d.TryGetNextKey<string, StringWrap>(out string? key);
-            if (!result || key != "_t")
+            deserializer.TryGetNextKey<KeyNames, KeyNamesWrap>(out var type);
+            switch (type)
             {
-                throw new InvalidDeserializeValueException("Expected a _t field");
-            }
-            var value = d.GetNextValue<string, StringWrap>();
-            var inline = new InlineDeserializer(_deserializer, d);
-            switch (value)
-            {
-                case "Bar1":
-                    var bar1 = InlineDeserialize<Bar1>(inline);
-                    return bar1;
-                case "Bar2":
-                    var bar2 = InlineDeserialize<Bar2>(inline);
-                    return bar2;
+                case KeyNames.DerivedA:
+                    return deserializer.GetNextValue<DerivedA, DerivedAWrap>();
+                case KeyNames.DerivedB:
+                    return deserializer.GetNextValue<DerivedB, DerivedBWrap>();
                 default:
-                    throw new InvalidDeserializeValueException($"Unexpected value {value}");
+                    throw new InvalidOperationException();
             }
         }
-
-        private static T InlineDeserialize<T>(IDeserializer deserializer) where T : IDeserialize<T>
-        {
-            return T.Deserialize(ref deserializer);
-        }
-    }
-
-    private class InlineDeserializer : IDeserializer
-    {
-        private readonly IDeserializer _deserializer;
-        private IDeserializeDictionary _deserializeDictionary;
-
-        public InlineDeserializer(IDeserializer deserializer, IDeserializeDictionary deserializeDictionary)
-        {
-            _deserializer = deserializer;
-            _deserializeDictionary = deserializeDictionary;
-        }
-
-        public T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeBool<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeByte<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeChar<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeDecimal<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>
-            => v.VisitDictionary(ref _deserializeDictionary);
-
-        public T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeEnumerable<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeFloat<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeI16<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeI32<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeIdentifier<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeNullableRef<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeSByte<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : IDeserializeVisitor<T>
-            => DeserializeDictionary<T, V>(v);
-
-        public T DeserializeU16<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeU32<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
-
-        public T DeserializeU64<T, V>(V v) where V : IDeserializeVisitor<T> => throw new NotImplementedException();
     }
 }

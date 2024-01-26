@@ -108,5 +108,23 @@ partial struct S
 }";
             return VerifyMultiFile(src);
         }
+
+        [Fact]
+        public Task EnumFormat()
+        {
+            var src = """
+
+using Serde;
+[GenerateSerde]
+[SerdeTypeOptions(MemberFormat = MemberFormat.None)]
+public enum ColorEnum
+{
+    Red,
+    Green,
+    Blue
+}
+""";
+            return VerifyMultiFile(src);
+        }
    }
 }
