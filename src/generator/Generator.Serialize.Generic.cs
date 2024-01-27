@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -164,7 +165,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                         Identifier("name"),
                         argumentList: null,
                         EqualsValueClause(SwitchExpression(receiverExpr, SeparatedList(cases)))) }))));
-                var wrapper = TryGetPrimitiveWrapper(enumType.EnumUnderlyingType!, SerdeUsage.Serialize)!;
+                var wrapper = TryGetPrimitiveWrapper(enumType.EnumUnderlyingType!, SerdeUsage.Serialize).Unwrap().Wrapper;
                 statements.Add(ExpressionStatement(InvocationExpression(
                     QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeEnumValue")),
                     ArgumentList(SeparatedList(new[] {
@@ -205,8 +206,8 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                 {
                     // Generate statements of the form `type.SerializeField<FieldType, Serialize>("FieldName", receiver.FieldValue)`
                     var memberExpr = MakeMemberAccessExpr(m, receiverExpr);
-                    var serializeImpl = MakeSerializeType(m, context, memberExpr, inProgress);
-                    if (serializeImpl is null)
+                    var typeAndWrapperOpt = MakeSerializeType(m, context, memberExpr, inProgress);
+                    if (typeAndWrapperOpt is not {} typeAndWrapper)
                     {
                         // No built-in handling and doesn't implement ISerialize, error
                         context.ReportDiagnostic(CreateDiagnostic(
@@ -218,7 +219,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                     }
                     else
                     {
-                        statements.Add(MakeSerializeFieldStmt(m, memberExpr, serializeImpl, receiverExpr));
+                        statements.Add(MakeSerializeFieldStmt(m, memberExpr, typeAndWrapper, receiverExpr));
                     }
                 }
 
@@ -260,7 +261,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
             static ExpressionStatementSyntax MakeSerializeFieldStmt(
                 DataMemberSymbol member,
                 ExpressionSyntax value,
-                TypeSyntax serializeType,
+                TypeAndWrapper typeAndWrapper,
                 ExpressionSyntax receiver)
             {
                 var arguments = new List<ExpressionSyntax>() {
@@ -270,8 +271,8 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                         value,
                 };
                 var typeArgs = new List<TypeSyntax>() {
-                    member.Type.ToFqnSyntax(),
-                    serializeType
+                    typeAndWrapper.Type,
+                    typeAndWrapper.Wrapper
                 };
 
                 string methodName;
@@ -341,7 +342,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
         /// implements ISerialize.  SerdeDn provides wrappers for primitives and common types in the
         /// framework. If found, we generate and initialize the wrapper.
         /// </summary>
-        private static TypeSyntax? MakeSerializeType(
+        private static TypeAndWrapper? MakeSerializeType(
             DataMemberSymbol member,
             GeneratorExecutionContext context,
             ExpressionSyntax memberExpr,
@@ -350,23 +351,18 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
             // 1. Check for an explicit wrapper
             if (TryGetExplicitWrapper(member, context, SerdeUsage.Serialize, inProgress) is {} wrapper)
             {
-                return wrapper;
+                return new(member.Type.ToFqnSyntax(), wrapper);
             }
 
             // 2. Check for a direct implementation of ISerialize
             if (ImplementsSerde(member.Type, context, SerdeUsage.Serialize))
             {
-                return GenericName(Identifier("IdWrap"), TypeArgumentList(SeparatedList(new[] { member.Type.ToFqnSyntax() })));
+                return new(member.Type.ToFqnSyntax(),
+                    GenericName(Identifier("IdWrap"), TypeArgumentList(SeparatedList(new[] { member.Type.ToFqnSyntax() }))));
             }
 
             // 3. A wrapper that implements ISerialize
-            var wrapperType = TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
-            if (wrapperType is not null)
-            {
-                return wrapperType;
-            }
-
-            return null;
+            return TryGetAnyWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
         }
 
         /// <summary>
@@ -553,9 +549,9 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
 
                 // Otherwise we'll need to wrap the element type as well e.g.,
                 //      ArrayWrap<`elemType`, `elemTypeWrapper`>
-                var wrapper = TryGetAnyWrapper(elemType, context, usage, inProgress);
+                var typeAndWrapper = TryGetAnyWrapper(elemType, context, usage, inProgress);
 
-                if (wrapper is null)
+                if (typeAndWrapper is not (_, var wrapper))
                 {
                     // Could not find a wrapper
                     return null;
@@ -575,7 +571,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
             return wrapperSyntax;
         }
 
-        private static TypeSyntax? TryGetAnyWrapper(
+        private static TypeAndWrapper? TryGetAnyWrapper(
             ITypeSymbol elemType,
             GeneratorExecutionContext context,
             SerdeUsage usage,
@@ -592,16 +588,16 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                     allTypes = parent.Name + allTypes;
                 }
                 var wrapperName = $"{allTypes}Wrap";
-                return IdentifierName(wrapperName);
+                return new(elemType.ToFqnSyntax(), IdentifierName(wrapperName));
             }
-            var nameSyntax = TryGetPrimitiveWrapper(elemType, usage)
+            var typeAndWrapper = TryGetPrimitiveWrapper(elemType, usage)
                 ?? TryGetEnumWrapper(elemType, usage)
                 ?? TryGetCompoundWrapper(elemType, context, usage, inProgress);
-            if (nameSyntax is null)
+            if (typeAndWrapper is null)
             {
                 return null;
             }
-            return nameSyntax;
+            return typeAndWrapper;
         }
 
 
@@ -654,7 +650,7 @@ namespace Serde
         }
 
         // If the target is a core type, we can wrap it
-        private static TypeSyntax? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
+        private static TypeAndWrapper? TryGetPrimitiveWrapper(ITypeSymbol type, SerdeUsage usage)
         {
             if (type.NullableAnnotation == NullableAnnotation.Annotated)
             {
@@ -678,10 +674,10 @@ namespace Serde
                 SpecialType.System_Decimal => "DecimalWrap",
                 _ => null
             };
-            return name is null ? null : IdentifierName(name);
+            return name is null ? null : new(type.ToFqnSyntax(), IdentifierName(name));
         }
 
-        private static TypeSyntax? TryGetEnumWrapper(ITypeSymbol type, SerdeUsage usage)
+        private static TypeAndWrapper? TryGetEnumWrapper(ITypeSymbol type, SerdeUsage usage)
         {
             if (type.TypeKind is not TypeKind.Enum)
             {
@@ -704,7 +700,7 @@ namespace Serde
                  ? containing + "." + wrapperName
                  : "global::" + wrapperName;
 
-            return SyntaxFactory.ParseTypeName(wrapperFqn);
+            return new(type.ToFqnSyntax(), ParseTypeName(wrapperFqn));
         }
 
         private static bool HasGenerateAttribute(ITypeSymbol memberType, SerdeUsage usage)
@@ -735,17 +731,18 @@ namespace Serde
             return false;
         }
 
-        private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage, ImmutableList<ITypeSymbol> inProgress)
+        private static TypeAndWrapper? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage, ImmutableList<ITypeSymbol> inProgress)
         {
-            return type switch
+            (TypeSyntax?, TypeSyntax?)? valueTypeAndWrapper = type switch
             {
                 { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } =>
-                    MakeWrappedExpression(
+                    (null,
+                     MakeWrappedExpression(
                         context.Compilation.GetTypeByMetadataName("Serde.NullableWrap+" + GetImplName(usage) + "`2")!,
                         ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                         context,
                         usage,
-                        inProgress),
+                        inProgress)),
 
                 // This is rather subtle. One might think that we would want to use a
                 // NullableRefWrapper for any reference type that could contain null. In fact, we
@@ -759,26 +756,35 @@ namespace Serde
                 // ISerialize, and therefore the substitution to provide the appropriate nullable
                 // wrapper.
                 { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated} =>
-                    MakeWrappedExpression(
+                    (null,
+                     MakeWrappedExpression(
                         context.Compilation.GetTypeByMetadataName("Serde.NullableRefWrap+" + GetImplName(usage) + "`2")!,
                         ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                         context,
                         usage,
-                        inProgress),
+                        inProgress)),
 
                 IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType }
-                    => MakeWrappedExpression(
+                    => (null,
+                        MakeWrappedExpression(
                         context.Compilation.GetTypeByMetadataName("Serde.ArrayWrap+" + GetImplName(usage) + "`2")!,
                         ImmutableArray.Create(elemType),
                         context,
                         usage,
-                        inProgress),
+                        inProgress)),
 
-                INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is { } tuple
-                    => MakeWrappedExpression(
-                        tuple.WrapperType, tuple.Args, context, usage, inProgress),
+                INamedTypeSymbol t when TryGetWrapperName(t, context, usage) is (var ValueType, (var WrapperType, var Args))
+                    => (ValueType,
+                        MakeWrappedExpression(
+                        WrapperType, Args, context, usage, inProgress)),
 
                 _ => null,
+            };
+            return valueTypeAndWrapper switch {
+                null => null,
+                (null, {} wrapper) => new(type.ToFqnSyntax(), wrapper),
+                ({ } value, { } wrapper) => new(value, wrapper),
+                (_, null) => throw ExceptionUtilities.Unreachable
             };
         }
 
@@ -789,7 +795,7 @@ namespace Serde
             _ => throw ExceptionUtilities.Unreachable
         };
 
-        private static (INamedTypeSymbol WrapperType, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperName(
+        private static (TypeSyntax MemberType, (INamedTypeSymbol WrapperType, ImmutableArray<ITypeSymbol> Args))? TryGetWrapperName(
             ITypeSymbol typeSymbol,
             GeneratorExecutionContext context,
             SerdeUsage usage)
@@ -797,11 +803,12 @@ namespace Serde
             if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
             {
                 var nullableRefWrap = context.Compilation.GetTypeByMetadataName("Serde.NullableRefWrap+" + GetImplName(usage) + "`1")!;
-                return (nullableRefWrap, ImmutableArray.Create(typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated)));
+                return (typeSymbol.ToFqnSyntax(),
+                    (nullableRefWrap, ImmutableArray.Create(typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated))));
             }
             if (typeSymbol is INamedTypeSymbol named && TryGetWellKnownType(named, context) is {} wk)
             {
-                return (ToWrapper(wk, context.Compilation, usage), named.TypeArguments);
+                return (typeSymbol.ToFqnSyntax(), (ToWrapper(wk, context.Compilation, usage), named.TypeArguments));
             }
 
             // Check if it implements well-known interfaces
@@ -813,12 +820,14 @@ namespace Serde
                     if (impl.OriginalDefinition.Equals(iface, SymbolEqualityComparer.Default) &&
                         ToWrapper(TryGetWellKnownType(iface, context), context.Compilation, usage) is { } wrap)
                     {
-                        return (wrap, impl.TypeArguments);
+                        return (impl.ToFqnSyntax(), (wrap, impl.TypeArguments));
                     }
                 }
             }
             return null;
         }
+
+        private readonly record struct TypeAndWrapper(TypeSyntax Type, TypeSyntax Wrapper);
 
         [return: NotNullIfNotNull(nameof(wk))]
         internal static INamedTypeSymbol? ToWrapper(WellKnownType? wk, Compilation comp, SerdeUsage usage)

@@ -8,7 +8,7 @@ public interface ISerialize
     void Serialize(ISerializer serializer);
 }
 
-public interface ISerialize<in T> : ISerialize
+public interface ISerialize<T> : ISerialize
 {
     void Serialize(T value, ISerializer serializer);
 

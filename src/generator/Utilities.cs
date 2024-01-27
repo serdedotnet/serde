@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serde
 {
@@ -32,6 +33,8 @@ namespace Serde
 
     internal static class Utilities
     {
+        public static T Unwrap<T>(this T? value) where T : struct => value!.Value;
+
         public static string Concat(this string recv, string other)
         {
             return recv + other;
