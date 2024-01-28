@@ -73,25 +73,25 @@ namespace Serde
 
     public interface IDeserializer
     {
-        T DeserializeAny<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeBool<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeChar<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeByte<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeU16<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeU32<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeU64<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeSByte<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeI16<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeI32<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeI64<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeFloat<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeDouble<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeDecimal<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeString<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeIdentifier<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeType<T, V>(string typeName, ReadOnlySpan<string> fieldNames, V v) where V : IDeserializeVisitor<T>;
-        T DeserializeEnumerable<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeDictionary<T, V>(V v) where V : IDeserializeVisitor<T>;
-        T DeserializeNullableRef<T, V>(V v) where V : IDeserializeVisitor<T>;
+        T DeserializeAny<T>(IDeserializeVisitor<T> v);
+        T DeserializeBool<T>(IDeserializeVisitor<T> v);
+        T DeserializeChar<T>(IDeserializeVisitor<T> v);
+        T DeserializeByte<T>(IDeserializeVisitor<T> v);
+        T DeserializeU16<T>(IDeserializeVisitor<T> v);
+        T DeserializeU32<T>(IDeserializeVisitor<T> v);
+        T DeserializeU64<T>(IDeserializeVisitor<T> v);
+        T DeserializeSByte<T>(IDeserializeVisitor<T> v);
+        T DeserializeI16<T>(IDeserializeVisitor<T> v);
+        T DeserializeI32<T>(IDeserializeVisitor<T> v);
+        T DeserializeI64<T>(IDeserializeVisitor<T> v);
+        T DeserializeFloat<T>(IDeserializeVisitor<T> v);
+        T DeserializeDouble<T>(IDeserializeVisitor<T> v);
+        T DeserializeDecimal<T>(IDeserializeVisitor<T> v);
+        T DeserializeString<T>(IDeserializeVisitor<T> v);
+        T DeserializeIdentifier<T>(IDeserializeVisitor<T> v);
+        T DeserializeType<T>(string typeName, ReadOnlySpan<string> fieldNames, IDeserializeVisitor<T> v);
+        T DeserializeEnumerable<T>(IDeserializeVisitor<T> v);
+        T DeserializeDictionary<T>(IDeserializeVisitor<T> v);
+        T DeserializeNullableRef<T>(IDeserializeVisitor<T> v);
     }
 }

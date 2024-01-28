@@ -16,7 +16,7 @@ namespace Serde.Test
                 {
                     "A"
                 };
-                return deserializer.DeserializeType<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType, SerdeVisitor>("CustomArrayWrapExplicitOnType", fieldNames, visitor);
+                return deserializer.DeserializeType("CustomArrayWrapExplicitOnType", fieldNames, visitor);
             }
 
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>
@@ -26,7 +26,7 @@ namespace Serde.Test
                 private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
                     public static byte Deserialize<D>(ref D deserializer)
-                        where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                        where D : IDeserializer => deserializer.DeserializeString(new FieldNameVisitor());
                     public string ExpectedTypeName => "string";
 
                     byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

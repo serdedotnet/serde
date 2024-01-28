@@ -9,7 +9,7 @@ namespace Serde.Json
     {
         static JsonValue IDeserialize<JsonValue>.Deserialize<D>(ref D deserializer)
         {
-            return deserializer.DeserializeAny<JsonValue, Visitor>(Visitor.Instance);
+            return deserializer.DeserializeAny(Visitor.Instance);
         }
 
         private sealed class Visitor : IDeserializeVisitor<JsonValue>

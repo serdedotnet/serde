@@ -12,7 +12,7 @@ namespace Serde.Test
             static Serde.Test.AllInOne.ColorEnum Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize<D>(ref D deserializer)
             {
                 var visitor = new SerdeVisitor();
-                return deserializer.DeserializeString<Serde.Test.AllInOne.ColorEnum, SerdeVisitor>(visitor);
+                return deserializer.DeserializeString(visitor);
             }
 
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.AllInOne.ColorEnum>

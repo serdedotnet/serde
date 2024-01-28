@@ -14,7 +14,7 @@ partial record R : Serde.IDeserialize<R>
             "A",
             "B"
         };
-        return deserializer.DeserializeType<R, SerdeVisitor>("R", fieldNames, visitor);
+        return deserializer.DeserializeType("R", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<R>
@@ -24,7 +24,7 @@ partial record R : Serde.IDeserialize<R>
         private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
         {
             public static byte Deserialize<D>(ref D deserializer)
-                where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                where D : IDeserializer => deserializer.DeserializeString(new FieldNameVisitor());
             public string ExpectedTypeName => "string";
 
             byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

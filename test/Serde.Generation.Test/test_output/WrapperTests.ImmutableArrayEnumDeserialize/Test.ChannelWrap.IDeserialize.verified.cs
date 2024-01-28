@@ -11,7 +11,7 @@ namespace Test
         static Test.Channel Serde.IDeserialize<Test.Channel>.Deserialize<D>(ref D deserializer)
         {
             var visitor = new SerdeVisitor();
-            return deserializer.DeserializeString<Test.Channel, SerdeVisitor>(visitor);
+            return deserializer.DeserializeString(visitor);
         }
 
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Test.Channel>

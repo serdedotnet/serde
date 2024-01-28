@@ -1,6 +1,7 @@
 
 #nullable disable
 
+using System;
 using Serde;
 
 namespace Benchmarks
@@ -57,79 +58,115 @@ namespace Benchmarks
 
     public partial record LocationWrap : IDeserialize<Location>
     {
-        [GenerateDeserialize]
-        private enum FieldNames : byte
+        static Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize<D>(ref D deserializer)
         {
-            Id = 1,
-            Address1 = 2,
-            Address2 = 3,
-            City = 4,
-            State = 5,
-            PostalCode = 6,
-            Name = 7,
-            PhoneNumber = 8,
-            Country = 9,
-        }
-
-        public static Location Deserialize<D>(ref D deserializer) where D : IDeserializer
-        {
-            return Deserialize<Location, D>(ref deserializer);
-        }
-        private sealed class LocationVisitor : IDeserializeVisitor<Location>
-        {
-            public string ExpectedTypeName => nameof(Location);
-
-            Location IDeserializeVisitor<Location>.VisitDictionary<D>(ref D d)
+            var fieldNames = new[]
             {
-                int _l_id = default!;
-                string _l_address1 = default!;
-                string _l_address2 = default!;
-                string _l_city = default!;
-                string _l_state = default!;
-                string _l_postalCode = default!;
-                string _l_name = default!;
-                string _l_phoneNumber = default!;
-                string _l_country = default!;
-                short _r_assignedValid = 0b0;
-                while (d.TryGetNextKey<FieldNames, FieldNamesWrap>(out var key))
+                "Id",
+                "Address1",
+                "Address2",
+                "City",
+                "State",
+                "PostalCode",
+                "Name",
+                "PhoneNumber",
+                "Country"
+            };
+            return deserializer.DeserializeType("Location", fieldNames, SerdeVisitor.Instance);
+        }
+
+        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Benchmarks.Location>
+        {
+            public static readonly SerdeVisitor Instance = new SerdeVisitor();
+            public string ExpectedTypeName => "Benchmarks.Location";
+
+            private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+            {
+                public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
+                public static byte Deserialize<D>(ref D deserializer)
+                    where D : IDeserializer => deserializer.DeserializeString(Instance);
+                public string ExpectedTypeName => "string";
+
+                byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
+                public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
+                {
+                    switch (s[0])
+                    {
+                        case (byte)'i'when s.SequenceEqual("id"u8):
+                            return 1;
+                        case (byte)'a'when s.SequenceEqual("address1"u8):
+                            return 2;
+                        case (byte)'a'when s.SequenceEqual("address2"u8):
+                            return 3;
+                        case (byte)'c'when s.SequenceEqual("city"u8):
+                            return 4;
+                        case (byte)'s'when s.SequenceEqual("state"u8):
+                            return 5;
+                        case (byte)'p'when s.SequenceEqual("postalCode"u8):
+                            return 6;
+                        case (byte)'n'when s.SequenceEqual("name"u8):
+                            return 7;
+                        case (byte)'p'when s.SequenceEqual("phoneNumber"u8):
+                            return 8;
+                        case (byte)'c'when s.SequenceEqual("country"u8):
+                            return 9;
+                        default:
+                            return 0;
+                    }
+                }
+            }
+
+            Benchmarks.Location Serde.IDeserializeVisitor<Benchmarks.Location>.VisitDictionary<D>(ref D d)
+            {
+                int _l_id = default !;
+                string _l_address1 = default !;
+                string _l_address2 = default !;
+                string _l_city = default !;
+                string _l_state = default !;
+                string _l_postalcode = default !;
+                string _l_name = default !;
+                string _l_phonenumber = default !;
+                string _l_country = default !;
+                ushort _r_assignedValid = 0b0;
+                while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
                 {
                     switch (key)
                     {
-                        case FieldNames.Id:
+                        case 1:
                             _l_id = d.GetNextValue<int, Int32Wrap>();
-                            _r_assignedValid |= 1 << 0;
+                            _r_assignedValid |= ((ushort)1) << 0;
                             break;
-                        case FieldNames.Address1:
+                        case 2:
                             _l_address1 = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 1;
+                            _r_assignedValid |= ((ushort)1) << 1;
                             break;
-                        case FieldNames.Address2:
+                        case 3:
                             _l_address2 = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 2;
+                            _r_assignedValid |= ((ushort)1) << 2;
                             break;
-                        case FieldNames.City:
+                        case 4:
                             _l_city = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 3;
+                            _r_assignedValid |= ((ushort)1) << 3;
                             break;
-                        case FieldNames.State:
+                        case 5:
                             _l_state = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 4;
+                            _r_assignedValid |= ((ushort)1) << 4;
                             break;
-                        case FieldNames.PostalCode:
-                            _l_postalCode = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 5;
+                        case 6:
+                            _l_postalcode = d.GetNextValue<string, StringWrap>();
+                            _r_assignedValid |= ((ushort)1) << 5;
                             break;
-                        case FieldNames.Name:
+                        case 7:
                             _l_name = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 6;
+                            _r_assignedValid |= ((ushort)1) << 6;
                             break;
-                        case FieldNames.PhoneNumber:
-                            _l_phoneNumber = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 7;
+                        case 8:
+                            _l_phonenumber = d.GetNextValue<string, StringWrap>();
+                            _r_assignedValid |= ((ushort)1) << 7;
                             break;
-                        case FieldNames.Country:
+                        case 9:
                             _l_country = d.GetNextValue<string, StringWrap>();
-                            _r_assignedValid |= 1 << 8;
+                            _r_assignedValid |= ((ushort)1) << 8;
                             break;
                     }
                 }
@@ -139,27 +176,21 @@ namespace Benchmarks
                     throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
                 }
 
-                var newType = new Location
+                var newType = new Benchmarks.Location()
                 {
                     Id = _l_id,
                     Address1 = _l_address1,
                     Address2 = _l_address2,
                     City = _l_city,
                     State = _l_state,
-                    PostalCode = _l_postalCode,
+                    PostalCode = _l_postalcode,
                     Name = _l_name,
-                    PhoneNumber = _l_phoneNumber,
+                    PhoneNumber = _l_phonenumber,
                     Country = _l_country,
                 };
                 return newType;
             }
         }
 
-        private static T Deserialize<T, D>(ref D deserialize)
-            where T : IDeserialize<T>
-            where D : IDeserializer
-        {
-            return T.Deserialize(ref deserialize);
-        }
     }
 }

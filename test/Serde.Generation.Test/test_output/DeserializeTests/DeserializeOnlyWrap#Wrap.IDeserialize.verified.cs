@@ -16,7 +16,7 @@ partial record struct Wrap : Serde.IDeserialize<System.Runtime.InteropServices.C
             "grfFlags",
             "grfMode"
         };
-        return deserializer.DeserializeType<System.Runtime.InteropServices.ComTypes.BIND_OPTS, SerdeVisitor>("BIND_OPTS", fieldNames, visitor);
+        return deserializer.DeserializeType("BIND_OPTS", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
@@ -26,7 +26,7 @@ partial record struct Wrap : Serde.IDeserialize<System.Runtime.InteropServices.C
         private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
         {
             public static byte Deserialize<D>(ref D deserializer)
-                where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                where D : IDeserializer => deserializer.DeserializeString(new FieldNameVisitor());
             public string ExpectedTypeName => "string";
 
             byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

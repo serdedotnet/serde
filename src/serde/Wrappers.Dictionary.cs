@@ -52,7 +52,7 @@ namespace Serde
         {
             static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize<D>(ref D deserializer)
             {
-                return deserializer.DeserializeDictionary<Dictionary<TKey, TValue>, Visitor>(new Visitor());
+                return deserializer.DeserializeDictionary(new Visitor());
             }
             private struct Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
             {
