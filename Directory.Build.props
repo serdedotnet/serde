@@ -1,9 +1,6 @@
 <Project>
     <PropertyGroup>
-        <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))</RepoRoot>
-        <ArtifactsPath>$(RepoRoot)artifacts/</ArtifactsPath>
-        <BaseOutputPath>$(ArtifactsPath)bin/$(MSBuildProjectName)/</BaseOutputPath>
-        <BaseIntermediateOutputPath>$(ArtifactsPath)obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+        <UseArtifactsOutput>true</UseArtifactsOutput>
         <Nullable>enable</Nullable>
         <Deterministic>true</Deterministic>
     </PropertyGroup>
