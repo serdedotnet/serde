@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Benchmarks;
-
-#if DEBUG
 
 const string LocationSample = DataGenerator.LocationSample;
 var options = new JsonSerializerOptions()
@@ -19,12 +17,16 @@ var json2 = Serde.Json.JsonSerializer.Serialize(DataGenerator.CreateLocation());
 var loc1 = System.Text.Json.JsonSerializer.Deserialize<Location>(LocationSample, options);
 var loc2 = Serde.Json.JsonSerializer.Deserialize<Location>(LocationSample);
 
-Console.WriteLine(loc1 == loc2);
-
-#else
+Console.WriteLine("Checking correctness of serialization: " + (loc1 == loc2));
+if (loc1 != loc2)
+{
+    throw new InvalidOperationException(@"""
+Serialization is not correct
+STJ: {json1}
+Serde: {json2}
+""");
+}
 
 var config = DefaultConfig.Instance.AddDiagnoser(MemoryDiagnoser.Default);
 var summary = BenchmarkSwitcher.FromAssembly(typeof(JsonToString<>).Assembly)
     .Run(args, config);
-
-#endif

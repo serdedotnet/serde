@@ -7,9 +7,11 @@ using BenchmarkDotNet.Attributes;
 
 namespace Benchmarks
 {
-    [GenericTypeArguments(typeof(LoginViewModel))]
-    [GenericTypeArguments(typeof(Location))]
-    public class DeserializeFromString<T> where T : Serde.IDeserialize<T>
+    [GenericTypeArguments(typeof(LoginViewModel), typeof(LoginViewModel))]
+    [GenericTypeArguments(typeof(Location), typeof(LocationWrap))]
+    public class DeserializeFromString<T, U>
+        where T : Serde.IDeserialize<T>
+        where U : Serde.IDeserialize<T>
     {
         private JsonSerializerOptions _options = null!;
         private string value = null!;
@@ -36,6 +38,9 @@ namespace Benchmarks
 
         [Benchmark]
         public T SerdeJson() => Serde.Json.JsonSerializer.Deserialize<T>(value);
+
+        [Benchmark]
+        public T SerdeManual() => Serde.Json.JsonSerializer.Deserialize<T, U>(value);
 
         // DataContractJsonSerializer does not provide an API to serialize to string
         // so it's not included here (apples vs apples thing)

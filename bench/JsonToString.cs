@@ -10,7 +10,7 @@ namespace Benchmarks
     [GenericTypeArguments(typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location))]
     [GenericTypeArguments(typeof(Serde.Test.AllInOne))]
-    public class JsonToString<T> where T : Serde.ISerialize
+    public class JsonToString<T> where T : Serde.ISerialize, Serde.ISerialize<T>
     {
         private JsonSerializerOptions _options = null!;
         private T value = default!;
@@ -21,7 +21,7 @@ namespace Benchmarks
             _options = new JsonSerializerOptions();
             _options.IncludeFields = true;
             value = DataGenerator.GenerateSerialize<T>();
-        } 
+        }
 
         [Benchmark]
         public string JsonNet() => Newtonsoft.Json.JsonConvert.SerializeObject(value);
