@@ -6,7 +6,7 @@ using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Running;
 using Benchmarks;
 
-const string LocationSample = DataGenerator.LocationSample;
+const string LocationSample = Location.SampleString;
 var options = new JsonSerializerOptions()
 {
     IncludeFields = true,

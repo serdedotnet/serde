@@ -10,12 +10,12 @@
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
     <PackageReference Include="Newtonsoft.JSON" Version="13.0.1" />
-    <ProjectReference Include="../src/serde/Serde.csproj" />
-    <ProjectReference Include="../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="../../src/serde/Serde.csproj" />
+    <ProjectReference Include="../../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../test/Serde.Test/AllInOneSrc.cs" />
+    <Compile Include="../../test/Serde.Test/AllInOneSrc.cs" />
   </ItemGroup>
 
 </Project>

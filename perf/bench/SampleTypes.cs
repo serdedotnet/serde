@@ -26,6 +26,33 @@ namespace Benchmarks
         public string Name { get; set; }
         public string PhoneNumber { get; set; }
         public string Country { get; set; }
+
+        public const string SampleString = """
+{
+    "id": 1234,
+    "address1": "The Street Name",
+    "address2": "20/11",
+    "city": "The City",
+    "state": "The State",
+    "postalCode": "abc-12",
+    "name": "Nonexisting",
+    "phoneNumber": "+0 11 222 333 44",
+    "country": "The Greatest"
+}
+""";
+
+        public static Location Sample => new Location
+        {
+            Id = 1234,
+            Address1 = "The Street Name",
+            Address2 = "20/11",
+            City = "The City",
+            State = "The State",
+            PostalCode = "abc-12",
+            Name = "Nonexisting",
+            PhoneNumber = "+0 11 222 333 44",
+            Country = "The Greatest"
+        };
     }
 
     public partial record LocationWrap : IDeserialize<Location>
