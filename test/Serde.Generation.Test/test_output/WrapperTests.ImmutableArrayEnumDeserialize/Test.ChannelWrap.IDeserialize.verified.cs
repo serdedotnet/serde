@@ -8,7 +8,7 @@ namespace Test
 {
     partial record struct ChannelWrap : Serde.IDeserialize<Test.Channel>
     {
-        static Test.Channel Serde.IDeserialize<Test.Channel>.Deserialize<D>(ref D deserializer)
+        static Test.Channel Serde.IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
         {
             var visitor = new SerdeVisitor();
             return deserializer.DeserializeString(visitor);

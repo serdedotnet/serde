@@ -6,7 +6,7 @@ using Serde;
 
 partial record struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
 {
-    static ColorEnum Serde.IDeserialize<ColorEnum>.Deserialize<D>(ref D deserializer)
+    static ColorEnum Serde.IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
     {
         var visitor = new SerdeVisitor();
         return deserializer.DeserializeString(visitor);

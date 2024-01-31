@@ -55,7 +55,7 @@ partial record BaseType : ISerialize<BaseType>
 
 partial record BaseType : IDeserialize<BaseType>
 {
-    public static BaseType Deserialize<D>(ref D deserializer) where D : IDeserializer
+    public static BaseType Deserialize(IDeserializer deserializer) where D : IDeserializer
     {
         return deserializer.DeserializeDictionary<BaseType, DeserializeVisitor>(new DeserializeVisitor());
     }

@@ -9,7 +9,7 @@ namespace Serde.Test
     {
         partial struct IdStruct : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStruct>
         {
-            static Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStruct>.Deserialize<D>(ref D deserializer)
+            static Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStruct>.Deserialize(IDeserializer deserializer)
             {
                 var visitor = new SerdeVisitor();
                 var fieldNames = new[]
@@ -26,8 +26,7 @@ namespace Serde.Test
                 private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
                     public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
-                    public static byte Deserialize<D>(ref D deserializer)
-                        where D : IDeserializer => deserializer.DeserializeString(Instance);
+                    public static byte Deserialize(IDeserializer deserializer) => deserializer.DeserializeString(Instance);
                     public string ExpectedTypeName => "string";
 
                     byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

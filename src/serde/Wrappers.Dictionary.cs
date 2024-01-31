@@ -50,12 +50,13 @@ namespace Serde
             where TKeyWrap : IDeserialize<TKey>
             where TValueWrap : IDeserialize<TValue>
         {
-            static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize<D>(ref D deserializer)
+            static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize(IDeserializer deserializer)
             {
-                return deserializer.DeserializeDictionary(new Visitor());
+                return deserializer.DeserializeDictionary(Visitor.Instance);
             }
-            private struct Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
+            private sealed class Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
             {
+                public static readonly Visitor Instance = new Visitor();
                 public string ExpectedTypeName => "Dictionary<" + typeof(TKey).Name + ", " + typeof(TValue).Name + ">";
                 public Dictionary<TKey, TValue> VisitDictionary<D>(ref D d)
                     where D : IDeserializeDictionary

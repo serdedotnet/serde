@@ -1,7 +1,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace Serde
 {
@@ -12,8 +11,7 @@ namespace Serde
     /// </summary>
     public interface IDeserialize<T>
     {
-        abstract static T Deserialize<D>(ref D deserializer)
-            where D : IDeserializer;
+        abstract static T Deserialize(IDeserializer deserializer);
     }
 
     /// <summary>
@@ -50,7 +48,7 @@ namespace Serde
         T VisitDictionary<D>(ref D d) where D : IDeserializeDictionary
             => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
         T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
-        T VisitNotNull<D>(ref D d) where D : IDeserializer => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
+        T VisitNotNull(IDeserializer d) => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
     }
 
     public interface IDeserializeEnumerable

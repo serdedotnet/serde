@@ -6,7 +6,7 @@ using Serde;
 
 partial struct PointWrap : Serde.IDeserialize<Point>
 {
-    static Point Serde.IDeserialize<Point>.Deserialize<D>(ref D deserializer)
+    static Point Serde.IDeserialize<Point>.Deserialize(IDeserializer deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]
@@ -24,8 +24,7 @@ partial struct PointWrap : Serde.IDeserialize<Point>
         private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
         {
             public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
-            public static byte Deserialize<D>(ref D deserializer)
-                where D : IDeserializer => deserializer.DeserializeString(Instance);
+            public static byte Deserialize(IDeserializer deserializer) => deserializer.DeserializeString(Instance);
             public string ExpectedTypeName => "string";
 
             byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

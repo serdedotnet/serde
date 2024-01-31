@@ -54,7 +54,7 @@ namespace Serde.Json
             where D : IDeserialize<T>
         {
             var deserializer = JsonDeserializer.FromString(source);
-            return D.Deserialize(ref deserializer);
+            return D.Deserialize(deserializer);
         }
     }
 }
