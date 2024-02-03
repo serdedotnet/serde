@@ -7,7 +7,6 @@
     <PackageId>Serde.Xml</PackageId>
     <Version>0.2.0</Version>
     <IsPackable>true</IsPackable>
-    <PackageOutputPath>$(ArtifactsPath)pack</PackageOutputPath>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/agocke/serde-dn</RepositoryUrl>
     <PackageProjectUrl>https://commentout.com/serde-dn</PackageProjectUrl>
