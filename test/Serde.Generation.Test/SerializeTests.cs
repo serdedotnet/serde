@@ -560,6 +560,30 @@ public enum Rgb { Red, Green, Blue }
             return VerifyMultiFile(src);
         }
 
+        [Fact]
+        public Task NestedPartialClasses()
+        {
+            var src = """
+using Serde;
+
+partial class A
+{
+    private partial class B
+    {
+        private partial class C
+        {
+            [GenerateSerialize]
+            private partial class D
+            {
+                public int Field;
+            }
+        }
+    }
+}
+""";
+            return VerifySerialize(src);
+        }
+
         private static Task VerifySerialize(
             string src,
             [CallerMemberName] string callerName = "")
