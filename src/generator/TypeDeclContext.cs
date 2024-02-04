@@ -39,6 +39,8 @@ namespace Serde
                         break;
                 }
             }
+            nsNames.Reverse();
+            parentTypeInfos.Reverse();
             NamespaceNames = nsNames;
             ParentTypeInfo = parentTypeInfos;
             TypeParameterList = typeDecl is TypeDeclarationSyntax derived

@@ -177,6 +177,30 @@ public enum ColorULong : ulong { Red = 3, Green = 5, Blue = 7 }
             return GeneratorTestUtils.VerifyMultiFile(src);
         }
 
+        [Fact]
+        public Task NestedPartialClasses()
+        {
+            var src = """
+using Serde;
+
+partial class A
+{
+    private partial class B
+    {
+        private partial class C
+        {
+            [GenerateDeserialize]
+            private partial class D
+            {
+                public int Field;
+            }
+        }
+    }
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
         private static Task VerifyDeserialize(
             string src,
             [CallerMemberName] string caller = "")
