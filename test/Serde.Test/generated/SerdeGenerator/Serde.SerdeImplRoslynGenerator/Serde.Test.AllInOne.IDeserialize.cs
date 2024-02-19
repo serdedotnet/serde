@@ -47,37 +47,37 @@ namespace Serde.Test
                 {
                     switch (s[0])
                     {
-                        case (byte)'b'when s.SequenceEqual("boolField"u8):
+                        case (byte)'b' when s.SequenceEqual("boolField"u8):
                             return 1;
-                        case (byte)'c'when s.SequenceEqual("charField"u8):
+                        case (byte)'c' when s.SequenceEqual("charField"u8):
                             return 2;
-                        case (byte)'b'when s.SequenceEqual("byteField"u8):
+                        case (byte)'b' when s.SequenceEqual("byteField"u8):
                             return 3;
-                        case (byte)'u'when s.SequenceEqual("uShortField"u8):
+                        case (byte)'u' when s.SequenceEqual("uShortField"u8):
                             return 4;
-                        case (byte)'u'when s.SequenceEqual("uIntField"u8):
+                        case (byte)'u' when s.SequenceEqual("uIntField"u8):
                             return 5;
-                        case (byte)'u'when s.SequenceEqual("uLongField"u8):
+                        case (byte)'u' when s.SequenceEqual("uLongField"u8):
                             return 6;
-                        case (byte)'s'when s.SequenceEqual("sByteField"u8):
+                        case (byte)'s' when s.SequenceEqual("sByteField"u8):
                             return 7;
-                        case (byte)'s'when s.SequenceEqual("shortField"u8):
+                        case (byte)'s' when s.SequenceEqual("shortField"u8):
                             return 8;
-                        case (byte)'i'when s.SequenceEqual("intField"u8):
+                        case (byte)'i' when s.SequenceEqual("intField"u8):
                             return 9;
-                        case (byte)'l'when s.SequenceEqual("longField"u8):
+                        case (byte)'l' when s.SequenceEqual("longField"u8):
                             return 10;
-                        case (byte)'s'when s.SequenceEqual("stringField"u8):
+                        case (byte)'s' when s.SequenceEqual("stringField"u8):
                             return 11;
-                        case (byte)'n'when s.SequenceEqual("nullStringField"u8):
+                        case (byte)'n' when s.SequenceEqual("nullStringField"u8):
                             return 12;
-                        case (byte)'u'when s.SequenceEqual("uIntArr"u8):
+                        case (byte)'u' when s.SequenceEqual("uIntArr"u8):
                             return 13;
-                        case (byte)'n'when s.SequenceEqual("nestedArr"u8):
+                        case (byte)'n' when s.SequenceEqual("nestedArr"u8):
                             return 14;
-                        case (byte)'i'when s.SequenceEqual("intImm"u8):
+                        case (byte)'i' when s.SequenceEqual("intImm"u8):
                             return 15;
-                        case (byte)'c'when s.SequenceEqual("color"u8):
+                        case (byte)'c' when s.SequenceEqual("color"u8):
                             return 16;
                         default:
                             return 0;

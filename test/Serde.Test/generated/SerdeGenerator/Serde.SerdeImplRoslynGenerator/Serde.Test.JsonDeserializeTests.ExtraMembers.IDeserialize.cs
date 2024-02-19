@@ -34,7 +34,7 @@ namespace Serde.Test
                     {
                         switch (s[0])
                         {
-                            case (byte)'b'when s.SequenceEqual("b"u8):
+                            case (byte)'b' when s.SequenceEqual("b"u8):
                                 return 1;
                             default:
                                 return 0;

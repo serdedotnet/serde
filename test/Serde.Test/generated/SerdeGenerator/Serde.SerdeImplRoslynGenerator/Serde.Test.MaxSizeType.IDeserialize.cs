@@ -95,133 +95,133 @@ namespace Serde.Test
                 {
                     switch (s[0])
                     {
-                        case (byte)'f'when s.SequenceEqual("field1"u8):
+                        case (byte)'f' when s.SequenceEqual("field1"u8):
                             return 1;
-                        case (byte)'f'when s.SequenceEqual("field2"u8):
+                        case (byte)'f' when s.SequenceEqual("field2"u8):
                             return 2;
-                        case (byte)'f'when s.SequenceEqual("field3"u8):
+                        case (byte)'f' when s.SequenceEqual("field3"u8):
                             return 3;
-                        case (byte)'f'when s.SequenceEqual("field4"u8):
+                        case (byte)'f' when s.SequenceEqual("field4"u8):
                             return 4;
-                        case (byte)'f'when s.SequenceEqual("field5"u8):
+                        case (byte)'f' when s.SequenceEqual("field5"u8):
                             return 5;
-                        case (byte)'f'when s.SequenceEqual("field6"u8):
+                        case (byte)'f' when s.SequenceEqual("field6"u8):
                             return 6;
-                        case (byte)'f'when s.SequenceEqual("field7"u8):
+                        case (byte)'f' when s.SequenceEqual("field7"u8):
                             return 7;
-                        case (byte)'f'when s.SequenceEqual("field8"u8):
+                        case (byte)'f' when s.SequenceEqual("field8"u8):
                             return 8;
-                        case (byte)'f'when s.SequenceEqual("field9"u8):
+                        case (byte)'f' when s.SequenceEqual("field9"u8):
                             return 9;
-                        case (byte)'f'when s.SequenceEqual("field10"u8):
+                        case (byte)'f' when s.SequenceEqual("field10"u8):
                             return 10;
-                        case (byte)'f'when s.SequenceEqual("field11"u8):
+                        case (byte)'f' when s.SequenceEqual("field11"u8):
                             return 11;
-                        case (byte)'f'when s.SequenceEqual("field12"u8):
+                        case (byte)'f' when s.SequenceEqual("field12"u8):
                             return 12;
-                        case (byte)'f'when s.SequenceEqual("field13"u8):
+                        case (byte)'f' when s.SequenceEqual("field13"u8):
                             return 13;
-                        case (byte)'f'when s.SequenceEqual("field14"u8):
+                        case (byte)'f' when s.SequenceEqual("field14"u8):
                             return 14;
-                        case (byte)'f'when s.SequenceEqual("field15"u8):
+                        case (byte)'f' when s.SequenceEqual("field15"u8):
                             return 15;
-                        case (byte)'f'when s.SequenceEqual("field16"u8):
+                        case (byte)'f' when s.SequenceEqual("field16"u8):
                             return 16;
-                        case (byte)'f'when s.SequenceEqual("field17"u8):
+                        case (byte)'f' when s.SequenceEqual("field17"u8):
                             return 17;
-                        case (byte)'f'when s.SequenceEqual("field18"u8):
+                        case (byte)'f' when s.SequenceEqual("field18"u8):
                             return 18;
-                        case (byte)'f'when s.SequenceEqual("field19"u8):
+                        case (byte)'f' when s.SequenceEqual("field19"u8):
                             return 19;
-                        case (byte)'f'when s.SequenceEqual("field20"u8):
+                        case (byte)'f' when s.SequenceEqual("field20"u8):
                             return 20;
-                        case (byte)'f'when s.SequenceEqual("field21"u8):
+                        case (byte)'f' when s.SequenceEqual("field21"u8):
                             return 21;
-                        case (byte)'f'when s.SequenceEqual("field22"u8):
+                        case (byte)'f' when s.SequenceEqual("field22"u8):
                             return 22;
-                        case (byte)'f'when s.SequenceEqual("field23"u8):
+                        case (byte)'f' when s.SequenceEqual("field23"u8):
                             return 23;
-                        case (byte)'f'when s.SequenceEqual("field24"u8):
+                        case (byte)'f' when s.SequenceEqual("field24"u8):
                             return 24;
-                        case (byte)'f'when s.SequenceEqual("field25"u8):
+                        case (byte)'f' when s.SequenceEqual("field25"u8):
                             return 25;
-                        case (byte)'f'when s.SequenceEqual("field26"u8):
+                        case (byte)'f' when s.SequenceEqual("field26"u8):
                             return 26;
-                        case (byte)'f'when s.SequenceEqual("field27"u8):
+                        case (byte)'f' when s.SequenceEqual("field27"u8):
                             return 27;
-                        case (byte)'f'when s.SequenceEqual("field28"u8):
+                        case (byte)'f' when s.SequenceEqual("field28"u8):
                             return 28;
-                        case (byte)'f'when s.SequenceEqual("field29"u8):
+                        case (byte)'f' when s.SequenceEqual("field29"u8):
                             return 29;
-                        case (byte)'f'when s.SequenceEqual("field30"u8):
+                        case (byte)'f' when s.SequenceEqual("field30"u8):
                             return 30;
-                        case (byte)'f'when s.SequenceEqual("field31"u8):
+                        case (byte)'f' when s.SequenceEqual("field31"u8):
                             return 31;
-                        case (byte)'f'when s.SequenceEqual("field32"u8):
+                        case (byte)'f' when s.SequenceEqual("field32"u8):
                             return 32;
-                        case (byte)'f'when s.SequenceEqual("field33"u8):
+                        case (byte)'f' when s.SequenceEqual("field33"u8):
                             return 33;
-                        case (byte)'f'when s.SequenceEqual("field34"u8):
+                        case (byte)'f' when s.SequenceEqual("field34"u8):
                             return 34;
-                        case (byte)'f'when s.SequenceEqual("field35"u8):
+                        case (byte)'f' when s.SequenceEqual("field35"u8):
                             return 35;
-                        case (byte)'f'when s.SequenceEqual("field36"u8):
+                        case (byte)'f' when s.SequenceEqual("field36"u8):
                             return 36;
-                        case (byte)'f'when s.SequenceEqual("field37"u8):
+                        case (byte)'f' when s.SequenceEqual("field37"u8):
                             return 37;
-                        case (byte)'f'when s.SequenceEqual("field38"u8):
+                        case (byte)'f' when s.SequenceEqual("field38"u8):
                             return 38;
-                        case (byte)'f'when s.SequenceEqual("field39"u8):
+                        case (byte)'f' when s.SequenceEqual("field39"u8):
                             return 39;
-                        case (byte)'f'when s.SequenceEqual("field40"u8):
+                        case (byte)'f' when s.SequenceEqual("field40"u8):
                             return 40;
-                        case (byte)'f'when s.SequenceEqual("field41"u8):
+                        case (byte)'f' when s.SequenceEqual("field41"u8):
                             return 41;
-                        case (byte)'f'when s.SequenceEqual("field42"u8):
+                        case (byte)'f' when s.SequenceEqual("field42"u8):
                             return 42;
-                        case (byte)'f'when s.SequenceEqual("field43"u8):
+                        case (byte)'f' when s.SequenceEqual("field43"u8):
                             return 43;
-                        case (byte)'f'when s.SequenceEqual("field44"u8):
+                        case (byte)'f' when s.SequenceEqual("field44"u8):
                             return 44;
-                        case (byte)'f'when s.SequenceEqual("field45"u8):
+                        case (byte)'f' when s.SequenceEqual("field45"u8):
                             return 45;
-                        case (byte)'f'when s.SequenceEqual("field46"u8):
+                        case (byte)'f' when s.SequenceEqual("field46"u8):
                             return 46;
-                        case (byte)'f'when s.SequenceEqual("field47"u8):
+                        case (byte)'f' when s.SequenceEqual("field47"u8):
                             return 47;
-                        case (byte)'f'when s.SequenceEqual("field48"u8):
+                        case (byte)'f' when s.SequenceEqual("field48"u8):
                             return 48;
-                        case (byte)'f'when s.SequenceEqual("field49"u8):
+                        case (byte)'f' when s.SequenceEqual("field49"u8):
                             return 49;
-                        case (byte)'f'when s.SequenceEqual("field50"u8):
+                        case (byte)'f' when s.SequenceEqual("field50"u8):
                             return 50;
-                        case (byte)'f'when s.SequenceEqual("field51"u8):
+                        case (byte)'f' when s.SequenceEqual("field51"u8):
                             return 51;
-                        case (byte)'f'when s.SequenceEqual("field52"u8):
+                        case (byte)'f' when s.SequenceEqual("field52"u8):
                             return 52;
-                        case (byte)'f'when s.SequenceEqual("field53"u8):
+                        case (byte)'f' when s.SequenceEqual("field53"u8):
                             return 53;
-                        case (byte)'f'when s.SequenceEqual("field54"u8):
+                        case (byte)'f' when s.SequenceEqual("field54"u8):
                             return 54;
-                        case (byte)'f'when s.SequenceEqual("field55"u8):
+                        case (byte)'f' when s.SequenceEqual("field55"u8):
                             return 55;
-                        case (byte)'f'when s.SequenceEqual("field56"u8):
+                        case (byte)'f' when s.SequenceEqual("field56"u8):
                             return 56;
-                        case (byte)'f'when s.SequenceEqual("field57"u8):
+                        case (byte)'f' when s.SequenceEqual("field57"u8):
                             return 57;
-                        case (byte)'f'when s.SequenceEqual("field58"u8):
+                        case (byte)'f' when s.SequenceEqual("field58"u8):
                             return 58;
-                        case (byte)'f'when s.SequenceEqual("field59"u8):
+                        case (byte)'f' when s.SequenceEqual("field59"u8):
                             return 59;
-                        case (byte)'f'when s.SequenceEqual("field60"u8):
+                        case (byte)'f' when s.SequenceEqual("field60"u8):
                             return 60;
-                        case (byte)'f'when s.SequenceEqual("field61"u8):
+                        case (byte)'f' when s.SequenceEqual("field61"u8):
                             return 61;
-                        case (byte)'f'when s.SequenceEqual("field62"u8):
+                        case (byte)'f' when s.SequenceEqual("field62"u8):
                             return 62;
-                        case (byte)'f'when s.SequenceEqual("field63"u8):
+                        case (byte)'f' when s.SequenceEqual("field63"u8):
                             return 63;
-                        case (byte)'f'when s.SequenceEqual("field64"u8):
+                        case (byte)'f' when s.SequenceEqual("field64"u8):
                             return 64;
                         default:
                             return 0;

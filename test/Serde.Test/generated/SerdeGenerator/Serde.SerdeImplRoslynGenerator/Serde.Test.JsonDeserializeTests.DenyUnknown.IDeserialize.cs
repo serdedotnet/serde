@@ -35,9 +35,9 @@ namespace Serde.Test
                     {
                         switch (s[0])
                         {
-                            case (byte)'p'when s.SequenceEqual("present"u8):
+                            case (byte)'p' when s.SequenceEqual("present"u8):
                                 return 1;
-                            case (byte)'m'when s.SequenceEqual("missing"u8):
+                            case (byte)'m' when s.SequenceEqual("missing"u8):
                                 return 2;
                             default:
                                 throw new InvalidDeserializeValueException("Unexpected field or property name in type Serde.Test.JsonDeserializeTests.DenyUnknown: '" + System.Text.Encoding.UTF8.GetString(s) + "'");
