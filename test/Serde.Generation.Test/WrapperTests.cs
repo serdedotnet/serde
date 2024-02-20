@@ -143,7 +143,7 @@ using Serde;
 
 partial record R : Serde.IDeserialize<R>
 {
-    static R Serde.IDeserialize<R>.Deserialize<D>(ref D deserializer)
+    static R Serde.IDeserialize<R>.Deserialize(IDeserializer deserializer)
     {
         var visitor = new SerdeVisitor();
         var fieldNames = new[]

@@ -6,7 +6,7 @@ using Serde;
 
 partial record struct ColorByteWrap : Serde.IDeserialize<ColorByte>
 {
-    static ColorByte Serde.IDeserialize<ColorByte>.Deserialize<D>(ref D deserializer)
+    static ColorByte Serde.IDeserialize<ColorByte>.Deserialize(IDeserializer deserializer)
     {
         var visitor = new SerdeVisitor();
         return deserializer.DeserializeString(visitor);

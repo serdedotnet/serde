@@ -75,11 +75,11 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
             where TWrap : IDeserialize<T>
         {
-            static T[] IDeserialize<T[]>.Deserialize<D>(ref D deserializer)
+            static T[] IDeserialize<T[]>.Deserialize(IDeserializer deserializer)
             {
                 return deserializer.DeserializeEnumerable(new SerdeVisitor());
             }
-            private struct SerdeVisitor : IDeserializeVisitor<T[]>
+            private sealed class SerdeVisitor : IDeserializeVisitor<T[]>
             {
                 string IDeserializeVisitor<T[]>.ExpectedTypeName => typeof(T[]).ToString();
 
@@ -130,11 +130,11 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
             where TWrap : IDeserialize<T>
         {
-            static List<T> IDeserialize<List<T>>.Deserialize<D>(ref D deserializer)
+            static List<T> IDeserialize<List<T>>.Deserialize(IDeserializer deserializer)
             {
                 return deserializer.DeserializeEnumerable(new SerdeVisitor());
             }
-            private struct SerdeVisitor : IDeserializeVisitor<List<T>>
+            private sealed class SerdeVisitor : IDeserializeVisitor<List<T>>
             {
                 string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T[]).ToString();
 
@@ -182,7 +182,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
             where TWrap : IDeserialize<T>
         {
-            static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize<D>(ref D deserializer)
+            static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize(IDeserializer deserializer)
             {
                 return deserializer.DeserializeEnumerable(new Visitor());
             }

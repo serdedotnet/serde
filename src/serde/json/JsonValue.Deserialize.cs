@@ -7,7 +7,7 @@ namespace Serde.Json
 {
     partial record JsonValue : IDeserialize<JsonValue>
     {
-        static JsonValue IDeserialize<JsonValue>.Deserialize<D>(ref D deserializer)
+        static JsonValue IDeserialize<JsonValue>.Deserialize(IDeserializer deserializer)
         {
             return deserializer.DeserializeAny(Visitor.Instance);
         }

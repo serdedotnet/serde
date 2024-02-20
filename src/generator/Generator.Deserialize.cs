@@ -138,10 +138,8 @@ namespace Serde
                 typeSyntax,
                 explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(interfaceSyntax),
                 identifier: Identifier("Deserialize"),
-                typeParameterList: TypeParameterList(SeparatedList(new[] {
-                        TypeParameter("D"),
-                    })),
-                parameterList: ParameterList(SeparatedList(new[] { Parameter("D", "deserializer", byRef: true) })),
+                typeParameterList: null,
+                parameterList: ParameterList(SeparatedList(new[] { Parameter("IDeserializer", "deserializer", byRef: false) })),
                 constraintClauses: default,
                 body: Block(stmts.ToArray()),
                 expressionBody: null
@@ -247,7 +245,7 @@ namespace Serde
 private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
 {
     public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
-    public static byte Deserialize<D>(ref D deserializer) where D : IDeserializer
+    public static byte Deserialize(IDeserializer deserializer)
         => deserializer.DeserializeString(Instance);
 
     public string ExpectedTypeName => "string";

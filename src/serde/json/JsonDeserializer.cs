@@ -7,15 +7,9 @@ using System.Text;
 
 namespace Serde.Json
 {
-    internal partial struct JsonDeserializer : IDeserializer
+    internal sealed partial class JsonDeserializer : IDeserializer
     {
-        // Need to use a class so it can be referenced from the Enumerable and
-        // Dictionary implementations
-        private sealed class DeserializerState
-        {
-            public Utf8JsonReader Reader;
-        }
-        private readonly DeserializerState _state;
+        private Utf8JsonReader Reader;
 
         public static JsonDeserializer FromString(string s)
         {
@@ -24,20 +18,17 @@ namespace Serde.Json
 
         private JsonDeserializer(byte[] bytes)
         {
-            _state = new DeserializerState
-            {
-                Reader = new Utf8JsonReader(bytes, default)
-            };
+            Reader = new Utf8JsonReader(bytes, default);
         }
 
         private void SaveState(in Utf8JsonReader reader)
         {
-            _state.Reader = reader;
+            Reader = reader;
         }
 
         private ref Utf8JsonReader GetReader()
         {
-            return ref _state.Reader;
+            return ref Reader;
         }
 
         public T DeserializeAny<T>(IDeserializeVisitor<T> v)
@@ -151,7 +142,7 @@ namespace Serde.Json
                     return false;
                 }
                 // Don't save state
-                next = D.Deserialize(ref _deserializer);
+                next = D.Deserialize(_deserializer);
                 return true;
             }
         }
@@ -195,7 +186,7 @@ namespace Serde.Json
                             next = default;
                             return false;
                         case JsonTokenType.PropertyName:
-                            next = D.Deserialize(ref _deserializer);
+                            next = D.Deserialize(_deserializer);
                             return true;
                         default:
                             // If we aren't at a property name, we must be at a value and intending to skip it
@@ -211,7 +202,7 @@ namespace Serde.Json
 
             public V GetNextValue<V, D>() where D : IDeserialize<V>
             {
-                return D.Deserialize(ref _deserializer);
+                return D.Deserialize(_deserializer);
             }
         }
 
@@ -288,8 +279,7 @@ namespace Serde.Json
             }
             else
             {
-                var deserializer = this;
-                return v.VisitNotNull(ref deserializer);
+                return v.VisitNotNull(this);
             }
         }
     }
