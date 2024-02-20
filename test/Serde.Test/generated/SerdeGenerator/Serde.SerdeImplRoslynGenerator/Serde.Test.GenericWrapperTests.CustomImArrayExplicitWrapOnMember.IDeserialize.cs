@@ -16,17 +16,18 @@ namespace Serde.Test
                 {
                     "A"
                 };
-                return deserializer.DeserializeType<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember, SerdeVisitor>("CustomImArrayExplicitWrapOnMember", fieldNames, visitor);
+                return deserializer.DeserializeType("CustomImArrayExplicitWrapOnMember", fieldNames, visitor);
             }
 
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>
             {
                 public string ExpectedTypeName => "Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember";
 
-                private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+                private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
+                    public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
                     public static byte Deserialize<D>(ref D deserializer)
-                        where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                        where D : IDeserializer => deserializer.DeserializeString(Instance);
                     public string ExpectedTypeName => "string";
 
                     byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
@@ -34,7 +35,7 @@ namespace Serde.Test
                     {
                         switch (s[0])
                         {
-                            case (byte)'a'when s.SequenceEqual("a"u8):
+                            case (byte)'a' when s.SequenceEqual("a"u8):
                                 return 1;
                             default:
                                 return 0;

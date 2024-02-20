@@ -77,7 +77,7 @@ namespace Serde
         {
             static T[] IDeserialize<T[]>.Deserialize<D>(ref D deserializer)
             {
-                return deserializer.DeserializeEnumerable<T[], SerdeVisitor>(new SerdeVisitor());
+                return deserializer.DeserializeEnumerable(new SerdeVisitor());
             }
             private struct SerdeVisitor : IDeserializeVisitor<T[]>
             {
@@ -132,7 +132,7 @@ namespace Serde
         {
             static List<T> IDeserialize<List<T>>.Deserialize<D>(ref D deserializer)
             {
-                return deserializer.DeserializeEnumerable<List<T>, SerdeVisitor>(new SerdeVisitor());
+                return deserializer.DeserializeEnumerable(new SerdeVisitor());
             }
             private struct SerdeVisitor : IDeserializeVisitor<List<T>>
             {
@@ -184,9 +184,7 @@ namespace Serde
         {
             static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize<D>(ref D deserializer)
             {
-                return deserializer.DeserializeEnumerable<
-                    ImmutableArray<T>,
-                    Visitor>(new Visitor());
+                return deserializer.DeserializeEnumerable(new Visitor());
             }
 
             private struct Visitor : IDeserializeVisitor<ImmutableArray<T>>

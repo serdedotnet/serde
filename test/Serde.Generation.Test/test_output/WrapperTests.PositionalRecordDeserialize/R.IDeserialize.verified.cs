@@ -14,17 +14,18 @@ partial record R : Serde.IDeserialize<R>
             "A",
             "B"
         };
-        return deserializer.DeserializeType<R, SerdeVisitor>("R", fieldNames, visitor);
+        return deserializer.DeserializeType("R", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<R>
     {
         public string ExpectedTypeName => "R";
 
-        private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+        private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
         {
+            public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
             public static byte Deserialize<D>(ref D deserializer)
-                where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                where D : IDeserializer => deserializer.DeserializeString(Instance);
             public string ExpectedTypeName => "string";
 
             byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

@@ -13,17 +13,18 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
         {
             "IntArr"
         };
-        return deserializer.DeserializeType<ArrayField, SerdeVisitor>("ArrayField", fieldNames, visitor);
+        return deserializer.DeserializeType("ArrayField", fieldNames, visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ArrayField>
     {
         public string ExpectedTypeName => "ArrayField";
 
-        private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+        private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
         {
+            public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
             public static byte Deserialize<D>(ref D deserializer)
-                where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                where D : IDeserializer => deserializer.DeserializeString(Instance);
             public string ExpectedTypeName => "string";
 
             byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

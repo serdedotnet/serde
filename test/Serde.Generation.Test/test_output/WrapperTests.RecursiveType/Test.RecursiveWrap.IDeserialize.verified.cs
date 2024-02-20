@@ -15,17 +15,18 @@ namespace Test
             {
                 "Next"
             };
-            return deserializer.DeserializeType<Recursive, SerdeVisitor>("Recursive", fieldNames, visitor);
+            return deserializer.DeserializeType("Recursive", fieldNames, visitor);
         }
 
         private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Recursive>
         {
             public string ExpectedTypeName => "Recursive";
 
-            private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+            private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
             {
+                public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
                 public static byte Deserialize<D>(ref D deserializer)
-                    where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                    where D : IDeserializer => deserializer.DeserializeString(Instance);
                 public string ExpectedTypeName => "string";
 
                 byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));

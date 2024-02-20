@@ -16,17 +16,18 @@ namespace Serde.Test
                 {
                     "Id"
                 };
-                return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.IdStruct, SerdeVisitor>("IdStruct", fieldNames, visitor);
+                return deserializer.DeserializeType("IdStruct", fieldNames, visitor);
             }
 
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.IdStruct>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.IdStruct";
 
-                private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+                private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
+                    public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
                     public static byte Deserialize<D>(ref D deserializer)
-                        where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                        where D : IDeserializer => deserializer.DeserializeString(Instance);
                     public string ExpectedTypeName => "string";
 
                     byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
@@ -34,7 +35,7 @@ namespace Serde.Test
                     {
                         switch (s[0])
                         {
-                            case (byte)'i'when s.SequenceEqual("id"u8):
+                            case (byte)'i' when s.SequenceEqual("id"u8):
                                 return 1;
                             default:
                                 return 0;

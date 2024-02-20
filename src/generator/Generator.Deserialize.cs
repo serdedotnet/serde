@@ -70,7 +70,7 @@ namespace Serde
             // 3. Custom type
             //
             // var fieldNames = new[] { 'field1', 'field2', 'field3' ... };
-            // return deserializer.DeserializeType<'TypeName', 'GeneratedVisitorName'>('TypeName', fieldNames, visitor);
+            // return deserializer.DeserializeType('TypeName', fieldNames, visitor);
 
             var serdeName = SerdeBuiltInName(typeSymbol.SpecialType);
             var typeSyntax = ParseTypeName(typeSymbol.ToString());
@@ -80,13 +80,7 @@ namespace Serde
                 stmts.Add(ReturnStatement(InvocationExpression(
                     QualifiedName(
                         IdentifierName("deserializer"),
-                        GenericName(
-                            Identifier("Deserialize" + serdeName),
-                            TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                                typeSyntax,
-                                IdentifierName(GeneratedVisitorName)
-                            }))
-                        )
+                        IdentifierName("Deserialize" + serdeName)
                     ),
                     ArgumentList(SeparatedList(new[] {
                         Argument(IdentifierName("visitor"))
@@ -99,13 +93,7 @@ namespace Serde
                 stmts.Add(ReturnStatement(InvocationExpression(
                     QualifiedName(
                         IdentifierName("deserializer"),
-                        GenericName(
-                            Identifier("DeserializeString"),
-                            TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                                typeSyntax,
-                                IdentifierName(GeneratedVisitorName)
-                            }))
-                        )
+                        IdentifierName("DeserializeString")
                     ),
                     ArgumentList(SeparatedList(new[] {
                         Argument(IdentifierName("visitor"))
@@ -131,17 +119,11 @@ namespace Serde
                     )
                 ));
 
-                // return deserializer.DeserializeType<'TypeName', 'GeneratedVisitorName'>('TypeName', fieldNames, visitor);
+                // return deserializer.DeserializeType('TypeName', fieldNames, visitor);
                 stmts.Add(ReturnStatement(InvocationExpression(
                     QualifiedName(
                         IdentifierName("deserializer"),
-                        GenericName(
-                            Identifier("DeserializeType"),
-                            TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                            typeSyntax,
-                            IdentifierName(GeneratedVisitorName)
-                            })))
-                        ),
+                        IdentifierName("DeserializeType")),
                     ArgumentList(SeparatedList(new[] {
                     Argument(StringLiteral(typeSymbol.Name)),
                     Argument(IdentifierName("fieldNames")),
@@ -262,10 +244,11 @@ namespace Serde
         private static MemberDeclarationSyntax GenerateFieldNameVisitor(ITypeSymbol type, string typeName, List<DataMemberSymbol> members)
         {
             var text = $$"""
-private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
 {
+    public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
     public static byte Deserialize<D>(ref D deserializer) where D : IDeserializer
-        => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+        => deserializer.DeserializeString(Instance);
 
     public string ExpectedTypeName => "string";
 

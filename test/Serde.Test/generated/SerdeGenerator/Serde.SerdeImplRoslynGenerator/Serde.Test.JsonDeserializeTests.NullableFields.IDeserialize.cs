@@ -17,17 +17,18 @@ namespace Serde.Test
                     "S",
                     "Dict"
                 };
-                return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.NullableFields, SerdeVisitor>("NullableFields", fieldNames, visitor);
+                return deserializer.DeserializeType("NullableFields", fieldNames, visitor);
             }
 
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.NullableFields>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.NullableFields";
 
-                private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+                private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
+                    public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
                     public static byte Deserialize<D>(ref D deserializer)
-                        where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                        where D : IDeserializer => deserializer.DeserializeString(Instance);
                     public string ExpectedTypeName => "string";
 
                     byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
@@ -35,9 +36,9 @@ namespace Serde.Test
                     {
                         switch (s[0])
                         {
-                            case (byte)'s'when s.SequenceEqual("s"u8):
+                            case (byte)'s' when s.SequenceEqual("s"u8):
                                 return 1;
-                            case (byte)'d'when s.SequenceEqual("dict"u8):
+                            case (byte)'d' when s.SequenceEqual("dict"u8):
                                 return 2;
                             default:
                                 return 0;

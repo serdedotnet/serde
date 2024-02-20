@@ -17,17 +17,18 @@ namespace Serde.Test
                     "Present",
                     "Missing"
                 };
-                return deserializer.DeserializeType<Serde.Test.JsonDeserializeTests.SetToNull, SerdeVisitor>("SetToNull", fieldNames, visitor);
+                return deserializer.DeserializeType("SetToNull", fieldNames, visitor);
             }
 
             private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Serde.Test.JsonDeserializeTests.SetToNull>
             {
                 public string ExpectedTypeName => "Serde.Test.JsonDeserializeTests.SetToNull";
 
-                private struct FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
+                private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
                 {
+                    public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
                     public static byte Deserialize<D>(ref D deserializer)
-                        where D : IDeserializer => deserializer.DeserializeString<byte, FieldNameVisitor>(new FieldNameVisitor());
+                        where D : IDeserializer => deserializer.DeserializeString(Instance);
                     public string ExpectedTypeName => "string";
 
                     byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
@@ -35,9 +36,9 @@ namespace Serde.Test
                     {
                         switch (s[0])
                         {
-                            case (byte)'p'when s.SequenceEqual("present"u8):
+                            case (byte)'p' when s.SequenceEqual("present"u8):
                                 return 1;
-                            case (byte)'m'when s.SequenceEqual("missing"u8):
+                            case (byte)'m' when s.SequenceEqual("missing"u8):
                                 return 2;
                             default:
                                 return 0;

@@ -9,7 +9,7 @@ partial record struct ColorLongWrap : Serde.IDeserialize<ColorLong>
     static ColorLong Serde.IDeserialize<ColorLong>.Deserialize<D>(ref D deserializer)
     {
         var visitor = new SerdeVisitor();
-        return deserializer.DeserializeString<ColorLong, SerdeVisitor>(visitor);
+        return deserializer.DeserializeString(visitor);
     }
 
     private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorLong>

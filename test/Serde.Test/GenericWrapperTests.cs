@@ -109,7 +109,7 @@ public sealed partial class GenericWrapperTests
             where TWrap : IDeserialize<T>
         {
             public static CustomImArray<T> Deserialize<D>(ref D deserializer) where D : IDeserializer
-                => deserializer.DeserializeEnumerable<CustomImArray<T>, Visitor>(new Visitor());
+                => deserializer.DeserializeEnumerable(new Visitor());
 
             public struct Visitor : IDeserializeVisitor<CustomImArray<T>>
             {
@@ -158,7 +158,7 @@ public sealed partial class GenericWrapperTests
             where TWrap : IDeserialize<T>
         {
             public static CustomImArray2<T> Deserialize<D>(ref D deserializer) where D : IDeserializer
-                => deserializer.DeserializeEnumerable<CustomImArray2<T>, Visitor>(new Visitor());
+                => deserializer.DeserializeEnumerable(new Visitor());
 
             public struct Visitor : IDeserializeVisitor<CustomImArray2<T>>
             {
