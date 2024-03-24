@@ -15,7 +15,7 @@ var options = new JsonSerializerOptions()
 var json1 = System.Text.Json.JsonSerializer.Serialize(DataGenerator.CreateLocation(), options);
 var json2 = Serde.Json.JsonSerializer.Serialize(DataGenerator.CreateLocation());
 var loc1 = System.Text.Json.JsonSerializer.Deserialize<Location>(LocationSample, options);
-var loc2 = Serde.Json.JsonSerializer.Deserialize<Location>(LocationSample);
+var loc2 = Serde.Json.JsonSerializer.Deserialize<Location, LocationWrap>(LocationSample);
 
 Console.WriteLine("Checking correctness of serialization: " + (loc1 == loc2));
 if (loc1 != loc2)
