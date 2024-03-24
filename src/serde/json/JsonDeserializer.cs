@@ -249,6 +249,19 @@ namespace Serde.Json
             return DeserializeDictionary(v);
         }
 
+        public IDeserializeType DeserializeType(FieldMap fieldMap)
+        {
+            ref var reader = ref GetReader();
+            reader.ReadOrThrow();
+
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new InvalidDeserializeValueException("Expected object start");
+            }
+
+            return this;
+        }
+
         public T DeserializeByte<T>(IDeserializeVisitor<T> v)
             => DeserializeU64(v);
 
@@ -281,6 +294,37 @@ namespace Serde.Json
             {
                 return v.VisitNotNull(this);
             }
+        }
+    }
+
+    partial class JsonDeserializer : IDeserializeType
+    {
+        V IDeserializeType.ReadValue<V, D>()
+        {
+            return D.Deserialize(this);
+        }
+
+        int IDeserializeType.TryReadIndex(FieldMap map)
+        {
+            ref var reader = ref GetReader();
+            reader.ReadOrThrow();
+
+            if (reader.TokenType == JsonTokenType.EndObject)
+            {
+                return IDeserializeType.EndOfType;
+            }
+
+            Utf8Span span;
+            if (reader.HasValueSequence || reader.ValueIsEscaped)
+            {
+                var s = reader.GetString()!;
+                span = Encoding.UTF8.GetBytes(s);
+            }
+            else
+            {
+                span = reader.ValueSpan;
+            }
+            return map.TryReadIndex(span);
         }
     }
 

@@ -19,6 +19,7 @@
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
+            "preLaunchTask": "build",
             "program": "${workspaceFolder}/perf/bench/bin/Debug/net8.0/bench.dll",
             "args": [],
             "cwd": "${workspaceFolder}/perf/bench",
