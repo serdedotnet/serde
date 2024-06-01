@@ -249,7 +249,7 @@ namespace Serde.Json
             return DeserializeDictionary(v);
         }
 
-        public IDeserializeType DeserializeType(FieldMap fieldMap)
+        public IDeserializeType DeserializeType(TypeInfo fieldMap)
         {
             ref var reader = ref GetReader();
             reader.ReadOrThrow();
@@ -299,12 +299,12 @@ namespace Serde.Json
 
     partial class JsonDeserializer : IDeserializeType
     {
-        V IDeserializeType.ReadValue<V, D>()
+        V IDeserializeType.ReadValue<V, D>(int index)
         {
             return D.Deserialize(this);
         }
 
-        int IDeserializeType.TryReadIndex(FieldMap map)
+        int IDeserializeType.TryReadIndex(TypeInfo map)
         {
             ref var reader = ref GetReader();
             reader.ReadOrThrow();
@@ -324,7 +324,7 @@ namespace Serde.Json
             {
                 span = reader.ValueSpan;
             }
-            return map.TryReadIndex(span);
+            return map.TryGetIndex(span);
         }
     }
 

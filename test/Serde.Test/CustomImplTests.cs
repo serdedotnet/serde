@@ -12,10 +12,10 @@ public sealed partial class CustomImplTests
     {
         public int Red, Green, Blue;
 
-        private static readonly FieldMap s_fieldMap = new(nameof(RgbWithFieldMap), [
-            "red",
-            "green",
-            "blue"
+        private static readonly TypeInfo s_fieldMap = TypeInfo.Create<RgbWithFieldMap>(nameof(RgbWithFieldMap), [
+            ("red", typeof(RgbWithFieldMap).GetField("Red")!),
+            ("green", typeof(RgbWithFieldMap).GetField("Green")!),
+            ("blue", typeof(RgbWithFieldMap).GetField("Blue")!)
         ]);
 
         static RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
@@ -31,13 +31,13 @@ public sealed partial class CustomImplTests
                 switch (index)
                 {
                     case 0:
-                        red = deType.ReadValue<int, Int32Wrap>();
+                        red = deType.ReadValue<int, Int32Wrap>(index);
                         break;
                     case 1:
-                        green = deType.ReadValue<int, Int32Wrap>();
+                        green = deType.ReadValue<int, Int32Wrap>(index);
                         break;
                     case 2:
-                        blue = deType.ReadValue<int, Int32Wrap>();
+                        blue = deType.ReadValue<int, Int32Wrap>(index);
                         break;
                 }
             }

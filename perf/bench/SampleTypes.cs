@@ -58,16 +58,16 @@ namespace Benchmarks
 
     public partial record LocationWrap : IDeserialize<Location>
     {
-        private static readonly FieldMap s_fieldMap = new(nameof(LocationWrap), [
-            "id",
-            "address1",
-            "address2",
-            "city",
-            "state",
-            "postalCode",
-            "name",
-            "phoneNumber",
-            "country"
+        private static readonly TypeInfo s_fieldMap = TypeInfo.Create<Location>(nameof(Location), [
+            ("id", typeof(Location).GetProperty("Id")!),
+            ("address1", typeof(Location).GetProperty("Address1")!),
+            ("address2", typeof(Location).GetProperty("Address2")!),
+            ("city", typeof(Location).GetProperty("City")!),
+            ("state", typeof(Location).GetProperty("State")!),
+            ("postalCode", typeof(Location).GetProperty("PostalCode")!),
+            ("name", typeof(Location).GetProperty("Name")!),
+            ("phoneNumber", typeof(Location).GetProperty("PhoneNumber")!),
+            ("country", typeof(Location).GetProperty("Country")!)
         ]);
 
         static Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
@@ -90,39 +90,39 @@ namespace Benchmarks
                 switch (index)
                 {
                     case 0:
-                        _l_id = typeDeserialize.ReadValue<int, Int32Wrap>();
+                        _l_id = typeDeserialize.ReadValue<int, Int32Wrap>(index);
                         _r_assignedValid |= ((ushort)1) << 0;
                         break;
                     case 1:
-                        _l_address1 = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_address1 = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 1;
                         break;
                     case 2:
-                        _l_address2 = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_address2 = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 2;
                         break;
                     case 3:
-                        _l_city = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_city = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 3;
                         break;
                     case 4:
-                        _l_state = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_state = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 4;
                         break;
                     case 5:
-                        _l_postalcode = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_postalcode = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 5;
                         break;
                     case 6:
-                        _l_name = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_name = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 6;
                         break;
                     case 7:
-                        _l_phonenumber = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_phonenumber = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 7;
                         break;
                     case 8:
-                        _l_country = typeDeserialize.ReadValue<string, StringWrap>();
+                        _l_country = typeDeserialize.ReadValue<string, StringWrap>(index);
                         _r_assignedValid |= ((ushort)1) << 8;
                         break;
                 }
