@@ -1,7 +1,9 @@
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -78,63 +80,97 @@ namespace Serde
         public const int EndOfType = -1;
         public const int IndexNotFound = -2;
 
-        int TryReadIndex(FieldMap map);
+        int TryReadIndex(TypeInfo map);
 
-        V ReadValue<V, D>() where D : IDeserialize<V>;
+        V ReadValue<V, D>(int index) where D : IDeserialize<V>;
     }
 
     /// <summary>
-    /// A map from field names to int indices. This is an optimization for deserializing types
-    /// that avoids allocating strings for field names.
+    /// TypeInfo holds a variety of indexed information about a type. The most important is a map
+    /// from field names to int indices. This is an optimization for deserializing types that avoids
+    /// allocating strings for field names.
+    ///
+    /// It can also be used to get the custom attributes for a field.
     /// </summary>
-    public sealed class FieldMap
+    public sealed class TypeInfo
     {
-        #region Fields and auto-props
-
         public string TypeName { get; }
-        private readonly ImmutableArray<(byte[] Utf8String, int Index)> _fieldNames;
+        // The field names are sorted by the Utf8 representation of the field name.
+        private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
+        private readonly ImmutableArray<FieldInfo> _indexToInfo;
 
-        #endregion
+        private TypeInfo(
+            string typeName,
+            ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
+            ImmutableArray<FieldInfo> indexToInfo)
+        {
+            TypeName = typeName;
+            _nameToIndex = nameToIndex;
+            _indexToInfo = indexToInfo;
+        }
+
+        private readonly record struct FieldInfo(IList<CustomAttributeData> CustomAttributesData);
 
 
         private static readonly UTF8Encoding s_utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
         /// <summary>
-        /// Create a new field mapping. The ordering of the field names is important -- it
+        /// Create a new field mapping. The ordering of the fields is important -- it
         /// corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
         /// </summary>
-        public FieldMap(
-            string typeName,
-            ReadOnlySpan<string> fieldNames)
+        public static TypeInfo Create<T>(
+            string serializeTypeName,
+            ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
         {
-            TypeName = typeName;
-
-            var builder = ImmutableArray.CreateBuilder<(byte[] Utf8String, int Index)>(fieldNames.Length);
-            for (int index = 0; index < fieldNames.Length; index++)
+            var type = typeof(T);
+            var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
+            var indexToInfoBuilder = ImmutableArray.CreateBuilder<FieldInfo>(fields.Length);
+            for (int index = 0; index < fields.Length; index++)
             {
-                builder.Add((s_utf8.GetBytes(fieldNames[index]), index));
+                var (serializeName, memberInfo) = fields[index];
+                if (memberInfo is null)
+                {
+                    throw new ArgumentNullException(serializeName);
+                }
+
+                nameToIndexBuilder.Add((s_utf8.GetBytes(serializeName), index));
+                var fieldInfo = new FieldInfo(memberInfo.GetCustomAttributesData());
+                indexToInfoBuilder.Add(fieldInfo);
             }
-            builder.Sort((left, right) =>
-                left.Utf8String.AsSpan().SequenceCompareTo(right.Utf8String.AsSpan()));
 
-            _fieldNames = builder.MoveToImmutable();
+            nameToIndexBuilder.Sort((left, right) =>
+                left.Utf8Name.Span.SequenceCompareTo(right.Utf8Name.Span));
+
+            return new TypeInfo(serializeTypeName, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
         }
 
-        public int TryReadIndex(Utf8Span utf8FieldName)
+        /// <summary>
+        /// Returns an index corresponding to the location of the field in the original
+        /// ReadOnlySpan passed during creation of the <see cref="TypeInfo"/>. This can be
+        /// used as a fast lookup for a field based on its UTF-8 name.
+        /// </summary>
+        public int TryGetIndex(Utf8Span utf8FieldName)
         {
-            int mapIndex = BinarySearch(_fieldNames.AsSpan(), utf8FieldName);
+            int mapIndex = BinarySearch(_nameToIndex.AsSpan(), utf8FieldName);
 
-            return mapIndex < 0 ? IDeserializeType.IndexNotFound : _fieldNames[mapIndex].Index;
+            return mapIndex < 0 ? IDeserializeType.IndexNotFound : _nameToIndex[mapIndex].Index;
         }
+
+        public IList<CustomAttributeData> GetCustomAttributeData(int index)
+        {
+            return _indexToInfo[index].CustomAttributesData;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int BinarySearch(ReadOnlySpan<(byte[] Utf8String, int Index)> span, Utf8Span fieldName)
+        private static int BinarySearch(ReadOnlySpan<(ReadOnlyMemory<byte>, int)> span, Utf8Span fieldName)
         {
             return BinarySearch(ref MemoryMarshal.GetReference(span), span.Length, fieldName);
         }
 
         // This is a copy of the BinarySearch method from System.MemoryExtensions.
         // We can't use that version because ref structs can't yet be substituted for type arguments.
-        private static int BinarySearch(ref (byte[] Utf8String, int Index) spanStart, int length, Utf8Span fieldName)
+        private static int BinarySearch(ref (ReadOnlyMemory<byte> Utf8Name, int) spanStart, int length, Utf8Span fieldName)
         {
             int lo = 0;
             int hi = length - 1;
@@ -149,7 +185,7 @@ namespace Serde
                 //       `int i = lo + ((hi - lo) >> 1);`
                 int i = (int)(((uint)hi + (uint)lo) >> 1);
 
-                int c = fieldName.SequenceCompareTo(Unsafe.Add(ref spanStart, i).Utf8String);
+                int c = fieldName.SequenceCompareTo(Unsafe.Add(ref spanStart, i).Utf8Name.Span);
                 if (c == 0)
                 {
                     return i;
@@ -193,6 +229,6 @@ namespace Serde
         T DeserializeEnumerable<T>(IDeserializeVisitor<T> v);
         T DeserializeDictionary<T>(IDeserializeVisitor<T> v);
         T DeserializeNullableRef<T>(IDeserializeVisitor<T> v);
-        IDeserializeType DeserializeType(FieldMap fieldMap);
+        IDeserializeType DeserializeType(TypeInfo typeInfo) => throw new NotImplementedException();
     }
 }
