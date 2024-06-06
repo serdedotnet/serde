@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -47,6 +48,37 @@ namespace Serde
                 ? derived.TypeParameterList
                 : null;
         }
+
+        public string WrapNewType(string newType)
+        {
+            // If the original type was in a namespace or type, put this decl in the same one
+            for (int i = ParentTypeInfo.Count - 1; i >= 0; i--)
+            {
+                var (name, kind) = ParentTypeInfo[i];
+                newType = $$"""
+partial {{TypeKindToString(kind)}} {{name}}
+{
+    {{newType}}
+}
+""";
+            }
+            if (NamespaceNames.Count > 0)
+            {
+                newType = "namespace " + string.Join(".", NamespaceNames) + ";" + Environment.NewLine + newType;
+            }
+
+            return newType;
+        }
+
+        private static string TypeKindToString(SyntaxKind kind) => kind switch
+        {
+            SyntaxKind.ClassDeclaration => "class",
+            SyntaxKind.StructDeclaration => "struct",
+            SyntaxKind.RecordDeclaration => "record",
+            SyntaxKind.RecordStructDeclaration => "record struct",
+            SyntaxKind.InterfaceDeclaration => "interface",
+            _ => throw new ArgumentException("Unsupported type kind: " + kind),
+        };
 
         public MemberDeclarationSyntax WrapNewType(MemberDeclarationSyntax newType)
         {

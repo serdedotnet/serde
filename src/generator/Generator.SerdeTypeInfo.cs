@@ -41,28 +41,21 @@ internal static class SerdeTypeInfoGenerator
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both);
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var typeName = typeDeclContext.Name;
-        var src = $$"""
+        var newType = $$"""
 internal static class {{typeName}}SerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create<{{typeName}}>(nameof({{typeName}}), new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
         {{string.Join("," + Environment.NewLine,
-          fieldsAndProps.Select(x => $@"(""{x.Name}"", typeof({typeName}).Get{(x.Symbol.Kind == SymbolKind.Field ? "Field" : "Property")}(""{x.Name}"")!)"))}}
+          fieldsAndProps.Select(x => $@"(""{x.GetFormattedName()}"", typeof({typeName}).Get{(x.Symbol.Kind == SymbolKind.Field ? "Field" : "Property")}(""{x.Name}"")!)"))}}
     });
 }
 """;
 
-        var newType = SyntaxFactory.ParseMemberDeclaration(src)!;
         newType = typeDeclContext.WrapNewType(newType);
         string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
             .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
             .Concat(new[] { $"{typeName}SerdeTypeInfo" }));
 
-        var tree = CompilationUnit(
-            externs: default,
-            usings: default,
-            attributeLists: default,
-            members: List<MemberDeclarationSyntax>(new[] { newType }));
-
-        context.AddSource(fullTypeName, tree.ToFullString());
+        context.AddSource(fullTypeName, newType);
     }
 }

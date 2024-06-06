@@ -94,17 +94,14 @@ namespace Serde
     /// </summary>
     public sealed class TypeInfo
     {
-        public string TypeName { get; }
         // The field names are sorted by the Utf8 representation of the field name.
         private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
         private readonly ImmutableArray<FieldInfo> _indexToInfo;
 
         private TypeInfo(
-            string typeName,
             ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
             ImmutableArray<FieldInfo> indexToInfo)
         {
-            TypeName = typeName;
             _nameToIndex = nameToIndex;
             _indexToInfo = indexToInfo;
         }
@@ -118,11 +115,9 @@ namespace Serde
         /// Create a new field mapping. The ordering of the fields is important -- it
         /// corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
         /// </summary>
-        public static TypeInfo Create<T>(
-            string serializeTypeName,
+        public static TypeInfo Create(
             ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
         {
-            var type = typeof(T);
             var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
             var indexToInfoBuilder = ImmutableArray.CreateBuilder<FieldInfo>(fields.Length);
             for (int index = 0; index < fields.Length; index++)
@@ -141,7 +136,7 @@ namespace Serde
             nameToIndexBuilder.Sort((left, right) =>
                 left.Utf8Name.Span.SequenceCompareTo(right.Utf8Name.Span));
 
-            return new TypeInfo(serializeTypeName, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
+            return new TypeInfo(nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
         }
 
         /// <summary>
