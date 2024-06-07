@@ -80,6 +80,11 @@ namespace Serde
                         attrCtx.SemanticModel,
                         generationContext);
                 }
+                SerdeTypeInfoGenerator.GenerateTypeInfo(
+                    attrCtx.Attributes.Single(),
+                    (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
+                    attrCtx.SemanticModel,
+                    generationContext);
                 if (usage.HasFlag(SerdeUsage.Serialize))
                 {
                     SerdeImplRoslynGenerator.GenerateImpl(
