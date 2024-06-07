@@ -58,7 +58,7 @@ namespace Benchmarks
 
     public partial record LocationWrap : IDeserialize<Location>
     {
-        private static readonly TypeInfo s_fieldMap = TypeInfo.Create<Location>(nameof(Location), [
+        private static readonly TypeInfo s_fieldMap = TypeInfo.Create([
             ("id", typeof(Location).GetProperty("Id")!),
             ("address1", typeof(Location).GetProperty("Address1")!),
             ("address2", typeof(Location).GetProperty("Address2")!),
