@@ -17,7 +17,7 @@ internal static class SerdeTypeInfoGenerator
     /// <code>
     /// internal static class {typeName}SerdeTypeInfo
     /// {
-    ///     internal static readonly TypeInfo TypeInfo = TypeInfo.Create&lt;{typeName}&gt;(nameof({typeName}), [
+    ///     internal static readonly TypeInfo TypeInfo = TypeInfo.Create([
     ///         ("{{fieldName}}", typeof({typeName}).GetField("{fieldName}")!),
     ///         ...
     ///     ]);
