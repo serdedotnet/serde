@@ -1,9 +1,9 @@
 ﻿//HintName: RgbSerdeTypeInfo.cs
 internal static class RgbSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create<Rgb>(nameof(Rgb), new (string, System.Reflection.MemberInfo)[] {
-        ("Red", typeof(Rgb).GetField("Red")!),
-("Green", typeof(Rgb).GetField("Green")!),
-("Blue", typeof(Rgb).GetField("Blue")!)
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+("red", typeof(Rgb).GetField("Red")!),
+("green", typeof(Rgb).GetField("Green")!),
+("blue", typeof(Rgb).GetField("Blue")!)
     });
 }

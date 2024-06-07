@@ -2,7 +2,7 @@
 namespace Test;
 internal static class ParentSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create<Parent>(nameof(Parent), new (string, System.Reflection.MemberInfo)[] {
-        ("r", typeof(Parent).GetProperty("R")!)
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+("r", typeof(Parent).GetProperty("R")!)
     });
 }

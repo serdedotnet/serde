@@ -1,6 +1,10 @@
-﻿namespaceSerde.Test{partialclassXmlTests{internal static class TypeWithArrayFieldSerdeTypeInfo
+﻿namespace Serde.Test;
+partial class XmlTests
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create<TypeWithArrayField>(nameof(TypeWithArrayField), new (string, System.Reflection.MemberInfo)[] {
-        ("ArrayField", typeof(TypeWithArrayField).GetField("ArrayField")!)
+    internal static class TypeWithArrayFieldSerdeTypeInfo
+{
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+("ArrayField", typeof(TypeWithArrayField).GetField("ArrayField")!)
     });
-}}}
+}
+}

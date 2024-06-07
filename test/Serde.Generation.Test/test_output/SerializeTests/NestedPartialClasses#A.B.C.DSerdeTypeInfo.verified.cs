@@ -7,8 +7,8 @@ partial class A
 {
     internal static class DSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create<D>(nameof(D), new (string, System.Reflection.MemberInfo)[] {
-        ("field", typeof(D).GetField("Field")!)
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+("field", typeof(D).GetField("Field")!)
     });
 }
 }

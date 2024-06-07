@@ -41,12 +41,15 @@ internal static class SerdeTypeInfoGenerator
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both);
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var typeName = typeDeclContext.Name;
+        var typeString = receiverType.IsGenericType
+            ? receiverType.Name + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">"
+            : receiverType.Name;
         var newType = $$"""
 internal static class {{typeName}}SerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
-        {{string.Join("," + Environment.NewLine,
-          fieldsAndProps.Select(x => $@"(""{x.GetFormattedName()}"", typeof({typeName}).Get{(x.Symbol.Kind == SymbolKind.Field ? "Field" : "Property")}(""{x.Name}"")!)"))}}
+{{string.Join("," + Environment.NewLine,
+          fieldsAndProps.Select(x => $@"(""{x.GetFormattedName()}"", typeof({typeString}).Get{(x.Symbol.Kind == SymbolKind.Field ? "Field" : "Property")}(""{x.Name}"")!)"))}}
     });
 }
 """;

@@ -1,6 +1,10 @@
-﻿namespaceSerde.Test{partialclassJsonDeserializeTests{internal static class IdStructSerdeTypeInfo
+﻿namespace Serde.Test;
+partial class JsonDeserializeTests
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create<IdStruct>(nameof(IdStruct), new (string, System.Reflection.MemberInfo)[] {
-        ("id", typeof(IdStruct).GetField("Id")!)
+    internal static class IdStructSerdeTypeInfo
+{
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+("id", typeof(IdStruct).GetField("Id")!)
     });
-}}}
+}
+}
