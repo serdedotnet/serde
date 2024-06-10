@@ -8,71 +8,41 @@ partial struct PointWrap : Serde.IDeserialize<Point>
 {
     static Point Serde.IDeserialize<Point>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = new SerdeVisitor();
-        var fieldNames = new[]
+        int _l_x = default !;
+        int _l_y = default !;
+        byte _r_assignedValid = 0b0;
+        var _l_typeInfo = PointSerdeTypeInfo.TypeInfo;
+        var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
+        int _l_index_;
+        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_typeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
         {
-            "X",
-            "Y"
+            switch (_l_index_)
+            {
+                case 0:
+                    _l_x = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _r_assignedValid |= ((byte)1) << 0;
+                    break;
+                case 1:
+                    _l_y = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _r_assignedValid |= ((byte)1) << 1;
+                    break;
+                case Serde.IDeserializeType.IndexNotFound:
+                    break;
+                default:
+                    throw new InvalidOperationException("Unexpected index: " + _l_index_);
+            }
+        }
+
+        if (_r_assignedValid != 0b11)
+        {
+            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+        }
+
+        var newType = new Point()
+        {
+            X = _l_x,
+            Y = _l_y,
         };
-        return deserializer.DeserializeType("Point", fieldNames, visitor);
-    }
-
-    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Point>
-    {
-        public string ExpectedTypeName => "Point";
-
-        private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
-        {
-            public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
-            public static byte Deserialize(IDeserializer deserializer) => deserializer.DeserializeString(Instance);
-            public string ExpectedTypeName => "string";
-
-            byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
-            public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
-            {
-                switch (s[0])
-                {
-                    case (byte)'x'when s.SequenceEqual("x"u8):
-                        return 1;
-                    case (byte)'y'when s.SequenceEqual("y"u8):
-                        return 2;
-                    default:
-                        return 0;
-                }
-            }
-        }
-
-        Point Serde.IDeserializeVisitor<Point>.VisitDictionary<D>(ref D d)
-        {
-            int _l_x = default !;
-            int _l_y = default !;
-            byte _r_assignedValid = 0b0;
-            while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
-            {
-                switch (key)
-                {
-                    case 1:
-                        _l_x = d.GetNextValue<int, Int32Wrap>();
-                        _r_assignedValid |= ((byte)1) << 0;
-                        break;
-                    case 2:
-                        _l_y = d.GetNextValue<int, Int32Wrap>();
-                        _r_assignedValid |= ((byte)1) << 1;
-                        break;
-                }
-            }
-
-            if (_r_assignedValid != 0b11)
-            {
-                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
-            }
-
-            var newType = new Point()
-            {
-                X = _l_x,
-                Y = _l_y,
-            };
-            return newType;
-        }
+        return newType;
     }
 }

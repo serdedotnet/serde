@@ -66,7 +66,7 @@ partial struct Rgb
         }
 
         [Fact]
-        public Task MemberSkipSerialize()
+        public Task MemberSkipDeserialize()
         {
             var src = """
 using Serde;
@@ -83,7 +83,7 @@ partial struct Rgb
         }
 
         [Fact]
-        public Task MemberSkipDeserialize()
+        public Task MemberSkipSerialize()
         {
             var src = """
 using Serde;

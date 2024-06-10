@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -31,15 +32,163 @@ namespace Serde
             ));
 
             // Generate members for ISerialize.Deserialize implementation
-            var method = GenerateDeserializeMethod(context, interfaceSyntax, receiverType);
-            var visitorType = GenerateVisitor(receiverType, typeSyntax, context, inProgress);
-            var members = new MemberDeclarationSyntax[] { method, visitorType };
+            MemberDeclarationSyntax[] members;
+            if (receiverType.TypeKind == TypeKind.Enum)
+            {
+                var method = GenerateOldDeserializeMethod(context, interfaceSyntax, receiverType);
+                var visitorType = GenerateVisitor(receiverType, typeSyntax, context, inProgress);
+                members = [ method, visitorType ];
+            }
+            else
+            {
+                var method = GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, inProgress);
+                members = [ method ];
+            }
             var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) }));
             return (members, baseList);
         }
 
+        /// <summary>
+        /// Generates
+        /// <code>
+        /// T IDeserialize&lt;T&gt;.Deserialize(IDeserializer deserializer)
+        /// {
+        ///     var _local1 = default!;
+        ///     ...
+        ///     var _localN = default!;
+        ///
+        ///     var typeInfo = {typeName}SerdeTypeInfo.TypeInfo;
+        ///     var typDeserializer = deserializer.DeserializeType(typeInfo);
+        ///     int index;
+        ///     while ((index = typeDeserialize.TryReadIndex(typeInfo)) != IDeserializeType.EndOfType)
+        ///     {
+        ///         switch (index)
+        ///         {
+        ///         }
+        ///     }
+        /// }
+        /// </code>
+        /// </summary>
+        private static MethodDeclarationSyntax GenerateCustomDeserializeMethod(
+            GeneratorExecutionContext context,
+            ITypeSymbol type,
+            TypeSyntax typeSyntax,
+            ImmutableList<ITypeSymbol> inProgress)
+        {
+            Debug.Assert(type.TypeKind != TypeKind.Enum);
+
+            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
+            var typeFqn = typeSyntax.ToString();
+            var assignedVarType = members.Count switch {
+                <= 8 => "byte",
+                <= 16 => "ushort",
+                <= 32 => "uint",
+                <= 64 => "ulong",
+                _ => throw new InvalidOperationException("Too many members in type")
+            };
+            var (cases, locals, assignedMask) = InitCasesAndLocals();
+            string typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members);
+
+            const string typeInfoLocalName = "_l_typeInfo";
+            const string indexLocalName = "_l_index_";
+
+            var methodText = $$"""
+static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+{
+    {{locals}}
+    {{assignedVarType}} {{AssignedVarName}} = {{assignedMask}};
+
+    var {{typeInfoLocalName}} = {{type.Name}}SerdeTypeInfo.TypeInfo;
+    var typeDeserialize = deserializer.DeserializeType({{typeInfoLocalName}});
+    int {{indexLocalName}};
+    while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out var _l_errorName)) != IDeserializeType.EndOfType)
+    {
+        switch ({{indexLocalName}})
+        {
+{{cases}}
+        }
+    }
+    {{typeCreationExpr}}
+    return newType;
+}
+""";
+            return (MethodDeclarationSyntax)ParseMemberDeclaration(methodText)!;
+
+            (string Cases, string Locals, string AssignedMask) InitCasesAndLocals()
+            {
+                var casesBuilder = new StringBuilder();
+                var localsBuilder = new StringBuilder();
+                long assignedMaskValue = 0;
+                for (int i = 0; i < members.Count; i++)
+                {
+                    if (members[i].SkipDeserialize)
+                    {
+                        continue;
+                    }
+
+                    var m = members[i];
+                    string wrapperName;
+                    var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
+                    if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
+                    {
+                        wrapperName = explicitWrap.ToString();
+                    }
+                    else if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
+                    {
+                        wrapperName = memberType;
+                    }
+                    else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { } wrap)
+                    {
+                        wrapperName = wrap.ToString();
+                    }
+                    else
+                    {
+                        // No built-in handling and doesn't implement IDeserialize, error
+                        context.ReportDiagnostic(CreateDiagnostic(
+                            DiagId.ERR_DoesntImplementInterface,
+                            m.Locations[0],
+                            m.Symbol,
+                            memberType,
+                            "Serde.IDeserialize"));
+                        wrapperName = memberType;
+                    }
+                    var localName = GetLocalName(m);
+                    localsBuilder.AppendLine($"{memberType} {localName} = default!;");
+                    casesBuilder.AppendLine($"""
+                    case {i}:
+                        {localName} = typeDeserialize.ReadValue<{memberType}, {wrapperName}>({indexLocalName});
+                        {AssignedVarName} |= (({assignedVarType})1) << {i};
+                        break;
+                    """);
+                    if (m.IsNullable && !m.ThrowIfMissing)
+                    {
+                        assignedMaskValue |= 1L << i;
+                    }
+                }
+                var unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
+                    ? $"""
+                    throw new InvalidDeserializeValueException("Unexpected field or property name in type {type.Name}: '" + _l_errorName + "'");
+                    """
+                    : "break;";
+                casesBuilder.AppendLine($"""
+                    case Serde.IDeserializeType.IndexNotFound:
+                        {unknownMemberBehavior}
+                """);
+                casesBuilder.AppendLine($"""
+                    default:
+                        throw new InvalidOperationException("Unexpected index: " + {indexLocalName});
+                    """);
+                return (casesBuilder.ToString(),
+                        localsBuilder.ToString(),
+                        "0b" + Convert.ToString(assignedMaskValue, 2));
+            }
+
+        }
+
+        // This is the old visitor-driven deserialization method. It is being replaced by the new
+        // TypeInfo-driven deserialization.
         // Generate method `void ISerialize.Deserialize(IDeserializer deserializer) { ... }`
-        private static MethodDeclarationSyntax GenerateDeserializeMethod(
+        private static MethodDeclarationSyntax GenerateOldDeserializeMethod(
             GeneratorExecutionContext context,
             QualifiedNameSyntax interfaceSyntax,
             ITypeSymbol typeSymbol)
@@ -302,10 +451,7 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
                 <= 64 => "ulong",
                 _ => throw new InvalidOperationException("Too many members in type")
             };
-            string cases;
-            string locals;
-            string assignedMask;
-            InitCasesAndLocals();
+            var (cases, locals, assignedMask) = InitCasesAndLocals();
             string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members);
             var methodText = $$"""
 {{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
@@ -325,7 +471,7 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
 """;
             return ParseMemberDeclaration(methodText)!;
 
-            void InitCasesAndLocals()
+            (string Cases, string Locals, string AssignedMask) InitCasesAndLocals()
             {
                 var casesBuilder = new StringBuilder();
                 var localsBuilder = new StringBuilder();
@@ -371,9 +517,9 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
                         assignedMaskValue |= 1L << i;
                     }
                 }
-                cases = casesBuilder.ToString();
-                locals = localsBuilder.ToString();
-                assignedMask = "0b" + Convert.ToString(assignedMaskValue, 2);
+                return (casesBuilder.ToString(),
+                        localsBuilder.ToString(),
+                        "0b" + Convert.ToString(assignedMaskValue, 2));
             }
         }
 
@@ -448,6 +594,10 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
 
             foreach (var m in assignmentMembers)
             {
+                if (m.SkipDeserialize)
+                {
+                    continue;
+                }
                 assignments.AppendLine($"{m.Name} = {GetLocalName(m)},");
             }
             var mask = new string('1', members.Count);

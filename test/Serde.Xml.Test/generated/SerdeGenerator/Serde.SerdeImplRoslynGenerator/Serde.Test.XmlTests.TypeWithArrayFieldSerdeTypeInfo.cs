@@ -4,7 +4,7 @@ partial class XmlTests
     internal static class TypeWithArrayFieldSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
-("ArrayField", typeof(TypeWithArrayField).GetField("ArrayField")!)
+("ArrayField", typeof(Serde.Test.XmlTests.TypeWithArrayField).GetField("ArrayField")!)
     });
 }
 }

@@ -93,6 +93,10 @@ namespace Serde
 
         public string Name => Symbol.Name;
 
+        public bool SkipDeserialize => _memberOptions.SkipDeserialize;
+
+        public bool SkipSerialize => _memberOptions.SkipSerialize;
+
         public bool ThrowIfMissing => _memberOptions.ThrowIfMissing;
 
         public bool ProvideAttributes => _memberOptions.ProvideAttributes;

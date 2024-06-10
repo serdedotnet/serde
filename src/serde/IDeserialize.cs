@@ -80,7 +80,15 @@ namespace Serde
         public const int EndOfType = -1;
         public const int IndexNotFound = -2;
 
-        int TryReadIndex(TypeInfo map);
+        /// <summary>
+        /// Try to read the index of the next field in the type. If the index is found, the method
+        /// should return the index and set <paramref name="errorName" /> to null. If the end of the
+        /// type is reached, the method should return <see cref="EndOfType" /> and set <paramref
+        /// name="errorName" /> to null. If the field is not found, the method should return <see
+        /// cref="IndexNotFound" /> and set <paramref name="errorName" /> to the name of the missing
+        /// field, or the best-possible user-facing name.
+        /// </summary>
+        int TryReadIndex(TypeInfo map, out string? errorName);
 
         V ReadValue<V, D>(int index) where D : IDeserialize<V>;
     }
@@ -96,17 +104,20 @@ namespace Serde
     {
         // The field names are sorted by the Utf8 representation of the field name.
         private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
-        private readonly ImmutableArray<FieldInfo> _indexToInfo;
+        private readonly ImmutableArray<PrivateFieldInfo> _indexToInfo;
 
         private TypeInfo(
             ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
-            ImmutableArray<FieldInfo> indexToInfo)
+            ImmutableArray<PrivateFieldInfo> indexToInfo)
         {
             _nameToIndex = nameToIndex;
             _indexToInfo = indexToInfo;
         }
 
-        private readonly record struct FieldInfo(IList<CustomAttributeData> CustomAttributesData);
+        /// <summary>
+        /// Holds information for a field or property in the given type.
+        /// </summary>
+        private readonly record struct PrivateFieldInfo(IList<CustomAttributeData> CustomAttributesData);
 
 
         private static readonly UTF8Encoding s_utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
@@ -119,7 +130,7 @@ namespace Serde
             ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
         {
             var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
-            var indexToInfoBuilder = ImmutableArray.CreateBuilder<FieldInfo>(fields.Length);
+            var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
             for (int index = 0; index < fields.Length; index++)
             {
                 var (serializeName, memberInfo) = fields[index];
@@ -129,7 +140,7 @@ namespace Serde
                 }
 
                 nameToIndexBuilder.Add((s_utf8.GetBytes(serializeName), index));
-                var fieldInfo = new FieldInfo(memberInfo.GetCustomAttributesData());
+                var fieldInfo = new PrivateFieldInfo(memberInfo.GetCustomAttributesData());
                 indexToInfoBuilder.Add(fieldInfo);
             }
 

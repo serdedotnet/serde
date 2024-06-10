@@ -1,8 +1,8 @@
-﻿//HintName: Test.ParentSerdeTypeInfo.cs
+﻿//HintName: Test.RecursiveSerdeTypeInfo.cs
 namespace Test;
-internal static class ParentSerdeTypeInfo
+internal static class RecursiveSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
-("r", typeof(Test.Parent).GetProperty("R")!)
+("next", typeof(Recursive).GetProperty("Next")!)
     });
 }

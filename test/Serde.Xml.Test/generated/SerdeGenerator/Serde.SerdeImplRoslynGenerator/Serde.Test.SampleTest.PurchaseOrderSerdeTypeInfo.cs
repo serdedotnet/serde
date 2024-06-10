@@ -4,12 +4,12 @@ partial class SampleTest
     internal static class PurchaseOrderSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
-("ShipTo", typeof(PurchaseOrder).GetField("ShipTo")!),
-("OrderDate", typeof(PurchaseOrder).GetField("OrderDate")!),
-("Items", typeof(PurchaseOrder).GetField("OrderedItems")!),
-("SubTotal", typeof(PurchaseOrder).GetField("SubTotal")!),
-("ShipCost", typeof(PurchaseOrder).GetField("ShipCost")!),
-("TotalCost", typeof(PurchaseOrder).GetField("TotalCost")!)
+("ShipTo", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("ShipTo")!),
+("OrderDate", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderDate")!),
+("Items", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderedItems")!),
+("SubTotal", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("SubTotal")!),
+("ShipCost", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("ShipCost")!),
+("TotalCost", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("TotalCost")!)
     });
 }
 }

@@ -85,7 +85,7 @@ namespace Benchmarks
 
             var typeDeserialize = deserializer.DeserializeType(s_fieldMap);
             int index;
-            while ((index = typeDeserialize.TryReadIndex(s_fieldMap)) != IDeserializeType.EndOfType)
+            while ((index = typeDeserialize.TryReadIndex(s_fieldMap, out _)) != IDeserializeType.EndOfType)
             {
                 switch (index)
                 {
