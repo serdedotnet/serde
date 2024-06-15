@@ -25,7 +25,7 @@ namespace Serde.Test
             int[][] _l_nestedarr = default !;
             System.Collections.Immutable.ImmutableArray<int> _l_intimm = default !;
             Serde.Test.AllInOne.ColorEnum _l_color = default !;
-            ushort _r_assignedValid = 0b100000000000;
+            ushort _r_assignedValid = 0;
             var _l_typeInfo = AllInOneSerdeTypeInfo.TypeInfo;
             var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
             int _l_index_;
@@ -104,7 +104,7 @@ namespace Serde.Test
                 }
             }
 
-            if (_r_assignedValid != 0b1111111111111111)
+            if ((_r_assignedValid & 0b1111011111111111) != 0b1111011111111111)
             {
                 throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
             }

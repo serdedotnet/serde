@@ -10,7 +10,7 @@ partial record R : Serde.IDeserialize<R>
     {
         int _l_a = default !;
         string _l_b = default !;
-        byte _r_assignedValid = 0b0;
+        byte _r_assignedValid = 0;
         var _l_typeInfo = RSerdeTypeInfo.TypeInfo;
         var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
         int _l_index_;
@@ -33,7 +33,7 @@ partial record R : Serde.IDeserialize<R>
             }
         }
 
-        if (_r_assignedValid != 0b11)
+        if ((_r_assignedValid & 0b11) != 0b11)
         {
             throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
         }

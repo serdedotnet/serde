@@ -12,7 +12,7 @@ namespace Serde.Test
             static Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.Deserialize(IDeserializer deserializer)
             {
                 Serde.Test.GenericWrapperTests.CustomImArray2<int> _l_a = default !;
-                byte _r_assignedValid = 0b0;
+                byte _r_assignedValid = 0;
                 var _l_typeInfo = CustomArrayWrapExplicitOnTypeSerdeTypeInfo.TypeInfo;
                 var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
                 int _l_index_;
@@ -31,7 +31,7 @@ namespace Serde.Test
                     }
                 }
 
-                if (_r_assignedValid != 0b1)
+                if ((_r_assignedValid & 0b1) != 0b1)
                 {
                     throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
                 }

@@ -15,7 +15,7 @@ partial class A
                 static A.B.C.D Serde.IDeserialize<A.B.C.D>.Deserialize(IDeserializer deserializer)
                 {
                     int _l_field = default !;
-                    byte _r_assignedValid = 0b0;
+                    byte _r_assignedValid = 0;
                     var _l_typeInfo = DSerdeTypeInfo.TypeInfo;
                     var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
                     int _l_index_;
@@ -34,7 +34,7 @@ partial class A
                         }
                     }
 
-                    if (_r_assignedValid != 0b1)
+                    if ((_r_assignedValid & 0b1) != 0b1)
                     {
                         throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
                     }

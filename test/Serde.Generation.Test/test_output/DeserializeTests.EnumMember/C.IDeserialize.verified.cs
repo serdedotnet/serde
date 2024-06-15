@@ -12,7 +12,7 @@ partial class C : Serde.IDeserialize<C>
         ColorByte _l_colorbyte = default !;
         ColorLong _l_colorlong = default !;
         ColorULong _l_colorulong = default !;
-        byte _r_assignedValid = 0b0;
+        byte _r_assignedValid = 0;
         var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
         var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
         int _l_index_;
@@ -43,7 +43,7 @@ partial class C : Serde.IDeserialize<C>
             }
         }
 
-        if (_r_assignedValid != 0b1111)
+        if ((_r_assignedValid & 0b1111) != 0b1111)
         {
             throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
         }

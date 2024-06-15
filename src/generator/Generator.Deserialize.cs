@@ -86,8 +86,8 @@ namespace Serde
                 <= 64 => "ulong",
                 _ => throw new InvalidOperationException("Too many members in type")
             };
-            var (cases, locals, assignedMask) = InitCasesAndLocals();
-            string typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members);
+            var (cases, locals, requiredMask) = InitCasesAndLocals();
+            string typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
 
             const string typeInfoLocalName = "_l_typeInfo";
             const string indexLocalName = "_l_index_";
@@ -96,7 +96,7 @@ namespace Serde
 static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
-    {{assignedVarType}} {{AssignedVarName}} = {{assignedMask}};
+    {{assignedVarType}} {{AssignedVarName}} = 0;
 
     var {{typeInfoLocalName}} = {{type.Name}}SerdeTypeInfo.TypeInfo;
     var typeDeserialize = deserializer.DeserializeType({{typeInfoLocalName}});
@@ -119,10 +119,12 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                 var casesBuilder = new StringBuilder();
                 var localsBuilder = new StringBuilder();
                 long assignedMaskValue = 0;
+                var skippedIndices = new List<int>();
                 for (int i = 0; i < members.Count; i++)
                 {
                     if (members[i].SkipDeserialize)
                     {
+                        skippedIndices.Add(i);
                         continue;
                     }
 
@@ -160,7 +162,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                         {AssignedVarName} |= (({assignedVarType})1) << {i};
                         break;
                     """);
-                    if (m.IsNullable && !m.ThrowIfMissing)
+                    if (!m.IsNullable || m.ThrowIfMissing)
                     {
                         assignedMaskValue |= 1L << i;
                     }
@@ -170,6 +172,12 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     throw new InvalidDeserializeValueException("Unexpected field or property name in type {type.Name}: '" + _l_errorName + "'");
                     """
                     : "break;";
+                foreach (var i in skippedIndices)
+                {
+                    casesBuilder.AppendLine($"""
+                    case {i}:
+                    """);
+                }
                 casesBuilder.AppendLine($"""
                     case Serde.IDeserializeType.IndexNotFound:
                         {unknownMemberBehavior}
@@ -452,7 +460,7 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
                 _ => throw new InvalidOperationException("Too many members in type")
             };
             var (cases, locals, assignedMask) = InitCasesAndLocals();
-            string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members);
+            string typeCreationExpr = GenerateTypeCreation(context, typeName, type, members, assignedMask);
             var methodText = $$"""
 {{typeName}} Serde.IDeserializeVisitor<{{typeName}}>.VisitDictionary<D>(ref D d)
 {
@@ -529,7 +537,12 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
         /// must be a constructor signature as specified by the ConstructorSignature property
         /// in the SerdeTypeOptions.
         /// </summary>
-        private static string GenerateTypeCreation(GeneratorExecutionContext context, string typeName, ITypeSymbol type, List<DataMemberSymbol> members)
+        private static string GenerateTypeCreation(
+            GeneratorExecutionContext context,
+            string typeName,
+            ITypeSymbol type,
+            List<DataMemberSymbol> members,
+            string assignedMask)
         {
             var targetSignature = SymbolUtilities.GetTypeOptions(type).ConstructorSignature;
             var targetTuple = targetSignature as INamedTypeSymbol;
@@ -602,7 +615,7 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
             }
             var mask = new string('1', members.Count);
             return $$"""
-    if ({{AssignedVarName}} != 0b{{mask}})
+    if (({{AssignedVarName}} & {{assignedMask}}) != {{assignedMask}})
     {
         throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
     }
