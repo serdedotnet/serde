@@ -4,8 +4,8 @@ partial class TestCase15
     internal static class Class1SerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
-("field0", typeof(Class1).GetField("Field0")!),
-("field1", typeof(Class1).GetField("Field1")!)
+("field0", typeof(TestCase15.Class1).GetField("Field0")!),
+("field1", typeof(TestCase15.Class1).GetField("Field1")!)
     });
 }
 }

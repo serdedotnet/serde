@@ -60,6 +60,7 @@ namespace Serde
 
             var inProgress = ImmutableList.Create(receiverType);
 
+            SerdeTypeInfoGenerator.GenerateTypeInfo(typeDecl, (INamedTypeSymbol)receiverType, context);
             GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
             SerializeImplRoslynGenerator.GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
             GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);

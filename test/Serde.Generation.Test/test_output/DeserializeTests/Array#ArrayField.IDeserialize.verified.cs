@@ -8,62 +8,35 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
 {
     static ArrayField Serde.IDeserialize<ArrayField>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = new SerdeVisitor();
-        var fieldNames = new[]
+        int[] _l_intarr = default !;
+        byte _r_assignedValid = 0b0;
+        var _l_typeInfo = ArrayFieldSerdeTypeInfo.TypeInfo;
+        var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
+        int _l_index_;
+        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_typeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
         {
-            "IntArr"
+            switch (_l_index_)
+            {
+                case 0:
+                    _l_intarr = typeDeserialize.ReadValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>(_l_index_);
+                    _r_assignedValid |= ((byte)1) << 0;
+                    break;
+                case Serde.IDeserializeType.IndexNotFound:
+                    break;
+                default:
+                    throw new InvalidOperationException("Unexpected index: " + _l_index_);
+            }
+        }
+
+        if (_r_assignedValid != 0b1)
+        {
+            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+        }
+
+        var newType = new ArrayField()
+        {
+            IntArr = _l_intarr,
         };
-        return deserializer.DeserializeType("ArrayField", fieldNames, visitor);
-    }
-
-    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ArrayField>
-    {
-        public string ExpectedTypeName => "ArrayField";
-
-        private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
-        {
-            public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
-            public static byte Deserialize(IDeserializer deserializer) => deserializer.DeserializeString(Instance);
-            public string ExpectedTypeName => "string";
-
-            byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
-            public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
-            {
-                switch (s[0])
-                {
-                    case (byte)'i'when s.SequenceEqual("intArr"u8):
-                        return 1;
-                    default:
-                        return 0;
-                }
-            }
-        }
-
-        ArrayField Serde.IDeserializeVisitor<ArrayField>.VisitDictionary<D>(ref D d)
-        {
-            int[] _l_intarr = default !;
-            byte _r_assignedValid = 0b0;
-            while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
-            {
-                switch (key)
-                {
-                    case 1:
-                        _l_intarr = d.GetNextValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>();
-                        _r_assignedValid |= ((byte)1) << 0;
-                        break;
-                }
-            }
-
-            if (_r_assignedValid != 0b1)
-            {
-                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
-            }
-
-            var newType = new ArrayField()
-            {
-                IntArr = _l_intarr,
-            };
-            return newType;
-        }
+        return newType;
     }
 }

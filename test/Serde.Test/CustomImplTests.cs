@@ -26,7 +26,7 @@ public sealed partial class CustomImplTests
             int green = default;
             int blue = default;
             int index;
-            while ((index = deType.TryReadIndex(fieldMap)) != IDeserializeType.EndOfType)
+            while ((index = deType.TryReadIndex(fieldMap, out var errorName)) != IDeserializeType.EndOfType)
             {
                 switch (index)
                 {

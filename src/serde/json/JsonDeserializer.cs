@@ -304,15 +304,31 @@ namespace Serde.Json
             return D.Deserialize(this);
         }
 
-        int IDeserializeType.TryReadIndex(TypeInfo map)
+        int IDeserializeType.TryReadIndex(TypeInfo map, out string? errorName)
         {
+            bool foundProperty = false;
             ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-
-            if (reader.TokenType == JsonTokenType.EndObject)
+            while (!foundProperty)
             {
-                return IDeserializeType.EndOfType;
+                reader.ReadOrThrow();
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.EndObject:
+                        errorName = null;
+                        return IDeserializeType.EndOfType;
+                    case JsonTokenType.PropertyName:
+                        foundProperty = true;
+                        break;
+                    default:
+                        // If we aren't at a property name, we must be at a value and intending to skip it
+                        // Call Skip in case we are starting a new array or object. Doesn't do
+                        // anything for bare tokens, but we've already read one token forward above,
+                        // so we can simply continue
+                        reader.Skip();
+                        break;
+                }
             }
+            Debug.Assert(reader.TokenType == JsonTokenType.PropertyName);
 
             Utf8Span span;
             if (reader.HasValueSequence || reader.ValueIsEscaped)
@@ -324,7 +340,9 @@ namespace Serde.Json
             {
                 span = reader.ValueSpan;
             }
-            return map.TryGetIndex(span);
+            var index = map.TryGetIndex(span);
+            errorName = index == IDeserializeType.IndexNotFound ? span.ToString() : null;
+            return index;
         }
     }
 

@@ -3,8 +3,8 @@ namespace Some.Nested.Namespace;
 internal static class ColorLongSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
-("red", typeof(ColorLong).GetField("Red")!),
-("green", typeof(ColorLong).GetField("Green")!),
-("blue", typeof(ColorLong).GetField("Blue")!)
+("red", typeof(Some.Nested.Namespace.ColorLong).GetField("Red")!),
+("green", typeof(Some.Nested.Namespace.ColorLong).GetField("Green")!),
+("blue", typeof(Some.Nested.Namespace.ColorLong).GetField("Blue")!)
     });
 }

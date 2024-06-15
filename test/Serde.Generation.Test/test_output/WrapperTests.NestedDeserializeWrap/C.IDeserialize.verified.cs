@@ -8,62 +8,35 @@ partial class C : Serde.IDeserialize<C>
 {
     static C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = new SerdeVisitor();
-        var fieldNames = new[]
+        System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = default !;
+        byte _r_assignedValid = 0b0;
+        var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
+        var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
+        int _l_index_;
+        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_typeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
         {
-            "S"
+            switch (_l_index_)
+            {
+                case 0:
+                    _l_s = typeDeserialize.ReadValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, OPTSWrap>(_l_index_);
+                    _r_assignedValid |= ((byte)1) << 0;
+                    break;
+                case Serde.IDeserializeType.IndexNotFound:
+                    break;
+                default:
+                    throw new InvalidOperationException("Unexpected index: " + _l_index_);
+            }
+        }
+
+        if (_r_assignedValid != 0b1)
+        {
+            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+        }
+
+        var newType = new C()
+        {
+            S = _l_s,
         };
-        return deserializer.DeserializeType("C", fieldNames, visitor);
-    }
-
-    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<C>
-    {
-        public string ExpectedTypeName => "C";
-
-        private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeserializeVisitor<byte>
-        {
-            public static readonly FieldNameVisitor Instance = new FieldNameVisitor();
-            public static byte Deserialize(IDeserializer deserializer) => deserializer.DeserializeString(Instance);
-            public string ExpectedTypeName => "string";
-
-            byte Serde.IDeserializeVisitor<byte>.VisitString(string s) => VisitUtf8Span(System.Text.Encoding.UTF8.GetBytes(s));
-            public byte VisitUtf8Span(System.ReadOnlySpan<byte> s)
-            {
-                switch (s[0])
-                {
-                    case (byte)'s'when s.SequenceEqual("s"u8):
-                        return 1;
-                    default:
-                        return 0;
-                }
-            }
-        }
-
-        C Serde.IDeserializeVisitor<C>.VisitDictionary<D>(ref D d)
-        {
-            System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = default !;
-            byte _r_assignedValid = 0b0;
-            while (d.TryGetNextKey<byte, FieldNameVisitor>(out byte key))
-            {
-                switch (key)
-                {
-                    case 1:
-                        _l_s = d.GetNextValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, OPTSWrap>();
-                        _r_assignedValid |= ((byte)1) << 0;
-                        break;
-                }
-            }
-
-            if (_r_assignedValid != 0b1)
-            {
-                throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
-            }
-
-            var newType = new C()
-            {
-                S = _l_s,
-            };
-            return newType;
-        }
+        return newType;
     }
 }
