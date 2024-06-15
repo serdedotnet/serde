@@ -10,7 +10,7 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
     {
         byte _l_red = default !;
         byte _l_blue = default !;
-        byte _r_assignedValid = 0b0;
+        byte _r_assignedValid = 0;
         var _l_typeInfo = RgbSerdeTypeInfo.TypeInfo;
         var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
         int _l_index_;
@@ -26,6 +26,7 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
                     _l_blue = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 2;
                     break;
+                case 1:
                 case Serde.IDeserializeType.IndexNotFound:
                     break;
                 default:
@@ -33,7 +34,7 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             }
         }
 
-        if (_r_assignedValid != 0b111)
+        if ((_r_assignedValid & 0b101) != 0b101)
         {
             throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
         }

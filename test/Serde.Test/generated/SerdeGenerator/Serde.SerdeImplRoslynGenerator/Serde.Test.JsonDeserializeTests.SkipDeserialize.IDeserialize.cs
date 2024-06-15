@@ -7,14 +7,13 @@ namespace Serde.Test
 {
     partial class JsonDeserializeTests
     {
-        partial record struct IdStructList : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>
+        partial record SkipDeserialize : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SkipDeserialize>
         {
-            static Serde.Test.JsonDeserializeTests.IdStructList Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>.Deserialize(IDeserializer deserializer)
+            static Serde.Test.JsonDeserializeTests.SkipDeserialize Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SkipDeserialize>.Deserialize(IDeserializer deserializer)
             {
-                int _l_count = default !;
-                System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct> _l_list = default !;
+                string _l_required = default !;
                 byte _r_assignedValid = 0;
-                var _l_typeInfo = IdStructListSerdeTypeInfo.TypeInfo;
+                var _l_typeInfo = SkipDeserializeSerdeTypeInfo.TypeInfo;
                 var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_typeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -22,13 +21,10 @@ namespace Serde.Test
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_count = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                            _l_required = typeDeserialize.ReadValue<string, StringWrap>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_list = typeDeserialize.ReadValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, ListWrap.DeserializeImpl<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>(_l_index_);
-                            _r_assignedValid |= ((byte)1) << 1;
-                            break;
                         case Serde.IDeserializeType.IndexNotFound:
                             break;
                         default:
@@ -36,15 +32,14 @@ namespace Serde.Test
                     }
                 }
 
-                if ((_r_assignedValid & 0b11) != 0b11)
+                if ((_r_assignedValid & 0b1) != 0b1)
                 {
                     throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
                 }
 
-                var newType = new Serde.Test.JsonDeserializeTests.IdStructList()
+                var newType = new Serde.Test.JsonDeserializeTests.SkipDeserialize()
                 {
-                    Count = _l_count,
-                    List = _l_list,
+                    Required = _l_required,
                 };
                 return newType;
             }

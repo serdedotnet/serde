@@ -12,7 +12,7 @@ namespace Serde.Test
             static Serde.Test.JsonDeserializeTests.IdStruct Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStruct>.Deserialize(IDeserializer deserializer)
             {
                 int _l_id = default !;
-                byte _r_assignedValid = 0b0;
+                byte _r_assignedValid = 0;
                 var _l_typeInfo = IdStructSerdeTypeInfo.TypeInfo;
                 var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
                 int _l_index_;
@@ -31,7 +31,7 @@ namespace Serde.Test
                     }
                 }
 
-                if (_r_assignedValid != 0b1)
+                if ((_r_assignedValid & 0b1) != 0b1)
                 {
                     throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
                 }

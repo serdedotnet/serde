@@ -9,7 +9,7 @@ partial class C : Serde.IDeserialize<C>
     static C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
     {
         System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = default !;
-        byte _r_assignedValid = 0b0;
+        byte _r_assignedValid = 0;
         var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
         var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
         int _l_index_;
@@ -28,7 +28,7 @@ partial class C : Serde.IDeserialize<C>
             }
         }
 
-        if (_r_assignedValid != 0b1)
+        if ((_r_assignedValid & 0b1) != 0b1)
         {
             throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
         }

@@ -270,5 +270,27 @@ namespace Serde.Test
             }
             Assert.Equal(s.Dict.Count, de.Dict.Count);
         }
+
+        [Fact]
+        public void DeserializeWithSkip()
+        {
+            var src = """
+{
+    "required": "abc",
+    "skip": "def"
+}
+""";
+            var de = JsonSerializer.Deserialize<SkipDeserialize>(src);
+            Assert.Equal(new SkipDeserialize { Required = "abc" }, de);
+        }
+
+        [GenerateDeserialize]
+        public partial record SkipDeserialize
+        {
+            public required string Required { get; init; }
+
+            [SerdeMemberOptions(SkipDeserialize = true)]
+            public string Skip => "xyz";
+        }
     }
 }

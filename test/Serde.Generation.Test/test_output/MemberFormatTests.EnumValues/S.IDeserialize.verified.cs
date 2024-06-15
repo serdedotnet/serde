@@ -9,7 +9,7 @@ partial struct S : Serde.IDeserialize<S>
     static S Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
     {
         ColorEnum _l_e = default !;
-        byte _r_assignedValid = 0b0;
+        byte _r_assignedValid = 0;
         var _l_typeInfo = SSerdeTypeInfo.TypeInfo;
         var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
         int _l_index_;
@@ -28,7 +28,7 @@ partial struct S : Serde.IDeserialize<S>
             }
         }
 
-        if (_r_assignedValid != 0b1)
+        if ((_r_assignedValid & 0b1) != 0b1)
         {
             throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
         }

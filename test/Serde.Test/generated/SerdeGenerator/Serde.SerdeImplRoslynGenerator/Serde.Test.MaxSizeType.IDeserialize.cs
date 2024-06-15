@@ -73,7 +73,7 @@ namespace Serde.Test
             byte _l_field62 = default !;
             byte _l_field63 = default !;
             byte _l_field64 = default !;
-            ulong _r_assignedValid = 0b0;
+            ulong _r_assignedValid = 0;
             var _l_typeInfo = MaxSizeTypeSerdeTypeInfo.TypeInfo;
             var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
             int _l_index_;
@@ -344,7 +344,7 @@ namespace Serde.Test
                 }
             }
 
-            if (_r_assignedValid != 0b1111111111111111111111111111111111111111111111111111111111111111)
+            if ((_r_assignedValid & 0b1111111111111111111111111111111111111111111111111111111111111111) != 0b1111111111111111111111111111111111111111111111111111111111111111)
             {
                 throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
             }

@@ -11,7 +11,7 @@ namespace Test
         static Recursive Serde.IDeserialize<Recursive>.Deserialize(IDeserializer deserializer)
         {
             Recursive? _l_next = default !;
-            byte _r_assignedValid = 0b1;
+            byte _r_assignedValid = 0;
             var _l_typeInfo = RecursiveSerdeTypeInfo.TypeInfo;
             var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
             int _l_index_;
@@ -30,7 +30,7 @@ namespace Test
                 }
             }
 
-            if (_r_assignedValid != 0b1)
+            if ((_r_assignedValid & 0b0) != 0b0)
             {
                 throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
             }

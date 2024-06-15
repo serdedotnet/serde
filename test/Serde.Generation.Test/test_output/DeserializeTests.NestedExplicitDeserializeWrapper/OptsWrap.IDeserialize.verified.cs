@@ -12,7 +12,7 @@ partial record struct OptsWrap : Serde.IDeserialize<System.Runtime.InteropServic
         int _l_dwtickcountdeadline = default !;
         int _l_grfflags = default !;
         int _l_grfmode = default !;
-        byte _r_assignedValid = 0b0;
+        byte _r_assignedValid = 0;
         var _l_typeInfo = BIND_OPTSSerdeTypeInfo.TypeInfo;
         var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
         int _l_index_;
@@ -43,7 +43,7 @@ partial record struct OptsWrap : Serde.IDeserialize<System.Runtime.InteropServic
             }
         }
 
-        if (_r_assignedValid != 0b1111)
+        if ((_r_assignedValid & 0b1111) != 0b1111)
         {
             throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
         }
