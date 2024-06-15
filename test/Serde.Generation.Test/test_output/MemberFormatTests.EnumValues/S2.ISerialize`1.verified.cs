@@ -8,8 +8,9 @@ partial struct S2 : Serde.ISerialize<S2>
 {
     void ISerialize<S2>.Serialize(S2 value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S2", 1);
-        type.SerializeField<ColorEnum, global::ColorEnumWrap>("E", value.E);
+        var _l_typeInfo = S2SerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<ColorEnum, global::ColorEnumWrap>(_l_typeInfo, 0, value.E);
         type.End();
     }
 }

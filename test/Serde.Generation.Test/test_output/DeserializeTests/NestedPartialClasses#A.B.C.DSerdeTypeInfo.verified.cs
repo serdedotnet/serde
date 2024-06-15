@@ -8,6 +8,7 @@ partial class A
     internal static class DSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "D",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 ("field", typeof(A.B.C.D).GetField("Field")!)

@@ -4,6 +4,7 @@ partial class SampleTest
     internal static class OrderedItemSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "OrderedItem",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 ("ItemName", typeof(Serde.Test.SampleTest.OrderedItem).GetField("ItemName")!),

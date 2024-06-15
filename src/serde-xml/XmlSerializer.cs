@@ -15,20 +15,20 @@ public sealed partial class XmlSerializer
     /// <summary>
     /// Serialize the given type to a string.
     /// </summary>
-    public static string SerializeIndented<T>(T t) where T : ISerialize
+    public static string SerializeIndented<T>(T t) where T : ISerialize<T>
         => Serialize(t, new XmlWriterSettings() { Indent = true });
 
-    public static string Serialize<T>(T t) where T : ISerialize
+    public static string Serialize<T>(T t) where T : ISerialize<T>
         => Serialize(t, new XmlWriterSettings() { Indent = true });
 
-    private static string Serialize<T>(T s, XmlWriterSettings? settings) where T : ISerialize
+    private static string Serialize<T>(T s, XmlWriterSettings? settings) where T : ISerialize<T>
     {
         using var stringWriter = new StringWriter();
         using (var writer = XmlWriter.Create(stringWriter, settings))
         {
             var serializer = new XmlSerializer(writer);
             writer.WriteProcessingInstruction("xml", $"version=\"1.0\" encoding=\"{stringWriter.Encoding.WebName}\"");
-            s.Serialize(serializer);
+            s.Serialize(s, serializer);
         }
         return stringWriter.ToString();
     }
@@ -223,6 +223,23 @@ public sealed partial class XmlSerializer : ISerializer
         return new XmlTypeSerializer(writeEnd, this, saved);
     }
 
+    public ISerializeType SerializeType(TypeInfo typeInfo)
+    {
+        var saved = _state;
+        bool writeEnd;
+        if (_state is State.Start or State.Enumerable)
+        {
+            _writer.WriteStartElement(typeInfo.TypeName);
+            writeEnd = true;
+        }
+        else
+        {
+            writeEnd = false;
+        }
+        _state = State.Type;
+        return new XmlTypeSerializer(writeEnd, this, saved);
+    }
+
     private sealed class XmlTypeSerializer : ISerializeType
     {
         private readonly bool _writeEnd;
@@ -234,6 +251,34 @@ public sealed partial class XmlSerializer : ISerializer
             _writeEnd = writeEnd;
             _parent = parent;
             _savedState = savedState;
+        }
+
+        public void SerializeField<T>(TypeInfo typeInfo, int fieldIndex, T value)
+            where T : ISerialize<T>
+            => SerializeField(typeInfo, fieldIndex, value, value);
+
+        public void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value)
+            where U : struct, ISerialize<T>
+            => SerializeField(typeInfo, fieldIndex, value, default(U));
+
+        private void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value, U impl)
+            where U : ISerialize<T>
+        {
+            var name = typeInfo.GetStringSerializeName(fieldIndex);
+            foreach (var attr in typeInfo.GetCustomAttributeData(fieldIndex))
+            {
+                if (attr.AttributeType == typeof(XmlAttributeAttribute))
+                {
+                    _parent._writer.WriteStartAttribute(name);
+                    impl.Serialize(value, _parent);
+                    _parent._writer.WriteEndAttribute();
+                    return;
+                }
+            }
+
+            _parent._writer.WriteStartElement(name);
+            impl.Serialize(value, _parent);
+            _parent._writer.WriteEndElement();
         }
 
         public void SerializeField<T>(string name, T value)

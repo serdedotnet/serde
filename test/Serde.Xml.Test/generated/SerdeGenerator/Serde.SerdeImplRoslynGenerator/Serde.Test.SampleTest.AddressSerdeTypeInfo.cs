@@ -4,6 +4,7 @@ partial class SampleTest
     internal static class AddressSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "Address",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 ("Name", typeof(Serde.Test.SampleTest.Address).GetField("Name")!),

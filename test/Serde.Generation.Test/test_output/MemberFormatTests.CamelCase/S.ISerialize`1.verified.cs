@@ -8,9 +8,10 @@ partial struct S : Serde.ISerialize<S>
 {
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S", 2);
-        type.SerializeField<int, Int32Wrap>("one", value.One);
-        type.SerializeField<int, Int32Wrap>("twoWord", value.TwoWord);
+        var _l_typeInfo = SSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.One);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, value.TwoWord);
         type.End();
     }
 }

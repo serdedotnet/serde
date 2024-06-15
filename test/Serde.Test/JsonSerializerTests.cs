@@ -35,6 +35,15 @@ namespace Serde.Test
         }
 
         [Fact]
+        public void SerializeRgb()
+        {
+            var color = new Color { Red = 3, Green = 5, Blue = 7 };
+            Assert.Equal("""
+            {"red":3,"green":5,"blue":7}
+            """, Json.JsonSerializer.Serialize(color));
+        }
+
+        [Fact]
         public void TestNestedTypes()
         {
             var src = new Object(new (string, JsonValue)[] {
@@ -58,10 +67,8 @@ namespace Serde.Test
         [Fact]
         public void SerializeEnumerable()
         {
-            var src = new Array(ImmutableArray.Create<JsonValue>(
-                1,
-                2
-            ));
+            var src = new Array([1, 2
+]);
 
             VerifyJsonSource(src, @"
 [
@@ -73,15 +80,15 @@ namespace Serde.Test
         [Fact]
         public void NestedEnumerable()
         {
-            var src = new Array(ImmutableArray.Create<JsonValue>(
+            var src = new Array(
+            [
                 1,
-                new Array(ImmutableArray.Create<JsonValue>(
-                    3,
-                    4
-                )),
+                new Array([3, 4
+]),
                 5,
                 8
-            ));
+,
+            ]);
 
             VerifyJsonSource(src, @"
 [
@@ -159,6 +166,12 @@ namespace Serde.Test
                 ["abc"] = null,
                 ["def"] = "def"
             };
+        }
+
+        [GenerateSerialize]
+        private partial struct Color
+        {
+            public int Red, Green, Blue;
         }
 
         [Fact]

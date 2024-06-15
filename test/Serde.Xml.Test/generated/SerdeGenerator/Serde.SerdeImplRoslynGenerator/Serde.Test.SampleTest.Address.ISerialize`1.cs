@@ -11,12 +11,13 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.SampleTest.Address>.Serialize(Serde.Test.SampleTest.Address value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("Address", 5);
-                type.SerializeField<string, StringWrap>("Name", value.Name, new System.Attribute[] { new System.Xml.Serialization.XmlAttributeAttribute() { }, new Serde.SerdeMemberOptions() { ProvideAttributes = true } });
-                type.SerializeField<string, StringWrap>("Line1", value.Line1);
-                type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>("City", value.City);
-                type.SerializeField<string, StringWrap>("State", value.State);
-                type.SerializeField<string, StringWrap>("Zip", value.Zip);
+                var _l_typeInfo = AddressSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 0, value.Name);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 1, value.Line1);
+                type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 2, value.City);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 3, value.State);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 4, value.Zip);
                 type.End();
             }
         }

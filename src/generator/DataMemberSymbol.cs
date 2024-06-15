@@ -99,8 +99,6 @@ namespace Serde
 
         public bool ThrowIfMissing => _memberOptions.ThrowIfMissing;
 
-        public bool ProvideAttributes => _memberOptions.ProvideAttributes;
-
         public bool SerializeNull => _memberOptions.SerializeNull ?? _typeOptions.SerializeNull;
 
         public ImmutableArray<AttributeData> Attributes => Symbol.GetAttributes();

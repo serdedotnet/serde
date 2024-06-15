@@ -22,7 +22,7 @@ namespace Serde.Json
                 SkipValidation = true
             });
             var serializer = new JsonSerializer(writer);
-            s.Serialize(serializer);
+            s.Serialize(s, serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }

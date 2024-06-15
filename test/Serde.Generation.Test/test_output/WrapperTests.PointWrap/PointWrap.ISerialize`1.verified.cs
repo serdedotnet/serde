@@ -8,9 +8,10 @@ partial struct PointWrap : Serde.ISerialize<Point>
 {
     void ISerialize<Point>.Serialize(Point value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("Point", 2);
-        type.SerializeField<int, Int32Wrap>("x", _point.X);
-        type.SerializeField<int, Int32Wrap>("y", _point.Y);
+        var _l_typeInfo = PointSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, _point.X);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, _point.Y);
         type.End();
     }
 }

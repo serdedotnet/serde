@@ -181,29 +181,20 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
             else
             {
                 // The generated body of ISerialize is
-                // `var type = serializer.SerializeType("TypeName", numFields)`
+                // `var _l_typeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
+                // `var type = serializer.SerializeType(_l_typeInfo);
                 // type.SerializeField<FieldType, Serialize>("FieldName", receiver.FieldValue);
                 // type.End();
 
-                // `var type = serializer.SerializeType("TypeName", numFields)`
-                statements.Add(LocalDeclarationStatement(VariableDeclaration(
-                    IdentifierName(Identifier("var")),
-                    SeparatedList(new[] {
-                    VariableDeclarator(
-                        Identifier("type"),
-                        argumentList: null,
-                        EqualsValueClause(InvocationExpression(
-                            QualifiedName(IdentifierName("serializer"), IdentifierName("SerializeType")),
-                            ArgumentList(SeparatedList(new [] {
-                                Argument(StringLiteral(receiverType.Name)), Argument(NumericLiteral(fieldsAndProps.Count))
-                            }))
-                        ))
-                    )
-                    })
-                )));
+                // `var _l_typeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
+                statements.Add(ParseStatement($"var _l_typeInfo = {receiverType.Name}SerdeTypeInfo.TypeInfo;"));
 
-                foreach (var m in fieldsAndProps)
+                // `var type = serializer.SerializeType(_l_typeInfo);`
+                statements.Add(ParseStatement("var type = serializer.SerializeType(_l_typeInfo);"));
+
+                for (int i = 0; i < fieldsAndProps.Count; i++)
                 {
+                    var m = fieldsAndProps[i];
                     // Generate statements of the form `type.SerializeField<FieldType, Serialize>("FieldName", receiver.FieldValue)`
                     var memberExpr = MakeMemberAccessExpr(m, receiverExpr);
                     var typeAndWrapperOpt = MakeSerializeType(m, context, memberExpr, inProgress);
@@ -219,7 +210,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                     }
                     else
                     {
-                        statements.Add(MakeSerializeFieldStmt(m, memberExpr, typeAndWrapper, receiverExpr));
+                        statements.Add(MakeSerializeFieldStmt(m, i, memberExpr, typeAndWrapper, receiverExpr));
                     }
                 }
 
@@ -260,13 +251,16 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
             // Make a statement like `type.SerializeField<valueType, SerializeType>("member.Name", value)`
             static ExpressionStatementSyntax MakeSerializeFieldStmt(
                 DataMemberSymbol member,
+                int index,
                 ExpressionSyntax value,
                 TypeAndWrapper typeAndWrapper,
                 ExpressionSyntax receiver)
             {
                 var arguments = new List<ExpressionSyntax>() {
-                        // "FieldName"u8
-                        ParseExpression($"\"{member.GetFormattedName()}\""),
+                        // _l_typeInfo
+                        ParseExpression("_l_typeInfo"),
+                        // Index
+                        LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(index)),
                         // Value
                         value,
                 };
@@ -284,49 +278,6 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
                 else
                 {
                     methodName = "SerializeField";
-                }
-
-                // If the member is marked as providing attributes we will need to create an array of the
-                // attributes and pass it as the last argument
-                if (member.ProvideAttributes)
-                {
-                    var attributeExpressions = member.Attributes.SelectNotNull(attributeData =>
-                    {
-                        if (attributeData.AttributeClass is not { } attrClass)
-                        {
-                            return null;
-                        }
-
-                        // Construct the positional arguments to the attribute constructor
-                        var args = attributeData.ConstructorArguments
-                            .Select(a => Argument(ParseExpression(a.ToCSharpString()))).ToList();
-
-                        // Construct the named arguments to the attribute constructor
-                        var assignments = attributeData.NamedArguments.Select(pair =>
-                            (ExpressionSyntax)AssignmentExpression(
-                                SyntaxKind.SimpleAssignmentExpression,
-                                IdentifierName(pair.Key),
-                                ParseExpression(pair.Value.ToCSharpString()))).ToList();
-
-                        return (ExpressionSyntax)ObjectCreationExpression(
-                            attrClass.ToFqnSyntax(),
-                            ArgumentList(SeparatedList(args)),
-                            InitializerExpression(
-                                SyntaxKind.ObjectInitializerExpression,
-                                SeparatedList(assignments)));
-                    }).ToList();
-
-                    if (attributeExpressions.Count > 0)
-                    {
-                        arguments.Add(ArrayCreationExpression(
-                            ArrayType(
-                                ParseTypeName("System.Attribute"),
-                                SingletonList(ArrayRankSpecifier(
-                                    SingletonSeparatedList((ExpressionSyntax)OmittedArraySizeExpression())))),
-                            InitializerExpression(
-                                SyntaxKind.ArrayInitializerExpression,
-                                SeparatedList(attributeExpressions))));
-                    }
                 }
 
                 return ExpressionStatement(InvocationExpression(

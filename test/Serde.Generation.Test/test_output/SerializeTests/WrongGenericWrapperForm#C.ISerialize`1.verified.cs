@@ -8,7 +8,8 @@ partial class C : Serde.ISerialize<C>
 {
     void ISerialize<C>.Serialize(C value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("C", 1);
+        var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
         type.End();
     }
 }
