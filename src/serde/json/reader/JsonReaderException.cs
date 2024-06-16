@@ -13,9 +13,5 @@ namespace Serde.Json
         public JsonReaderException(string message, long lineNumber, long bytePositionInLine) : base(message, path: null, lineNumber, bytePositionInLine)
         {
         }
-
-        private JsonReaderException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }
