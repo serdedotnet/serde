@@ -78,39 +78,9 @@ namespace Serde.Json
         public JsonException() : base() { }
 
         /// <summary>
-        /// Creates a new exception object with serialized data.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown when <paramref name="info"/> is <see langword="null" />.
-        /// </exception>
-        protected JsonException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-            LineNumber = (long?)info.GetValue("LineNumber", typeof(long?));
-            BytePositionInLine = (long?)info.GetValue("BytePositionInLine", typeof(long?));
-            Path = info.GetString("Path");
-            SetMessage(info.GetString("ActualMessage"));
-        }
-
-        /// <summary>
         /// Specifies that 'try' logic should append Path information to the exception message.
         /// </summary>
         internal bool AppendPathInformation { get; set; }
-
-        /// <summary>
-        ///  Sets the <see cref="SerializationInfo"/> with information about the exception.
-        /// </summary>
-        /// <param name="info">The <see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context">The <see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue("LineNumber", LineNumber, typeof(long?));
-            info.AddValue("BytePositionInLine", BytePositionInLine, typeof(long?));
-            info.AddValue("Path", Path, typeof(string));
-            info.AddValue("ActualMessage", Message, typeof(string));
-        }
 
         /// <summary>
         /// The number of lines read so far before the exception (starting at 0).
