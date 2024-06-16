@@ -3,7 +3,9 @@ partial class SampleTest
 {
     internal static class PurchaseOrderSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] {
 ("ShipTo", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("ShipTo")!),
 ("OrderDate", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderDate")!),
 ("Items", typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderedItems")!),

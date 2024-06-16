@@ -87,6 +87,64 @@ namespace Serde.Json
             return v.VisitDictionary(ref map);
         }
 
+        public IDeserializeCollection DeserializeCollection(TypeInfo typeInfo)
+        {
+            if (typeInfo.Kind is not (TypeInfo.TypeKind.Enumerable or TypeInfo.TypeKind.Dictionary))
+            {
+                throw new ArgumentException($"TypeKind is {typeInfo.Kind}, expected Enumerable or Dictionary");
+            }
+
+            ref var reader = ref GetReader();
+            reader.ReadOrThrow();
+
+            if (typeInfo.Kind == TypeInfo.TypeKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
+                || typeInfo.Kind == TypeInfo.TypeKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
+            {
+                throw new InvalidDeserializeValueException("Expected object start");
+            }
+
+            return new DeCollection(this);
+        }
+
+        private struct DeCollection : IDeserializeCollection
+        {
+            private JsonDeserializer _deserializer;
+            public DeCollection(JsonDeserializer de)
+            {
+                _deserializer = de;
+            }
+
+            public int? SizeOpt => null;
+
+            public bool TryReadValue<T, D>(TypeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
+            {
+                var reader = _deserializer.GetReader();
+                reader.ReadOrThrow();
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.EndArray:
+                        if (typeInfo.Kind != TypeInfo.TypeKind.Enumerable)
+                        {
+                            throw new InvalidDeserializeValueException($"Unexpected end of array in type kind: {typeInfo.Kind}");
+                        }
+                        break;
+                    case JsonTokenType.EndObject:
+                        if (typeInfo.Kind != TypeInfo.TypeKind.Dictionary)
+                        {
+                            throw new InvalidDeserializeValueException($"Unexpected end of object in type kind: {typeInfo.Kind}");
+                        }
+                        break;
+                    default:
+                        next = D.Deserialize(_deserializer);
+                        return true;
+                }
+                _deserializer.SaveState(reader);
+                next = default;
+                _deserializer = null!;
+                return false;
+            }
+        }
+
         public T DeserializeFloat<T>(IDeserializeVisitor<T> v)
             => DeserializeDouble(v);
 
@@ -288,6 +346,7 @@ namespace Serde.Json
             reader.ReadOrThrow();
             if (reader.TokenType == JsonTokenType.Null)
             {
+                SaveState(reader);
                 return v.VisitNull();
             }
             else

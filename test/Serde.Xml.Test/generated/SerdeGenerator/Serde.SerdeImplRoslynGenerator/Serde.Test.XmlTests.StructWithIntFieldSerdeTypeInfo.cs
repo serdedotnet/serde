@@ -3,7 +3,9 @@ partial class XmlTests
 {
     internal static class StructWithIntFieldSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] {
 ("X", typeof(Serde.Test.XmlTests.StructWithIntField).GetProperty("X")!)
     });
 }

@@ -98,6 +98,7 @@ partial struct Rgb
 """;
             return VerifyDeserialize(src);
         }
+
         [Fact]
         public Task Rgb()
         {

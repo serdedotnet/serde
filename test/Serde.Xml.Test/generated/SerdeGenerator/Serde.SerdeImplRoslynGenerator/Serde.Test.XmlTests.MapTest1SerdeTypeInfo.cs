@@ -3,7 +3,9 @@ partial class XmlTests
 {
     internal static class MapTest1SerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] {
 ("MapField", typeof(Serde.Test.XmlTests.MapTest1).GetField("MapField")!)
     });
 }
