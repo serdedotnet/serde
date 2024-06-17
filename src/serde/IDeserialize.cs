@@ -123,7 +123,7 @@ namespace Serde
         T DeserializeEnumerable<T>(IDeserializeVisitor<T> v);
         T DeserializeDictionary<T>(IDeserializeVisitor<T> v);
         T DeserializeNullableRef<T>(IDeserializeVisitor<T> v);
-        IDeserializeCollection DeserializeCollection(TypeInfo typeInfo);
+        IDeserializeCollection DeserializeCollection(TypeInfo typeInfo) => throw new NotImplementedException();
         IDeserializeType DeserializeType(TypeInfo typeInfo) => throw new NotImplementedException();
     }
 }
