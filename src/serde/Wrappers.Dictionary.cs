@@ -27,7 +27,7 @@ namespace Serde
                 _dict = dict;
             }
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(_dict.Count);
                 foreach (var (k, v) in _dict)
@@ -38,7 +38,7 @@ namespace Serde
                 sd.End();
             }
 
-            void ISerialize<Dictionary<TKey, TValue>>.Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
+            public void Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(value.Count);
                 foreach (var (k, v) in value)
@@ -55,7 +55,7 @@ namespace Serde
             where TKeyWrap : IDeserialize<TKey>
             where TValueWrap : IDeserialize<TValue>
         {
-            static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize(IDeserializer deserializer)
+            public static Dictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = DictSerdeTypeInfo.TypeInfo;
                 var deCollection = deserializer.DeserializeCollection(typeInfo);
@@ -98,7 +98,7 @@ namespace Serde
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-            void ISerialize<IDictionary<TKey, TValue>>.Serialize(IDictionary<TKey, TValue> value, ISerializer serializer)
+            public void Serialize(IDictionary<TKey, TValue> value, ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(value.Count);
                 foreach (var (k, v) in value)
@@ -108,7 +108,7 @@ namespace Serde
                 }
                 sd.End();
             }
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);
                 foreach (var (k, v) in Value)
@@ -133,7 +133,7 @@ namespace Serde
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IReadOnlyDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);
                 foreach (var (k, v) in Value)

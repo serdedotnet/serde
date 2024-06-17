@@ -70,17 +70,17 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(T[] t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize<T[]>.Serialize(T[] value, ISerializer serializer)
+            public void Serialize(T[] value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), value, serializer);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), Value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
             where TWrap : IDeserialize<T>
         {
-            static T[] IDeserialize<T[]>.Deserialize(IDeserializer deserializer)
+            public static T[] Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
                 var deCollection = deserializer.DeserializeCollection(typeInfo);
@@ -118,17 +118,17 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(List<T> t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), Value, serializer);
 
-            void ISerialize<List<T>>.Serialize(List<T> value, ISerializer serializer)
+            public void Serialize(List<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
             where TWrap : IDeserialize<T>
         {
-            static List<T> IDeserialize<List<T>>.Deserialize(IDeserializer deserializer)
+            public static List<T> Deserialize(IDeserializer deserializer)
             {
                 List<T> list;
                 var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
@@ -163,17 +163,17 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(ImmutableArray<T> t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), Value.AsSpan(), serializer);
 
-            void ISerialize<ImmutableArray<T>>.Serialize(ImmutableArray<T> value, ISerializer serializer)
+            public void Serialize(ImmutableArray<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), value.AsSpan(), serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
             where TWrap : IDeserialize<T>
         {
-            static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize(IDeserializer deserializer)
+            public static ImmutableArray<T> Deserialize(IDeserializer deserializer)
             {
                 ImmutableArray<T>.Builder builder;
                 var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
