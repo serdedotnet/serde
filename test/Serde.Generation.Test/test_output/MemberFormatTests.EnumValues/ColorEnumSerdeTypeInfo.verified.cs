@@ -1,7 +1,9 @@
 ﻿//HintName: ColorEnumSerdeTypeInfo.cs
 internal static class ColorEnumSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] {
 ("red", typeof(ColorEnum).GetField("Red")!),
 ("green", typeof(ColorEnum).GetField("Green")!),
 ("blue", typeof(ColorEnum).GetField("Blue")!)

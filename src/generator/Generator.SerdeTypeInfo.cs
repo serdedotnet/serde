@@ -103,7 +103,9 @@ internal static class SerdeTypeInfoGenerator
         var newType = $$"""
 internal static class {{typeName}}SerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] {
 {{string.Join("," + Environment.NewLine,
           fieldsAndProps.Select(x => $@"(""{x.GetFormattedName()}"", typeof({typeString}).Get{(x.Symbol.Kind == SymbolKind.Field ? "Field" : "Property")}(""{x.Name}"")!)"))}}
     });

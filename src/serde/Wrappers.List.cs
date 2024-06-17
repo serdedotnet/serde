@@ -57,6 +57,11 @@ namespace Serde
         }
     }
 
+    internal static class EnumerableSerdeTypeInfo
+    {
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(TypeInfo.TypeKind.Enumerable, []);
+    }
+
     public static class ArrayWrap
     {
         public readonly record struct SerializeImpl<T, TWrap>(T[] Value)
@@ -65,48 +70,41 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(T[] t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize<T[]>.Serialize(T[] value, ISerializer serializer)
+            public void Serialize(T[] value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), value, serializer);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), Value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
             where TWrap : IDeserialize<T>
         {
-            static T[] IDeserialize<T[]>.Deserialize(IDeserializer deserializer)
+            public static T[] Deserialize(IDeserializer deserializer)
             {
-                return deserializer.DeserializeEnumerable(new SerdeVisitor());
-            }
-            private sealed class SerdeVisitor : IDeserializeVisitor<T[]>
-            {
-                string IDeserializeVisitor<T[]>.ExpectedTypeName => typeof(T[]).ToString();
-
-                T[] IDeserializeVisitor<T[]>.VisitEnumerable<D>(ref D d)
+                var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
+                var deCollection = deserializer.DeserializeCollection(typeInfo);
+                if (deCollection.SizeOpt is int size)
                 {
-                    if (d.SizeOpt is int size)
+                    var array = new T[size];
+                    for (int i = 0; i < size; i++)
                     {
-                        var array = new T[size];
-                        for (int i = 0; i < size; i++)
+                        if (!deCollection.TryReadValue<T, TWrap>(typeInfo, out var value))
                         {
-                            if (!d.TryGetNext<T, TWrap>(out T? next))
-                            {
-                                throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {i} items");
-                            }
-                            array[i] = next;
+                            throw new InvalidDeserializeValueException($"Expected array of size {size}, but only received {i} items");
                         }
-                        return array;
+                        array[i] = value;
                     }
-                    else
+                    return array;
+                }
+                else
+                {
+                    var list = new List<T>();
+                    while (deCollection.TryReadValue<T, TWrap>(typeInfo, out var value))
                     {
-                        var list = new List<T>();
-                        while (d.TryGetNext<T, TWrap>(out T? next))
-                        {
-                            list.Add(next);
-                        }
-                        return list.ToArray();
+                        list.Add(value);
                     }
+                    return list.ToArray();
                 }
             }
         }
@@ -120,46 +118,39 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(List<T> t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), Value, serializer);
 
-            void ISerialize<List<T>>.Serialize(List<T> value, ISerializer serializer)
+            public void Serialize(List<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
             where TWrap : IDeserialize<T>
         {
-            static List<T> IDeserialize<List<T>>.Deserialize(IDeserializer deserializer)
+            public static List<T> Deserialize(IDeserializer deserializer)
             {
-                return deserializer.DeserializeEnumerable(new SerdeVisitor());
-            }
-            private sealed class SerdeVisitor : IDeserializeVisitor<List<T>>
-            {
-                string IDeserializeVisitor<List<T>>.ExpectedTypeName => typeof(T[]).ToString();
-
-                List<T> IDeserializeVisitor<List<T>>.VisitEnumerable<D>(ref D d)
+                List<T> list;
+                var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
+                var deCollection = deserializer.DeserializeCollection(typeInfo);
+                if (deCollection.SizeOpt is int size)
                 {
-                    List<T> list;
-                    if (d.SizeOpt is int size)
-                    {
-                        list = new List<T>(size);
-                    }
-                    else
-                    {
-                        size = -1; // Set initial size to unknown
-                        list = new List<T>();
-                    }
-                    while (d.TryGetNext<T, TWrap>(out T? next))
-                    {
-                        list.Add(next);
-                    }
-                    if (size >= 0 && list.Count != size)
-                    {
-                        throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {list.Count} items");
-                    }
-                    return list;
+                    list = new List<T>(size);
                 }
+                else
+                {
+                    size = -1; // Set initial size to unknown
+                    list = new List<T>();
+                }
+                while (deCollection.TryReadValue<T, TWrap>(typeInfo, out T? next))
+                {
+                    list.Add(next);
+                }
+                if (size >= 0 && list.Count != size)
+                {
+                    throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {list.Count} items");
+                }
+                return list;
             }
         }
     }
@@ -172,47 +163,40 @@ namespace Serde
         {
             public static SerializeImpl<T, TWrap> Create(ImmutableArray<T> t) => new SerializeImpl<T, TWrap>(t);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), Value.AsSpan(), serializer);
 
-            void ISerialize<ImmutableArray<T>>.Serialize(ImmutableArray<T> value, ISerializer serializer)
+            public void Serialize(ImmutableArray<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), value.AsSpan(), serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
             where TWrap : IDeserialize<T>
         {
-            static ImmutableArray<T> IDeserialize<ImmutableArray<T>>.Deserialize(IDeserializer deserializer)
+            public static ImmutableArray<T> Deserialize(IDeserializer deserializer)
             {
-                return deserializer.DeserializeEnumerable(new Visitor());
-            }
-
-            private struct Visitor : IDeserializeVisitor<ImmutableArray<T>>
-            {
-                public string ExpectedTypeName => typeof(ImmutableArray<T>).ToString();
-                ImmutableArray<T> IDeserializeVisitor<ImmutableArray<T>>.VisitEnumerable<D>(ref D d)
+                ImmutableArray<T>.Builder builder;
+                var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
+                var d = deserializer.DeserializeCollection(typeInfo);
+                if (d.SizeOpt is int size)
                 {
-                    ImmutableArray<T>.Builder builder;
-                    if (d.SizeOpt is int size)
-                    {
-                        builder = ImmutableArray.CreateBuilder<T>(size);
-                    }
-                    else
-                    {
-                        size = -1; // Set initial size to unknown
-                        builder = ImmutableArray.CreateBuilder<T>();
-                    }
-
-                    while (d.TryGetNext<T, TWrap>(out T? next))
-                    {
-                        builder.Add(next);
-                    }
-                    if (size >= 0 && builder.Count != size)
-                    {
-                        throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
-                    }
-                    return builder.ToImmutable();
+                    builder = ImmutableArray.CreateBuilder<T>(size);
                 }
+                else
+                {
+                    size = -1; // Set initial size to unknown
+                    builder = ImmutableArray.CreateBuilder<T>();
+                }
+
+                while (d.TryReadValue<T, TWrap>(typeInfo, out T? next))
+                {
+                    builder.Add(next);
+                }
+                if (size >= 0 && builder.Count != size)
+                {
+                    throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
+                }
+                return builder.ToImmutable();
             }
         }
     }

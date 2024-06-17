@@ -4,6 +4,11 @@ using System.Net.Http.Headers;
 
 namespace Serde
 {
+    internal static class DictSerdeTypeInfo
+    {
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(TypeInfo.TypeKind.Dictionary, []);
+    }
+
     public static class DictWrap
     {
         public readonly struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>
@@ -22,7 +27,7 @@ namespace Serde
                 _dict = dict;
             }
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(_dict.Count);
                 foreach (var (k, v) in _dict)
@@ -33,7 +38,7 @@ namespace Serde
                 sd.End();
             }
 
-            void ISerialize<Dictionary<TKey, TValue>>.Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
+            public void Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(value.Count);
                 foreach (var (k, v) in value)
@@ -50,37 +55,33 @@ namespace Serde
             where TKeyWrap : IDeserialize<TKey>
             where TValueWrap : IDeserialize<TValue>
         {
-            static Dictionary<TKey, TValue> IDeserialize<Dictionary<TKey, TValue>>.Deserialize(IDeserializer deserializer)
+            public static Dictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
             {
-                return deserializer.DeserializeDictionary(Visitor.Instance);
-            }
-            private sealed class Visitor : IDeserializeVisitor<Dictionary<TKey, TValue>>
-            {
-                public static readonly Visitor Instance = new Visitor();
-                public string ExpectedTypeName => "Dictionary<" + typeof(TKey).Name + ", " + typeof(TValue).Name + ">";
-                public Dictionary<TKey, TValue> VisitDictionary<D>(ref D d)
-                    where D : IDeserializeDictionary
+                var typeInfo = DictSerdeTypeInfo.TypeInfo;
+                var deCollection = deserializer.DeserializeCollection(typeInfo);
+                Dictionary<TKey, TValue> dict;
+                if (deCollection.SizeOpt is int size)
                 {
-                    Dictionary<TKey, TValue> dict;
-                    if (d.SizeOpt is int size)
-                    {
-                        dict = new Dictionary<TKey, TValue>(size);
-                    }
-                    else
-                    {
-                        size = -1; // Set initial size to unknown
-                        dict = new Dictionary<TKey, TValue>();
-                    }
-                    while (d.TryGetNextEntry<TKey, TKeyWrap, TValue, TValueWrap>(out var next))
-                    {
-                        dict.Add(next.Item1, next.Item2);
-                    }
-                    if (size >= 0 && size != dict.Count)
-                    {
-                        throw new InvalidDeserializeValueException($"Expected {size} items, found {dict.Count}");
-                    }
-                    return dict;
+                    dict = new(size);
                 }
+                else
+                {
+                    size = -1; // Set initial size to unknown
+                    dict = new();
+                }
+                while (deCollection.TryReadValue<TKey, TKeyWrap>(typeInfo, out var key))
+                {
+                    if (!deCollection.TryReadValue<TValue, TValueWrap>(typeInfo, out var value))
+                    {
+                        throw new InvalidDeserializeValueException("Expected value, but reached end of collection.");
+                    }
+                    dict.Add(key, value);
+                }
+                if (size >= 0 && size != dict.Count)
+                {
+                    throw new InvalidDeserializeValueException($"Expected {size} items, found {dict.Count}");
+                }
+                return dict;
             }
         }
     }
@@ -97,7 +98,7 @@ namespace Serde
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-            void ISerialize<IDictionary<TKey, TValue>>.Serialize(IDictionary<TKey, TValue> value, ISerializer serializer)
+            public void Serialize(IDictionary<TKey, TValue> value, ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(value.Count);
                 foreach (var (k, v) in value)
@@ -107,7 +108,7 @@ namespace Serde
                 }
                 sd.End();
             }
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);
                 foreach (var (k, v) in Value)
@@ -132,7 +133,7 @@ namespace Serde
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IReadOnlyDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
 
-            void ISerialize.Serialize(ISerializer serializer)
+            public void Serialize(ISerializer serializer)
             {
                 var sd = serializer.SerializeDictionary(Value.Count);
                 foreach (var (k, v) in Value)

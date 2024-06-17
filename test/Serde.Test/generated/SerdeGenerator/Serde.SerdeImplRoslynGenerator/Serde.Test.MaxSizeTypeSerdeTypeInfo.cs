@@ -1,7 +1,9 @@
 ﻿namespace Serde.Test;
 internal static class MaxSizeTypeSerdeTypeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(new (string, System.Reflection.MemberInfo)[] {
+    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] {
 ("field1", typeof(Serde.Test.MaxSizeType).GetProperty("Field1")!),
 ("field2", typeof(Serde.Test.MaxSizeType).GetProperty("Field2")!),
 ("field3", typeof(Serde.Test.MaxSizeType).GetProperty("Field3")!),
