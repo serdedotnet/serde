@@ -6,7 +6,7 @@ using Serde;
 
 namespace Test
 {
-    partial record struct ChannelWrap : Serde.IDeserialize<Test.Channel>
+    partial struct ChannelWrap : Serde.IDeserialize<Test.Channel>
     {
         static Test.Channel Serde.IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
         {

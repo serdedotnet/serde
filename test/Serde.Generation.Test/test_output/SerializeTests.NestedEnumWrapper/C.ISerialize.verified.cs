@@ -4,12 +4,13 @@
 using System;
 using Serde;
 
-partial class C : Serde.ISerialize
+partial class C : Serde.ISerialize<C>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<C>.Serialize(C value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("C", 1);
-        type.SerializeFieldIfNotNull("colorOpt"u8, new NullableWrap.SerializeImpl<Rgb, global::RgbWrap>(this.ColorOpt), this.ColorOpt);
+        var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeFieldIfNotNull<Rgb?, Serde.NullableWrap.SerializeImpl<Rgb, global::RgbWrap>>(_l_typeInfo, 0, this.ColorOpt);
         type.End();
     }
 }

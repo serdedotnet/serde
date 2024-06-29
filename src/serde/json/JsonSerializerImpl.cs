@@ -49,9 +49,9 @@ namespace Serde.Json
         public void SerializeString(string s) => _writer.WriteStringValue(s);
         public void SerializeNull() => _writer.WriteNullValue();
 
-        public void SerializeNotNull<T>(T t) where T : notnull, ISerialize
+        public void SerializeNotNull<T>(T t) where T : notnull, ISerialize<T>
         {
-            t.Serialize(this);
+            t.Serialize(t, this);
         }
 
         public void SerializeNotNull<T, U>(T t, U u)
@@ -61,7 +61,7 @@ namespace Serde.Json
             u.Serialize(t, this);
         }
 
-        public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
+        public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull
         {
             if (valueName is null)
             {
@@ -71,7 +71,7 @@ namespace Serde.Json
         }
 
         public void SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
-            where T : struct, Enum
+            where T : unmanaged
             where U : ISerialize<T>
         {
             if (valueName is null)
@@ -81,151 +81,111 @@ namespace Serde.Json
             _writer.WriteStringValue(valueName);
         }
 
-        public ISerializeType SerializeType(string name, int numFields)
-        {
-            _writer.WriteStartObject();
-            return this;
-        }
-
         public ISerializeType SerializeType(TypeInfo typeInfo)
         {
             _writer.WriteStartObject();
             return this;
         }
 
-        public ISerializeEnumerable SerializeEnumerable(string typeName, int? count)
+        public ISerializeCollection SerializeCollection(TypeInfo typeInfo, int? length)
         {
-            _writer.WriteStartArray();
-            return new SerializeEnumerableImpl(this);
+            if (typeInfo.Kind == TypeInfo.TypeKind.Dictionary)
+            {
+                _writer.WriteStartObject();
+            }
+            else if (typeInfo.Kind == TypeInfo.TypeKind.Enumerable)
+            {
+                _writer.WriteStartArray();
+            }
+            else
+            {
+                throw new InvalidOperationException("SerializeCollection called on non-collection type");
+            }
+            return new CollectionImpl(this, typeInfo.Kind == TypeInfo.TypeKind.Dictionary);
         }
 
-        private sealed class SerializeEnumerableImpl : ISerializeEnumerable
+        partial class CollectionImpl(JsonSerializer serializer, bool isDict) : ISerializeCollection
         {
-            private readonly JsonSerializer _s;
-            public SerializeEnumerableImpl(JsonSerializer s) { _s = s; }
-            void ISerializeEnumerable.SerializeElement<T>(T value)
+            private bool _isValue = false;
+            void ISerializeCollection.SerializeElement<T, U>(T value, U serialize)
             {
-                value.Serialize(_s);
+                ISerializer ser = isDict && !_isValue ? new KeySerializer(serializer) : serializer;
+                serialize.Serialize(value, ser);
+                _isValue = !_isValue;
             }
-            void ISerializeEnumerable.SerializeElement<T, U>(T value, U serialize)
-                => serialize.Serialize(value, _s);
 
-            void ISerializeEnumerable.End()
+            void ISerializeCollection.End(TypeInfo typeInfo)
             {
-                _s._writer.WriteEndArray();
+                if (typeInfo.Kind == TypeInfo.TypeKind.Dictionary)
+                {
+                    isDict = false;
+                    serializer._writer.WriteEndObject();
+                }
+                else if (typeInfo.Kind == TypeInfo.TypeKind.Enumerable)
+                {
+                    serializer._writer.WriteEndArray();
+                }
+                else
+                {
+                    throw new InvalidOperationException("ISerializeCollection.End called on non-collection type");
+                }
             }
-        }
 
-        public ISerializeDictionary SerializeDictionary(int? count)
-        {
-            _writer.WriteStartObject();
-            return this;
+            private readonly struct KeySerializer : ISerializer
+            {
+                private readonly JsonSerializer _parent;
+                public KeySerializer(JsonSerializer parent) => this._parent = parent;
+
+                public void SerializeBool(bool b) => throw new KeyNotStringException();
+                public void SerializeChar(char c) => throw new KeyNotStringException();
+                public void SerializeByte(byte b) => throw new KeyNotStringException();
+                public void SerializeU16(ushort u16) => throw new KeyNotStringException();
+
+                public void SerializeU32(uint u32) => throw new KeyNotStringException();
+
+                public void SerializeU64(ulong u64) => throw new KeyNotStringException();
+
+                public void SerializeSByte(sbyte b) => throw new KeyNotStringException();
+
+                public void SerializeI16(short i16) => throw new KeyNotStringException();
+
+                public void SerializeI32(int i32) => throw new KeyNotStringException();
+
+                public void SerializeI64(long i64) => throw new KeyNotStringException();
+
+                public void SerializeFloat(float f) => throw new KeyNotStringException();
+
+                public void SerializeDouble(double d) => throw new KeyNotStringException();
+
+                public void SerializeDecimal(decimal d) => throw new KeyNotStringException();
+
+                public void SerializeString(string s)
+                {
+                    _parent._writer.WritePropertyName(s);
+                }
+
+                void ISerializer.SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
+                    => throw new KeyNotStringException();
+
+                public ISerializeCollection SerializeCollection(TypeInfo typeInfo, int? length) => throw new KeyNotStringException();
+                public ISerializeType SerializeType(TypeInfo typeInfo) => throw new KeyNotStringException();
+                public void SerializeNull() => throw new KeyNotStringException();
+                void ISerializer.SerializeNotNull<T, U>(T t, U u) => throw new KeyNotStringException();
+            }
         }
     }
 
     partial class JsonSerializer : ISerializeType
     {
-        void ISerializeType.SerializeField<T>(TypeInfo typeInfo, int fieldIndex, T value)
+        void ISerializeType.SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value, U serialize)
         {
             _writer.WritePropertyName(typeInfo.GetSerializeName(fieldIndex));
-            value.Serialize(this);
-        }
-
-        void ISerializeType.SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value)
-        {
-            _writer.WritePropertyName(typeInfo.GetSerializeName(fieldIndex));
-            default(U).Serialize(value, this);
-        }
-
-        void ISerializeType.SerializeField<T>(Utf8Span name, T value)
-        {
-            _writer.WritePropertyName(name);
-            value.Serialize(this);
-        }
-
-        void ISerializeType.SerializeField<T, U>(string name, T value)
-        {
-            _writer.WritePropertyName(name);
-            var serialize = new U();
             serialize.Serialize(value, this);
         }
 
         void ISerializeType.End()
         {
             _writer.WriteEndObject();
-        }
-    }
-
-    partial class JsonSerializer : ISerializeDictionary
-    {
-        void ISerializeDictionary.SerializeValue<T>(T value)
-        {
-            value.Serialize(this);
-        }
-
-        void ISerializeDictionary.SerializeValue<T, U>(T value, U serialize)
-            => serialize.Serialize(value, this);
-
-        void ISerializeDictionary.End()
-        {
-            _writer.WriteEndObject();
-        }
-
-        void ISerializeDictionary.SerializeKey<T>(T key)
-        {
-            key.Serialize(new KeySerializer(this));
-        }
-
-        void ISerializeDictionary.SerializeKey<T, U>(T key, U serialize)
-        {
-            serialize.Serialize(key, new KeySerializer(this));
-        }
-
-        private readonly struct KeySerializer : ISerializer
-        {
-            private readonly JsonSerializer _parent;
-            public KeySerializer(JsonSerializer parent) => this._parent = parent;
-
-            public void SerializeBool(bool b) => throw new KeyNotStringException();
-            public void SerializeChar(char c) => throw new KeyNotStringException();
-            public void SerializeByte(byte b) => throw new KeyNotStringException();
-            public void SerializeU16(ushort u16) => throw new KeyNotStringException();
-
-            public void SerializeU32(uint u32) => throw new KeyNotStringException();
-
-            public void SerializeU64(ulong u64) => throw new KeyNotStringException();
-
-            public void SerializeSByte(sbyte b) => throw new KeyNotStringException();
-
-            public void SerializeI16(short i16) => throw new KeyNotStringException();
-
-            public void SerializeI32(int i32) => throw new KeyNotStringException();
-
-            public void SerializeI64(long i64) => throw new KeyNotStringException();
-
-            public void SerializeFloat(float f) => throw new KeyNotStringException();
-
-            public void SerializeDouble(double d) => throw new KeyNotStringException();
-
-            public void SerializeDecimal(decimal d) => throw new KeyNotStringException();
-
-            public void SerializeString(string s)
-            {
-                _parent._writer.WritePropertyName(s);
-            }
-
-            public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
-                => throw new KeyNotStringException();
-            void ISerializer.SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
-                => throw new KeyNotStringException();
-
-            public ISerializeDictionary SerializeDictionary(int? length) => throw new KeyNotStringException();
-            public ISerializeEnumerable SerializeEnumerable(string typeName, int? length) => throw new KeyNotStringException();
-            public ISerializeType SerializeType(string name, int numFields) => throw new KeyNotStringException();
-            public ISerializeType SerializeType(TypeInfo typeInfo) => throw new KeyNotStringException();
-            public void SerializeNull() => throw new KeyNotStringException();
-            public void SerializeNotNull<T>(T t) where T : notnull, ISerialize => throw new KeyNotStringException();
-            void ISerializer.SerializeNotNull<T, U>(T t, U u) => throw new KeyNotStringException();
         }
     }
 }

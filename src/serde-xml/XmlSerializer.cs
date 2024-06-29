@@ -68,7 +68,7 @@ public sealed partial class XmlSerializer : ISerializer
         _writer.WriteValue(d);
     }
 
-    public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize
+    public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull
     {
     }
 
@@ -93,9 +93,6 @@ public sealed partial class XmlSerializer : ISerializer
             _writer.WriteEndElement();
         }
     }
-
-    public void SerializeNotNull<T>(T t) where T : notnull, ISerialize
-        => t.Serialize(this);
 
     void ISerializer.SerializeNotNull<T, U>(T t, U u)
         => u.Serialize(t, this);
@@ -163,35 +160,39 @@ public sealed partial class XmlSerializer : ISerializer
         return formattingListener.ToString();
     }
 
-    public ISerializeEnumerable SerializeEnumerable(string typeName, int? length)
+    public ISerializeCollection SerializeCollection(TypeInfo typeInfo, int? length)
     {
+        if (typeInfo.Kind == TypeInfo.TypeKind.Dictionary)
+        {
+            throw new NotSupportedException("Serde.XmlSerializer doesn't currently support serializing dictionaries");
+        }
+        else if (typeInfo.Kind != TypeInfo.TypeKind.Enumerable)
+        {
+            throw new ArgumentException("typeInfo must be a collection type", nameof(typeInfo));
+        }
         var savedState = _state;
         if (savedState == State.Enumerable)
         {
-            _writer.WriteStartElement(FormatTypeName(typeName));
+            _writer.WriteStartElement(FormatTypeName(typeInfo.TypeName));
         }
         _state = State.Enumerable;
-        return new SerializeEnumerableImpl(this, savedState);
+        return new SerializeCollectionImpl(this, savedState);
     }
 
-    sealed partial class SerializeEnumerableImpl : ISerializeEnumerable
+    sealed partial class SerializeCollectionImpl : ISerializeCollection
     {
         private readonly XmlSerializer _serializer;
         private readonly State _savedState;
-        public SerializeEnumerableImpl(XmlSerializer serializer, State savedState)
+        public SerializeCollectionImpl(XmlSerializer serializer, State savedState)
         {
             _serializer = serializer;
             _savedState = savedState;
         }
 
-        void ISerializeEnumerable.SerializeElement<T>(T value)
-        {
-            value.Serialize(_serializer);
-        }
-        void ISerializeEnumerable.SerializeElement<T, U>(T value, U serialize)
+        void ISerializeCollection.SerializeElement<T, U>(T value, U serialize)
             => serialize.Serialize(value, _serializer);
 
-        void ISerializeEnumerable.End()
+        void ISerializeCollection.End(TypeInfo typeInfo)
         {
             if (_savedState == State.Enumerable)
             {
@@ -199,28 +200,6 @@ public sealed partial class XmlSerializer : ISerializer
             }
             _serializer._state = State.Enumerable;
         }
-    }
-
-    public ISerializeDictionary SerializeDictionary(int? length)
-    {
-        throw new NotSupportedException("Serde.XmlSerializer doesn't currently support serializing dictionaries");
-    }
-
-    public ISerializeType SerializeType(string name, int numFields)
-    {
-        var saved = _state;
-        bool writeEnd;
-        if (_state is State.Start or State.Enumerable)
-        {
-            _writer.WriteStartElement(name);
-            writeEnd = true;
-        }
-        else
-        {
-            writeEnd = false;
-        }
-        _state = State.Type;
-        return new XmlTypeSerializer(writeEnd, this, saved);
     }
 
     public ISerializeType SerializeType(TypeInfo typeInfo)
@@ -253,15 +232,7 @@ public sealed partial class XmlSerializer : ISerializer
             _savedState = savedState;
         }
 
-        public void SerializeField<T>(TypeInfo typeInfo, int fieldIndex, T value)
-            where T : ISerialize<T>
-            => SerializeField(typeInfo, fieldIndex, value, value);
-
-        public void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value)
-            where U : struct, ISerialize<T>
-            => SerializeField(typeInfo, fieldIndex, value, default(U));
-
-        private void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value, U impl)
+        public void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value, U impl)
             where U : ISerialize<T>
         {
             var name = typeInfo.GetStringSerializeName(fieldIndex);
@@ -278,47 +249,6 @@ public sealed partial class XmlSerializer : ISerializer
 
             _parent._writer.WriteStartElement(name);
             impl.Serialize(value, _parent);
-            _parent._writer.WriteEndElement();
-        }
-
-        public void SerializeField<T>(string name, T value)
-            where T : ISerialize
-        {
-            _parent._writer.WriteStartElement(name);
-            value.Serialize(_parent);
-            _parent._writer.WriteEndElement();
-        }
-        void ISerializeType.SerializeField<T>(ReadOnlySpan<byte> name, T value)
-        {
-            SerializeField(Encoding.UTF8.GetString(name), value);
-        }
-
-        public void SerializeField<T>(string name, T value, ReadOnlySpan<Attribute> attributes)
-            where T : ISerialize
-        {
-            foreach (var attr in attributes)
-            {
-                if (attr is XmlAttributeAttribute)
-                {
-                    _parent._writer.WriteStartAttribute(name);
-                    value.Serialize(_parent);
-                    _parent._writer.WriteEndAttribute();
-                    return;
-                }
-            }
-            SerializeField(name, value);
-        }
-
-        public void SerializeField<T>(ReadOnlySpan<byte> name, T value, ReadOnlySpan<Attribute> attributes)
-            where T : ISerialize
-        {
-            SerializeField(Encoding.UTF8.GetString(name), value, attributes);
-        }
-
-        void ISerializeType.SerializeField<T, U>(string name, T value)
-        {
-            _parent._writer.WriteStartElement(name);
-            default(U).Serialize(value, _parent);
             _parent._writer.WriteEndElement();
         }
 

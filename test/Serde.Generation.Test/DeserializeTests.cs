@@ -8,7 +8,6 @@ using static Serde.Test.GeneratorTestUtils;
 
 namespace Serde.Test
 {
-    [UsesVerify]
     public class DeserializeTests
     {
         [Fact]

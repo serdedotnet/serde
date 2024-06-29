@@ -4,11 +4,12 @@
 using System;
 using Serde;
 
-partial struct S1 : Serde.ISerialize
+partial struct S1 : Serde.ISerialize<S1>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<S1>.Serialize(S1 value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S1", 1);
+        var _l_typeInfo = S1SerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
         type.End();
     }
 }

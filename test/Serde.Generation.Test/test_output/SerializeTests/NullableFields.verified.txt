@@ -6,8 +6,6 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (8,14)-(8,16),
-      Description: ,
-      HelpLink: ,
       MessageFormat: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
       Message: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
       Category: Serde
@@ -18,8 +16,6 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (9,14)-(9,16),
-      Description: ,
-      HelpLink: ,
       MessageFormat: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
       Message: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
       Category: Serde

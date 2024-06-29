@@ -6,12 +6,13 @@ using Serde;
 
 namespace Test
 {
-    partial record struct RecursiveWrap : Serde.ISerialize
+    partial record struct RecursiveWrap : Serde.ISerialize<Recursive>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<Recursive>.Serialize(Recursive value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("Recursive", 1);
-            type.SerializeFieldIfNotNull("next"u8, new RecursiveWrap(Value.Next), Value.Next);
+            var _l_typeInfo = RecursiveSerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeFieldIfNotNull<Recursive?, RecursiveWrap>(_l_typeInfo, 0, Value.Next);
             type.End();
         }
     }

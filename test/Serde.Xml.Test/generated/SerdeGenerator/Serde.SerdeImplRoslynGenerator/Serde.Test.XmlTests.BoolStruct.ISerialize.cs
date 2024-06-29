@@ -7,12 +7,13 @@ namespace Serde.Test
 {
     partial class XmlTests
     {
-        partial struct BoolStruct : Serde.ISerialize
+        partial struct BoolStruct : Serde.ISerialize<Serde.Test.XmlTests.BoolStruct>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.XmlTests.BoolStruct>.Serialize(Serde.Test.XmlTests.BoolStruct value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("BoolStruct", 1);
-                type.SerializeField("BoolField"u8, new BoolWrap(this.BoolField));
+                var _l_typeInfo = BoolStructSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeField<bool, BoolWrap>(_l_typeInfo, 0, this.BoolField);
                 type.End();
             }
         }

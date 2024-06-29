@@ -4,12 +4,13 @@
 using System;
 using Serde;
 
-partial class C2 : Serde.ISerialize
+partial class C2 : Serde.ISerialize<C2>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<C2>.Serialize(C2 value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("C2", 1);
-        type.SerializeField("map"u8, new DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>(this.Map));
+        var _l_typeInfo = C2SerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<System.Collections.Generic.Dictionary<string, C>, Serde.DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>>(_l_typeInfo, 0, this.Map);
         type.End();
     }
 }

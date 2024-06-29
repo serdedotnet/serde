@@ -62,7 +62,6 @@ namespace Serde
 
             SerdeTypeInfoGenerator.GenerateTypeInfo(typeDecl, (INamedTypeSymbol)receiverType, context);
             GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
-            SerializeImplRoslynGenerator.GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
             GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
         }
 
@@ -175,7 +174,7 @@ namespace Serde
                 Identifier(baseWrapperName), TypeArgumentList(SeparatedList(wrapperTypes)));
         }
 
-        private static TypeSyntax? TryGetAnyWrapper(
+        internal static TypeSyntax? TryGetAnyWrapper(
             ITypeSymbol elemType,
             GeneratorExecutionContext context,
             SerdeUsage usage,
@@ -199,7 +198,7 @@ namespace Serde
                 ?? TryGetCompoundWrapper(elemType, context, usage, inProgress);
         }
 
-        private static TypeSyntax? TryGetExplicitWrapper(
+        internal static TypeSyntax? TryGetExplicitWrapper(
             DataMemberSymbol member,
             GeneratorExecutionContext context,
             SerdeUsage usage,

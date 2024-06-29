@@ -7,13 +7,14 @@ namespace Serde.Test
 {
     partial class JsonSerializerTests
     {
-        partial class NullableFields : Serde.ISerialize
+        partial class NullableFields : Serde.ISerialize<Serde.Test.JsonSerializerTests.NullableFields>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.JsonSerializerTests.NullableFields>.Serialize(Serde.Test.JsonSerializerTests.NullableFields value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("NullableFields", 2);
-                type.SerializeFieldIfNotNull("s"u8, new NullableRefWrap.SerializeImpl<string, StringWrap>(this.S), this.S);
-                type.SerializeField("d"u8, new DictWrap.SerializeImpl<string, StringWrap, string?, NullableRefWrap.SerializeImpl<string, StringWrap>>(this.D));
+                var _l_typeInfo = NullableFieldsSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 0, this.S);
+                type.SerializeField<System.Collections.Generic.Dictionary<string, string?>, Serde.DictWrap.SerializeImpl<string, StringWrap, string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>>(_l_typeInfo, 1, this.D);
                 type.End();
             }
         }

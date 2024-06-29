@@ -4,12 +4,13 @@
 using System;
 using Serde;
 
-partial struct S2 : Serde.ISerialize
+partial struct S2 : Serde.ISerialize<S2>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<S2>.Serialize(S2 value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S2", 1);
-        type.SerializeField("E"u8, new global::ColorEnumWrap(this.E));
+        var _l_typeInfo = S2SerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<ColorEnum, global::ColorEnumWrap>(_l_typeInfo, 0, this.E);
         type.End();
     }
 }

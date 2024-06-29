@@ -4,17 +4,17 @@
 using System;
 using Serde;
 
-partial record struct ColorEnumWrap : Serde.ISerialize
+partial struct ColorEnumWrap : Serde.ISerialize<ColorEnum>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<ColorEnum>.Serialize(ColorEnum value, ISerializer serializer)
     {
-        var name = Value switch
+        var name = value switch
         {
             ColorEnum.Red => "red",
             ColorEnum.Green => "green",
             ColorEnum.Blue => "blue",
             _ => null
         };
-        serializer.SerializeEnumValue("ColorEnum", name, new Int32Wrap((int)Value));
+        serializer.SerializeEnumValue("ColorEnum", name, (int)value, default(Int32Wrap));
     }
 }

@@ -7,12 +7,13 @@ namespace Serde.Test
 {
     partial class XmlTests
     {
-        partial class NestedArrays : Serde.ISerialize
+        partial class NestedArrays : Serde.ISerialize<Serde.Test.XmlTests.NestedArrays>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.XmlTests.NestedArrays>.Serialize(Serde.Test.XmlTests.NestedArrays value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("NestedArrays", 1);
-                type.SerializeField("A"u8, new ArrayWrap.SerializeImpl<int[][], ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>>(this.A));
+                var _l_typeInfo = NestedArraysSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeField<int[][][], Serde.ArrayWrap.SerializeImpl<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, Int32Wrap>>>>(_l_typeInfo, 0, this.A);
                 type.End();
             }
         }

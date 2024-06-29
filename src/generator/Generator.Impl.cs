@@ -72,13 +72,11 @@ partial class SerdeImplRoslynGenerator
 
         ITypeSymbol receiverType;
         ExpressionSyntax receiverExpr;
-        bool wrapper;
         string? wrapperName;
         string? wrappedName;
         // If the Through property is set, then we are implementing a wrapper type
         if (attributeData.NamedArguments is [ (nameof(GenerateSerialize.Through), { Value: string memberName }) ])
         {
-            wrapper = true;
             var members = model.LookupSymbols(typeDecl.SpanStart, typeSymbol, memberName);
             if (members.Length != 1)
             {
@@ -93,7 +91,6 @@ partial class SerdeImplRoslynGenerator
         // Enums are also always wrapped, but the attribute is on the enum itself
         else if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
         {
-            wrapper = true;
             receiverType = typeSymbol;
             receiverExpr = IdentifierName("Value");
             wrappedName = typeDecl.Identifier.ValueText;
@@ -102,7 +99,6 @@ partial class SerdeImplRoslynGenerator
         // Just a normal interface implementation
         else
         {
-            wrapper = false;
             wrapperName = null;
             wrappedName = null;
             if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
@@ -116,28 +112,6 @@ partial class SerdeImplRoslynGenerator
             }
             receiverType = typeSymbol;
             receiverExpr = ThisExpression();
-        }
-
-        if (wrapper && usage.HasFlag(SerdeUsage.Serialize))
-        {
-            // If we're implementing ISerialize, also implement ISerializeWrap
-            GenerateISerializeWrapImpl(
-                wrapperName!,
-                wrappedName!,
-                typeDecl,
-                context);
-        }
-
-        if (usage.HasFlag(SerdeUsage.Serialize))
-        {
-            SerializeImplRoslynGenerator.GenerateImpl(
-                usage,
-                new TypeDeclContext(typeDecl),
-                receiverType,
-                IdentifierName("value"),
-                context,
-                inProgress);
-
         }
 
         GenerateImpl(
@@ -164,8 +138,8 @@ partial class SerdeImplRoslynGenerator
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var typeName = typeDeclContext.Name;
         var wrapperName = GetWrapperName(typeName);
-        var newType = SyntaxFactory.ParseMemberDeclaration($"""
-readonly partial record struct {wrapperName}({typeName} Value);
+        var newType = SyntaxFactory.ParseMemberDeclaration($$"""
+readonly partial struct {{wrapperName}} { }
 """)!;
         newType = typeDeclContext.WrapNewType(newType);
         string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
@@ -182,34 +156,6 @@ readonly partial record struct {wrapperName}({typeName} Value);
         context.AddSource(fullWrapperName, Environment.NewLine + tree.ToFullString());
     }
 
-    private static void GenerateISerializeWrapImpl(
-        string wrapperName,
-        string wrappedName,
-        BaseTypeDeclarationSyntax typeDecl,
-        GeneratorExecutionContext context)
-    {
-        var typeDeclContext = new TypeDeclContext(typeDecl);
-        var newType = SyntaxFactory.ParseMemberDeclaration($$"""
-partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{wrapperName}}>
-{
-    static {{wrapperName}} Serde.ISerializeWrap<{{wrappedName}}, {{wrapperName}}>.Create({{wrappedName}} value) => new(value);
-}
-""")!;
-        newType = typeDeclContext.WrapNewType(newType);
-        string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
-            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
-            .Concat(new[] { wrapperName }));
-
-        var tree = CompilationUnit(
-            externs: default,
-            usings: default,
-            attributeLists: default,
-            members: List<MemberDeclarationSyntax>(new[] { newType }));
-        tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
-
-        context.AddSource($"{fullWrapperName}.ISerializeWrap", Environment.NewLine + tree.ToFullString());
-    }
-
     private static void GenerateImpl(
         SerdeUsage usage,
         TypeDeclContext typeDeclContext,
@@ -223,8 +169,8 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
         {
-            SerdeUsage.Serialize => GenerateSerializeImpl(context, receiverType, receiverExpr, inProgress),
-            SerdeUsage.Deserialize => GenerateDeserializeImpl(context, receiverType, receiverExpr, inProgress),
+            SerdeUsage.Serialize => SerializeImplRoslynGenerator.GenerateSerializeGenericImpl(context, receiverType, receiverExpr, inProgress),
+            SerdeUsage.Deserialize => DeserializeImplGenerator.GenerateDeserializeImpl(context, receiverType, receiverExpr, inProgress),
             _ => throw ExceptionUtilities.Unreachable
         };
 
@@ -233,15 +179,12 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
         if (typeKind == SyntaxKind.EnumDeclaration)
         {
             var wrapperName = GetWrapperName(typeName);
-            newType = RecordDeclaration(
-                kind: SyntaxKind.RecordStructDeclaration,
+            newType = StructDeclaration(
                 attributeLists: default,
                 modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
-                keyword: Token(SyntaxKind.RecordKeyword),
-                classOrStructKeyword: Token(SyntaxKind.StructKeyword),
+                keyword: Token(SyntaxKind.StructKeyword),
                 identifier: Identifier(wrapperName),
                 typeParameterList: default,
-                parameterList: null,
                 baseList: baseList,
                 constraintClauses: default,
                 openBraceToken: Token(SyntaxKind.OpenBraceToken),
@@ -295,7 +238,7 @@ partial record struct {{wrapperName}} : Serde.ISerializeWrap<{{wrappedName}}, {{
     /// <summary>
     /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
     /// </summary>
-    private static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
+    internal static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
     {
         // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
         if (memberType.NullableAnnotation == NullableAnnotation.Annotated ||

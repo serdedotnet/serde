@@ -6,7 +6,6 @@ using Xunit;
 
 namespace Serde.Test;
 
-[UsesVerify]
 public sealed class AllInOneTest
 {
     [Fact]

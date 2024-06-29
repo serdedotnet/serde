@@ -6,27 +6,28 @@ using Serde;
 
 namespace Serde.Test
 {
-    partial record AllInOne : Serde.ISerialize
+    partial record AllInOne : Serde.ISerialize<Serde.Test.AllInOne>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<Serde.Test.AllInOne>.Serialize(Serde.Test.AllInOne value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("AllInOne", 16);
-            type.SerializeField("boolField"u8, new BoolWrap(this.BoolField));
-            type.SerializeField("charField"u8, new CharWrap(this.CharField));
-            type.SerializeField("byteField"u8, new ByteWrap(this.ByteField));
-            type.SerializeField("uShortField"u8, new UInt16Wrap(this.UShortField));
-            type.SerializeField("uIntField"u8, new UInt32Wrap(this.UIntField));
-            type.SerializeField("uLongField"u8, new UInt64Wrap(this.ULongField));
-            type.SerializeField("sByteField"u8, new SByteWrap(this.SByteField));
-            type.SerializeField("shortField"u8, new Int16Wrap(this.ShortField));
-            type.SerializeField("intField"u8, new Int32Wrap(this.IntField));
-            type.SerializeField("longField"u8, new Int64Wrap(this.LongField));
-            type.SerializeField("stringField"u8, new StringWrap(this.StringField));
-            type.SerializeFieldIfNotNull("nullStringField"u8, new NullableRefWrap.SerializeImpl<string, StringWrap>(this.NullStringField), this.NullStringField);
-            type.SerializeField("uIntArr"u8, new ArrayWrap.SerializeImpl<uint, UInt32Wrap>(this.UIntArr));
-            type.SerializeField("nestedArr"u8, new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
-            type.SerializeField("intImm"u8, new ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>(this.IntImm));
-            type.SerializeField("color"u8, new Serde.Test.AllInOne.ColorEnumWrap(this.Color));
+            var _l_typeInfo = AllInOneSerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<bool, BoolWrap>(_l_typeInfo, 0, this.BoolField);
+            type.SerializeField<char, CharWrap>(_l_typeInfo, 1, this.CharField);
+            type.SerializeField<byte, ByteWrap>(_l_typeInfo, 2, this.ByteField);
+            type.SerializeField<ushort, UInt16Wrap>(_l_typeInfo, 3, this.UShortField);
+            type.SerializeField<uint, UInt32Wrap>(_l_typeInfo, 4, this.UIntField);
+            type.SerializeField<ulong, UInt64Wrap>(_l_typeInfo, 5, this.ULongField);
+            type.SerializeField<sbyte, SByteWrap>(_l_typeInfo, 6, this.SByteField);
+            type.SerializeField<short, Int16Wrap>(_l_typeInfo, 7, this.ShortField);
+            type.SerializeField<int, Int32Wrap>(_l_typeInfo, 8, this.IntField);
+            type.SerializeField<long, Int64Wrap>(_l_typeInfo, 9, this.LongField);
+            type.SerializeField<string, StringWrap>(_l_typeInfo, 10, this.StringField);
+            type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 11, this.NullStringField);
+            type.SerializeField<uint[], Serde.ArrayWrap.SerializeImpl<uint, UInt32Wrap>>(_l_typeInfo, 12, this.UIntArr);
+            type.SerializeField<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, Int32Wrap>>>(_l_typeInfo, 13, this.NestedArr);
+            type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayWrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 14, this.IntImm);
+            type.SerializeField<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumWrap>(_l_typeInfo, 15, this.Color);
             type.End();
         }
     }

@@ -6,13 +6,14 @@ using Serde;
 
 partial class TestCase15
 {
-    partial class Class1 : Serde.ISerialize
+    partial class Class1 : Serde.ISerialize<TestCase15.Class1>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<TestCase15.Class1>.Serialize(TestCase15.Class1 value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("Class1", 2);
-            type.SerializeField("field0"u8, new Int32Wrap(this.Field0));
-            type.SerializeField("field1"u8, new ByteWrap(this.Field1));
+            var _l_typeInfo = Class1SerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.Field0);
+            type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, this.Field1);
             type.End();
         }
     }

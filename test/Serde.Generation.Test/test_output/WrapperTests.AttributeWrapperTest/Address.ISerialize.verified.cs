@@ -4,16 +4,17 @@
 using System;
 using Serde;
 
-partial class Address : Serde.ISerialize
+partial class Address : Serde.ISerialize<Address>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<Address>.Serialize(Address value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("Address", 5);
-        type.SerializeField("name"u8, new StringWrap(this.Name));
-        type.SerializeField("line1"u8, new StringWrap(this.Line1));
-        type.SerializeField("city"u8, new StringWrap(this.City));
-        type.SerializeField("state"u8, new StringWrap(this.State));
-        type.SerializeField("zip"u8, new StringWrap(this.Zip));
+        var _l_typeInfo = AddressSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 0, this.Name);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 1, this.Line1);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 2, this.City);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 3, this.State);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 4, this.Zip);
         type.End();
     }
 }

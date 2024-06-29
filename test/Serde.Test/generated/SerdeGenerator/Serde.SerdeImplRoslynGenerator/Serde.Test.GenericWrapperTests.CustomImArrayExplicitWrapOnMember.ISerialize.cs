@@ -7,12 +7,13 @@ namespace Serde.Test
 {
     partial class GenericWrapperTests
     {
-        partial record struct CustomImArrayExplicitWrapOnMember : Serde.ISerialize
+        partial record struct CustomImArrayExplicitWrapOnMember : Serde.ISerialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.Serialize(Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("CustomImArrayExplicitWrapOnMember", 1);
-                type.SerializeField("a"u8, new Serde.Test.GenericWrapperTests.CustomImArrayWrap.SerializeImpl<int, Int32Wrap>(this.A));
+                var _l_typeInfo = CustomImArrayExplicitWrapOnMemberSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeField<Serde.Test.GenericWrapperTests.CustomImArray<int>, Serde.Test.GenericWrapperTests.CustomImArrayWrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 0, this.A);
                 type.End();
             }
         }

@@ -6,12 +6,13 @@ using Serde;
 
 namespace Test
 {
-    partial record Parent : Serde.ISerialize
+    partial record Parent : Serde.ISerialize<Test.Parent>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<Test.Parent>.Serialize(Test.Parent value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("Parent", 1);
-            type.SerializeField("r"u8, new Test.RecursiveWrap(this.R));
+            var _l_typeInfo = ParentSerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<Recursive, Test.RecursiveWrap>(_l_typeInfo, 0, this.R);
             type.End();
         }
     }

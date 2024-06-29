@@ -6,15 +6,16 @@ using Serde;
 
 namespace Some.Nested.Namespace
 {
-    partial class C : Serde.ISerialize
+    partial class C : Serde.ISerialize<Some.Nested.Namespace.C>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<Some.Nested.Namespace.C>.Serialize(Some.Nested.Namespace.C value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("C", 4);
-            type.SerializeField("colorInt"u8, new Some.Nested.Namespace.ColorIntWrap(this.ColorInt));
-            type.SerializeField("colorByte"u8, new Some.Nested.Namespace.ColorByteWrap(this.ColorByte));
-            type.SerializeField("colorLong"u8, new Some.Nested.Namespace.ColorLongWrap(this.ColorLong));
-            type.SerializeField("colorULong"u8, new Some.Nested.Namespace.ColorULongWrap(this.ColorULong));
+            var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<Some.Nested.Namespace.ColorInt, Some.Nested.Namespace.ColorIntWrap>(_l_typeInfo, 0, this.ColorInt);
+            type.SerializeField<Some.Nested.Namespace.ColorByte, Some.Nested.Namespace.ColorByteWrap>(_l_typeInfo, 1, this.ColorByte);
+            type.SerializeField<Some.Nested.Namespace.ColorLong, Some.Nested.Namespace.ColorLongWrap>(_l_typeInfo, 2, this.ColorLong);
+            type.SerializeField<Some.Nested.Namespace.ColorULong, Some.Nested.Namespace.ColorULongWrap>(_l_typeInfo, 3, this.ColorULong);
             type.End();
         }
     }

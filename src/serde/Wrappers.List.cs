@@ -4,77 +4,42 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Serde
 {
     public static class EnumerableHelpers
     {
-        public static void SerializeSpan<T, U>(string typeName, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SerializeSpan<T, U>(TypeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
             where U : ISerialize<T>
         {
-            var enumerable = serializer.SerializeEnumerable(typeName, arr.Length);
+            var enumerable = serializer.SerializeCollection(typeInfo, arr.Length);
             foreach (var item in arr)
             {
                 enumerable.SerializeElement(item, serializeImpl);
             }
-            enumerable.End();
-        }
-
-        public static void SerializeSpan<T, TWrap>(string typeName, ReadOnlySpan<T> arr, ISerializer serializer)
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
-        {
-            var enumerable = serializer.SerializeEnumerable(typeName, arr.Length);
-            foreach (var item in arr)
-            {
-                enumerable.SerializeElement(TWrap.Create(item));
-            }
-            enumerable.End();
+            enumerable.End(typeInfo);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeList<T, TWrap>(string typeName, List<T> list, ISerializer serializer)
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
-        {
-            var enumerable = serializer.SerializeEnumerable(typeName, list.Count);
-            foreach (var item in list)
-            {
-                enumerable.SerializeElement(TWrap.Create(item));
-            }
-            enumerable.End();
-        }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeIList<T, TWrap>(string typeName, IList<T> list, ISerializer serializer)
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
-        {
-            var enumerable = serializer.SerializeEnumerable(typeName, list.Count);
-            foreach (var item in list)
-            {
-                enumerable.SerializeElement(TWrap.Create(item));
-            }
-            enumerable.End();
-        }
+        public static void SerializeSpan<T, U>(TypeInfo typeInfo, ReadOnlySpan<T> arr, ISerializer serializer)
+            where U : struct, ISerialize<T>
+            => SerializeSpan(typeInfo, arr, default(U), serializer);
     }
 
     internal static class ArraySerdeTypeInfo<T>
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(T[]).Name, TypeInfo.TypeKind.Enumerable, []);
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(T[]).ToString(), TypeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ArrayWrap
     {
-        public readonly record struct SerializeImpl<T, TWrap>(T[] Value)
-            : ISerialize, ISerialize<T[]>, ISerializeWrap<T[], SerializeImpl<T, TWrap>>
-           where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
+        public readonly struct SerializeImpl<T, TWrap> : ISerialize<T[]>
+           where TWrap : struct, ISerialize<T>
         {
-            public static SerializeImpl<T, TWrap> Create(T[] t) => new SerializeImpl<T, TWrap>(t);
-
             public void Serialize(T[] value, ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), value, serializer);
-
-            public void Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(T[]).ToString(), Value, serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(ArraySerdeTypeInfo<T>.TypeInfo, value, serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
@@ -112,22 +77,16 @@ namespace Serde
 
     internal static class ListSerdeTypeInfo<T>
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(List<T>).Name, TypeInfo.TypeKind.Enumerable, []);
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(List<T>).ToString(), TypeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ListWrap
     {
-        public readonly record struct SerializeImpl<T, TWrap>(List<T> Value)
-            : ISerialize, ISerialize<List<T>>, ISerializeWrap<List<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize<T>
+        public readonly struct SerializeImpl<T, TWrap> : ISerialize<List<T>>
+            where TWrap : struct, ISerialize<T>
         {
-            public static SerializeImpl<T, TWrap> Create(List<T> t) => new SerializeImpl<T, TWrap>(t);
-
-            public void Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), Value, serializer);
-
             public void Serialize(List<T> value, ISerializer serializer)
-                => EnumerableHelpers.SerializeList<T, TWrap>(typeof(List<T>).ToString(), value, serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(ListSerdeTypeInfo<T>.TypeInfo, CollectionsMarshal.AsSpan(value), serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
@@ -163,22 +122,16 @@ namespace Serde
     internal static class ImmutableArraySerdeTypeInfo<T>
     {
         public static readonly TypeInfo TypeInfo = TypeInfo.Create(
-            typeof(ImmutableArray<T>).Name, TypeInfo.TypeKind.Enumerable, []);
+            typeof(ImmutableArray<T>).ToString(), TypeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ImmutableArrayWrap
     {
-        public readonly record struct SerializeImpl<T, TWrap>(ImmutableArray<T> Value)
-            : ISerialize, ISerialize<ImmutableArray<T>>, ISerializeWrap<ImmutableArray<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
+        public readonly struct SerializeImpl<T, TWrap> : ISerialize<ImmutableArray<T>>
+            where TWrap : struct, ISerialize<T>
         {
-            public static SerializeImpl<T, TWrap> Create(ImmutableArray<T> t) => new SerializeImpl<T, TWrap>(t);
-
-            public void Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), Value.AsSpan(), serializer);
-
             public void Serialize(ImmutableArray<T> value, ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(ImmutableArray<T>).ToString(), value.AsSpan(), serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(ImmutableArraySerdeTypeInfo<T>.TypeInfo, value.AsSpan(), serializer);
         }
 
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>

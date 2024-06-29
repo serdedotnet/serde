@@ -111,7 +111,7 @@ namespace Serde.Test
                 path: "AllTypes.cs");
 
             var refs = new[] {
-                MetadataReference.CreateFromFile(typeof(Serde.ISerialize).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Serde.ISerialize<>).Assembly.Location),
             };
 
             var comp = CSharpCompilation.Create(

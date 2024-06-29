@@ -5,7 +5,7 @@ namespace Benchmarks
 {
     internal static class DataGenerator
     {
-        public static T GenerateSerialize<T>() where T : Serde.ISerialize
+        public static T GenerateSerialize<T>() where T : Serde.ISerialize<T>
         {
             if (typeof(T) == typeof(LoginViewModel))
                 return (T)(object)CreateLoginViewModel();

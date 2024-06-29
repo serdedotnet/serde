@@ -4,15 +4,16 @@
 using System;
 using Serde;
 
-partial record struct OPTSWrap : Serde.ISerialize
+partial record struct OPTSWrap : Serde.ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Serialize(System.Runtime.InteropServices.ComTypes.BIND_OPTS value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("BIND_OPTS", 4);
-        type.SerializeField("cbStruct"u8, new Int32Wrap(Value.cbStruct));
-        type.SerializeField("dwTickCountDeadline"u8, new Int32Wrap(Value.dwTickCountDeadline));
-        type.SerializeField("grfFlags"u8, new Int32Wrap(Value.grfFlags));
-        type.SerializeField("grfMode"u8, new Int32Wrap(Value.grfMode));
+        var _l_typeInfo = BIND_OPTSSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, Value.cbStruct);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, Value.dwTickCountDeadline);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 2, Value.grfFlags);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 3, Value.grfMode);
         type.End();
     }
 }

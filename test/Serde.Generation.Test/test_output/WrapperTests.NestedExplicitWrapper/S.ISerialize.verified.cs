@@ -4,12 +4,13 @@
 using System;
 using Serde;
 
-partial struct S : Serde.ISerialize
+partial struct S : Serde.ISerialize<S>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S", 1);
-        type.SerializeField("sections"u8, new Serde.ImmutableArrayWrap.SerializeImpl<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>(this.Sections));
+        var _l_typeInfo = SSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<System.Collections.Immutable.ImmutableArray<System.Collections.Specialized.BitVector32.Section>, Serde.ImmutableArrayWrap.SerializeImpl<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>>(_l_typeInfo, 0, this.Sections);
         type.End();
     }
 }

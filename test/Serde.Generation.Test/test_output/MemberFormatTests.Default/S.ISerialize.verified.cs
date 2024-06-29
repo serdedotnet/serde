@@ -4,13 +4,14 @@
 using System;
 using Serde;
 
-partial struct S : Serde.ISerialize
+partial struct S : Serde.ISerialize<S>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S", 2);
-        type.SerializeField("one"u8, new Int32Wrap(this.One));
-        type.SerializeField("twoWord"u8, new Int32Wrap(this.TwoWord));
+        var _l_typeInfo = SSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.One);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, this.TwoWord);
         type.End();
     }
 }

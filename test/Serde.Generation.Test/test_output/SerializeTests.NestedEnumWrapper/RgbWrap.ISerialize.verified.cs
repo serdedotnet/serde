@@ -4,17 +4,17 @@
 using System;
 using Serde;
 
-partial record struct RgbWrap : Serde.ISerialize
+partial struct RgbWrap : Serde.ISerialize<Rgb>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<Rgb>.Serialize(Rgb value, ISerializer serializer)
     {
-        var name = Value switch
+        var name = value switch
         {
             Rgb.Red => "red",
             Rgb.Green => "green",
             Rgb.Blue => "blue",
             _ => null
         };
-        serializer.SerializeEnumValue("Rgb", name, new Int32Wrap((int)Value));
+        serializer.SerializeEnumValue("Rgb", name, (int)value, default(Int32Wrap));
     }
 }
