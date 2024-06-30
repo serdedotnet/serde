@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Http.Headers;
 
 namespace Serde
 {
-    internal static class DictSerdeTypeInfo
+    internal static class DictSerdeTypeInfo<TKey, TValue> where TKey : notnull
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(TypeInfo.TypeKind.Dictionary, []);
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(
+            typeof(Dictionary<TKey, TValue>).Name, TypeInfo.TypeKind.Dictionary, []);
     }
 
     public static class DictWrap
@@ -57,7 +59,7 @@ namespace Serde
         {
             public static Dictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
             {
-                var typeInfo = DictSerdeTypeInfo.TypeInfo;
+                var typeInfo = DictSerdeTypeInfo<TKey, TValue>.TypeInfo;
                 var deCollection = deserializer.DeserializeCollection(typeInfo);
                 Dictionary<TKey, TValue> dict;
                 if (deCollection.SizeOpt is int size)
@@ -124,11 +126,11 @@ namespace Serde
     public static class IRODictWrap
     {
         public readonly record struct SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(IReadOnlyDictionary<TKey, TValue> Value)
-            : ISerialize,
+            : ISerialize, ISerialize<IReadOnlyDictionary<TKey, TValue>>,
             ISerializeWrap<IReadOnlyDictionary<TKey, TValue>, SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>>
             where TKey : notnull
-            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize
-            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize
+            where TKeyWrap : struct, ISerializeWrap<TKey, TKeyWrap>, ISerialize, ISerialize<TKey>
+            where TValueWrap : struct, ISerializeWrap<TValue, TValueWrap>, ISerialize, ISerialize<TValue>
         {
             public static SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap> Create(IReadOnlyDictionary<TKey, TValue> t)
                 => new SerializeImpl<TKey, TKeyWrap, TValue, TValueWrap>(t);
@@ -140,6 +142,16 @@ namespace Serde
                 {
                     sd.SerializeKey(TKeyWrap.Create(k));
                     sd.SerializeValue(TValueWrap.Create(v));
+                }
+                sd.End();
+            }
+            public void Serialize(IReadOnlyDictionary<TKey, TValue> value, ISerializer serializer)
+            {
+                var sd = serializer.SerializeDictionary(value.Count);
+                foreach (var (k, v) in value)
+                {
+                    sd.SerializeKey(k, default(TKeyWrap));
+                    sd.SerializeValue(v, default(TValueWrap));
                 }
                 sd.End();
             }

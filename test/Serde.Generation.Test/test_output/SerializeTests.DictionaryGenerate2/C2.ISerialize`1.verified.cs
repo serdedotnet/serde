@@ -8,8 +8,9 @@ partial class C2 : Serde.ISerialize<C2>
 {
     void ISerialize<C2>.Serialize(C2 value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("C2", 1);
-        type.SerializeField<System.Collections.Generic.Dictionary<string, C>, Serde.DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>>("map", value.Map);
+        var _l_typeInfo = C2SerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<System.Collections.Generic.Dictionary<string, C>, Serde.DictWrap.SerializeImpl<string, StringWrap, C, IdWrap<C>>>(_l_typeInfo, 0, value.Map);
         type.End();
     }
 }

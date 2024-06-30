@@ -104,6 +104,7 @@ internal static class SerdeTypeInfoGenerator
 internal static class {{typeName}}SerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "{{typeName}}",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 {{string.Join("," + Environment.NewLine,

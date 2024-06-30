@@ -96,7 +96,7 @@ public sealed partial class GenericWrapperTests
     {
         public readonly record struct SerializeImpl<T, TWrap>(CustomImArray<T> cia)
             : ISerialize, ISerialize<CustomImArray<T>>, ISerializeWrap<CustomImArray<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(CustomImArray<T> t) => new(t);
 
@@ -145,7 +145,7 @@ public sealed partial class GenericWrapperTests
     {
         public readonly record struct SerializeImpl<T, TWrap>(CustomImArray2<T> cia)
             : ISerialize, ISerialize<CustomImArray2<T>>, ISerializeWrap<CustomImArray2<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(CustomImArray2<T> t) => new(t);
 

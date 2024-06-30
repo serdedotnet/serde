@@ -21,7 +21,7 @@ namespace Serde
         }
 
         public static void SerializeSpan<T, TWrap>(string typeName, ReadOnlySpan<T> arr, ISerializer serializer)
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
         {
             var enumerable = serializer.SerializeEnumerable(typeName, arr.Length);
             foreach (var item in arr)
@@ -33,7 +33,7 @@ namespace Serde
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SerializeList<T, TWrap>(string typeName, List<T> list, ISerializer serializer)
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
         {
             var enumerable = serializer.SerializeEnumerable(typeName, list.Count);
             foreach (var item in list)
@@ -57,16 +57,16 @@ namespace Serde
         }
     }
 
-    internal static class EnumerableSerdeTypeInfo
+    internal static class ArraySerdeTypeInfo<T>
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(TypeInfo.TypeKind.Enumerable, []);
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(T[]).Name, TypeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ArrayWrap
     {
         public readonly record struct SerializeImpl<T, TWrap>(T[] Value)
             : ISerialize, ISerialize<T[]>, ISerializeWrap<T[], SerializeImpl<T, TWrap>>
-           where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+           where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(T[] t) => new SerializeImpl<T, TWrap>(t);
 
@@ -82,7 +82,7 @@ namespace Serde
         {
             public static T[] Deserialize(IDeserializer deserializer)
             {
-                var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
+                var typeInfo = ArraySerdeTypeInfo<T>.TypeInfo;
                 var deCollection = deserializer.DeserializeCollection(typeInfo);
                 if (deCollection.SizeOpt is int size)
                 {
@@ -110,11 +110,16 @@ namespace Serde
         }
     }
 
+    internal static class ListSerdeTypeInfo<T>
+    {
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(List<T>).Name, TypeInfo.TypeKind.Enumerable, []);
+    }
+
     public static class ListWrap
     {
         public readonly record struct SerializeImpl<T, TWrap>(List<T> Value)
             : ISerialize, ISerialize<List<T>>, ISerializeWrap<List<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(List<T> t) => new SerializeImpl<T, TWrap>(t);
 
@@ -131,7 +136,7 @@ namespace Serde
             public static List<T> Deserialize(IDeserializer deserializer)
             {
                 List<T> list;
-                var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
+                var typeInfo = ListSerdeTypeInfo<T>.TypeInfo;
                 var deCollection = deserializer.DeserializeCollection(typeInfo);
                 if (deCollection.SizeOpt is int size)
                 {
@@ -155,11 +160,17 @@ namespace Serde
         }
     }
 
+    internal static class ImmutableArraySerdeTypeInfo<T>
+    {
+        public static readonly TypeInfo TypeInfo = TypeInfo.Create(
+            typeof(ImmutableArray<T>).Name, TypeInfo.TypeKind.Enumerable, []);
+    }
+
     public static class ImmutableArrayWrap
     {
         public readonly record struct SerializeImpl<T, TWrap>(ImmutableArray<T> Value)
             : ISerialize, ISerialize<ImmutableArray<T>>, ISerializeWrap<ImmutableArray<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize
+            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(ImmutableArray<T> t) => new SerializeImpl<T, TWrap>(t);
 
@@ -176,7 +187,7 @@ namespace Serde
             public static ImmutableArray<T> Deserialize(IDeserializer deserializer)
             {
                 ImmutableArray<T>.Builder builder;
-                var typeInfo = EnumerableSerdeTypeInfo.TypeInfo;
+                var typeInfo = ImmutableArraySerdeTypeInfo<T>.TypeInfo;
                 var d = deserializer.DeserializeCollection(typeInfo);
                 if (d.SizeOpt is int size)
                 {

@@ -87,6 +87,12 @@ namespace Serde.Json
             return this;
         }
 
+        public ISerializeType SerializeType(TypeInfo typeInfo)
+        {
+            _writer.WriteStartObject();
+            return this;
+        }
+
         public ISerializeEnumerable SerializeEnumerable(string typeName, int? count)
         {
             _writer.WriteStartArray();
@@ -119,6 +125,18 @@ namespace Serde.Json
 
     partial class JsonSerializer : ISerializeType
     {
+        void ISerializeType.SerializeField<T>(TypeInfo typeInfo, int fieldIndex, T value)
+        {
+            _writer.WritePropertyName(typeInfo.GetSerializeName(fieldIndex));
+            value.Serialize(this);
+        }
+
+        void ISerializeType.SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value)
+        {
+            _writer.WritePropertyName(typeInfo.GetSerializeName(fieldIndex));
+            default(U).Serialize(value, this);
+        }
+
         void ISerializeType.SerializeField<T>(Utf8Span name, T value)
         {
             _writer.WritePropertyName(name);
@@ -204,6 +222,7 @@ namespace Serde.Json
             public ISerializeDictionary SerializeDictionary(int? length) => throw new KeyNotStringException();
             public ISerializeEnumerable SerializeEnumerable(string typeName, int? length) => throw new KeyNotStringException();
             public ISerializeType SerializeType(string name, int numFields) => throw new KeyNotStringException();
+            public ISerializeType SerializeType(TypeInfo typeInfo) => throw new KeyNotStringException();
             public void SerializeNull() => throw new KeyNotStringException();
             public void SerializeNotNull<T>(T t) where T : notnull, ISerialize => throw new KeyNotStringException();
             void ISerializer.SerializeNotNull<T, U>(T t, U u) => throw new KeyNotStringException();

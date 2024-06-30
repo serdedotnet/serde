@@ -2,6 +2,7 @@
 internal static class AllInOneSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "AllInOne",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 ("boolField", typeof(Serde.Test.AllInOne).GetField("BoolField")!),

@@ -10,9 +10,10 @@ partial class TestCase15
     {
         void ISerialize<TestCase15.Class1>.Serialize(TestCase15.Class1 value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("Class1", 2);
-            type.SerializeField<int, Int32Wrap>("field0", value.Field0);
-            type.SerializeField<byte, ByteWrap>("field1", value.Field1);
+            var _l_typeInfo = Class1SerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.Field0);
+            type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, value.Field1);
             type.End();
         }
     }

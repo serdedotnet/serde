@@ -170,48 +170,6 @@ namespace Serde
                     methodName = "SerializeField";
                 }
 
-                // If the member is marked as providing attributes we will need to create an array of the
-                // attributes and pass it as the last argument
-                if (member.ProvideAttributes)
-                {
-                    var attributeExpressions = member.Attributes.SelectNotNull(attributeData =>
-                    {
-                        if (attributeData.AttributeClass is not { } attrClass)
-                        {
-                            return null;
-                        }
-
-                        // Construct the positional arguments to the attribute constructor
-                        var args = attributeData.ConstructorArguments
-                            .Select(a => Argument(ParseExpression(a.ToCSharpString()))).ToList();
-
-                        // Construct the named arguments to the attribute constructor
-                        var assignments = attributeData.NamedArguments.Select(pair =>
-                            (ExpressionSyntax)AssignmentExpression(
-                                SyntaxKind.SimpleAssignmentExpression,
-                                IdentifierName(pair.Key),
-                                ParseExpression(pair.Value.ToCSharpString()))).ToList();
-
-                        return (ExpressionSyntax)ObjectCreationExpression(
-                            attrClass.ToFqnSyntax(),
-                            ArgumentList(SeparatedList(args)),
-                            InitializerExpression(
-                                SyntaxKind.ObjectInitializerExpression,
-                                SeparatedList(assignments)));
-                    }).ToList();
-
-                    if (attributeExpressions.Count > 0)
-                    {
-                        arguments.Add(ArrayCreationExpression(
-                            ArrayType(
-                                ParseTypeName("System.Attribute"),
-                                SingletonList(ArrayRankSpecifier(
-                                    SingletonSeparatedList((ExpressionSyntax)OmittedArraySizeExpression())))),
-                            InitializerExpression(
-                                SyntaxKind.ArrayInitializerExpression,
-                                SeparatedList(attributeExpressions))));
-                    }
-                }
 
                 return ExpressionStatement(InvocationExpression(
                     // type.SerializeField

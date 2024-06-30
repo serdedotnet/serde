@@ -17,21 +17,19 @@ public interface ISerialize<T> : ISerialize
 
 public interface ISerializeType
 {
+    void SerializeField<T>(TypeInfo typeInfo, int fieldIndex, T value) where T : ISerialize<T> => throw new NotImplementedException();
+    void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value) where U : struct, ISerialize<T> => throw new NotImplementedException();
+
     void SerializeField<T>(string name, T value) where T : ISerialize
     {
         SerializeField(Encoding.UTF8.GetBytes(name), value);
     }
     void SerializeField<T>(Utf8Span name, T value) where T : ISerialize;
-    void SerializeField<T>(string name, T value, ReadOnlySpan<Attribute> attributes) where T : ISerialize
-        => SerializeField(name, value);
-    void SerializeField<T>(Utf8Span name, T value, ReadOnlySpan<Attribute> attributes) where T : ISerialize
-        => SerializeField(name, value);
     void SkipField(string name) { SkipField(Encoding.UTF8.GetBytes(name)); }
     void SkipField(Utf8Span name) { }
+    void SkipField(TypeInfo typeInfo, int fieldIndex) { }
 
     void SerializeField<T, U>(string name, T value) where U : struct, ISerialize<T>;
-    void SerializeField<T, U>(string name, T value, ReadOnlySpan<Attribute> attributes) where U : struct, ISerialize<T>
-        => SerializeField<T, U>(name, value);
     void End();
 }
 
@@ -42,21 +40,22 @@ public static class ISerializeTypeExt
         string name,
         T value,
         U rawValue) where T : ISerialize
-        => SerializeFieldIfNotNull(serializeType, name, value, rawValue, ReadOnlySpan<Attribute>.Empty);
+    {
+        if (rawValue is null)
+        {
+            serializeType.SkipField(name);
+        }
+        else
+        {
+            serializeType.SerializeField(name, value);
+        }
+    }
 
     public static void SerializeFieldIfNotNull<T, U>(
         this ISerializeType serializeType,
         Utf8Span name,
         T value,
         U rawValue) where T : ISerialize
-        => SerializeFieldIfNotNull(serializeType, name, value, rawValue, ReadOnlySpan<Attribute>.Empty);
-
-    public static void SerializeFieldIfNotNull<T, U>(
-        this ISerializeType serializeType,
-        string name,
-        T value,
-        U rawValue,
-        ReadOnlySpan<Attribute> attributes) where T : ISerialize
     {
         if (rawValue is null)
         {
@@ -64,41 +63,14 @@ public static class ISerializeTypeExt
         }
         else
         {
-            serializeType.SerializeField(name, value, attributes);
+            serializeType.SerializeField(name, value);
         }
     }
 
-    public static void SerializeFieldIfNotNull<T, U>(
-        this ISerializeType serializeType,
-        Utf8Span name,
-        T value,
-        U rawValue,
-        ReadOnlySpan<Attribute> attributes) where T : ISerialize
-    {
-        if (rawValue is null)
-        {
-            serializeType.SkipField(name);
-        }
-        else
-        {
-            serializeType.SerializeField(name, value, attributes);
-        }
-    }
-}
-
-public static class ISerializeTypeExt2
-{
     public static void SerializeFieldIfNotNull<T, U>(
         this ISerializeType serializeType,
         string name,
         T value) where U : struct, ISerialize<T>
-        => SerializeFieldIfNotNull<T, U>(serializeType, name, value, ReadOnlySpan<Attribute>.Empty);
-
-    public static void SerializeFieldIfNotNull<T, U>(
-        this ISerializeType serializeType,
-        string name,
-        T value,
-        ReadOnlySpan<Attribute> attributes) where U : struct, ISerialize<T>
     {
         if (value is null)
         {
@@ -106,7 +78,23 @@ public static class ISerializeTypeExt2
         }
         else
         {
-            serializeType.SerializeField<T, U>(name, value, attributes);
+            serializeType.SerializeField<T, U>(name, value);
+        }
+    }
+
+    public static void SerializeFieldIfNotNull<T, U>(
+        this ISerializeType serializeType,
+        TypeInfo typeInfo,
+        int fieldIndex,
+        T value) where U : struct, ISerialize<T>
+    {
+        if (value is null)
+        {
+            serializeType.SkipField(typeInfo, fieldIndex);
+        }
+        else
+        {
+            serializeType.SerializeField<T, U>(typeInfo, fieldIndex, value);
         }
     }
 }
@@ -154,6 +142,7 @@ public interface ISerializer
         where U : ISerialize<T>;
 
     ISerializeType SerializeType(string name, int numFields);
+    ISerializeType SerializeType(TypeInfo typeInfo);
     ISerializeEnumerable SerializeEnumerable(string typeName, int? length);
     ISerializeDictionary SerializeDictionary(int? length);
 }

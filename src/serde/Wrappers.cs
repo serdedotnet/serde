@@ -12,13 +12,13 @@ namespace Serde
     }
 
     public readonly record struct IdWrap<T>(T Value) : ISerialize, ISerialize<T>, ISerializeWrap<T, IdWrap<T>>
-        where T : ISerialize
+        where T : ISerialize, ISerialize<T>
     {
         public static IdWrap<T> Create(T t) => new IdWrap<T>(t);
 
         void ISerialize.Serialize(ISerializer serializer) => Value.Serialize(serializer);
 
-        void ISerialize<T>.Serialize(T value, ISerializer serializer) => value.Serialize(serializer);
+        void ISerialize<T>.Serialize(T value, ISerializer serializer) => value.Serialize(value, serializer);
     }
 
     public readonly partial record struct BoolWrap(bool Value)
@@ -523,7 +523,7 @@ namespace Serde
                 }
                 else
                 {
-                    serializer.SerializeNotNull(default(TWrap));
+                    serializer.SerializeNotNull(value, default(TWrap));
                 }
             }
             void ISerialize.Serialize(ISerializer serializer)

@@ -2,6 +2,7 @@
 internal static class BIND_OPTSSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "BIND_OPTS",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 ("cbStruct", typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("cbStruct")!),

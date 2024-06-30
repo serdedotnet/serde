@@ -2,6 +2,7 @@
 internal static class MaxSizeTypeSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        "MaxSizeType",
         Serde.TypeInfo.TypeKind.CustomType,
         new (string, System.Reflection.MemberInfo)[] {
 ("field1", typeof(Serde.Test.MaxSizeType).GetProperty("Field1")!),
