@@ -76,9 +76,6 @@ public interface ISerializer
     void SerializeDecimal(decimal d);
     void SerializeString(string s);
     void SerializeNull();
-    void SerializeNotNull<T, U>(T t, U u)
-        where T : notnull
-        where U : ISerialize<T>;
     void SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
         where T : unmanaged
         where U : ISerialize<T>;

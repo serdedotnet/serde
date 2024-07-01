@@ -184,7 +184,6 @@ namespace Serde.Json
             public ISerializeCollection SerializeCollection(TypeInfo typeInfo, int? length) => throw new KeyNotStringException();
             public ISerializeType SerializeType(TypeInfo typeInfo) => throw new KeyNotStringException();
             public void SerializeNull() => throw new KeyNotStringException();
-            void ISerializer.SerializeNotNull<T, U>(T t, U u) => throw new KeyNotStringException();
         }
     }
 

@@ -94,9 +94,6 @@ public sealed partial class XmlSerializer : ISerializer
         }
     }
 
-    void ISerializer.SerializeNotNull<T, U>(T t, U u)
-        => u.Serialize(t, this);
-
     public void SerializeNull()
     {
         // Default behavior is to skip serialization of null values
