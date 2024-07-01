@@ -21,7 +21,6 @@ namespace Serde
         internal static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
-            ExpressionSyntax receiverExpr,
             ImmutableList<ITypeSymbol> inProgress)
         {
             TypeSyntax typeSyntax = ParseTypeName(receiverType.ToDisplayString());
@@ -136,7 +135,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     {
                         wrapperName = explicitWrap.ToString();
                     }
-                    else if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
+                    else if (ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Deserialize))
                     {
                         wrapperName = memberType;
                     }
@@ -494,7 +493,7 @@ private sealed class FieldNameVisitor : Serde.IDeserialize<byte>, Serde.IDeseria
                     {
                         wrapperName = explicitWrap.ToString();
                     }
-                    else if (ImplementsSerde(m.Type, context, SerdeUsage.Deserialize))
+                    else if (ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Deserialize))
                     {
                         wrapperName = memberType;
                     }

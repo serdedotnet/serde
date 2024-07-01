@@ -46,10 +46,10 @@ partial record BaseType : ISerialize<BaseType>
         serializeType.End();
     }
 
-    [GenerateSerde(Through = nameof(Value))]
+    [GenerateSerde(ThroughMember = nameof(Value))]
     private readonly partial record struct DerivedAWrap(DerivedA Value);
 
-    [GenerateSerde(Through = nameof(Value))]
+    [GenerateSerde(ThroughMember = nameof(Value))]
     private readonly partial record struct DerivedBWrap(DerivedB Value);
 }
 

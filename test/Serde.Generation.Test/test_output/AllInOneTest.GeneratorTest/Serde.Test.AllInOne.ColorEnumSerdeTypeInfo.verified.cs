@@ -6,7 +6,7 @@ partial record AllInOne
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
         "ColorEnum",
-        Serde.TypeInfo.TypeKind.CustomType,
+        Serde.TypeInfo.TypeKind.Enum,
         new (string, System.Reflection.MemberInfo)[] {
 ("red", typeof(Serde.Test.AllInOne.ColorEnum).GetField("Red")!),
 ("blue", typeof(Serde.Test.AllInOne.ColorEnum).GetField("Blue")!),

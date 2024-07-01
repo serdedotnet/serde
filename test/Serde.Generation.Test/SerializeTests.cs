@@ -20,7 +20,7 @@ using Serde;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices.ComTypes;
 
-[GenerateSerde(Through = nameof(Value))]
+[GenerateSerde(ThroughMember = nameof(Value))]
 readonly partial record struct OPTSWrap(BIND_OPTS Value);
 
 [GenerateSerde]
@@ -43,7 +43,7 @@ partial struct S
 using Serde;
 using System.Collections.Specialized;
 
-[GenerateSerialize(Through = nameof(Value))]
+[GenerateSerialize(ThroughMember = nameof(Value))]
 readonly partial record struct SectionWrap(BitVector32.Section Value);
 
 """;

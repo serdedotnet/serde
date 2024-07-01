@@ -19,7 +19,7 @@ using Serde;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices.ComTypes;
 
-[GenerateDeserialize(Through = nameof(Value))]
+[GenerateDeserialize(ThroughMember = nameof(Value))]
 readonly partial record struct OptsWrap(BIND_OPTS Value);
 
 [GenerateDeserialize]
@@ -40,7 +40,7 @@ partial struct S
 using Serde;
 using System.Runtime.InteropServices.ComTypes;
 
-[GenerateDeserialize(Through = nameof(Value))]
+[GenerateDeserialize(ThroughMember = nameof(Value))]
 readonly partial record struct Wrap(BIND_OPTS Value);
 
 """;

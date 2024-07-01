@@ -132,4 +132,7 @@
   <data name="ERR_CantFindNestedWrapper" xml:space="preserve">
     <value>Could not find nested type named '{0}' inside type '{1}'. The wrapped type '{2}' is generic, so the expected wrapper is a parent type with SerializeImpl and DeserializeImpl nested wrappers.</value>
   </data>
+  <data name="ERR_WrapperDoesntImplementInterface " xml:space="preserve">
+    <value>The wrapper type '{0}' doesn't implement the interface '{1}'.</value>
+  </data>
 </root>

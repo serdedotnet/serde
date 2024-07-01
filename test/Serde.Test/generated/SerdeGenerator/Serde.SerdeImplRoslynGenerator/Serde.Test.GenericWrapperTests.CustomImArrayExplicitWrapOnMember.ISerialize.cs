@@ -13,7 +13,7 @@ namespace Serde.Test
             {
                 var _l_typeInfo = CustomImArrayExplicitWrapOnMemberSerdeTypeInfo.TypeInfo;
                 var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<Serde.Test.GenericWrapperTests.CustomImArray<int>, Serde.Test.GenericWrapperTests.CustomImArrayWrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 0, this.A);
+                type.SerializeField<Serde.Test.GenericWrapperTests.CustomImArray<int>, Serde.Test.GenericWrapperTests.CustomImArrayWrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 0, value.A);
                 type.End();
             }
         }

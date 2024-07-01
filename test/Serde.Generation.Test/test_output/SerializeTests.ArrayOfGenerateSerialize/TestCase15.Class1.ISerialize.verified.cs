@@ -12,8 +12,8 @@ partial class TestCase15
         {
             var _l_typeInfo = Class1SerdeTypeInfo.TypeInfo;
             var type = serializer.SerializeType(_l_typeInfo);
-            type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.Field0);
-            type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, this.Field1);
+            type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.Field0);
+            type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, value.Field1);
             type.End();
         }
     }

@@ -10,7 +10,7 @@ partial class C : Serde.ISerialize<C>
     {
         var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
         var type = serializer.SerializeType(_l_typeInfo);
-        type.SerializeField<S<int>, SWrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 0, this.S);
+        type.SerializeField<S<int>, SWrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 0, value.S);
         type.End();
     }
 }

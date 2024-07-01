@@ -13,7 +13,7 @@ namespace Serde.Test
             {
                 var _l_typeInfo = BoolStructSerdeTypeInfo.TypeInfo;
                 var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<bool, BoolWrap>(_l_typeInfo, 0, this.BoolField);
+                type.SerializeField<bool, BoolWrap>(_l_typeInfo, 0, value.BoolField);
                 type.End();
             }
         }

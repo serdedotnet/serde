@@ -21,7 +21,7 @@ using System.Collections.Specialized;
 
 partial class Outer
 {
-    [GenerateSerialize(Through = nameof(Value))]
+    [GenerateSerialize(ThroughMember = nameof(Value))]
     public readonly partial record struct SectionWrap(BitVector32.Section Value);
 }
 
@@ -37,13 +37,39 @@ partial struct S
         }
 
         [Fact]
+        public Task InvalidNestedWrapper()
+        {
+            var src = """
+using Serde;
+using System.Collections.Immutable;
+using System.Collections.Specialized;
+
+partial class Outer
+{
+    [GenerateSerialize(ThroughMember = nameof(Value))]
+    public readonly partial record struct SectionWrap(BitVector32.Section Value);
+}
+
+[GenerateSerialize]
+partial struct S
+{
+    [SerdeMemberOptions(
+        // Wrong outer wrapper type
+        WrapperSerialize = typeof(ArrayWrap.SerializeImpl<BitVector32.Section, Outer.SectionWrap>))]
+    public ImmutableArray<int> Sections;
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
         public Task GenerateSerdeWrap()
         {
             var src = """
 using System.Runtime.InteropServices.ComTypes;
 using Serde;
 
-[GenerateSerde(Through = nameof(Value))]
+[GenerateSerde(ThroughMember = nameof(Value))]
 readonly partial record struct OPTSWrap(BIND_OPTS Value);
 
 """;
@@ -55,7 +81,7 @@ readonly partial record struct OPTSWrap(BIND_OPTS Value);
         {
             var src = @"
 using Serde;
-[GenerateWrapper(nameof(_s))]
+[GenerateSerde(ThroughMember = nameof(_s))]
 readonly partial struct StringWrap
 {
     private readonly string _s;
@@ -75,7 +101,7 @@ readonly partial struct StringWrap
         {
             var src = @"
 using Serde;
-[GenerateWrapper(""Wrapped"")]
+[GenerateSerde(ThroughMember = ""Wrapped"")]
 partial record struct StringWrap(string Wrapped);
 ";
             return VerifyDiagnostics(src,
@@ -94,7 +120,7 @@ class Point
     public int X;
     public int Y;
 }
-[GenerateWrapper(nameof(_point))]
+[GenerateSerde(ThroughMember = nameof(_point))]
 partial struct PointWrap
 {
     private readonly Point _point;
@@ -113,7 +139,7 @@ partial struct PointWrap
             var src = @"
 using System.Runtime.InteropServices.ComTypes;
 
-[Serde.GenerateWrapper(nameof(Value))]
+[Serde.GenerateSerde(ThroughMember = nameof(Value))]
 internal readonly partial record struct OPTSWrap(BIND_OPTS Value);
 
 [Serde.GenerateDeserialize]
@@ -249,7 +275,7 @@ public partial record Recursive
 using Serde;
 namespace Test;
 
-[GenerateWrapper(nameof(Value))]
+[GenerateSerde(ThroughMember = nameof(Value))]
 internal partial record struct RecursiveWrap(Recursive Value);
 
 [GenerateSerde]

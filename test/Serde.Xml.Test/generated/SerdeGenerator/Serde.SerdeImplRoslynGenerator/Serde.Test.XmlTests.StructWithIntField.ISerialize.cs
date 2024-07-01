@@ -13,7 +13,7 @@ namespace Serde.Test
             {
                 var _l_typeInfo = StructWithIntFieldSerdeTypeInfo.TypeInfo;
                 var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.X);
+                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.X);
                 type.End();
             }
         }

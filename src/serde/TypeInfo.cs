@@ -26,6 +26,7 @@ public sealed class TypeInfo
         CustomType,
         Enumerable,
         Dictionary,
+        Enum,
     }
 
     public TypeKind Kind { get; }

@@ -3,7 +3,7 @@ internal static class ColorEnumSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
         "ColorEnum",
-        Serde.TypeInfo.TypeKind.CustomType,
+        Serde.TypeInfo.TypeKind.Enum,
         new (string, System.Reflection.MemberInfo)[] {
 ("red", typeof(ColorEnum).GetField("Red")!),
 ("green", typeof(ColorEnum).GetField("Green")!),

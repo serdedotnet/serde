@@ -12,7 +12,7 @@ namespace Test
         {
             var _l_typeInfo = ParentSerdeTypeInfo.TypeInfo;
             var type = serializer.SerializeType(_l_typeInfo);
-            type.SerializeField<Recursive, Test.RecursiveWrap>(_l_typeInfo, 0, this.R);
+            type.SerializeField<Recursive, Test.RecursiveWrap>(_l_typeInfo, 0, value.R);
             type.End();
         }
     }

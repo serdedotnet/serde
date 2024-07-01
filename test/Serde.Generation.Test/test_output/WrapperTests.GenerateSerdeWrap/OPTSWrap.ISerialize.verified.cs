@@ -10,10 +10,10 @@ partial record struct OPTSWrap : Serde.ISerialize<System.Runtime.InteropServices
     {
         var _l_typeInfo = BIND_OPTSSerdeTypeInfo.TypeInfo;
         var type = serializer.SerializeType(_l_typeInfo);
-        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, Value.cbStruct);
-        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, Value.dwTickCountDeadline);
-        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 2, Value.grfFlags);
-        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 3, Value.grfMode);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.cbStruct);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, value.dwTickCountDeadline);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 2, value.grfFlags);
+        type.SerializeField<int, Int32Wrap>(_l_typeInfo, 3, value.grfMode);
         type.End();
     }
 }
