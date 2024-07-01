@@ -10,9 +10,9 @@ namespace Benchmarks
             if (typeof(T) == typeof(LoginViewModel))
                 return (T)(object)CreateLoginViewModel();
             if (typeof(T) == typeof(Location))
-                return (T)(object)CreateLocation();
+                return (T)(object)Location.Sample;
             if (typeof(T) == typeof(Serde.Test.AllInOne))
-                return (T)(object)new Serde.Test.AllInOne();
+                return (T)(object)Serde.Test.AllInOne.Sample;
 
             throw new InvalidOperationException();
 

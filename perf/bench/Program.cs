@@ -28,5 +28,5 @@ Serde: {json2}
 }
 
 var config = DefaultConfig.Instance.AddDiagnoser(MemoryDiagnoser.Default);
-var summary = BenchmarkSwitcher.FromAssembly(typeof(JsonToString<>).Assembly)
+var summary = BenchmarkSwitcher.FromAssembly(typeof(SerializeToString<>).Assembly)
     .Run(args, config);
