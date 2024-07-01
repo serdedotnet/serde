@@ -439,7 +439,7 @@ namespace Serde
                 }
                 else
                 {
-                    serializer.SerializeNotNull(value, default(TWrap));
+                    default(TWrap).Serialize(value, serializer);
                 }
             }
         }
