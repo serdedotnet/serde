@@ -6,13 +6,14 @@ using Serde;
 
 partial class Outer
 {
-    partial record struct SectionWrap : Serde.ISerialize
+    partial record struct SectionWrap : Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<System.Collections.Specialized.BitVector32.Section>.Serialize(System.Collections.Specialized.BitVector32.Section value, ISerializer serializer)
         {
-            var type = serializer.SerializeType("Section", 2);
-            type.SerializeField("mask"u8, new Int16Wrap(Value.Mask));
-            type.SerializeField("offset"u8, new Int16Wrap(Value.Offset));
+            var _l_typeInfo = SectionSerdeTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<short, Int16Wrap>(_l_typeInfo, 0, Value.Mask);
+            type.SerializeField<short, Int16Wrap>(_l_typeInfo, 1, Value.Offset);
             type.End();
         }
     }

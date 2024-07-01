@@ -94,98 +94,86 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArrayWrap
     {
-        public readonly record struct SerializeImpl<T, TWrap>(CustomImArray<T> cia)
-            : ISerialize, ISerialize<CustomImArray<T>>, ISerializeWrap<CustomImArray<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
+        private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+            typeof(CustomImArray<int>).ToString(),
+            TypeInfo.TypeKind.Enumerable,
+            []);
+        public readonly struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray<T>>
+            where TWrap : struct, ISerialize<T>
         {
-            public static SerializeImpl<T, TWrap> Create(CustomImArray<T> t) => new(t);
-
             void ISerialize<CustomImArray<T>>.Serialize(CustomImArray<T> value, ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray<T>).ToString(), value.Backing.AsSpan(), serializer);
-            void ISerialize.Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray<T>).ToString(), cia.Backing.AsSpan(), serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(s_typeInfo, value.Backing.AsSpan(), serializer);
         }
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<CustomImArray<T>>
             where TWrap : IDeserialize<T>
         {
             public static CustomImArray<T> Deserialize(IDeserializer deserializer)
-                => deserializer.DeserializeEnumerable(new Visitor());
-
-            public struct Visitor : IDeserializeVisitor<CustomImArray<T>>
             {
-                public string ExpectedTypeName => typeof(CustomImArray<T>).ToString();
-                CustomImArray<T> IDeserializeVisitor<CustomImArray<T>>.VisitEnumerable<D>(ref D d)
+                TypeInfo typeInfo = s_typeInfo;
+                ImmutableArray<T>.Builder builder;
+                var d = deserializer.DeserializeCollection(typeInfo);
+                if (d.SizeOpt is int size)
                 {
-                    ImmutableArray<T>.Builder builder;
-                    if (d.SizeOpt is int size)
-                    {
-                        builder = ImmutableArray.CreateBuilder<T>(size);
-                    }
-                    else
-                    {
-                        size = -1; // Set initial size to unknown
-                        builder = ImmutableArray.CreateBuilder<T>();
-                    }
-
-                    while (d.TryGetNext<T, TWrap>(out T? next))
-                    {
-                        builder.Add(next);
-                    }
-                    if (size >= 0 && builder.Count != size)
-                    {
-                        throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
-                    }
-                    return new CustomImArray<T>(builder.ToImmutable());
+                    builder = ImmutableArray.CreateBuilder<T>(size);
                 }
+                else
+                {
+                    size = -1; // Set initial size to unknown
+                    builder = ImmutableArray.CreateBuilder<T>();
+                }
+
+                while (d.TryReadValue<T, TWrap>(typeInfo, out T? next))
+                {
+                    builder.Add(next);
+                }
+                if (size >= 0 && builder.Count != size)
+                {
+                    throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
+                }
+                return new CustomImArray<T>(builder.ToImmutable());
             }
         }
     }
 
     internal static partial class CustomImArray2Wrap
     {
-        public readonly record struct SerializeImpl<T, TWrap>(CustomImArray2<T> cia)
-            : ISerialize, ISerialize<CustomImArray2<T>>, ISerializeWrap<CustomImArray2<T>, SerializeImpl<T, TWrap>>
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
+        private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+            typeof(CustomImArray2<int>).ToString(),
+            TypeInfo.TypeKind.Enumerable,
+            []);
+        public readonly record struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray2<T>>
+            where TWrap : struct, ISerialize<T>
         {
-            public static SerializeImpl<T, TWrap> Create(CustomImArray2<T> t) => new(t);
-
             void ISerialize<CustomImArray2<T>>.Serialize(CustomImArray2<T> value, ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray2<T>).ToString(), value.Backing.AsSpan(), serializer);
-            void ISerialize.Serialize(ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan<T, TWrap>(typeof(CustomImArray2<T>).ToString(), cia.Backing.AsSpan(), serializer);
+                => EnumerableHelpers.SerializeSpan<T, TWrap>(s_typeInfo, value.Backing.AsSpan(), serializer);
         }
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<CustomImArray2<T>>
             where TWrap : IDeserialize<T>
         {
             public static CustomImArray2<T> Deserialize(IDeserializer deserializer)
-                => deserializer.DeserializeEnumerable(new Visitor());
-
-            public struct Visitor : IDeserializeVisitor<CustomImArray2<T>>
             {
-                public string ExpectedTypeName => typeof(CustomImArray<T>).ToString();
-                CustomImArray2<T> IDeserializeVisitor<CustomImArray2<T>>.VisitEnumerable<D>(ref D d)
+                ImmutableArray<T>.Builder builder;
+                var typeInfo = s_typeInfo;
+                var d = deserializer.DeserializeCollection(typeInfo);
+                if (d.SizeOpt is int size)
                 {
-                    ImmutableArray<T>.Builder builder;
-                    if (d.SizeOpt is int size)
-                    {
-                        builder = ImmutableArray.CreateBuilder<T>(size);
-                    }
-                    else
-                    {
-                        size = -1; // Set initial size to unknown
-                        builder = ImmutableArray.CreateBuilder<T>();
-                    }
-
-                    while (d.TryGetNext<T, TWrap>(out T? next))
-                    {
-                        builder.Add(next);
-                    }
-                    if (size >= 0 && builder.Count != size)
-                    {
-                        throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
-                    }
-                    return new CustomImArray2<T>(builder.ToImmutable());
+                    builder = ImmutableArray.CreateBuilder<T>(size);
                 }
+                else
+                {
+                    size = -1; // Set initial size to unknown
+                    builder = ImmutableArray.CreateBuilder<T>();
+                }
+
+                while (d.TryReadValue<T, TWrap>(typeInfo, out T? next))
+                {
+                    builder.Add(next);
+                }
+                if (size >= 0 && builder.Count != size)
+                {
+                    throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
+                }
+                return new CustomImArray2<T>(builder.ToImmutable());
             }
         }
     }

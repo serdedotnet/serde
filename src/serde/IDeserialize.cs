@@ -119,11 +119,8 @@ namespace Serde
         T DeserializeDecimal<T>(IDeserializeVisitor<T> v);
         T DeserializeString<T>(IDeserializeVisitor<T> v);
         T DeserializeIdentifier<T>(IDeserializeVisitor<T> v);
-        T DeserializeType<T>(string typeName, ReadOnlySpan<string> fieldNames, IDeserializeVisitor<T> v);
-        T DeserializeEnumerable<T>(IDeserializeVisitor<T> v);
-        T DeserializeDictionary<T>(IDeserializeVisitor<T> v);
         T DeserializeNullableRef<T>(IDeserializeVisitor<T> v);
-        IDeserializeCollection DeserializeCollection(TypeInfo typeInfo) => throw new NotImplementedException();
-        IDeserializeType DeserializeType(TypeInfo typeInfo) => throw new NotImplementedException();
+        IDeserializeCollection DeserializeCollection(TypeInfo typeInfo);
+        IDeserializeType DeserializeType(TypeInfo typeInfo);
     }
 }

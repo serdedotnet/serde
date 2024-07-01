@@ -13,7 +13,7 @@ namespace Serde.Json
         /// <summary>
         /// Serialize the given type to a string.
         /// </summary>
-        public static string Serialize<T>(T s) where T : ISerialize, ISerialize<T>
+        public static string Serialize<T>(T s) where T : ISerialize<T>
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
             using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions

@@ -7,18 +7,18 @@ namespace Serde.Test
 {
     partial record AllInOne
     {
-        partial record struct ColorEnumWrap : Serde.ISerialize
+        partial struct ColorEnumWrap : Serde.ISerialize<Serde.Test.AllInOne.ColorEnum>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.AllInOne.ColorEnum>.Serialize(Serde.Test.AllInOne.ColorEnum value, ISerializer serializer)
             {
-                var name = Value switch
+                var name = value switch
                 {
                     Serde.Test.AllInOne.ColorEnum.Red => "red",
                     Serde.Test.AllInOne.ColorEnum.Blue => "blue",
                     Serde.Test.AllInOne.ColorEnum.Green => "green",
                     _ => null
                 };
-                serializer.SerializeEnumValue("ColorEnum", name, new Int32Wrap((int)Value));
+                serializer.SerializeEnumValue("ColorEnum", name, (int)value, default(Int32Wrap));
             }
         }
     }

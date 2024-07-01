@@ -7,16 +7,17 @@ namespace Serde.Test
 {
     partial class SampleTest
     {
-        partial record OrderedItem : Serde.ISerialize
+        partial record OrderedItem : Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.SampleTest.OrderedItem>.Serialize(Serde.Test.SampleTest.OrderedItem value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("OrderedItem", 5);
-                type.SerializeField("ItemName"u8, new StringWrap(this.ItemName));
-                type.SerializeField("Description"u8, new StringWrap(this.Description));
-                type.SerializeField("UnitPrice"u8, new DecimalWrap(this.UnitPrice));
-                type.SerializeField("Quantity"u8, new Int32Wrap(this.Quantity));
-                type.SerializeField("LineTotal"u8, new DecimalWrap(this.LineTotal));
+                var _l_typeInfo = OrderedItemSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 0, this.ItemName);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 1, this.Description);
+                type.SerializeField<decimal, DecimalWrap>(_l_typeInfo, 2, this.UnitPrice);
+                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 3, this.Quantity);
+                type.SerializeField<decimal, DecimalWrap>(_l_typeInfo, 4, this.LineTotal);
                 type.End();
             }
         }

@@ -7,16 +7,17 @@ namespace Serde.Test
 {
     partial class SampleTest
     {
-        partial record Address : Serde.ISerialize
+        partial record Address : Serde.ISerialize<Serde.Test.SampleTest.Address>
         {
-            void Serde.ISerialize.Serialize(ISerializer serializer)
+            void ISerialize<Serde.Test.SampleTest.Address>.Serialize(Serde.Test.SampleTest.Address value, ISerializer serializer)
             {
-                var type = serializer.SerializeType("Address", 5);
-                type.SerializeField("Name"u8, new StringWrap(this.Name));
-                type.SerializeField("Line1"u8, new StringWrap(this.Line1));
-                type.SerializeFieldIfNotNull("City"u8, new NullableRefWrap.SerializeImpl<string, StringWrap>(this.City), this.City);
-                type.SerializeField("State"u8, new StringWrap(this.State));
-                type.SerializeField("Zip"u8, new StringWrap(this.Zip));
+                var _l_typeInfo = AddressSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_typeInfo);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 0, this.Name);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 1, this.Line1);
+                type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 2, this.City);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 3, this.State);
+                type.SerializeField<string, StringWrap>(_l_typeInfo, 4, this.Zip);
                 type.End();
             }
         }

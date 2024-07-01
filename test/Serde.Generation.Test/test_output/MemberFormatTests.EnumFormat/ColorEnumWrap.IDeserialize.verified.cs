@@ -4,7 +4,7 @@
 using System;
 using Serde;
 
-partial record struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
+partial struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
 {
     static ColorEnum Serde.IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
     {

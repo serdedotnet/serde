@@ -2,5 +2,7 @@
 
 namespace Some.Nested.Namespace
 {
-    readonly partial record struct ColorIntWrap(ColorInt Value);
+    readonly partial struct ColorIntWrap
+    {
+    }
 }

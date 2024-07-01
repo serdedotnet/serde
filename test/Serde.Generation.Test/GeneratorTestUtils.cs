@@ -37,17 +37,12 @@ namespace Serde.Test
             params DiagnosticResult[] diagnostics)
             => VerifyMultiFile(src);
 
-        private static readonly Lazy<VerifySettings> s_cachedSettings = new Lazy<VerifySettings>(() =>
+        public static Task<VerifyResult[]> VerifyMultiFile(string src, MetadataReference[]? additionalRefs = null)
         {
             var settings = new VerifySettings();
             settings.UseDirectory("test_output/");
             settings.UseUniqueDirectory();
-            return settings;
-        });
-
-        public static Task<VerifyResult[]> VerifyMultiFile(string src, MetadataReference[]? additionalRefs = null)
-        {
-            return VerifyGeneratedCode(src, s_cachedSettings.Value, additionalRefs);
+            return VerifyGeneratedCode(src, settings, additionalRefs);
         }
 
         public static Task<VerifyResult[]> VerifyGeneratedCode(

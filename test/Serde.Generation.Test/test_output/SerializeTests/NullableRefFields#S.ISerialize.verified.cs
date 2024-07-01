@@ -4,16 +4,17 @@
 using System;
 using Serde;
 
-partial struct S<T1, T2, T3, T4, T5> : Serde.ISerialize
+partial struct S<T1, T2, T3, T4, T5> : Serde.ISerialize<S<T1, T2, T3, T4, T5>>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<S<T1, T2, T3, T4, T5>>.Serialize(S<T1, T2, T3, T4, T5> value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("S", 5);
-        type.SerializeFieldIfNotNull("fS"u8, new NullableRefWrap.SerializeImpl<string, StringWrap>(this.FS), this.FS);
-        type.SerializeField("f1"u8, this.F1);
-        type.SerializeFieldIfNotNull("f2"u8, this.F2, this.F2);
-        type.SerializeFieldIfNotNull("f3"u8, new NullableRefWrap.SerializeImpl<T3, IdWrap<T3>>(this.F3), this.F3);
-        type.SerializeFieldIfNotNull("f4"u8, this.F4, this.F4);
+        var _l_typeInfo = SSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 0, this.FS);
+        type.SerializeField<T1, IdWrap<T1>>(_l_typeInfo, 1, this.F1);
+        type.SerializeFieldIfNotNull<T2, IdWrap<T2>>(_l_typeInfo, 2, this.F2);
+        type.SerializeFieldIfNotNull<T3?, Serde.NullableRefWrap.SerializeImpl<T3, IdWrap<T3>>>(_l_typeInfo, 3, this.F3);
+        type.SerializeFieldIfNotNull<T4, IdWrap<T4>>(_l_typeInfo, 4, this.F4);
         type.End();
     }
 }

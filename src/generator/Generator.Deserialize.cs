@@ -10,10 +10,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
+using static Serde.SerdeImplRoslynGenerator;
 
 namespace Serde
 {
-    partial class SerdeImplRoslynGenerator
+    internal class DeserializeImplGenerator
     {
         private const string GeneratedVisitorName = "SerdeVisitor";
 
@@ -229,7 +230,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
             // var fieldNames = new[] { 'field1', 'field2', 'field3' ... };
             // return deserializer.DeserializeType('TypeName', fieldNames, visitor);
 
-            var serdeName = SerdeBuiltInName(typeSymbol.SpecialType);
+            var serdeName = SerdeImplRoslynGenerator.SerdeBuiltInName(typeSymbol.SpecialType);
             var typeSyntax = ParseTypeName(typeSymbol.ToString());
             if (serdeName is not null)
             {

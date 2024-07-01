@@ -4,12 +4,13 @@
 using System;
 using Serde;
 
-partial class C : Serde.ISerialize
+partial class C : Serde.ISerialize<C>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<C>.Serialize(C value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("C", 1);
-        type.SerializeField("nestedArr"u8, new ArrayWrap.SerializeImpl<int[], ArrayWrap.SerializeImpl<int, Int32Wrap>>(this.NestedArr));
+        var _l_typeInfo = CSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, Int32Wrap>>>(_l_typeInfo, 0, this.NestedArr);
         type.End();
     }
 }

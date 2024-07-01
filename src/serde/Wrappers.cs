@@ -6,32 +6,18 @@ using System.Text;
 
 namespace Serde
 {
-    public interface ISerializeWrap<T, TWrap> where TWrap : ISerialize
+    public readonly struct IdWrap<T> : ISerialize<T>
+        where T : ISerialize<T>
     {
-        abstract static TWrap Create(T t); // Should be abstract static
-    }
-
-    public readonly record struct IdWrap<T>(T Value) : ISerialize, ISerialize<T>, ISerializeWrap<T, IdWrap<T>>
-        where T : ISerialize, ISerialize<T>
-    {
-        public static IdWrap<T> Create(T t) => new IdWrap<T>(t);
-
-        void ISerialize.Serialize(ISerializer serializer) => Value.Serialize(serializer);
-
         void ISerialize<T>.Serialize(T value, ISerializer serializer) => value.Serialize(value, serializer);
     }
 
     public readonly partial record struct BoolWrap(bool Value)
-        : ISerializeWrap<bool, BoolWrap>, ISerialize, ISerialize<bool>, IDeserialize<bool>
+        : ISerialize<bool>, IDeserialize<bool>
     {
         private const string s_typeName = "bool";
-        public static BoolWrap Create(bool t) => new BoolWrap(t);
         void ISerialize<bool>.Serialize(bool value, ISerializer serializer)
             => serializer.SerializeBool(value);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeBool(Value);
-        }
         static bool Serde.IDeserialize<bool>.Deserialize(IDeserializer deserializer)
         {
             var visitor = SerdeVisitor.Instance;
@@ -47,16 +33,11 @@ namespace Serde
     }
 
     public readonly partial record struct CharWrap(char Value)
-        : ISerializeWrap<char, CharWrap>, ISerialize, ISerialize<char>, IDeserialize<char>
+        : ISerialize<char>, IDeserialize<char>
     {
         private const string s_typeName = "char";
-        public static CharWrap Create(char c) => new CharWrap(c);
         void ISerialize<char>.Serialize(char value, ISerializer serializer)
             => serializer.SerializeChar(value);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeChar(Value);
-        }
         static char Serde.IDeserialize<char>.Deserialize(IDeserializer deserializer)
         {
             var visitor = SerdeVisitor.Instance;
@@ -85,14 +66,9 @@ namespace Serde
     }
 
     public readonly partial record struct ByteWrap(byte Value)
-        : ISerializeWrap<byte, ByteWrap>, ISerialize, ISerialize<byte>, IDeserialize<byte>
+        : ISerialize<byte>, IDeserialize<byte>
     {
         private const string s_typeName = "byte";
-        public static ByteWrap Create(byte b) => new ByteWrap(b);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeByte(Value);
-        }
         public void Serialize(byte value, ISerializer serializer)
         {
             serializer.SerializeByte(value);
@@ -119,17 +95,12 @@ namespace Serde
     }
 
     public readonly partial record struct UInt16Wrap(ushort Value)
-        : ISerializeWrap<ushort, UInt16Wrap>, ISerialize, ISerialize<ushort>, IDeserialize<ushort>
+        : ISerialize<ushort>, IDeserialize<ushort>
     {
         private const string s_typeName = "ushort";
-        public static UInt16Wrap Create(ushort i) => new UInt16Wrap(i);
         void ISerialize<ushort>.Serialize(ushort value, ISerializer serializer)
         {
             serializer.SerializeU16(value);
-        }
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeU16(Value);
         }
         static ushort Serde.IDeserialize<ushort>.Deserialize(IDeserializer deserializer)
         {
@@ -153,16 +124,11 @@ namespace Serde
     }
 
     public readonly partial record struct UInt32Wrap(uint Value)
-        : ISerializeWrap<uint, UInt32Wrap>, ISerialize, ISerialize<uint>, IDeserialize<uint>
+        : ISerialize<uint>, IDeserialize<uint>
     {
         private const string s_typeName = "uint";
-        public static UInt32Wrap Create(uint i) => new UInt32Wrap(i);
         void ISerialize<uint>.Serialize(uint value, ISerializer serializer)
             => serializer.SerializeU32(value);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeU32(Value);
-        }
         static uint Serde.IDeserialize<uint>.Deserialize(IDeserializer deserializer)
         {
             var visitor = SerdeVisitor.Instance;
@@ -185,16 +151,11 @@ namespace Serde
     }
 
     public readonly partial record struct UInt64Wrap(ulong Value)
-        : ISerializeWrap<ulong, UInt64Wrap>, ISerialize, ISerialize<ulong>, IDeserialize<ulong>
+        : ISerialize<ulong>, IDeserialize<ulong>
     {
         private const string s_typeName = "ulong";
-        public static UInt64Wrap Create(ulong i) => new UInt64Wrap(i);
         void ISerialize<ulong>.Serialize(ulong value, ISerializer serializer)
             => serializer.SerializeU64(value);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeU64(Value);
-        }
         static ulong Serde.IDeserialize<ulong>.Deserialize(IDeserializer deserializer)
         {
             var visitor = SerdeVisitor.Instance;
@@ -217,16 +178,11 @@ namespace Serde
     }
 
     public readonly partial record struct SByteWrap(sbyte Value)
-        : ISerializeWrap<sbyte, SByteWrap>, ISerialize, ISerialize<sbyte>, IDeserialize<sbyte>
+        : ISerialize<sbyte>, IDeserialize<sbyte>
     {
         private const string s_typeName = "sbyte";
-        public static SByteWrap Create(sbyte i) => new SByteWrap(i);
         void ISerialize<sbyte>.Serialize(sbyte value, ISerializer serializer)
             => serializer.SerializeSByte(value);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeSByte(Value);
-        }
         static sbyte Serde.IDeserialize<sbyte>.Deserialize(IDeserializer deserializer)
         {
             var visitor = SerdeVisitor.Instance;
@@ -249,17 +205,12 @@ namespace Serde
     }
 
     public readonly partial record struct Int16Wrap(short Value)
-        : ISerializeWrap<short, Int16Wrap>, ISerialize, ISerialize<short>, IDeserialize<short>
+        : ISerialize<short>, IDeserialize<short>
     {
         private const string s_typeName = "short";
-        public static Int16Wrap Create(short i) => new Int16Wrap(i);
         void ISerialize<short>.Serialize(short value, ISerializer serializer)
         {
             serializer.SerializeI16(value);
-        }
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeI16(Value);
         }
         static short Serde.IDeserialize<short>.Deserialize(IDeserializer deserializer)
         {
@@ -283,14 +234,9 @@ namespace Serde
     }
 
     public readonly partial record struct Int32Wrap(int Value)
-        : ISerializeWrap<int, Int32Wrap>, ISerialize, ISerialize<int>, IDeserialize<int>
+        : ISerialize<int>, IDeserialize<int>
     {
         private const string s_typeName = "int";
-        public static Int32Wrap Create(int i) => new Int32Wrap(i);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeI32(Value);
-        }
         void ISerialize<int>.Serialize(int value, ISerializer serializer)
         {
             serializer.SerializeI32(value);
@@ -317,16 +263,11 @@ namespace Serde
     }
 
     public readonly partial record struct Int64Wrap(long Value)
-        : ISerializeWrap<long, Int64Wrap>, ISerialize, ISerialize<long>, IDeserialize<long>
+        : ISerialize<long>, IDeserialize<long>
     {
         private const string s_typeName = "long";
-        public static Int64Wrap Create(long i) => new Int64Wrap(i);
         void ISerialize<long>.Serialize(long value, ISerializer serializer)
             => serializer.SerializeI64(value);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeI64(Value);
-        }
         static long Serde.IDeserialize<long>.Deserialize(IDeserializer deserializer)
         {
             var visitor = SerdeVisitor.Instance;
@@ -349,13 +290,9 @@ namespace Serde
     }
 
     public readonly partial record struct DoubleWrap(double Value)
-        : ISerializeWrap<double, DoubleWrap>, ISerialize, ISerialize<double>, IDeserialize<double>
+        : ISerialize<double>, IDeserialize<double>
     {
         public static DoubleWrap Create(double d) => new DoubleWrap(d);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeDouble(Value);
-        }
         void ISerialize<double>.Serialize(double value, ISerializer serializer)
         {
             serializer.SerializeDouble(value);
@@ -384,13 +321,9 @@ namespace Serde
     }
 
     public readonly partial record struct DecimalWrap(decimal Value)
-        : ISerializeWrap<decimal, DecimalWrap>, ISerialize, ISerialize<decimal>, IDeserialize<decimal>
+        : ISerialize<decimal>, IDeserialize<decimal>
     {
         public static DecimalWrap Create(decimal d) => new DecimalWrap(d);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeDecimal(Value);
-        }
         void Serde.ISerialize<decimal>.Serialize(decimal value, ISerializer serializer)
         {
             serializer.SerializeDecimal(value);
@@ -419,14 +352,10 @@ namespace Serde
         }
     }
     public readonly partial record struct StringWrap(string Value)
-        : ISerializeWrap<string, StringWrap>, ISerialize, ISerialize<string>, IDeserialize<string>
+        : ISerialize<string>, IDeserialize<string>
     {
         private const string s_typeName = "string";
         public static StringWrap Create(string s) => new StringWrap(s);
-        void Serde.ISerialize.Serialize(ISerializer serializer)
-        {
-            serializer.SerializeString(Value);
-        }
         void ISerialize<string>.Serialize(string value, ISerializer serializer)
         {
             serializer.SerializeString(value);
@@ -448,10 +377,9 @@ namespace Serde
 
     public static class NullableWrap
     {
-        public readonly partial record struct SerializeImpl<T, TWrap>(T? Value)
-            : ISerializeWrap<T?, SerializeImpl<T, TWrap>>, ISerialize, ISerialize<T?>
+        public readonly partial record struct SerializeImpl<T, TWrap>(T? Value) : ISerialize<T?>
             where T : struct
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
+            where TWrap : struct, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(T? t) => new(t);
 
@@ -459,18 +387,7 @@ namespace Serde
             {
                 if (value is {} notnull)
                 {
-                    serializer.SerializeNotNull(notnull, TWrap.Create(notnull));
-                }
-                else
-                {
-                    serializer.SerializeNull();
-                }
-            }
-            void ISerialize.Serialize(ISerializer serializer)
-            {
-                if (Value is {} notnull)
-                {
-                    serializer.SerializeNotNull(TWrap.Create(notnull));
+                    default(TWrap).Serialize(notnull, serializer);
                 }
                 else
                 {
@@ -508,10 +425,9 @@ namespace Serde
 
     public static class NullableRefWrap
     {
-        public readonly partial record struct SerializeImpl<T, TWrap>(T? Value)
-            : ISerializeWrap<T?, SerializeImpl<T, TWrap>>, ISerialize, ISerialize<T?>
+        public readonly partial record struct SerializeImpl<T, TWrap>(T? Value) : ISerialize<T?>
             where T : class
-            where TWrap : struct, ISerializeWrap<T, TWrap>, ISerialize, ISerialize<T>
+            where TWrap : struct, ISerialize<T>
         {
             public static SerializeImpl<T, TWrap> Create(T? t) => new SerializeImpl<T, TWrap>(t);
 
@@ -524,17 +440,6 @@ namespace Serde
                 else
                 {
                     serializer.SerializeNotNull(value, default(TWrap));
-                }
-            }
-            void ISerialize.Serialize(ISerializer serializer)
-            {
-                if (Value is null)
-                {
-                    serializer.SerializeNull();
-                }
-                else
-                {
-                    serializer.SerializeNotNull(TWrap.Create(Value));
                 }
             }
         }

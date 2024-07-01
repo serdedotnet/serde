@@ -7,7 +7,7 @@ namespace Serde.Test
 {
     partial record AllInOne
     {
-        partial record struct ColorEnumWrap : Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>
+        partial struct ColorEnumWrap : Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>
         {
             static Serde.Test.AllInOne.ColorEnum Serde.IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize(IDeserializer deserializer)
             {

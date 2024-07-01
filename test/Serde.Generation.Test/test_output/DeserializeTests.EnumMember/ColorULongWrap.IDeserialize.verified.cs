@@ -4,7 +4,7 @@
 using System;
 using Serde;
 
-partial record struct ColorULongWrap : Serde.IDeserialize<ColorULong>
+partial struct ColorULongWrap : Serde.IDeserialize<ColorULong>
 {
     static ColorULong Serde.IDeserialize<ColorULong>.Deserialize(IDeserializer deserializer)
     {

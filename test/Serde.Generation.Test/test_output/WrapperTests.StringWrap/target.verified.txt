@@ -6,8 +6,6 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (2,1)-(2,28),
-      Description: ,
-      HelpLink: ,
       MessageFormat: The type 'string' can't be automatically wrapped because it is a built-in type.,
       Message: The type 'string' can't be automatically wrapped because it is a built-in type.,
       Category: Serde

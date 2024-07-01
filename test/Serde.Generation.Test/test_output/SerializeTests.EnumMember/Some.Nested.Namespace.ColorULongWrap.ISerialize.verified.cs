@@ -6,18 +6,18 @@ using Serde;
 
 namespace Some.Nested.Namespace
 {
-    partial record struct ColorULongWrap : Serde.ISerialize
+    partial struct ColorULongWrap : Serde.ISerialize<Some.Nested.Namespace.ColorULong>
     {
-        void Serde.ISerialize.Serialize(ISerializer serializer)
+        void ISerialize<Some.Nested.Namespace.ColorULong>.Serialize(Some.Nested.Namespace.ColorULong value, ISerializer serializer)
         {
-            var name = Value switch
+            var name = value switch
             {
                 Some.Nested.Namespace.ColorULong.Red => "red",
                 Some.Nested.Namespace.ColorULong.Green => "green",
                 Some.Nested.Namespace.ColorULong.Blue => "blue",
                 _ => null
             };
-            serializer.SerializeEnumValue("ColorULong", name, new UInt64Wrap((ulong)Value));
+            serializer.SerializeEnumValue("ColorULong", name, (ulong)value, default(UInt64Wrap));
         }
     }
 }

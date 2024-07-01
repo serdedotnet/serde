@@ -9,7 +9,6 @@ using static Serde.Test.GeneratorTestUtils;
 
 namespace Serde.Test
 {
-    [UsesVerify]
     public class SerializeTests
     {
         [Fact]
@@ -124,10 +123,10 @@ using Serde;
 
 [GenerateSerialize]
 partial struct S<T1, T2, T3, T4, T5>
-    where T1 : ISerialize, ISerialize<T1>
-    where T2 : ISerialize?, ISerialize<T2>?
-    where T3 : class, ISerialize, ISerialize<T3>
-    where T4 : class?, ISerialize, ISerialize<T4>
+    where T1 : ISerialize<T1>
+    where T2 : ISerialize<T2>?
+    where T3 : class, ISerialize<T3>
+    where T4 : class?, ISerialize<T4>
 {
     public string? FS;
     public T1 F1;
@@ -147,7 +146,7 @@ using Serde;
 partial struct S<T1, T2, TSerialize>
     where T1 : int?
     where T2 : TSerialize?
-    where TSerialize : struct, ISerialize, ISerialize<TSerialize>
+    where TSerialize : struct, ISerialize<TSerialize>
 {
     public int? FI;
     public T1 F1;
@@ -392,18 +391,8 @@ public struct S
         Y = y;
     }
 }
-public struct SWrap : ISerialize, ISerialize<S>
+public struct SWrap : ISerialize<S>
 {
-    private readonly S _s;
-    public SWrap(S s)
-    {
-        _s = s;
-    }
-    void ISerialize.Serialize(ISerializer serializer)
-    {
-        serializer.SerializeI32(_s.X);
-        serializer.SerializeI32(_s.Y);
-    }
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
         serializer.SerializeI32(value.X);
@@ -435,27 +424,21 @@ public struct S<T>
 }
 public static class SWrap
 {
-    public readonly struct SerializeImpl<T, TWrap>
-        : ISerialize, ISerialize<S<T>>,
-          ISerializeWrap<S<T>, SerializeImpl<T, TWrap>>
-        where TWrap : struct, ISerialize, ISerialize<T>, ISerializeWrap<T, TWrap>
+    internal static class SWrapTypeInfo
     {
-        public static SerializeImpl<T, TWrap> Create(S<T> t) => new(t);
-        private readonly S<T> _s;
-        public SerializeImpl(S<T> s)
-        {
-            _s = s;
-        }
+        public static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+            ""S"",
+            Serde.TypeInfo.TypeKind.CustomType,
+            new (string, System.Reflection.MemberInfo)[] { (""s"", typeof(S<>).GetField(""Field"")!) });
+    }
+    public readonly struct SerializeImpl<T, TWrap> : ISerialize<S<T>>
+        where TWrap : struct, ISerialize<T>
+    {
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
-            var type = serializer.SerializeType(""S"", 1);
-            type.SerializeField<T, TWrap>(""s"", value.Field);
-            type.End();
-        }
-        void ISerialize.Serialize(ISerializer serializer)
-        {
-            var type = serializer.SerializeType(""S"", 1);
-            type.SerializeField(""s"", TWrap.Create(_s.Field));
+            var _l_typeInfo = SWrapTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_typeInfo);
+            type.SerializeField<T, TWrap>(_l_typeInfo, 0, value.Field);
             type.End();
         }
     }
@@ -484,25 +467,19 @@ public struct S<T>
     }
 }
 public readonly struct SWrap<T, TWrap>
-    : ISerialize, ISerialize<T>, ISerializeWrap<S<T>, SWrap<T, TWrap>>
-    where TWrap : struct, ISerialize, ISerialize<T>, ISerializeWrap<T, TWrap>
+    : ISerialize<T>
+    where TWrap : struct, ISerialize<T>
 {
-    public static SWrap<T, TWrap> Create(S<T> t) => new SWrap<T, TWrap>(t);
-    private readonly S<T> _s;
-    public SWrap(S<T> s)
-    {
-        _s = s;
-    }
+    private static readonly Serde.TypeInfo s_typeInfo = Serde.TypeInfo.Create(
+        ""S"",
+        Serde.TypeInfo.TypeKind.CustomType,
+        new (string, System.Reflection.MemberInfo)[] { (""s"", typeof(S<>).GetField(""Field"")!) });
+
     void ISerialize<T>.Serialize(T value, ISerializer serializer)
     {
-        var type = serializer.SerializeType(""S"", 1);
-        type.SerializeField<T, TWrap>(""s"", value);
-        type.End();
-    }
-    void ISerialize.Serialize(ISerializer serializer)
-    {
-        var type = serializer.SerializeType(""S"", 1);
-        type.SerializeField(""s"", TWrap.Create(_s.Field));
+        var _l_typeInfo = s_typeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<T, TWrap>(_l_typeInfo, 0, value);
         type.End();
     }
 }
@@ -586,7 +563,10 @@ partial class A
 
         private static Task VerifySerialize(
             string src,
-            [CallerMemberName] string callerName = "")
-            => VerifyGeneratedCode(src, nameof(SerializeTests), callerName, multiFile: false);
+            [CallerMemberName] string? callerName = null)
+        {
+            Assert.NotNull(callerName);
+            return VerifyGeneratedCode(src, nameof(SerializeTests), callerName, multiFile: false);
+        }
     }
 }

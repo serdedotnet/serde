@@ -5,9 +5,7 @@
       Title: ,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (38,18)-(38,19),
-      Description: ,
-      HelpLink: ,
+      Location: : (32,18)-(32,19),
       MessageFormat: Could not find nested type named 'SerializeImpl' inside type 'SWrap<,>'. The wrapped type 'S<T>' is generic, so the expected wrapper is a parent type with SerializeImpl and DeserializeImpl nested wrappers.,
       Message: Could not find nested type named 'SerializeImpl' inside type 'SWrap<,>'. The wrapped type 'S<T>' is generic, so the expected wrapper is a parent type with SerializeImpl and DeserializeImpl nested wrappers.,
       Category: Serde
@@ -17,9 +15,7 @@
       Title: ,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (38,18)-(38,19),
-      Description: ,
-      HelpLink: ,
+      Location: : (32,18)-(32,19),
       MessageFormat: The member 'C.S's return type 'S<int>' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
       Message: The member 'C.S's return type 'S<int>' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
       Category: Serde

@@ -10,12 +10,13 @@ partial class A
     {
         partial class C
         {
-            partial class D : Serde.ISerialize
+            partial class D : Serde.ISerialize<A.B.C.D>
             {
-                void Serde.ISerialize.Serialize(ISerializer serializer)
+                void ISerialize<A.B.C.D>.Serialize(A.B.C.D value, ISerializer serializer)
                 {
-                    var type = serializer.SerializeType("D", 1);
-                    type.SerializeField("field"u8, new Int32Wrap(this.Field));
+                    var _l_typeInfo = DSerdeTypeInfo.TypeInfo;
+                    var type = serializer.SerializeType(_l_typeInfo);
+                    type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.Field);
                     type.End();
                 }
             }

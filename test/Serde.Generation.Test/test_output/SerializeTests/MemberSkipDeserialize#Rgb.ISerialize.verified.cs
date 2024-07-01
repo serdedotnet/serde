@@ -4,14 +4,15 @@
 using System;
 using Serde;
 
-partial struct Rgb : Serde.ISerialize
+partial struct Rgb : Serde.ISerialize<Rgb>
 {
-    void Serde.ISerialize.Serialize(ISerializer serializer)
+    void ISerialize<Rgb>.Serialize(Rgb value, ISerializer serializer)
     {
-        var type = serializer.SerializeType("Rgb", 3);
-        type.SerializeField("red"u8, new ByteWrap(this.Red));
-        type.SerializeField("green"u8, new ByteWrap(this.Green));
-        type.SerializeField("blue"u8, new ByteWrap(this.Blue));
+        var _l_typeInfo = RgbSerdeTypeInfo.TypeInfo;
+        var type = serializer.SerializeType(_l_typeInfo);
+        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 0, this.Red);
+        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, this.Green);
+        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 2, this.Blue);
         type.End();
     }
 }

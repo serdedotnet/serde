@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Serde.Json
 {
-    partial record JsonValue : ISerialize, ISerialize<JsonValue>
+    partial record JsonValue : ISerialize<JsonValue>
     {
         public abstract void Serialize(ISerializer serializer);
 
@@ -41,6 +41,11 @@ namespace Serde.Json
 
         partial record Object
         {
+            private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+                typeof(Object).ToString(),
+                TypeInfo.TypeKind.Dictionary,
+                []);
+
             public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
                 : this(members.ToImmutableDictionary())
             { }
@@ -51,29 +56,37 @@ namespace Serde.Json
 
             public override void Serialize(ISerializer serializer)
             {
-                var type = serializer.SerializeType("", Members.Count);
+                var typeInfo = s_typeInfo;
+                var dict = serializer.SerializeCollection(typeInfo, Members.Count);
                 foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
                 {
-                    type.SerializeField(name, node);
+                    dict.SerializeElement(name, default(StringWrap));
+                    dict.SerializeElement(node, node);
                 }
-                type.End();
+                dict.End(typeInfo);
             }
         }
 
         partial record Array
         {
+            private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+                typeof(Array).ToString(),
+                TypeInfo.TypeKind.Enumerable,
+                []);
+
             public Array(IEnumerable<JsonValue> elements)
                 : this(elements.ToImmutableArray())
             { }
 
             public override void Serialize(ISerializer serializer)
             {
-                var enumerable = serializer.SerializeEnumerable("JsonValue", Elements.Length);
+                var typeInfo = s_typeInfo;
+                var enumerable = serializer.SerializeCollection(typeInfo, Elements.Length);
                 foreach (var element in Elements)
                 {
-                    enumerable.SerializeElement(element);
+                    enumerable.SerializeElement(element, element);
                 }
-                enumerable.End();
+                enumerable.End(typeInfo);
             }
         }
 

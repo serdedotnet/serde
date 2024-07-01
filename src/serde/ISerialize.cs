@@ -3,116 +3,60 @@ using System.Text;
 
 namespace Serde;
 
-public interface ISerialize
-{
-    void Serialize(ISerializer serializer);
-}
-
-public interface ISerialize<T> : ISerialize
+public interface ISerialize<T>
 {
     void Serialize(T value, ISerializer serializer);
-
-    void ISerialize.Serialize(ISerializer serializer) => Serialize((T)this, serializer);
 }
 
 public interface ISerializeType
 {
-    void SerializeField<T>(TypeInfo typeInfo, int fieldIndex, T value) where T : ISerialize<T> => throw new NotImplementedException();
-    void SerializeField<T, U>(TypeInfo typeInfo, int fieldIndex, T value) where U : struct, ISerialize<T> => throw new NotImplementedException();
-
-    void SerializeField<T>(string name, T value) where T : ISerialize
-    {
-        SerializeField(Encoding.UTF8.GetBytes(name), value);
-    }
-    void SerializeField<T>(Utf8Span name, T value) where T : ISerialize;
-    void SkipField(string name) { SkipField(Encoding.UTF8.GetBytes(name)); }
-    void SkipField(Utf8Span name) { }
-    void SkipField(TypeInfo typeInfo, int fieldIndex) { }
-
-    void SerializeField<T, U>(string name, T value) where U : struct, ISerialize<T>;
+    void SerializeField<T, U>(TypeInfo typeInfo, int index, T value, U serialize) where U : ISerialize<T>;
+    void SkipField(TypeInfo typeInfo, int index) { }
     void End();
 }
 
 public static class ISerializeTypeExt
 {
-    public static void SerializeFieldIfNotNull<T, U>(
+    public static void SerializeField<T, U>(
         this ISerializeType serializeType,
-        string name,
-        T value,
-        U rawValue) where T : ISerialize
-    {
-        if (rawValue is null)
-        {
-            serializeType.SkipField(name);
-        }
-        else
-        {
-            serializeType.SerializeField(name, value);
-        }
-    }
-
-    public static void SerializeFieldIfNotNull<T, U>(
-        this ISerializeType serializeType,
-        Utf8Span name,
-        T value,
-        U rawValue) where T : ISerialize
-    {
-        if (rawValue is null)
-        {
-            serializeType.SkipField(name);
-        }
-        else
-        {
-            serializeType.SerializeField(name, value);
-        }
-    }
-
-    public static void SerializeFieldIfNotNull<T, U>(
-        this ISerializeType serializeType,
-        string name,
+        TypeInfo typeInfo,
+        int index,
         T value) where U : struct, ISerialize<T>
+    {
+        serializeType.SerializeField(typeInfo, index, value, default(U));
+    }
+
+    public static void SerializeFieldIfNotNull<T, U>(
+        this ISerializeType serializeType,
+        TypeInfo typeInfo,
+        int index,
+        T value,
+        U serialize) where U : ISerialize<T>
     {
         if (value is null)
         {
-            serializeType.SkipField(name);
+            serializeType.SkipField(typeInfo, index);
         }
         else
         {
-            serializeType.SerializeField<T, U>(name, value);
+            serializeType.SerializeField(typeInfo, index, value, serialize);
         }
     }
 
     public static void SerializeFieldIfNotNull<T, U>(
         this ISerializeType serializeType,
         TypeInfo typeInfo,
-        int fieldIndex,
+        int index,
         T value) where U : struct, ISerialize<T>
     {
-        if (value is null)
-        {
-            serializeType.SkipField(typeInfo, fieldIndex);
-        }
-        else
-        {
-            serializeType.SerializeField<T, U>(typeInfo, fieldIndex, value);
-        }
+        serializeType.SerializeFieldIfNotNull(typeInfo, index, value, default(U));
     }
 }
 
-public interface ISerializeEnumerable
+public interface ISerializeCollection
 {
-    void SerializeElement<T>(T value) where T : ISerialize;
     void SerializeElement<T, U>(T value, U serialize) where U : ISerialize<T>;
-    void End();
-}
-
-public interface ISerializeDictionary
-{
-    void SerializeKey<T>(T key) where T : ISerialize;
-    void SerializeKey<T, U>(T key, U serialize) where U : ISerialize<T>;
-    void SerializeValue<T>(T value) where T : ISerialize;
-    void SerializeValue<T, U>(T value, U serialize) where U : ISerialize<T>;
-    void End();
+    void End(TypeInfo typeInfo);
 }
 
 public interface ISerializer
@@ -132,17 +76,13 @@ public interface ISerializer
     void SerializeDecimal(decimal d);
     void SerializeString(string s);
     void SerializeNull();
-    void SerializeNotNull<T>(T t) where T : notnull, ISerialize;
     void SerializeNotNull<T, U>(T t, U u)
         where T : notnull
         where U : ISerialize<T>;
-    void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull, ISerialize;
     void SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
-        where T : struct, Enum
+        where T : unmanaged
         where U : ISerialize<T>;
 
-    ISerializeType SerializeType(string name, int numFields);
     ISerializeType SerializeType(TypeInfo typeInfo);
-    ISerializeEnumerable SerializeEnumerable(string typeName, int? length);
-    ISerializeDictionary SerializeDictionary(int? length);
+    ISerializeCollection SerializeCollection(TypeInfo typeInfo, int? length);
 }
