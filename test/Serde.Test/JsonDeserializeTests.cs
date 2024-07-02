@@ -292,5 +292,48 @@ namespace Serde.Test
             [SerdeMemberOptions(SkipDeserialize = true)]
             public string Skip => "xyz";
         }
+
+        [Fact]
+        public void DeserializeEnum()
+        {
+            Assert.Equal(ColorEnum.Red, JsonSerializer.Deserialize<ColorEnum, ColorEnumWrap>("\"red\""));
+        }
+
+        private struct ColorEnumWrap : IDeserialize<ColorEnum>
+        {
+            private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+                nameof(ColorEnum),
+                TypeInfo.TypeKind.Enum,
+                [
+                    ("red", typeof(ColorEnum).GetField("Red")!),
+                    ("green", typeof(ColorEnum).GetField("Green")!),
+                    ("blue", typeof(ColorEnum).GetField("Blue")!),
+                ]
+            );
+
+            static ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
+            {
+                var typeInfo = s_typeInfo;
+                var de = deserializer.DeserializeType(s_typeInfo);
+                int index;
+                if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+                {
+                    throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+                }
+                return index switch {
+                    0 => ColorEnum.Red,
+                    1 => ColorEnum.Green,
+                    2 => ColorEnum.Blue,
+                    _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")
+                };
+            }
+        }
+
+        private enum ColorEnum
+        {
+            Red,
+            Green,
+            Blue
+        }
     }
 }

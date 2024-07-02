@@ -8,28 +8,22 @@ namespace Test
 {
     partial struct ChannelWrap : Serde.IDeserialize<Test.Channel>
     {
-        static Test.Channel Serde.IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
+        static Test.Channel IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
         {
-            var visitor = new SerdeVisitor();
-            return deserializer.DeserializeString(visitor);
-        }
-
-        private sealed class SerdeVisitor : Serde.IDeserializeVisitor<Test.Channel>
-        {
-            public string ExpectedTypeName => "Test.Channel";
-
-            Test.Channel Serde.IDeserializeVisitor<Test.Channel>.VisitString(string s) => s switch
+            var typeInfo = Test.ChannelSerdeTypeInfo.TypeInfo;
+            var de = deserializer.DeserializeType(typeInfo);
+            int index;
+            if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
             {
-                "a" => Test.Channel.A,
-                "b" => Test.Channel.B,
-                "c" => Test.Channel.C,
-                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
-            Test.Channel Serde.IDeserializeVisitor<Test.Channel>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+                throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+            }
+
+            return index switch
             {
-                _ when System.MemoryExtensions.SequenceEqual(s, "a"u8) => Test.Channel.A,
-                _ when System.MemoryExtensions.SequenceEqual(s, "b"u8) => Test.Channel.B,
-                _ when System.MemoryExtensions.SequenceEqual(s, "c"u8) => Test.Channel.C,
-                _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
+                0 => Test.Channel.A,
+                1 => Test.Channel.B,
+                2 => Test.Channel.C,
+                _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")};
         }
     }
 }

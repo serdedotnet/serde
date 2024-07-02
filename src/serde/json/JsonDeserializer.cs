@@ -301,20 +301,22 @@ namespace Serde.Json
         public T DeserializeIdentifier<T>(IDeserializeVisitor<T> v)
             => DeserializeString(v);
 
-        public T DeserializeType<T>(string typeName, ReadOnlySpan<string> fieldNames, IDeserializeVisitor<T> v)
-        {
-            // Types are identical to dictionaries
-            return DeserializeDictionary(v);
-        }
-
         public IDeserializeType DeserializeType(TypeInfo fieldMap)
         {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-
-            if (reader.TokenType != JsonTokenType.StartObject)
+            // Custom types look like dictionaries, enums are inline strings
+            if (fieldMap.Kind == TypeInfo.TypeKind.CustomType)
             {
-                throw new InvalidDeserializeValueException("Expected object start");
+                ref var reader = ref GetReader();
+                reader.ReadOrThrow();
+
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new InvalidDeserializeValueException("Expected object start");
+                }
+            }
+            else if (fieldMap.Kind != TypeInfo.TypeKind.Enum)
+            {
+                throw new ArgumentException("Expected either CustomType or Enum kind, found " + fieldMap.Kind);
             }
 
             return this;
@@ -365,29 +367,38 @@ namespace Serde.Json
 
         int IDeserializeType.TryReadIndex(TypeInfo map, out string? errorName)
         {
-            bool foundProperty = false;
             ref var reader = ref GetReader();
-            while (!foundProperty)
+            if (map.Kind == TypeInfo.TypeKind.Enum)
             {
+                // Enums are just treated as strings
                 reader.ReadOrThrow();
-                switch (reader.TokenType)
-                {
-                    case JsonTokenType.EndObject:
-                        errorName = null;
-                        return IDeserializeType.EndOfType;
-                    case JsonTokenType.PropertyName:
-                        foundProperty = true;
-                        break;
-                    default:
-                        // If we aren't at a property name, we must be at a value and intending to skip it
-                        // Call Skip in case we are starting a new array or object. Doesn't do
-                        // anything for bare tokens, but we've already read one token forward above,
-                        // so we can simply continue
-                        reader.Skip();
-                        break;
-                }
+                Debug.Assert(reader.TokenType == JsonTokenType.String);
             }
-            Debug.Assert(reader.TokenType == JsonTokenType.PropertyName);
+            else
+            {
+                bool foundProperty = false;
+                while (!foundProperty)
+                {
+                    reader.ReadOrThrow();
+                    switch (reader.TokenType)
+                    {
+                        case JsonTokenType.EndObject:
+                            errorName = null;
+                            return IDeserializeType.EndOfType;
+                        case JsonTokenType.PropertyName:
+                            foundProperty = true;
+                            break;
+                        default:
+                            // If we aren't at a property name, we must be at a value and intending to skip it
+                            // Call Skip in case we are starting a new array or object. Doesn't do
+                            // anything for bare tokens, but we've already read one token forward above,
+                            // so we can simply continue
+                            reader.Skip();
+                            break;
+                    }
+                }
+                Debug.Assert(reader.TokenType == JsonTokenType.PropertyName);
+            }
 
             Utf8Span span;
             if (reader.HasValueSequence || reader.ValueIsEscaped)

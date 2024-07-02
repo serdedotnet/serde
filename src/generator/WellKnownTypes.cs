@@ -25,7 +25,6 @@ namespace Serde
         GenerateSerialize,
         GenerateDeserialize,
         GenerateSerde,
-        GenerateWrapper,
         SerdeTypeOptions,
         SerdeMemberOptions
     }
@@ -69,7 +68,6 @@ namespace Serde
             WellKnownAttribute.GenerateDeserialize => nameof(WellKnownAttribute.GenerateDeserialize),
             WellKnownAttribute.GenerateSerialize => nameof(WellKnownAttribute.GenerateSerialize),
             WellKnownAttribute.GenerateSerde => nameof(WellKnownAttribute.GenerateSerde),
-            WellKnownAttribute.GenerateWrapper => nameof(WellKnownAttribute.GenerateWrapper),
             WellKnownAttribute.SerdeTypeOptions => nameof(WellKnownAttribute.SerdeTypeOptions),
             WellKnownAttribute.SerdeMemberOptions => nameof(WellKnownAttribute.SerdeMemberOptions),
         };

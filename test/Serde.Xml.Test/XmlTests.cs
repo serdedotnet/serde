@@ -43,7 +43,7 @@ namespace Serde.Test
       <int>2</int>
     </ImmutableArrayOfInt32>
   </intImm>
-  <color />
+  <color>blue</color>
 </AllInOne>
 """;
 

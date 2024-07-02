@@ -57,110 +57,9 @@ internal sealed class GeneratorExecutionContext
 partial class SerdeImplRoslynGenerator
 {
     internal static void GenerateImpl(
-        AttributeData attributeData,
-        SerdeUsage usage,
-        BaseTypeDeclarationSyntax typeDecl,
-        SemanticModel model,
-        GeneratorExecutionContext context,
-        ImmutableList<ITypeSymbol> inProgress)
-    {
-        var typeSymbol = model.GetDeclaredSymbol(typeDecl);
-        if (typeSymbol is null)
-        {
-            return;
-        }
-
-        ITypeSymbol receiverType;
-        ExpressionSyntax receiverExpr;
-        string? wrapperName;
-        string? wrappedName;
-        // If the Through property is set, then we are implementing a wrapper type
-        if (attributeData.NamedArguments is [ (nameof(GenerateSerialize.Through), { Value: string memberName }) ])
-        {
-            var members = model.LookupSymbols(typeDecl.SpanStart, typeSymbol, memberName);
-            if (members.Length != 1)
-            {
-                // TODO: Error about bad lookup
-                return;
-            }
-            receiverType = SymbolUtilities.GetSymbolType(members[0]);
-            receiverExpr = IdentifierName(memberName);
-            wrapperName = typeDecl.Identifier.ValueText;
-            wrappedName = receiverType.ToDisplayString();
-        }
-        // Enums are also always wrapped, but the attribute is on the enum itself
-        else if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
-        {
-            receiverType = typeSymbol;
-            receiverExpr = IdentifierName("Value");
-            wrappedName = typeDecl.Identifier.ValueText;
-            wrapperName = GetWrapperName(wrappedName);
-        }
-        // Just a normal interface implementation
-        else
-        {
-            wrapperName = null;
-            wrappedName = null;
-            if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
-            {
-                // Type must be partial
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_TypeNotPartial,
-                    typeDecl.Identifier.GetLocation(),
-                    typeDecl.Identifier.ValueText));
-                return;
-            }
-            receiverType = typeSymbol;
-            receiverExpr = ThisExpression();
-        }
-
-        GenerateImpl(
-            usage,
-            new TypeDeclContext(typeDecl),
-            receiverType,
-            receiverExpr,
-            context,
-            inProgress);
-    }
-
-    private static void GenerateEnumWrapper(
-        BaseTypeDeclarationSyntax typeDecl,
-        SemanticModel semanticModel,
-        GeneratorExecutionContext context)
-    {
-        var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
-        if (receiverType is null)
-        {
-            return;
-        }
-
-        // Generate enum wrapper stub
-        var typeDeclContext = new TypeDeclContext(typeDecl);
-        var typeName = typeDeclContext.Name;
-        var wrapperName = GetWrapperName(typeName);
-        var newType = SyntaxFactory.ParseMemberDeclaration($$"""
-readonly partial struct {{wrapperName}} { }
-""")!;
-        newType = typeDeclContext.WrapNewType(newType);
-        string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
-            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
-            .Concat(new[] { wrapperName }));
-
-        var tree = CompilationUnit(
-            externs: default,
-            usings: default,
-            attributeLists: default,
-            members: List<MemberDeclarationSyntax>(new[] { newType }));
-        tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
-
-        context.AddSource(fullWrapperName, Environment.NewLine + tree.ToFullString());
-    }
-
-    private static void GenerateImpl(
         SerdeUsage usage,
         TypeDeclContext typeDeclContext,
         ITypeSymbol receiverType,
-        ExpressionSyntax receiverExpr,
         GeneratorExecutionContext context,
         ImmutableList<ITypeSymbol> inProgress)
     {
@@ -169,8 +68,8 @@ readonly partial struct {{wrapperName}} { }
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
         {
-            SerdeUsage.Serialize => SerializeImplRoslynGenerator.GenerateSerializeGenericImpl(context, receiverType, receiverExpr, inProgress),
-            SerdeUsage.Deserialize => DeserializeImplGenerator.GenerateDeserializeImpl(context, receiverType, receiverExpr, inProgress),
+            SerdeUsage.Serialize => SerializeImplRoslynGenerator.GenerateSerializeGenericImpl(context, receiverType, inProgress),
+            SerdeUsage.Deserialize => DeserializeImplGenerator.GenerateDeserializeImpl(context, receiverType, inProgress),
             _ => throw ExceptionUtilities.Unreachable
         };
 
@@ -236,36 +135,34 @@ readonly partial struct {{wrapperName}} { }
     }
 
     /// <summary>
-    /// Check to see if the type implements ISerialize or IDeserialize, depending on the WrapUsage.
+    /// Check to see if the <paramref name="targetType"/> implements ISerialize{<paramref
+    /// name="argType"/>} or IDeserialize{<paramref name="argType"/>}, depending on the WrapUsage.
     /// </summary>
-    internal static bool ImplementsSerde(ITypeSymbol memberType, GeneratorExecutionContext context, SerdeUsage usage)
+    internal static bool ImplementsSerde(ITypeSymbol targetType, ITypeSymbol argType, GeneratorExecutionContext context, SerdeUsage usage)
     {
         // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
-        if (memberType.NullableAnnotation == NullableAnnotation.Annotated ||
-            memberType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+        if (argType.NullableAnnotation == NullableAnnotation.Annotated ||
+            argType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
         {
             return false;
         }
 
         // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
         // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
-        if (memberType.TypeKind is not TypeKind.Enum && HasGenerateAttribute(memberType, usage))
+        if (argType.TypeKind is not TypeKind.Enum && HasGenerateAttribute(argType, usage))
         {
             return true;
         }
 
-        INamedTypeSymbol? serdeSymbol;
-        if (usage == SerdeUsage.Serialize)
-        {
-            serdeSymbol = context.Compilation.GetTypeByMetadataName("Serde.ISerialize");
-        }
-        else
-        {
-            var deserialize = context.Compilation.GetTypeByMetadataName("Serde.IDeserialize`1");
-            serdeSymbol = deserialize?.Construct(memberType);
-        }
-        if (serdeSymbol is not null && memberType.Interfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
-            || (memberType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
+        var mdName = usage switch {
+            SerdeUsage.Serialize => "Serde.ISerialize`1",
+            SerdeUsage.Deserialize => "Serde.IDeserialize`1",
+            _ => throw new ArgumentException("Invalid SerdeUsage", nameof(usage))
+        };
+        var serdeSymbol = context.Compilation.GetTypeByMetadataName(mdName)?.Construct(argType);
+
+        if (serdeSymbol is not null && targetType.AllInterfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
+            || (targetType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
         {
             return true;
         }
@@ -298,8 +195,7 @@ readonly partial struct {{wrapperName}} { }
         return SyntaxFactory.ParseTypeName(wrapperFqn);
     }
 
-    private static string GetWrapperName(string typeName) => typeName + "Wrap";
-
+    internal static string GetWrapperName(string typeName) => typeName + "Wrap";
 
     internal static bool HasGenerateAttribute(ITypeSymbol memberType, SerdeUsage usage)
     {

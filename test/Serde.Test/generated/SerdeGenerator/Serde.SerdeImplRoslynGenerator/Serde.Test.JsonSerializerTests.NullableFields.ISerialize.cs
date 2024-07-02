@@ -13,8 +13,8 @@ namespace Serde.Test
             {
                 var _l_typeInfo = NullableFieldsSerdeTypeInfo.TypeInfo;
                 var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 0, this.S);
-                type.SerializeField<System.Collections.Generic.Dictionary<string, string?>, Serde.DictWrap.SerializeImpl<string, StringWrap, string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>>(_l_typeInfo, 1, this.D);
+                type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>(_l_typeInfo, 0, value.S);
+                type.SerializeField<System.Collections.Generic.Dictionary<string, string?>, Serde.DictWrap.SerializeImpl<string, StringWrap, string?, Serde.NullableRefWrap.SerializeImpl<string, StringWrap>>>(_l_typeInfo, 1, value.D);
                 type.End();
             }
         }

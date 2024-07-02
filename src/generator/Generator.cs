@@ -7,6 +7,8 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using static Serde.Diagnostics;
 
 namespace Serde
 {
@@ -72,59 +74,100 @@ namespace Serde
                 CancellationToken cancelToken)
             {
                 var generationContext = new GeneratorExecutionContext(attrCtx);
-                var typeDecl = (BaseTypeDeclarationSyntax)attrCtx.TargetNode;
-                if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
-                {
-                    GenerateEnumWrapper(
-                        typeDecl,
-                        attrCtx.SemanticModel,
-                        generationContext);
-                }
-                SerdeTypeInfoGenerator.GenerateTypeInfo(
-                    attrCtx.Attributes.Single(),
-                    (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
-                    attrCtx.SemanticModel,
-                    generationContext);
-                if (usage.HasFlag(SerdeUsage.Serialize))
-                {
-                    SerdeImplRoslynGenerator.GenerateImpl(
-                        attrCtx.Attributes.Single(),
-                        SerdeUsage.Serialize,
-                        (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
-                        attrCtx.SemanticModel,
-                        generationContext,
-                        ImmutableList<ITypeSymbol>.Empty);
-                }
-                if (usage.HasFlag(SerdeUsage.Deserialize))
-                {
-                    SerdeImplRoslynGenerator.GenerateImpl(
-                        attrCtx.Attributes.Single(),
-                        SerdeUsage.Deserialize,
-                        (BaseTypeDeclarationSyntax)attrCtx.TargetNode,
-                        attrCtx.SemanticModel,
-                        generationContext,
-                        ImmutableList<ITypeSymbol>.Empty);
-                }
+                RunGeneration(usage, attrCtx, generationContext, cancelToken);
                 return generationContext.GetOutput();
+
+                static void RunGeneration(
+                    SerdeUsage usage,
+                    GeneratorAttributeSyntaxContext attrCtx,
+                    GeneratorExecutionContext generationContext,
+                    CancellationToken cancelToken)
+                {
+                    var typeDecl = (BaseTypeDeclarationSyntax)attrCtx.TargetNode;
+                    var model = attrCtx.SemanticModel;
+                    var typeSymbol = model.GetDeclaredSymbol(typeDecl);
+                    if (typeSymbol is null)
+                    {
+                        return;
+                    }
+
+                    var attributeData = attrCtx.Attributes.Single();
+
+                    INamedTypeSymbol receiverType = typeSymbol;
+                    // If the Through property is set, then we are implementing a wrapper type
+                    if (attributeData.NamedArguments is [(nameof(GenerateSerialize.ThroughMember), { Value: string memberName })])
+                    {
+                        var members = model.LookupSymbols(typeDecl.SpanStart, typeSymbol, memberName);
+                        if (members.Length != 1)
+                        {
+                            // TODO: Error about bad lookup
+                            return;
+                        }
+                        receiverType = (INamedTypeSymbol)SymbolUtilities.GetSymbolType(members[0]);
+
+                        if (receiverType.SpecialType != SpecialType.None)
+                        {
+                            generationContext.ReportDiagnostic(CreateDiagnostic(
+                                DiagId.ERR_CantWrapSpecialType,
+                                attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                                receiverType));
+                            return;
+                        }
+                    }
+                    else if (!typeDecl.IsKind(SyntaxKind.EnumDeclaration))
+                    {
+                        if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
+                        {
+                            // Type must be partial
+                            generationContext.ReportDiagnostic(CreateDiagnostic(
+                                DiagId.ERR_TypeNotPartial,
+                                typeDecl.Identifier.GetLocation(),
+                                typeDecl.Identifier.ValueText));
+                            return;
+                        }
+                    }
+
+                    if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
+                    {
+                        GenerateEnumWrapper(
+                            typeDecl,
+                            attrCtx.SemanticModel,
+                            generationContext);
+                    }
+
+                    SerdeTypeInfoGenerator.GenerateTypeInfo(
+                        typeDecl,
+                        receiverType,
+                        generationContext);
+
+                    var inProgress = ImmutableList.Create<ITypeSymbol>(receiverType);
+
+                    if (usage.HasFlag(SerdeUsage.Serialize))
+                    {
+                        GenerateImpl(
+                            SerdeUsage.Serialize,
+                            new TypeDeclContext(typeDecl),
+                            receiverType,
+                            generationContext,
+                            inProgress);
+                    }
+
+                    if (usage.HasFlag(SerdeUsage.Deserialize))
+                    {
+                        GenerateImpl(
+                            SerdeUsage.Deserialize,
+                            new TypeDeclContext(typeDecl),
+                            receiverType,
+                            generationContext,
+                            inProgress);
+                    }
+                }
             }
 
             var generateSerdeTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
                 WellKnownAttribute.GenerateSerde.GetFqn(),
                 (_, _) => true,
                 (attrCtx, cancelToken) => GenerateForCtx(SerdeUsage.Both, attrCtx, cancelToken));
-            var generateWrapperTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
-                WellKnownAttribute.GenerateWrapper.GetFqn(),
-                (_, _) => true,
-                (attrCtx, cancelToken) =>
-                {
-                    var generationContext = new GeneratorExecutionContext(attrCtx);
-                    SerdeImplRoslynGenerator.GenerateWrapper(
-                        generationContext,
-                        attrCtx.Attributes.Single(),
-                        (TypeDeclarationSyntax)attrCtx.TargetNode,
-                        attrCtx.SemanticModel);
-                    return generationContext.GetOutput();
-                });
 
             var generateSerializeTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
                 WellKnownAttribute.GenerateSerialize.GetFqn(),
@@ -160,7 +203,6 @@ namespace Serde
                 }
             };
 
-            context.RegisterSourceOutput(generateWrapperTypes, provideOutput);
             context.RegisterSourceOutput(generateSerdeTypes, provideOutput);
             context.RegisterSourceOutput(combined, provideOutput);
         }

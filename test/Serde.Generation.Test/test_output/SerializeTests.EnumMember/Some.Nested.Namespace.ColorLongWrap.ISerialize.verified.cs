@@ -10,14 +10,15 @@ namespace Some.Nested.Namespace
     {
         void ISerialize<Some.Nested.Namespace.ColorLong>.Serialize(Some.Nested.Namespace.ColorLong value, ISerializer serializer)
         {
-            var name = value switch
+            var _l_typeInfo = Some.Nested.Namespace.ColorLongSerdeTypeInfo.TypeInfo;
+            var index = value switch
             {
-                Some.Nested.Namespace.ColorLong.Red => "red",
-                Some.Nested.Namespace.ColorLong.Green => "green",
-                Some.Nested.Namespace.ColorLong.Blue => "blue",
-                _ => null
+                Some.Nested.Namespace.ColorLong.Red => 0,
+                Some.Nested.Namespace.ColorLong.Green => 1,
+                Some.Nested.Namespace.ColorLong.Blue => 2,
+                var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorLong'"),
             };
-            serializer.SerializeEnumValue("ColorLong", name, (long)value, default(Int64Wrap));
+            serializer.SerializeEnumValue(_l_typeInfo, index, (long)value, default(Int64Wrap));
         }
     }
 }

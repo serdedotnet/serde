@@ -10,8 +10,8 @@ partial struct Rgb : Serde.ISerialize<Rgb>
     {
         var _l_typeInfo = RgbSerdeTypeInfo.TypeInfo;
         var type = serializer.SerializeType(_l_typeInfo);
-        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 0, this.Red);
-        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, this.Blue);
+        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 0, value.Red);
+        type.SerializeField<byte, ByteWrap>(_l_typeInfo, 1, value.Blue);
         type.End();
     }
 }

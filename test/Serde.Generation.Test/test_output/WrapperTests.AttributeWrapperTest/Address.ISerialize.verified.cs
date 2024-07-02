@@ -10,11 +10,11 @@ partial class Address : Serde.ISerialize<Address>
     {
         var _l_typeInfo = AddressSerdeTypeInfo.TypeInfo;
         var type = serializer.SerializeType(_l_typeInfo);
-        type.SerializeField<string, StringWrap>(_l_typeInfo, 0, this.Name);
-        type.SerializeField<string, StringWrap>(_l_typeInfo, 1, this.Line1);
-        type.SerializeField<string, StringWrap>(_l_typeInfo, 2, this.City);
-        type.SerializeField<string, StringWrap>(_l_typeInfo, 3, this.State);
-        type.SerializeField<string, StringWrap>(_l_typeInfo, 4, this.Zip);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 0, value.Name);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 1, value.Line1);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 2, value.City);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 3, value.State);
+        type.SerializeField<string, StringWrap>(_l_typeInfo, 4, value.Zip);
         type.End();
     }
 }

@@ -16,53 +16,37 @@ namespace Serde
 {
     partial class SerdeImplRoslynGenerator
     {
-        internal static void GenerateWrapper(
-            GeneratorExecutionContext context,
-            AttributeData attributeData,
-            TypeDeclarationSyntax typeDecl,
-            SemanticModel model)
+        private static void GenerateEnumWrapper(
+            BaseTypeDeclarationSyntax typeDecl,
+            SemanticModel semanticModel,
+            GeneratorExecutionContext context)
         {
-            // Type must be partial
-            if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
-            {
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_TypeNotPartial,
-                    typeDecl.Identifier.GetLocation(),
-                    typeDecl.Identifier.ValueText));
-                return;
-            }
-
-            if (attributeData.ConstructorArguments is not [ { Value: string memberName } ])
+            var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
+            if (receiverType is null)
             {
                 return;
             }
 
-            var containerSymbol = model.GetDeclaredSymbol(typeDecl)!;
-            ExpressionSyntax receiverExpr;
-            ITypeSymbol receiverType;
-            var members = model.LookupSymbols(typeDecl.SpanStart, containerSymbol, memberName);
-            if (members.Length != 1)
-            {
-                // Error about bad lookup
-                return;
-            }
-            receiverType = SymbolUtilities.GetSymbolType(members[0]);
-            receiverExpr = IdentifierName(memberName);
+            // Generate enum wrapper stub
+            var typeDeclContext = new TypeDeclContext(typeDecl);
+            var typeName = typeDeclContext.Name;
+            var wrapperName = GetWrapperName(typeName);
+            var newType = SyntaxFactory.ParseMemberDeclaration($$"""
+readonly partial struct {{wrapperName}} { }
+""")!;
+            newType = typeDeclContext.WrapNewType(newType);
+            string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
+                .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
+                .Concat(new[] { wrapperName }));
 
-            if (receiverType.SpecialType != SpecialType.None)
-            {
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_CantWrapSpecialType,
-                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
-                    receiverType));
-                return;
-            }
+            var tree = CompilationUnit(
+                externs: default,
+                usings: default,
+                attributeLists: default,
+                members: List<MemberDeclarationSyntax>(new[] { newType }));
+            tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
 
-            var inProgress = ImmutableList.Create(receiverType);
-
-            SerdeTypeInfoGenerator.GenerateTypeInfo(typeDecl, (INamedTypeSymbol)receiverType, context);
-            GenerateImpl(SerdeUsage.Serialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
-            GenerateImpl(SerdeUsage.Deserialize, new TypeDeclContext(typeDecl), receiverType, receiverExpr, context, inProgress);
+            context.AddSource(fullWrapperName, Environment.NewLine + tree.ToFullString());
         }
 
         private static TypeSyntax? TryGetCompoundWrapper(ITypeSymbol type, GeneratorExecutionContext context, SerdeUsage usage, ImmutableList<ITypeSymbol> inProgress)
@@ -128,7 +112,7 @@ namespace Serde
             {
                 var elemTypeSyntax = ParseTypeName(elemType.ToDisplayString());
 
-                if (ImplementsSerde(elemType, context, usage))
+                if (ImplementsSerde(elemType, elemType, context, usage))
                 {
                     // Special case for List-like types:
                     // If the element type directly implements ISerialize, we can
@@ -254,7 +238,7 @@ namespace Serde
                 {
                     foreach (var attr in symbol.GetAttributes())
                     {
-                        if (attr.AttributeClass?.Name is "SerdeWrapAttribute")
+                        if (attr.AttributeClass?.Name is  nameof(SerdeWrapAttribute))
                         {
                             if (attr is { ConstructorArguments: { Length: 1 } attrArgs } &&
                                 attrArgs[0] is { Value: INamedTypeSymbol wrapperType })

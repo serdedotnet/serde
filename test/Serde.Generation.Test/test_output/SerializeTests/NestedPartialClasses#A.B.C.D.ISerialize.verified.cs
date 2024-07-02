@@ -16,7 +16,7 @@ partial class A
                 {
                     var _l_typeInfo = DSerdeTypeInfo.TypeInfo;
                     var type = serializer.SerializeType(_l_typeInfo);
-                    type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.Field);
+                    type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.Field);
                     type.End();
                 }
             }

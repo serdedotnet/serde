@@ -23,7 +23,13 @@ sealed class GenerateSerialize : Attribute
     /// If non-null, the name of the member used to implement serialization. This is used to
     /// implement serialization for a wrapper type.
     /// </summary>
-    public string? Through { get; init; }
+    public string? ThroughMember { get; init; }
+
+    /// <summary>
+    /// If non-null, the name of the type used to implement serialization and deserialization.
+    /// This is used to implement serialization and deserialization for a wrapper type.
+    /// </summary>
+    public Type? ThroughType { get; init; }
 }
 
 /// <summary>
@@ -42,8 +48,13 @@ sealed class GenerateDeserialize : Attribute
     /// If non-null, the name of the member used to implement deserialization. This is used to
     /// implement deserialization for a wrapper type.
     /// </summary>
-    public string? Through { get; init; }
+    public string? ThroughMember { get; init; }
 
+    /// <summary>
+    /// If non-null, the name of the type used to implement serialization and deserialization.
+    /// This is used to implement serialization and deserialization for a wrapper type.
+    /// </summary>
+    public Type? ThroughType { get; init; }
 }
 
 /// <summary>
@@ -62,34 +73,13 @@ sealed class GenerateSerde : Attribute
     /// If non-null, the name of the member used to implement serialization and deserialization.
     /// This is used to implement serialization and deserialization for a wrapper type.
     /// </summary>
-    public string? Through { get; init; }
-}
-
-/// <summary>
-/// Generates the equivalent of <see cref="GenerateSerde" />, but delegated to a member of the name
-/// passed in as a parameter.
-/// </summary>
-[AttributeUsage(AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-[Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-#if !SRCGEN
-public
-#else
-internal
-#endif
-sealed class GenerateWrapper : Attribute
-{
-    /// <summary>
-    /// The name of the member used for delegation.
-    /// </summary>
-    public string MemberName { get; }
+    public string? ThroughMember { get; init; }
 
     /// <summary>
-    /// Constructor for GenerateWrapper.
+    /// If non-null, the name of the type used to implement serialization and deserialization.
+    /// This is used to implement serialization and deserialization for a wrapper type.
     /// </summary>
-    public GenerateWrapper(string memberName)
-    {
-        MemberName = memberName;
-    }
+    public Type? ThroughType { get; init; }
 }
 
 [AttributeUsage(

@@ -13,7 +13,7 @@ namespace Serde.Test
             {
                 var _l_typeInfo = NestedArraysSerdeTypeInfo.TypeInfo;
                 var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<int[][][], Serde.ArrayWrap.SerializeImpl<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, Int32Wrap>>>>(_l_typeInfo, 0, this.A);
+                type.SerializeField<int[][][], Serde.ArrayWrap.SerializeImpl<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, Int32Wrap>>>>(_l_typeInfo, 0, value.A);
                 type.End();
             }
         }

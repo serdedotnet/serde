@@ -4,7 +4,7 @@ internal static class ColorByteSerdeTypeInfo
 {
     internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
         "ColorByte",
-        Serde.TypeInfo.TypeKind.CustomType,
+        Serde.TypeInfo.TypeKind.Enum,
         new (string, System.Reflection.MemberInfo)[] {
 ("red", typeof(Some.Nested.Namespace.ColorByte).GetField("Red")!),
 ("green", typeof(Some.Nested.Namespace.ColorByte).GetField("Green")!),

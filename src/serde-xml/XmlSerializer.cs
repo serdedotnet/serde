@@ -68,12 +68,11 @@ public sealed partial class XmlSerializer : ISerializer
         _writer.WriteValue(d);
     }
 
-    public void SerializeEnumValue<T>(string enumName, string? valueName, T value) where T : notnull
+    void ISerializer.SerializeEnumValue<T, U>(TypeInfo typeInfo, int index, T value, U serialize)
     {
+        var name = typeInfo.GetStringSerializeName(index);
+        SerializeString(name);
     }
-
-    void ISerializer.SerializeEnumValue<T, U>(string enumName, string? valueName, T value, U serialize)
-    {}
 
     public void SerializeFloat(float f) => SerializeDouble(f);
 

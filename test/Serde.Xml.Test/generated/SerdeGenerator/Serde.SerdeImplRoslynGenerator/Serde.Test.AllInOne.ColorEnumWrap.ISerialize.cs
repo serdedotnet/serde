@@ -11,14 +11,15 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.AllInOne.ColorEnum>.Serialize(Serde.Test.AllInOne.ColorEnum value, ISerializer serializer)
             {
-                var name = value switch
+                var _l_typeInfo = Serde.Test.AllInOne.ColorEnumSerdeTypeInfo.TypeInfo;
+                var index = value switch
                 {
-                    Serde.Test.AllInOne.ColorEnum.Red => "red",
-                    Serde.Test.AllInOne.ColorEnum.Blue => "blue",
-                    Serde.Test.AllInOne.ColorEnum.Green => "green",
-                    _ => null
+                    Serde.Test.AllInOne.ColorEnum.Red => 0,
+                    Serde.Test.AllInOne.ColorEnum.Blue => 1,
+                    Serde.Test.AllInOne.ColorEnum.Green => 2,
+                    var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorEnum'"),
                 };
-                serializer.SerializeEnumValue("ColorEnum", name, (int)value, default(Int32Wrap));
+                serializer.SerializeEnumValue(_l_typeInfo, index, (int)value, default(Int32Wrap));
             }
         }
     }

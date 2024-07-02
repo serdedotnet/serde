@@ -13,9 +13,9 @@ namespace Serde.Test
             {
                 var _l_typeInfo = RgbWithFieldMapSerdeTypeInfo.TypeInfo;
                 var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, this.Red);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, this.Green);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 2, this.Blue);
+                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.Red);
+                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, value.Green);
+                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 2, value.Blue);
                 type.End();
             }
         }
