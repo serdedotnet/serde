@@ -78,19 +78,19 @@ namespace Serde.Test
                         _r_assignedValid |= ((ushort)1) << 10;
                         break;
                     case 11:
-                        _l_nullstringfield = typeDeserialize.ReadValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 11;
                         break;
                     case 12:
-                        _l_uintarr = typeDeserialize.ReadValue<uint[], ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>(_l_index_);
+                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 12;
                         break;
                     case 13:
-                        _l_nestedarr = typeDeserialize.ReadValue<int[][], ArrayWrap.DeserializeImpl<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>>(_l_index_);
+                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayWrap.DeserializeImpl<int[], Serde.ArrayWrap.DeserializeImpl<int, Int32Wrap>>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 13;
                         break;
                     case 14:
-                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>(_l_index_);
+                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 14;
                         break;
                     case 15:

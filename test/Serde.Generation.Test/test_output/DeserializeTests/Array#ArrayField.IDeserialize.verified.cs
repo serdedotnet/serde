@@ -18,7 +18,7 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
             switch (_l_index_)
             {
                 case 0:
-                    _l_intarr = typeDeserialize.ReadValue<int[], ArrayWrap.DeserializeImpl<int, Int32Wrap>>(_l_index_);
+                    _l_intarr = typeDeserialize.ReadValue<int[], Serde.ArrayWrap.DeserializeImpl<int, Int32Wrap>>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:

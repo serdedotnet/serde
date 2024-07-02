@@ -18,7 +18,7 @@ partial struct S : Serde.IDeserialize<S>
             switch (_l_index_)
             {
                 case 0:
-                    _l_f = typeDeserialize.ReadValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                    _l_f = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:

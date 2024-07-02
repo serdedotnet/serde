@@ -33,7 +33,7 @@ namespace Serde
 
     internal static class Utilities
     {
-        public static T Unwrap<T>(this T? value) where T : struct => value!.Value;
+        public static T NotNull<T>(this T? value) where T : struct => value!.Value;
 
         public static string Concat(this string recv, string other)
         {

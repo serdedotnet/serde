@@ -20,40 +20,6 @@ internal enum SerdeUsage : byte
     Both = Serialize | Deserialize,
 }
 
-internal sealed class GeneratorExecutionContext
-{
-    private bool _frozen = false;
-    private readonly List<Diagnostic> _diagnostics = new();
-    private readonly SortedSet<(string FileName, string Content)> _sources = new();
-
-    public Compilation Compilation { get; }
-
-    public GeneratorExecutionContext(GeneratorAttributeSyntaxContext context)
-    {
-        Compilation = context.SemanticModel.Compilation;
-    }
-
-    public GenerationOutput GetOutput()
-    {
-        _frozen = true;
-        return new GenerationOutput(_diagnostics, _sources);
-    }
-
-    public void ReportDiagnostic(Diagnostic diagnostic)
-    {
-        if (_frozen)
-            throw new InvalidOperationException("Cannot add diagnostics after GetDiagnostics() has been called.");
-        _diagnostics.Add(diagnostic);
-    }
-
-    internal void AddSource(string fileName, string content)
-    {
-        if (_frozen)
-            throw new InvalidOperationException("Cannot add sources after GetSources() has been called.");
-        _sources.Add((fileName, content));
-    }
-}
-
 partial class SerdeImplRoslynGenerator
 {
     internal static void GenerateImpl(
@@ -68,7 +34,7 @@ partial class SerdeImplRoslynGenerator
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
         {
-            SerdeUsage.Serialize => SerializeImplRoslynGenerator.GenerateSerializeGenericImpl(context, receiverType, inProgress),
+            SerdeUsage.Serialize => SerializeImplGen.GenSerialize(context, receiverType, inProgress),
             SerdeUsage.Deserialize => DeserializeImplGenerator.GenerateDeserializeImpl(context, receiverType, inProgress),
             _ => throw ExceptionUtilities.Unreachable
         };
@@ -77,7 +43,7 @@ partial class SerdeImplRoslynGenerator
         MemberDeclarationSyntax newType;
         if (typeKind == SyntaxKind.EnumDeclaration)
         {
-            var wrapperName = GetWrapperName(typeName);
+            var wrapperName = Wrappers.GetWrapperName(typeName);
             newType = StructDeclaration(
                 attributeLists: default,
                 modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
@@ -169,34 +135,6 @@ partial class SerdeImplRoslynGenerator
         return false;
     }
 
-    private static TypeSyntax? TryGetEnumWrapper(ITypeSymbol type, SerdeUsage usage)
-    {
-        if (type.TypeKind is not TypeKind.Enum)
-        {
-            return null;
-        }
-
-        // Check for the generation attributes
-        if (!HasGenerateAttribute(type, usage))
-        {
-            return null;
-        }
-
-        var wrapperName = GetWrapperName(type.Name);
-        var containing = type.ContainingType?.ToDisplayString();
-        if (containing is null && type.ContainingNamespace is { IsGlobalNamespace: false } ns)
-        {
-            containing = ns.ToDisplayString();
-        }
-        var wrapperFqn = containing is not null
-             ? containing + "." + wrapperName
-             : "global::" + wrapperName;
-
-        return SyntaxFactory.ParseTypeName(wrapperFqn);
-    }
-
-    internal static string GetWrapperName(string typeName) => typeName + "Wrap";
-
     internal static bool HasGenerateAttribute(ITypeSymbol memberType, SerdeUsage usage)
     {
         var attributes = memberType.GetAttributes();
@@ -224,21 +162,4 @@ partial class SerdeImplRoslynGenerator
         }
         return false;
     }
-}
-
-internal static class WrapUsageExtensions
-{
-    public static string GetInterfaceName(this SerdeUsage usage) => usage switch
-    {
-        SerdeUsage.Serialize => "ISerialize",
-        SerdeUsage.Deserialize => "IDeserialize",
-        _ => throw ExceptionUtilities.Unreachable
-    };
-
-    public static string GetImplName(this SerdeUsage usage) => usage switch
-    {
-        SerdeUsage.Serialize => "SerializeImpl",
-        SerdeUsage.Deserialize => "DeserializeImpl",
-        _ => throw ExceptionUtilities.Unreachable
-    };
 }

@@ -20,7 +20,7 @@ namespace Test
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, ImmutableArrayWrap.DeserializeImpl<Test.Channel, Test.ChannelWrap>>(_l_index_);
+                        _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayWrap.DeserializeImpl<Test.Channel, Test.ChannelWrap>>(_l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.IDeserializeType.IndexNotFound:

@@ -18,7 +18,7 @@ partial struct S2 : Serde.IDeserialize<S2>
             switch (_l_index_)
             {
                 case 0:
-                    _l_e = typeDeserialize.ReadValue<ColorEnum, global::ColorEnumWrap>(_l_index_);
+                    _l_e = typeDeserialize.ReadValue<ColorEnum, ColorEnumWrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:
