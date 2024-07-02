@@ -6,27 +6,21 @@ using Serde;
 
 partial struct ColorLongWrap : Serde.IDeserialize<ColorLong>
 {
-    static ColorLong Serde.IDeserialize<ColorLong>.Deserialize(IDeserializer deserializer)
+    static ColorLong IDeserialize<ColorLong>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = new SerdeVisitor();
-        return deserializer.DeserializeString(visitor);
-    }
-
-    private sealed class SerdeVisitor : Serde.IDeserializeVisitor<ColorLong>
-    {
-        public string ExpectedTypeName => "ColorLong";
-
-        ColorLong Serde.IDeserializeVisitor<ColorLong>.VisitString(string s) => s switch
+        var typeInfo = ColorLongSerdeTypeInfo.TypeInfo;
+        var de = deserializer.DeserializeType(typeInfo);
+        int index;
+        if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         {
-            "red" => ColorLong.Red,
-            "green" => ColorLong.Green,
-            "blue" => ColorLong.Blue,
-            _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + s)};
-        ColorLong Serde.IDeserializeVisitor<ColorLong>.VisitUtf8Span(System.ReadOnlySpan<byte> s) => s switch
+            throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+        }
+
+        return index switch
         {
-            _ when System.MemoryExtensions.SequenceEqual(s, "red"u8) => ColorLong.Red,
-            _ when System.MemoryExtensions.SequenceEqual(s, "green"u8) => ColorLong.Green,
-            _ when System.MemoryExtensions.SequenceEqual(s, "blue"u8) => ColorLong.Blue,
-            _ => throw new InvalidDeserializeValueException("Unexpected enum field name: " + System.Text.Encoding.UTF8.GetString(s))};
+            0 => ColorLong.Red,
+            1 => ColorLong.Green,
+            2 => ColorLong.Blue,
+            _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")};
     }
 }
