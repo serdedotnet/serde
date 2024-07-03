@@ -24,11 +24,11 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case 1:
-                    _l_missing = typeDeserialize.ReadValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                    _l_missing = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 1;
                     break;
                 case 2:
-                    _l_throwmissing = typeDeserialize.ReadValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                    _l_throwmissing = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 2;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:

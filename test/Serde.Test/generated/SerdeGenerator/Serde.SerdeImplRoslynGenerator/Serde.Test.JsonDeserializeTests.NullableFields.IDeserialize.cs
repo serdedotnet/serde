@@ -22,11 +22,11 @@ namespace Serde.Test
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_s = typeDeserialize.ReadValue<string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                            _l_s = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_dict = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string?>, DictWrap.DeserializeImpl<string, StringWrap, string?, NullableRefWrap.DeserializeImpl<string, StringWrap>>>(_l_index_);
+                            _l_dict = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictWrap.DeserializeImpl<string, StringWrap, string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

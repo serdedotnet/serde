@@ -185,7 +185,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     var m = members[i];
                     string wrapperName;
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                    if (TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
+                    if (Wrappers.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
                     {
                         wrapperName = explicitWrap.ToString();
                     }
@@ -193,7 +193,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     {
                         wrapperName = memberType;
                     }
-                    else if (TryGetAnyWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { } wrap)
+                    else if (Wrappers.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Wrapper: {} wrap })
                     {
                         wrapperName = wrap.ToString();
                     }
