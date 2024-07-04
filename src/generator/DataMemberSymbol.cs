@@ -97,7 +97,7 @@ namespace Serde
 
         public bool SkipSerialize => _memberOptions.SkipSerialize;
 
-        public bool ThrowIfMissing => _memberOptions.ThrowIfMissing;
+        public bool? ThrowIfMissing => _memberOptions.ThrowIfMissing;
 
         public bool SerializeNull => _memberOptions.SerializeNull ?? _typeOptions.SerializeNull;
 
