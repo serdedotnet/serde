@@ -222,6 +222,27 @@ namespace Serde.Test
             Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
         }
 
+        [GenerateDeserialize]
+        private partial record ThrowMissingFalse
+        {
+            public required string Present { get; init; }
+            [SerdeMemberOptions(ThrowIfMissing = false)]
+            public bool Missing { get; init; } = false;
+        }
+
+        [Fact]
+        public void ThrowIfMissingFalse()
+        {
+            var src = """
+{
+    "present": "abc",
+    "extra": "def"
+}
+""";
+            var expected = new ThrowMissingFalse { Present = "abc", Missing = false };
+            Assert.Equal(expected, JsonSerializer.Deserialize<ThrowMissingFalse>(src));
+        }
+
         [Fact]
         public void DenyUnknownTest()
         {

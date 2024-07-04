@@ -15,7 +15,7 @@ internal record TypeOptions
 internal readonly record struct MemberOptions()
 {
     /// <see cref="SerdeMemberOptions.ThrowIfMissing" />
-    public bool ThrowIfMissing { get; init; } = false;
+    public bool? ThrowIfMissing { get; init; } = null;
 
     /// <see cref="SerdeMemberOptions.Rename" />
     public string? Rename { get; init; } = null;

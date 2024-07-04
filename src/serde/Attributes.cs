@@ -154,7 +154,7 @@ sealed class SerdeMemberOptions : Attribute
     /// default behavior for fields of non-nullable types, while the default behavior for nullable
     /// types is to set the field to null.
     /// </summary>
-    public bool ThrowIfMissing { get; init; } = false;
+    public bool ThrowIfMissing { get; init; } = true;
 
     /// <summary>
     /// Use the given name instead of the name of the field or property.
