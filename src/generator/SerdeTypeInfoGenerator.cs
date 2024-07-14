@@ -18,14 +18,14 @@ internal static class SerdeTypeInfoGenerator
     /// <code>
     /// internal static class {typeName}SerdeTypeInfo
     /// {
-    ///     internal static readonly TypeInfo TypeInfo = TypeInfo.Create([
+    ///     internal static readonly SerdeInfo TypeInfo = TypeInfo.Create([
     ///         ("{{fieldName}}", typeof({typeName}).GetField("{fieldName}")!),
     ///         ...
     ///     ]);
     /// }
     /// </code>
     /// </summary>
-    public static void GenerateTypeInfo(
+    public static void GenerateSerdeInfo(
         BaseTypeDeclarationSyntax typeDecl,
         INamedTypeSymbol receiverType,
         GeneratorExecutionContext context)
@@ -41,11 +41,11 @@ internal static class SerdeTypeInfoGenerator
             typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
         }
         var newType = $$"""
-internal static class {{typeName}}SerdeTypeInfo
+internal static class {{typeName}}SerdeInfo
 {
-    internal static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+    internal static readonly Serde.SerdeInfo Instance = Serde.SerdeInfo.Create(
         "{{typeName}}",
-        Serde.TypeInfo.TypeKind.{{(receiverType.TypeKind == TypeKind.Enum ? "Enum" : "CustomType")}},
+        Serde.SerdeInfo.TypeKind.{{(receiverType.TypeKind == TypeKind.Enum ? "Enum" : "CustomType")}},
         new (string, System.Reflection.MemberInfo)[] {
 {{string.Join("," + Environment.NewLine,
           fieldsAndProps.Select(x => $@"(""{x.GetFormattedName()}"", typeof({typeString}).Get{(x.Symbol.Kind == SymbolKind.Field ? "Field" : "Property")}(""{x.Name}"")!)"))}}
@@ -56,7 +56,7 @@ internal static class {{typeName}}SerdeTypeInfo
         newType = typeDeclContext.WrapNewType(newType);
         string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
             .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
-            .Concat(new[] { $"{typeName}SerdeTypeInfo" }));
+            .Concat(new[] { $"{typeName}SerdeInfo" }));
 
         context.AddSource(fullTypeName, newType);
     }

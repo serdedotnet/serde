@@ -10,10 +10,10 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
     {
         int[] _l_intarr = default !;
         byte _r_assignedValid = 0;
-        var _l_typeInfo = ArrayFieldSerdeTypeInfo.TypeInfo;
-        var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
+        var _l_serdeInfo = ArrayFieldSerdeInfo.Instance;
+        var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
-        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_typeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
+        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
         {
             switch (_l_index_)
             {

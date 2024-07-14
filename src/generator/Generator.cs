@@ -116,7 +116,7 @@ namespace Serde
                             generationContext);
                     }
 
-                    SerdeTypeInfoGenerator.GenerateTypeInfo(
+                    SerdeTypeInfoGenerator.GenerateSerdeInfo(
                         typeDecl,
                         receiverType,
                         generationContext);

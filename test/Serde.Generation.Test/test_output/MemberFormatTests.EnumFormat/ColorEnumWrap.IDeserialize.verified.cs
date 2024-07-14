@@ -8,10 +8,10 @@ partial struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
 {
     static ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
     {
-        var typeInfo = ColorEnumSerdeTypeInfo.TypeInfo;
-        var de = deserializer.DeserializeType(typeInfo);
+        var serdeInfo = ColorEnumSerdeInfo.Instance;
+        var de = deserializer.DeserializeType(serdeInfo);
         int index;
-        if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         {
             throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
         }

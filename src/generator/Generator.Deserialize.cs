@@ -51,10 +51,10 @@ namespace Serde
         /// <code>
         /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
         /// {
-        ///    var typeInfo = TSerdeTypeInfo.TypeInfo;
-        ///    var de = deserializer.DeserializeType(typeInfo);
+        ///    var serdeInfo = TSerdeInfo.Instance;
+        ///    var de = deserializer.DeserializeType(serdeInfo);
         ///    int index;
-        ///    if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        ///    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         ///    {
         ///      throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
         ///    }
@@ -85,10 +85,10 @@ namespace Serde
             var src = $$"""
 static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
-    var typeInfo = {{typeFqn}}SerdeTypeInfo.TypeInfo;
-    var de = deserializer.DeserializeType(typeInfo);
+    var serdeInfo = {{typeFqn}}SerdeInfo.Instance;
+    var de = deserializer.DeserializeType(serdeInfo);
     int index;
-    if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
     {
         throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
     }
@@ -111,10 +111,10 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
         ///     ...
         ///     var _localN = default!;
         ///
-        ///     var typeInfo = {typeName}SerdeTypeInfo.TypeInfo;
-        ///     var typDeserializer = deserializer.DeserializeType(typeInfo);
+        ///     var serdeInfo = {typeName}SerdeInfo.Instance;
+        ///     var typDeserializer = deserializer.DeserializeType(serdeInfo);
         ///     int index;
-        ///     while ((index = typeDeserialize.TryReadIndex(typeInfo)) != IDeserializeType.EndOfType)
+        ///     while ((index = typeDeserialize.TryReadIndex(serdeInfo)) != IDeserializeType.EndOfType)
         ///     {
         ///         switch (index)
         ///         {
@@ -143,7 +143,7 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
             var (cases, locals, requiredMask) = InitCasesAndLocals();
             string typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
 
-            const string typeInfoLocalName = "_l_typeInfo";
+            const string typeInfoLocalName = "_l_serdeInfo";
             const string indexLocalName = "_l_index_";
 
             var methodText = $$"""
@@ -152,7 +152,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;
 
-    var {{typeInfoLocalName}} = {{type.Name}}SerdeTypeInfo.TypeInfo;
+    var {{typeInfoLocalName}} = {{type.Name}}SerdeInfo.Instance;
     var typeDeserialize = deserializer.DeserializeType({{typeInfoLocalName}});
     int {{indexLocalName}};
     while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out var _l_errorName)) != IDeserializeType.EndOfType)

@@ -40,7 +40,7 @@ public partial class SerializeImplGen
             var enumType = (INamedTypeSymbol)receiverType;
             var typeSyntax = enumType.ToFqnSyntax();
             var underlying = enumType.EnumUnderlyingType!;
-            statements.Add(ParseStatement($"var _l_typeInfo = {receiverType.ToFqnSyntax()}SerdeTypeInfo.TypeInfo;"));
+            statements.Add(ParseStatement($"var _l_serdeInfo = {receiverType.ToFqnSyntax()}SerdeInfo.Instance;"));
             statements.Add(ParseStatement($$"""
             var index = value switch
             {
@@ -51,21 +51,21 @@ public partial class SerializeImplGen
             """));
             var wrapper = Wrappers.TryGetPrimitiveWrapper(underlying, SerdeUsage.Serialize).NotNull().Wrapper;
             statements.Add(ParseStatement(
-                $"serializer.SerializeEnumValue(_l_typeInfo, index, ({underlying.ToFqnSyntax()})value, default({wrapper.ToFullString()}));"));
+                $"serializer.SerializeEnumValue(_l_serdeInfo, index, ({underlying.ToFqnSyntax()})value, default({wrapper.ToFullString()}));"));
         }
         else
         {
             // The generated body of ISerialize is
-            // `var _l_typeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
-            // `var type = serializer.SerializeType(_l_typeInfo);
-            // type.SerializeField<FieldType, Serialize>(_l_typeInfo, FieldIndex, receiver.FieldValue);
+            // `var _l_serdeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
+            // `var type = serializer.SerializeType(_l_serdeInfo);
+            // type.SerializeField<FieldType, Serialize>(_l_serdeInfo, FieldIndex, receiver.FieldValue);
             // type.End();
 
-            // `var _l_typeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
-            statements.Add(ParseStatement($"var _l_typeInfo = {receiverType.Name}SerdeTypeInfo.TypeInfo;"));
+            // `var _l_serdeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
+            statements.Add(ParseStatement($"var _l_serdeInfo = {receiverType.Name}SerdeInfo.Instance;"));
 
-            // `var type = serializer.SerializeType(_l_typeInfo);`
-            statements.Add(ParseStatement("var type = serializer.SerializeType(_l_typeInfo);"));
+            // `var type = serializer.SerializeType(_l_serdeInfo);`
+            statements.Add(ParseStatement("var type = serializer.SerializeType(_l_serdeInfo);"));
 
             for (int i = 0; i < fieldsAndProps.Count; i++)
             {
@@ -132,8 +132,8 @@ public partial class SerializeImplGen
             ExpressionSyntax receiver)
         {
             var arguments = new List<ExpressionSyntax>() {
-                    // _l_typeInfo
-                    ParseExpression("_l_typeInfo"),
+                    // _l_serdeInfo
+                    ParseExpression("_l_serdeInfo"),
                     // Index
                     LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(index)),
                     // Value

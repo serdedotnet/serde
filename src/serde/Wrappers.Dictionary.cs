@@ -4,8 +4,8 @@ namespace Serde
 {
     internal static class DictSerdeTypeInfo<TKey, TValue> where TKey : notnull
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(
-            typeof(Dictionary<TKey, TValue>).Name, TypeInfo.TypeKind.Dictionary, []);
+        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(
+            typeof(Dictionary<TKey, TValue>).Name, SerdeInfo.TypeKind.Dictionary, []);
     }
 
     public static class DictWrap

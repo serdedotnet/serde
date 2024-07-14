@@ -11,10 +11,10 @@ namespace Serde.Test
         {
             static Serde.Test.AllInOne.ColorEnum IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize(IDeserializer deserializer)
             {
-                var typeInfo = Serde.Test.AllInOne.ColorEnumSerdeTypeInfo.TypeInfo;
-                var de = deserializer.DeserializeType(typeInfo);
+                var serdeInfo = Serde.Test.AllInOne.ColorEnumSerdeInfo.Instance;
+                var de = deserializer.DeserializeType(serdeInfo);
                 int index;
-                if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+                if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {
                     throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
                 }

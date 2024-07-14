@@ -11,9 +11,9 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.XmlTests.StructWithIntField>.Serialize(Serde.Test.XmlTests.StructWithIntField value, ISerializer serializer)
             {
-                var _l_typeInfo = StructWithIntFieldSerdeTypeInfo.TypeInfo;
-                var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.X);
+                var _l_serdeInfo = StructWithIntFieldSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_serdeInfo);
+                type.SerializeField<int, Int32Wrap>(_l_serdeInfo, 0, value.X);
                 type.End();
             }
         }

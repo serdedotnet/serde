@@ -11,7 +11,7 @@ namespace Serde
     public static class EnumerableHelpers
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeSpan<T, U>(TypeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
+        public static void SerializeSpan<T, U>(SerdeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
             where U : ISerialize<T>
         {
             var enumerable = serializer.SerializeCollection(typeInfo, arr.Length);
@@ -23,14 +23,14 @@ namespace Serde
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeSpan<T, U>(TypeInfo typeInfo, ReadOnlySpan<T> arr, ISerializer serializer)
+        public static void SerializeSpan<T, U>(SerdeInfo typeInfo, ReadOnlySpan<T> arr, ISerializer serializer)
             where U : struct, ISerialize<T>
             => SerializeSpan(typeInfo, arr, default(U), serializer);
     }
 
     internal static class ArraySerdeTypeInfo<T>
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(T[]).ToString(), TypeInfo.TypeKind.Enumerable, []);
+        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(typeof(T[]).ToString(), SerdeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ArrayWrap
@@ -77,7 +77,7 @@ namespace Serde
 
     internal static class ListSerdeTypeInfo<T>
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(typeof(List<T>).ToString(), TypeInfo.TypeKind.Enumerable, []);
+        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(typeof(List<T>).ToString(), SerdeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ListWrap
@@ -121,8 +121,8 @@ namespace Serde
 
     internal static class ImmutableArraySerdeTypeInfo<T>
     {
-        public static readonly TypeInfo TypeInfo = TypeInfo.Create(
-            typeof(ImmutableArray<T>).ToString(), TypeInfo.TypeKind.Enumerable, []);
+        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(
+            typeof(ImmutableArray<T>).ToString(), SerdeInfo.TypeKind.Enumerable, []);
     }
 
     public static class ImmutableArrayWrap

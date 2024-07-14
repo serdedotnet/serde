@@ -8,10 +8,10 @@ partial record struct SectionWrap : Serde.ISerialize<System.Collections.Speciali
 {
     void ISerialize<System.Collections.Specialized.BitVector32.Section>.Serialize(System.Collections.Specialized.BitVector32.Section value, ISerializer serializer)
     {
-        var _l_typeInfo = SectionSerdeTypeInfo.TypeInfo;
-        var type = serializer.SerializeType(_l_typeInfo);
-        type.SerializeField<short, Int16Wrap>(_l_typeInfo, 0, value.Mask);
-        type.SerializeField<short, Int16Wrap>(_l_typeInfo, 1, value.Offset);
+        var _l_serdeInfo = SectionSerdeInfo.Instance;
+        var type = serializer.SerializeType(_l_serdeInfo);
+        type.SerializeField<short, Int16Wrap>(_l_serdeInfo, 0, value.Mask);
+        type.SerializeField<short, Int16Wrap>(_l_serdeInfo, 1, value.Offset);
         type.End();
     }
 }

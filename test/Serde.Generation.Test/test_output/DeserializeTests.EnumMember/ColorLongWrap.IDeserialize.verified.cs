@@ -8,10 +8,10 @@ partial struct ColorLongWrap : Serde.IDeserialize<ColorLong>
 {
     static ColorLong IDeserialize<ColorLong>.Deserialize(IDeserializer deserializer)
     {
-        var typeInfo = ColorLongSerdeTypeInfo.TypeInfo;
-        var de = deserializer.DeserializeType(typeInfo);
+        var serdeInfo = ColorLongSerdeInfo.Instance;
+        var de = deserializer.DeserializeType(serdeInfo);
         int index;
-        if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         {
             throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
         }

@@ -8,7 +8,7 @@ partial struct ColorEnumWrap : Serde.ISerialize<ColorEnum>
 {
     void ISerialize<ColorEnum>.Serialize(ColorEnum value, ISerializer serializer)
     {
-        var _l_typeInfo = ColorEnumSerdeTypeInfo.TypeInfo;
+        var _l_serdeInfo = ColorEnumSerdeInfo.Instance;
         var index = value switch
         {
             ColorEnum.Red => 0,
@@ -16,6 +16,6 @@ partial struct ColorEnumWrap : Serde.ISerialize<ColorEnum>
             ColorEnum.Blue => 2,
             var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorEnum'"),
         };
-        serializer.SerializeEnumValue(_l_typeInfo, index, (int)value, default(Int32Wrap));
+        serializer.SerializeEnumValue(_l_serdeInfo, index, (int)value, default(Int32Wrap));
     }
 }

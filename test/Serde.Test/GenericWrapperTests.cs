@@ -94,9 +94,9 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArrayWrap
     {
-        private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+        private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
             typeof(CustomImArray<int>).ToString(),
-            TypeInfo.TypeKind.Enumerable,
+            SerdeInfo.TypeKind.Enumerable,
             []);
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray<T>>
             where TWrap : struct, ISerialize<T>
@@ -109,7 +109,7 @@ public sealed partial class GenericWrapperTests
         {
             public static CustomImArray<T> Deserialize(IDeserializer deserializer)
             {
-                TypeInfo typeInfo = s_typeInfo;
+                SerdeInfo typeInfo = s_typeInfo;
                 ImmutableArray<T>.Builder builder;
                 var d = deserializer.DeserializeCollection(typeInfo);
                 if (d.SizeOpt is int size)
@@ -137,9 +137,9 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArray2Wrap
     {
-        private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+        private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
             typeof(CustomImArray2<int>).ToString(),
-            TypeInfo.TypeKind.Enumerable,
+            SerdeInfo.TypeKind.Enumerable,
             []);
         public readonly record struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray2<T>>
             where TWrap : struct, ISerialize<T>

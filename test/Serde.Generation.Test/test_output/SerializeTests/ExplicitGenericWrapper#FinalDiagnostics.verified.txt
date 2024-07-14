@@ -1,0 +1,35 @@
+﻿[
+  {
+    "Id": "CS0234",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": ": (15,37)-(15,45)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0234)",
+    "MessageFormat": "The type or namespace name '{0}' does not exist in the namespace '{1}' (are you missing an assembly reference?)",
+    "Message": "The type or namespace name 'TypeInfo' does not exist in the namespace 'Serde' (are you missing an assembly reference?)",
+    "Category": "Compiler"
+  },
+  {
+    "Id": "CS0234",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": ": (15,57)-(15,71)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0234)",
+    "MessageFormat": "The type or namespace name '{0}' does not exist in the namespace '{1}' (are you missing an assembly reference?)",
+    "Message": "The type or namespace name 'TypeInfo' does not exist in the namespace 'Serde' (are you missing an assembly reference?)",
+    "Category": "Compiler"
+  },
+  {
+    "Id": "CS0234",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": ": (17,12)-(17,26)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0234)",
+    "MessageFormat": "The type or namespace name '{0}' does not exist in the namespace '{1}' (are you missing an assembly reference?)",
+    "Message": "The type or namespace name 'TypeInfo' does not exist in the namespace 'Serde' (are you missing an assembly reference?)",
+    "Category": "Compiler"
+  }
+]
