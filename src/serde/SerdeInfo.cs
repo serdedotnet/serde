@@ -11,9 +11,9 @@ using System.Text;
 namespace Serde;
 
 /// <summary>
-/// TypeInfo holds a variety of indexed information about a type. The most important is a map
-/// from field names to int indices. This is an optimization for deserializing types that avoids
-/// allocating strings for field names.
+/// <see cref="SerdeInfo"/> holds a variety of indexed information about a type. The most important
+/// is a map from field names to int indices. This is an optimization for deserializing types that
+/// avoids allocating strings for field names.
 ///
 /// It can also be used to get the custom attributes for a field.
 /// </summary>
@@ -34,8 +34,6 @@ public sealed class SerdeInfo
 
     public string TypeName { get; }
 
-    public int FieldCount => _nameToIndex.Length;
-
     public enum TypeKind
     {
         Primitive,
@@ -47,35 +45,19 @@ public sealed class SerdeInfo
 
     public TypeKind Kind { get; }
 
-    /// <summary>
-    /// Returns an index corresponding to the location of the field in the original
-    /// ReadOnlySpan passed during creation of the <see cref="SerdeInfo"/>. This can be
-    /// used as a fast lookup for a field based on its UTF-8 name.
-    /// </summary>
-    public int TryGetIndex(Utf8Span utf8FieldName)
+    private SerdeInfo(
+        string typeName,
+        TypeKind typeKind,
+        ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
+        ImmutableArray<PrivateFieldInfo> indexToInfo)
     {
-        int mapIndex = BinarySearch(_nameToIndex.AsSpan(), utf8FieldName);
-
-        return mapIndex < 0 ? IDeserializeType.IndexNotFound : _nameToIndex[mapIndex].Index;
+        TypeName = typeName;
+        Kind = typeKind;
+        _nameToIndex = nameToIndex;
+        _indexToInfo = indexToInfo;
     }
 
-    [Experimental("SerdeExperimentalFieldType")]
-    public Type GetFieldType(int index) => _indexToInfo[index].FieldType;
-
-    public IList<CustomAttributeData> GetCustomAttributeData(int index)
-    {
-        return _indexToInfo[index].CustomAttributesData;
-    }
-
-    public ReadOnlySpan<byte> GetSerializeName(int index)
-    {
-        return _nameToIndex[_indexToInfo[index].Utf8NameIndex].Utf8Name.Span;
-    }
-
-    public string GetStringSerializeName(int index)
-    {
-        return _indexToInfo[index].StringName;
-    }
+    private static readonly UTF8Encoding s_utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
     /// <summary>
     /// Create a new field mapping. The ordering of the fields is important -- it
@@ -119,18 +101,39 @@ public sealed class SerdeInfo
         return new SerdeInfo(typeName, typeKind, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
     }
 
-    private static readonly UTF8Encoding s_utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    /// <summary>
+    /// The number of serializable or deserializable fields or properties on the type.
+    /// </summary>
+    public int FieldCount => _nameToIndex.Length;
 
-    private SerdeInfo(
-        string typeName,
-        TypeKind typeKind,
-        ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
-        ImmutableArray<PrivateFieldInfo> indexToInfo)
+    /// <summary>
+    /// Returns an index corresponding to the location of the field in the original
+    /// ReadOnlySpan passed during creation of the <see cref="SerdeInfo"/>. This can be
+    /// used as a fast lookup for a field based on its UTF-8 name.
+    /// </summary>
+    public int TryGetIndex(Utf8Span utf8FieldName)
     {
-        TypeName = typeName;
-        Kind = typeKind;
-        _nameToIndex = nameToIndex;
-        _indexToInfo = indexToInfo;
+        int mapIndex = BinarySearch(_nameToIndex.AsSpan(), utf8FieldName);
+
+        return mapIndex < 0 ? IDeserializeType.IndexNotFound : _nameToIndex[mapIndex].Index;
+    }
+
+    [Experimental("SerdeExperimentalFieldType")]
+    public Type GetFieldType(int index) => _indexToInfo[index].FieldType;
+
+    public IList<CustomAttributeData> GetCustomAttributeData(int index)
+    {
+        return _indexToInfo[index].CustomAttributesData;
+    }
+
+    public ReadOnlySpan<byte> GetSerializeName(int index)
+    {
+        return _nameToIndex[_indexToInfo[index].Utf8NameIndex].Utf8Name.Span;
+    }
+
+    public string GetStringSerializeName(int index)
+    {
+        return _indexToInfo[index].StringName;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
