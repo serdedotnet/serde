@@ -14,9 +14,9 @@ partial class A
             {
                 void ISerialize<A.B.C.D>.Serialize(A.B.C.D value, ISerializer serializer)
                 {
-                    var _l_typeInfo = DSerdeTypeInfo.TypeInfo;
-                    var type = serializer.SerializeType(_l_typeInfo);
-                    type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.Field);
+                    var _l_serdeInfo = DSerdeInfo.Instance;
+                    var type = serializer.SerializeType(_l_serdeInfo);
+                    type.SerializeField<int, Int32Wrap>(_l_serdeInfo, 0, value.Field);
                     type.End();
                 }
             }

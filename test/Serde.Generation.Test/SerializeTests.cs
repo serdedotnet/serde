@@ -352,9 +352,9 @@ public static class SWrap
     {
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
-            var _l_typeInfo = SWrapTypeInfo.TypeInfo;
-            var type = serializer.SerializeType(_l_typeInfo);
-            type.SerializeField<T, TWrap>(_l_typeInfo, 0, value.Field);
+            var _l_serdeInfo = SWrapTypeInfo.TypeInfo;
+            var type = serializer.SerializeType(_l_serdeInfo);
+            type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value.Field);
             type.End();
         }
     }
@@ -393,9 +393,9 @@ public readonly struct SWrap<T, TWrap>
 
     void ISerialize<T>.Serialize(T value, ISerializer serializer)
     {
-        var _l_typeInfo = s_typeInfo;
-        var type = serializer.SerializeType(_l_typeInfo);
-        type.SerializeField<T, TWrap>(_l_typeInfo, 0, value);
+        var _l_serdeInfo = s_typeInfo;
+        var type = serializer.SerializeType(_l_serdeInfo);
+        type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value);
         type.End();
     }
 }

@@ -11,9 +11,9 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.XmlTests.BoolStruct>.Serialize(Serde.Test.XmlTests.BoolStruct value, ISerializer serializer)
             {
-                var _l_typeInfo = BoolStructSerdeTypeInfo.TypeInfo;
-                var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<bool, BoolWrap>(_l_typeInfo, 0, value.BoolField);
+                var _l_serdeInfo = BoolStructSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_serdeInfo);
+                type.SerializeField<bool, BoolWrap>(_l_serdeInfo, 0, value.BoolField);
                 type.End();
             }
         }

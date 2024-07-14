@@ -11,10 +11,10 @@ partial struct PointWrap : Serde.IDeserialize<Point>
         int _l_x = default !;
         int _l_y = default !;
         byte _r_assignedValid = 0;
-        var _l_typeInfo = PointSerdeTypeInfo.TypeInfo;
-        var typeDeserialize = deserializer.DeserializeType(_l_typeInfo);
+        var _l_serdeInfo = PointSerdeInfo.Instance;
+        var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
-        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_typeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
+        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
         {
             switch (_l_index_)
             {

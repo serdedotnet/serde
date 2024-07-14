@@ -10,9 +10,9 @@ namespace Test
     {
         void ISerialize<Test.Parent>.Serialize(Test.Parent value, ISerializer serializer)
         {
-            var _l_typeInfo = ParentSerdeTypeInfo.TypeInfo;
-            var type = serializer.SerializeType(_l_typeInfo);
-            type.SerializeField<Recursive, Test.RecursiveWrap>(_l_typeInfo, 0, value.R);
+            var _l_serdeInfo = ParentSerdeInfo.Instance;
+            var type = serializer.SerializeType(_l_serdeInfo);
+            type.SerializeField<Recursive, Test.RecursiveWrap>(_l_serdeInfo, 0, value.R);
             type.End();
         }
     }

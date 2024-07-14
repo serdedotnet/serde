@@ -11,9 +11,9 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.XmlTests.MapTest1>.Serialize(Serde.Test.XmlTests.MapTest1 value, ISerializer serializer)
             {
-                var _l_typeInfo = MapTest1SerdeTypeInfo.TypeInfo;
-                var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<System.Collections.Generic.Dictionary<string, int>, Serde.DictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>>(_l_typeInfo, 0, value.MapField);
+                var _l_serdeInfo = MapTest1SerdeInfo.Instance;
+                var type = serializer.SerializeType(_l_serdeInfo);
+                type.SerializeField<System.Collections.Generic.Dictionary<string, int>, Serde.DictWrap.SerializeImpl<string, StringWrap, int, Int32Wrap>>(_l_serdeInfo, 0, value.MapField);
                 type.End();
             }
         }

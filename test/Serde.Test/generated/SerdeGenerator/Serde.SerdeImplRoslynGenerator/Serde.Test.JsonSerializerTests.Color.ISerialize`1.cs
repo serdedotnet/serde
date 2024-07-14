@@ -11,11 +11,11 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.JsonSerializerTests.Color>.Serialize(Serde.Test.JsonSerializerTests.Color value, ISerializer serializer)
             {
-                var _l_typeInfo = ColorSerdeTypeInfo.TypeInfo;
-                var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 0, value.Red);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 1, value.Green);
-                type.SerializeField<int, Int32Wrap>(_l_typeInfo, 2, value.Blue);
+                var _l_serdeInfo = ColorSerdeTypeInfo.TypeInfo;
+                var type = serializer.SerializeType(_l_serdeInfo);
+                type.SerializeField<int, Int32Wrap>(_l_serdeInfo, 0, value.Red);
+                type.SerializeField<int, Int32Wrap>(_l_serdeInfo, 1, value.Green);
+                type.SerializeField<int, Int32Wrap>(_l_serdeInfo, 2, value.Blue);
                 type.End();
             }
         }

@@ -11,9 +11,9 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.Serialize(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType value, ISerializer serializer)
             {
-                var _l_typeInfo = CustomArrayWrapExplicitOnTypeSerdeTypeInfo.TypeInfo;
-                var type = serializer.SerializeType(_l_typeInfo);
-                type.SerializeField<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Wrap.SerializeImpl<int, Int32Wrap>>(_l_typeInfo, 0, value.A);
+                var _l_serdeInfo = CustomArrayWrapExplicitOnTypeSerdeInfo.Instance;
+                var type = serializer.SerializeType(_l_serdeInfo);
+                type.SerializeField<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Wrap.SerializeImpl<int, Int32Wrap>>(_l_serdeInfo, 0, value.A);
                 type.End();
             }
         }

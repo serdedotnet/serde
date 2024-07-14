@@ -7,7 +7,7 @@
     "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/S.ISerialize.cs: (11,13)-(11,124)",
     "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS7036)",
     "MessageFormat": "There is no argument given that corresponds to the required parameter '{0}' of '{1}'",
-    "Message": "There is no argument given that corresponds to the required parameter 'serialize' of 'ISerializeType.SerializeField<T, U>(TypeInfo, int, T, U)'",
+    "Message": "There is no argument given that corresponds to the required parameter 'serialize' of 'ISerializeType.SerializeField<T, U>(SerdeInfo, int, T, U)'",
     "Category": "Compiler"
   }
 ]
