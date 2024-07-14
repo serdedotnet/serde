@@ -322,9 +322,9 @@ namespace Serde.Test
 
         private struct ColorEnumWrap : IDeserialize<ColorEnum>
         {
-            private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
                 nameof(ColorEnum),
-                TypeInfo.TypeKind.Enum,
+                SerdeInfo.TypeKind.Enum,
                 [
                     ("red", typeof(ColorEnum).GetField("Red")!),
                     ("green", typeof(ColorEnum).GetField("Green")!),

@@ -12,9 +12,9 @@ public sealed partial class CustomImplTests
     {
         public int Red, Green, Blue;
 
-        private static readonly TypeInfo s_fieldMap = TypeInfo.Create(
+        private static readonly SerdeInfo s_fieldMap = SerdeInfo.Create(
             "RgbWithFieldMap",
-            TypeInfo.TypeKind.CustomType, [
+            SerdeInfo.TypeKind.CustomType, [
             ("red", typeof(RgbWithFieldMap).GetField("Red")!),
             ("green", typeof(RgbWithFieldMap).GetField("Green")!),
             ("blue", typeof(RgbWithFieldMap).GetField("Blue")!)

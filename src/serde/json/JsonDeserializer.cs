@@ -87,9 +87,9 @@ namespace Serde.Json
             return v.VisitDictionary(ref map);
         }
 
-        public IDeserializeCollection DeserializeCollection(TypeInfo typeInfo)
+        public IDeserializeCollection DeserializeCollection(SerdeInfo typeInfo)
         {
-            if (typeInfo.Kind is not (TypeInfo.TypeKind.Enumerable or TypeInfo.TypeKind.Dictionary))
+            if (typeInfo.Kind is not (SerdeInfo.TypeKind.Enumerable or SerdeInfo.TypeKind.Dictionary))
             {
                 throw new ArgumentException($"TypeKind is {typeInfo.Kind}, expected Enumerable or Dictionary");
             }
@@ -97,8 +97,8 @@ namespace Serde.Json
             ref var reader = ref GetReader();
             reader.ReadOrThrow();
 
-            if (typeInfo.Kind == TypeInfo.TypeKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
-                || typeInfo.Kind == TypeInfo.TypeKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
+            if (typeInfo.Kind == SerdeInfo.TypeKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
+                || typeInfo.Kind == SerdeInfo.TypeKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
             {
                 throw new InvalidDeserializeValueException("Expected object start");
             }
@@ -116,20 +116,20 @@ namespace Serde.Json
 
             public int? SizeOpt => null;
 
-            public bool TryReadValue<T, D>(TypeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
+            public bool TryReadValue<T, D>(SerdeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
             {
                 var reader = _deserializer.GetReader();
                 reader.ReadOrThrow();
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.EndArray:
-                        if (typeInfo.Kind != TypeInfo.TypeKind.Enumerable)
+                        if (typeInfo.Kind != SerdeInfo.TypeKind.Enumerable)
                         {
                             throw new InvalidDeserializeValueException($"Unexpected end of array in type kind: {typeInfo.Kind}");
                         }
                         break;
                     case JsonTokenType.EndObject:
-                        if (typeInfo.Kind != TypeInfo.TypeKind.Dictionary)
+                        if (typeInfo.Kind != SerdeInfo.TypeKind.Dictionary)
                         {
                             throw new InvalidDeserializeValueException($"Unexpected end of object in type kind: {typeInfo.Kind}");
                         }
@@ -301,10 +301,10 @@ namespace Serde.Json
         public T DeserializeIdentifier<T>(IDeserializeVisitor<T> v)
             => DeserializeString(v);
 
-        public IDeserializeType DeserializeType(TypeInfo fieldMap)
+        public IDeserializeType DeserializeType(SerdeInfo fieldMap)
         {
             // Custom types look like dictionaries, enums are inline strings
-            if (fieldMap.Kind == TypeInfo.TypeKind.CustomType)
+            if (fieldMap.Kind == SerdeInfo.TypeKind.CustomType)
             {
                 ref var reader = ref GetReader();
                 reader.ReadOrThrow();
@@ -314,7 +314,7 @@ namespace Serde.Json
                     throw new InvalidDeserializeValueException("Expected object start");
                 }
             }
-            else if (fieldMap.Kind != TypeInfo.TypeKind.Enum)
+            else if (fieldMap.Kind != SerdeInfo.TypeKind.Enum)
             {
                 throw new ArgumentException("Expected either CustomType or Enum kind, found " + fieldMap.Kind);
             }
@@ -365,10 +365,10 @@ namespace Serde.Json
             return D.Deserialize(this);
         }
 
-        int IDeserializeType.TryReadIndex(TypeInfo map, out string? errorName)
+        int IDeserializeType.TryReadIndex(SerdeInfo map, out string? errorName)
         {
             ref var reader = ref GetReader();
-            if (map.Kind == TypeInfo.TypeKind.Enum)
+            if (map.Kind == SerdeInfo.TypeKind.Enum)
             {
                 // Enums are just treated as strings
                 reader.ReadOrThrow();

@@ -41,9 +41,9 @@ namespace Serde.Json
 
         partial record Object
         {
-            private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
                 typeof(Object).ToString(),
-                TypeInfo.TypeKind.Dictionary,
+                SerdeInfo.TypeKind.Dictionary,
                 []);
 
             public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
@@ -69,9 +69,9 @@ namespace Serde.Json
 
         partial record Array
         {
-            private static readonly TypeInfo s_typeInfo = TypeInfo.Create(
+            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
                 typeof(Array).ToString(),
-                TypeInfo.TypeKind.Enumerable,
+                SerdeInfo.TypeKind.Enumerable,
                 []);
 
             public Array(IEnumerable<JsonValue> elements)

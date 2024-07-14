@@ -17,7 +17,7 @@ namespace Serde;
 ///
 /// It can also be used to get the custom attributes for a field.
 /// </summary>
-public sealed class TypeInfo
+public sealed class SerdeInfo
 {
     // The field names are sorted by the Utf8 representation of the field name.
     private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
@@ -49,7 +49,7 @@ public sealed class TypeInfo
 
     /// <summary>
     /// Returns an index corresponding to the location of the field in the original
-    /// ReadOnlySpan passed during creation of the <see cref="TypeInfo"/>. This can be
+    /// ReadOnlySpan passed during creation of the <see cref="SerdeInfo"/>. This can be
     /// used as a fast lookup for a field based on its UTF-8 name.
     /// </summary>
     public int TryGetIndex(Utf8Span utf8FieldName)
@@ -81,7 +81,7 @@ public sealed class TypeInfo
     /// Create a new field mapping. The ordering of the fields is important -- it
     /// corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
     /// </summary>
-    public static TypeInfo Create(
+    public static SerdeInfo Create(
         string typeName,
         TypeKind typeKind,
         ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
@@ -116,12 +116,12 @@ public sealed class TypeInfo
             indexToInfoBuilder[index] = indexToInfoBuilder[index] with { Utf8NameIndex = i };
         }
 
-        return new TypeInfo(typeName, typeKind, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
+        return new SerdeInfo(typeName, typeKind, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
     }
 
     private static readonly UTF8Encoding s_utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
-    private TypeInfo(
+    private SerdeInfo(
         string typeName,
         TypeKind typeKind,
         ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
