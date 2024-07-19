@@ -74,7 +74,7 @@ namespace Serde.Test
             byte _l_field63 = default !;
             byte _l_field64 = default !;
             ulong _r_assignedValid = 0;
-            var _l_serdeInfo = MaxSizeTypeSerdeInfo.Instance;
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<MaxSizeType>();
             var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -82,259 +82,259 @@ namespace Serde.Test
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_field1 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field1 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 0;
                         break;
                     case 1:
-                        _l_field2 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field2 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 1;
                         break;
                     case 2:
-                        _l_field3 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field3 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 2;
                         break;
                     case 3:
-                        _l_field4 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field4 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 3;
                         break;
                     case 4:
-                        _l_field5 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field5 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 4;
                         break;
                     case 5:
-                        _l_field6 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field6 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 5;
                         break;
                     case 6:
-                        _l_field7 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field7 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 6;
                         break;
                     case 7:
-                        _l_field8 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field8 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 7;
                         break;
                     case 8:
-                        _l_field9 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field9 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 8;
                         break;
                     case 9:
-                        _l_field10 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field10 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 9;
                         break;
                     case 10:
-                        _l_field11 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field11 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 10;
                         break;
                     case 11:
-                        _l_field12 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field12 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 11;
                         break;
                     case 12:
-                        _l_field13 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field13 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 12;
                         break;
                     case 13:
-                        _l_field14 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field14 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 13;
                         break;
                     case 14:
-                        _l_field15 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field15 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 14;
                         break;
                     case 15:
-                        _l_field16 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field16 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 15;
                         break;
                     case 16:
-                        _l_field17 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field17 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 16;
                         break;
                     case 17:
-                        _l_field18 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field18 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 17;
                         break;
                     case 18:
-                        _l_field19 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field19 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 18;
                         break;
                     case 19:
-                        _l_field20 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field20 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 19;
                         break;
                     case 20:
-                        _l_field21 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field21 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 20;
                         break;
                     case 21:
-                        _l_field22 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field22 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 21;
                         break;
                     case 22:
-                        _l_field23 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field23 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 22;
                         break;
                     case 23:
-                        _l_field24 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field24 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 23;
                         break;
                     case 24:
-                        _l_field25 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field25 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 24;
                         break;
                     case 25:
-                        _l_field26 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field26 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 25;
                         break;
                     case 26:
-                        _l_field27 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field27 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 26;
                         break;
                     case 27:
-                        _l_field28 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field28 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 27;
                         break;
                     case 28:
-                        _l_field29 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field29 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 28;
                         break;
                     case 29:
-                        _l_field30 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field30 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 29;
                         break;
                     case 30:
-                        _l_field31 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field31 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 30;
                         break;
                     case 31:
-                        _l_field32 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field32 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 31;
                         break;
                     case 32:
-                        _l_field33 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field33 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 32;
                         break;
                     case 33:
-                        _l_field34 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field34 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 33;
                         break;
                     case 34:
-                        _l_field35 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field35 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 34;
                         break;
                     case 35:
-                        _l_field36 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field36 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 35;
                         break;
                     case 36:
-                        _l_field37 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field37 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 36;
                         break;
                     case 37:
-                        _l_field38 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field38 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 37;
                         break;
                     case 38:
-                        _l_field39 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field39 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 38;
                         break;
                     case 39:
-                        _l_field40 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field40 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 39;
                         break;
                     case 40:
-                        _l_field41 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field41 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 40;
                         break;
                     case 41:
-                        _l_field42 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field42 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 41;
                         break;
                     case 42:
-                        _l_field43 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field43 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 42;
                         break;
                     case 43:
-                        _l_field44 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field44 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 43;
                         break;
                     case 44:
-                        _l_field45 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field45 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 44;
                         break;
                     case 45:
-                        _l_field46 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field46 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 45;
                         break;
                     case 46:
-                        _l_field47 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field47 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 46;
                         break;
                     case 47:
-                        _l_field48 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field48 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 47;
                         break;
                     case 48:
-                        _l_field49 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field49 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 48;
                         break;
                     case 49:
-                        _l_field50 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field50 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 49;
                         break;
                     case 50:
-                        _l_field51 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field51 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 50;
                         break;
                     case 51:
-                        _l_field52 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field52 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 51;
                         break;
                     case 52:
-                        _l_field53 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field53 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 52;
                         break;
                     case 53:
-                        _l_field54 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field54 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 53;
                         break;
                     case 54:
-                        _l_field55 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field55 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 54;
                         break;
                     case 55:
-                        _l_field56 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field56 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 55;
                         break;
                     case 56:
-                        _l_field57 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field57 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 56;
                         break;
                     case 57:
-                        _l_field58 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field58 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 57;
                         break;
                     case 58:
-                        _l_field59 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field59 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 58;
                         break;
                     case 59:
-                        _l_field60 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field60 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 59;
                         break;
                     case 60:
-                        _l_field61 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field61 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 60;
                         break;
                     case 61:
-                        _l_field62 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field62 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 61;
                         break;
                     case 62:
-                        _l_field63 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field63 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 62;
                         break;
                     case 63:
-                        _l_field64 = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_field64 = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ulong)1) << 63;
                         break;
                     case Serde.IDeserializeType.IndexNotFound:

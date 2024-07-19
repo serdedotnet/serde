@@ -101,12 +101,14 @@ public sealed partial class GenericWrapperTests
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray<T>>
             where TWrap : struct, ISerialize<T>
         {
+            public static SerdeInfo SerdeInfo => s_typeInfo;
             void ISerialize<CustomImArray<T>>.Serialize(CustomImArray<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(s_typeInfo, value.Backing.AsSpan(), serializer);
         }
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<CustomImArray<T>>
             where TWrap : IDeserialize<T>
         {
+            public static SerdeInfo SerdeInfo => s_typeInfo;
             public static CustomImArray<T> Deserialize(IDeserializer deserializer)
             {
                 SerdeInfo typeInfo = s_typeInfo;
@@ -144,12 +146,16 @@ public sealed partial class GenericWrapperTests
         public readonly record struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray2<T>>
             where TWrap : struct, ISerialize<T>
         {
+            static SerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
+
             void ISerialize<CustomImArray2<T>>.Serialize(CustomImArray2<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(s_typeInfo, value.Backing.AsSpan(), serializer);
         }
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<CustomImArray2<T>>
             where TWrap : IDeserialize<T>
         {
+            static SerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
+
             public static CustomImArray2<T> Deserialize(IDeserializer deserializer)
             {
                 ImmutableArray<T>.Builder builder;

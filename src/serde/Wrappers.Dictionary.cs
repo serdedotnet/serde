@@ -2,10 +2,10 @@ using System.Collections.Generic;
 
 namespace Serde
 {
-    internal static class DictSerdeTypeInfo<TKey, TValue> where TKey : notnull
+    internal static class DictSerdeInfo<TKey, TValue> where TKey : notnull
     {
-        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(
-            typeof(Dictionary<TKey, TValue>).Name, SerdeInfo.TypeKind.Dictionary, []);
+        public static readonly SerdeInfo Instance = SerdeInfo.Create(
+            typeof(Dictionary<TKey, TValue>).ToString(), SerdeInfo.TypeKind.Dictionary, []);
     }
 
     public static class DictWrap
@@ -15,9 +15,10 @@ namespace Serde
             where TKeyWrap : struct, ISerialize<TKey>
             where TValueWrap : struct, ISerialize<TValue>
         {
+            public static SerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
             public void Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
             {
-                var typeInfo = DictSerdeTypeInfo<TKey, TValue>.TypeInfo;
+                var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
                 var sd = serializer.SerializeCollection(typeInfo, value.Count);
                 foreach (var (k, v) in value)
                 {
@@ -33,9 +34,10 @@ namespace Serde
             where TKeyWrap : IDeserialize<TKey>
             where TValueWrap : IDeserialize<TValue>
         {
+            public static SerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
             public static Dictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
             {
-                var typeInfo = DictSerdeTypeInfo<TKey, TValue>.TypeInfo;
+                var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
                 var deCollection = deserializer.DeserializeCollection(typeInfo);
                 Dictionary<TKey, TValue> dict;
                 if (deCollection.SizeOpt is int size)

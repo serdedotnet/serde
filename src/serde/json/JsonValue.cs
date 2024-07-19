@@ -20,6 +20,11 @@ namespace Serde.Json
     // helpers
     partial record JsonValue
     {
+        public static SerdeInfo SerdeInfo => SerdeInfo.Create(
+            typeof(JsonValue).ToString(),
+            SerdeInfo.TypeKind.CustomType,
+            []);
+
         private JsonValue() { }
 
         public static implicit operator JsonValue(int i) => new Number(i);

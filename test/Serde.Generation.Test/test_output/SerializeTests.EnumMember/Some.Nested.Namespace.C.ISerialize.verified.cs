@@ -10,7 +10,7 @@ namespace Some.Nested.Namespace
     {
         void ISerialize<Some.Nested.Namespace.C>.Serialize(Some.Nested.Namespace.C value, ISerializer serializer)
         {
-            var _l_serdeInfo = CSerdeInfo.Instance;
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<C>();
             var type = serializer.SerializeType(_l_serdeInfo);
             type.SerializeField<Some.Nested.Namespace.ColorInt, Some.Nested.Namespace.ColorIntWrap>(_l_serdeInfo, 0, value.ColorInt);
             type.SerializeField<Some.Nested.Namespace.ColorByte, Some.Nested.Namespace.ColorByteWrap>(_l_serdeInfo, 1, value.ColorByte);

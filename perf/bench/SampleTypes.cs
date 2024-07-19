@@ -58,18 +58,18 @@ namespace Benchmarks
 
     public partial record LocationWrap : IDeserialize<Location>
     {
-        private static readonly SerdeInfo s_fieldMap = SerdeInfo.Create(
+        public static SerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.Create(
             "Location",
             SerdeInfo.TypeKind.CustomType, [
-            ("id", typeof(Location).GetProperty("Id")!),
-            ("address1", typeof(Location).GetProperty("Address1")!),
-            ("address2", typeof(Location).GetProperty("Address2")!),
-            ("city", typeof(Location).GetProperty("City")!),
-            ("state", typeof(Location).GetProperty("State")!),
-            ("postalCode", typeof(Location).GetProperty("PostalCode")!),
-            ("name", typeof(Location).GetProperty("Name")!),
-            ("phoneNumber", typeof(Location).GetProperty("PhoneNumber")!),
-            ("country", typeof(Location).GetProperty("Country")!)
+            ("id", StringWrap.SerdeInfo, typeof(Location).GetProperty("Id")!),
+            ("address1", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address1")!),
+            ("address2", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address2")!),
+            ("city", StringWrap.SerdeInfo, typeof(Location).GetProperty("City")!),
+            ("state", StringWrap.SerdeInfo, typeof(Location).GetProperty("State")!),
+            ("postalCode", StringWrap.SerdeInfo, typeof(Location).GetProperty("PostalCode")!),
+            ("name", StringWrap.SerdeInfo, typeof(Location).GetProperty("Name")!),
+            ("phoneNumber", StringWrap.SerdeInfo, typeof(Location).GetProperty("PhoneNumber")!),
+            ("country", StringWrap.SerdeInfo, typeof(Location).GetProperty("Country")!)
         ]);
 
         static Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
@@ -85,9 +85,9 @@ namespace Benchmarks
             string _l_country = default !;
             ushort _r_assignedValid = 0b0;
 
-            var typeDeserialize = deserializer.DeserializeType(s_fieldMap);
+            var typeDeserialize = deserializer.DeserializeType(SerdeInfo);
             int index;
-            while ((index = typeDeserialize.TryReadIndex(s_fieldMap, out _)) != IDeserializeType.EndOfType)
+            while ((index = typeDeserialize.TryReadIndex(SerdeInfo, out _)) != IDeserializeType.EndOfType)
             {
                 switch (index)
                 {

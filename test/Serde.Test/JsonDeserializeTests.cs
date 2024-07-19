@@ -322,20 +322,20 @@ namespace Serde.Test
 
         private struct ColorEnumWrap : IDeserialize<ColorEnum>
         {
-            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
-                nameof(ColorEnum),
+            public static SerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.Create(
+                nameof(JsonDeserializeTests.ColorEnum),
                 SerdeInfo.TypeKind.Enum,
                 [
-                    ("red", typeof(ColorEnum).GetField("Red")!),
-                    ("green", typeof(ColorEnum).GetField("Green")!),
-                    ("blue", typeof(ColorEnum).GetField("Blue")!),
+                    ("red", Int32Wrap.SerdeInfo, typeof(ColorEnum).GetField("Red")!),
+                    ("green", Int32Wrap.SerdeInfo, typeof(ColorEnum).GetField("Green")!),
+                    ("blue", Int32Wrap.SerdeInfo, typeof(ColorEnum).GetField("Blue")!),
                 ]
             );
 
             static ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
             {
-                var typeInfo = s_typeInfo;
-                var de = deserializer.DeserializeType(s_typeInfo);
+                var typeInfo = SerdeInfo;
+                var de = deserializer.DeserializeType(SerdeInfo);
                 int index;
                 if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {

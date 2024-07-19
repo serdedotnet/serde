@@ -17,7 +17,7 @@ namespace Serde;
 ///
 /// It can also be used to get the custom attributes for a field.
 /// </summary>
-public sealed class SerdeInfo
+public sealed record SerdeInfo
 {
     // The field names are sorted by the Utf8 representation of the field name.
     private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
@@ -30,9 +30,9 @@ public sealed class SerdeInfo
         string StringName,
         int Utf8NameIndex,
         IList<CustomAttributeData> CustomAttributesData,
-        Type FieldType);
+        SerdeInfo FieldSerdeInfo);
 
-    public string TypeName { get; }
+    public string TypeName { get; init; }
 
     public enum TypeKind
     {
@@ -66,26 +66,20 @@ public sealed class SerdeInfo
     public static SerdeInfo Create(
         string typeName,
         TypeKind typeKind,
-        ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, SerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
         for (int index = 0; index < fields.Length; index++)
         {
-            var (serializeName, memberInfo) = fields[index];
-            var fieldType = memberInfo switch
-            {
-                FieldInfo info => info.FieldType,
-                PropertyInfo propertyInfo => propertyInfo.PropertyType,
-                _ => throw new ArgumentException("MemberInfo must be a FieldInfo or PropertyInfo", nameof(memberInfo))
-            };
+            var (serializeName, serdeInfo, memberInfo) = fields[index];
 
             nameToIndexBuilder.Add((s_utf8.GetBytes(serializeName), index));
             var fieldInfo = new PrivateFieldInfo(
                 serializeName,
                 -1,
                 memberInfo.GetCustomAttributesData(),
-                fieldType);
+                serdeInfo);
             indexToInfoBuilder.Add(fieldInfo);
         }
 
@@ -118,8 +112,8 @@ public sealed class SerdeInfo
         return mapIndex < 0 ? IDeserializeType.IndexNotFound : _nameToIndex[mapIndex].Index;
     }
 
-    [Experimental("SerdeExperimentalFieldType")]
-    public Type GetFieldType(int index) => _indexToInfo[index].FieldType;
+    [Experimental("SerdeExperimentalFieldInfo")]
+    public SerdeInfo GetFieldInfo(int index) => _indexToInfo[index].FieldSerdeInfo;
 
     public IList<CustomAttributeData> GetCustomAttributeData(int index)
     {

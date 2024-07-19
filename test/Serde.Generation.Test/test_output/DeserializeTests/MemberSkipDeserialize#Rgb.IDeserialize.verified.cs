@@ -11,7 +11,7 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
         byte _l_red = default !;
         byte _l_blue = default !;
         byte _r_assignedValid = 0;
-        var _l_serdeInfo = RgbSerdeInfo.Instance;
+        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Rgb>();
         var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
         while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -19,11 +19,11 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
             switch (_l_index_)
             {
                 case 0:
-                    _l_red = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                    _l_red = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case 2:
-                    _l_blue = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                    _l_blue = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 2;
                     break;
                 case 1:

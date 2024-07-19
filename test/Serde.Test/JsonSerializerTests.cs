@@ -104,7 +104,7 @@ namespace Serde.Test
 
         private struct JsonDictionaryWrapper : ISerialize<JsonDictionaryWrapper>
         {
-            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
+            public static SerdeInfo SerdeInfo { get; } = SerdeInfo.Create(
                 typeof(Dictionary<int, int>).ToString(),
                 SerdeInfo.TypeKind.Dictionary,
                 []);
@@ -116,7 +116,7 @@ namespace Serde.Test
             }
             public void Serialize(JsonDictionaryWrapper value, ISerializer serializer)
             {
-                var typeInfo = s_typeInfo;
+                var typeInfo = SerdeInfo;
                 var sd = serializer.SerializeCollection(typeInfo, value._d.Count);
                 foreach (var (k,v) in value._d)
                 {

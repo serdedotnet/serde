@@ -15,7 +15,7 @@ namespace Serde
     /// for any type that wants to be deserialized by the Serde framework. The implementation should
     /// be independent of the format the type is being deserialized from.
     /// </summary>
-    public interface IDeserialize<T>
+    public interface IDeserialize<T> : ISerdeInfoProvider
     {
         abstract static T Deserialize(IDeserializer deserializer);
     }

@@ -26,7 +26,7 @@ namespace Serde.Test
             System.Collections.Immutable.ImmutableArray<int> _l_intimm = default !;
             Serde.Test.AllInOne.ColorEnum _l_color = default !;
             ushort _r_assignedValid = 0;
-            var _l_serdeInfo = AllInOneSerdeInfo.Instance;
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<AllInOne>();
             var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -34,63 +34,63 @@ namespace Serde.Test
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_boolfield = typeDeserialize.ReadValue<bool, BoolWrap>(_l_index_);
+                        _l_boolfield = typeDeserialize.ReadValue<bool, global::Serde.BoolWrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 0;
                         break;
                     case 1:
-                        _l_charfield = typeDeserialize.ReadValue<char, CharWrap>(_l_index_);
+                        _l_charfield = typeDeserialize.ReadValue<char, global::Serde.CharWrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 1;
                         break;
                     case 2:
-                        _l_bytefield = typeDeserialize.ReadValue<byte, ByteWrap>(_l_index_);
+                        _l_bytefield = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 2;
                         break;
                     case 3:
-                        _l_ushortfield = typeDeserialize.ReadValue<ushort, UInt16Wrap>(_l_index_);
+                        _l_ushortfield = typeDeserialize.ReadValue<ushort, global::Serde.UInt16Wrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 3;
                         break;
                     case 4:
-                        _l_uintfield = typeDeserialize.ReadValue<uint, UInt32Wrap>(_l_index_);
+                        _l_uintfield = typeDeserialize.ReadValue<uint, global::Serde.UInt32Wrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 4;
                         break;
                     case 5:
-                        _l_ulongfield = typeDeserialize.ReadValue<ulong, UInt64Wrap>(_l_index_);
+                        _l_ulongfield = typeDeserialize.ReadValue<ulong, global::Serde.UInt64Wrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 5;
                         break;
                     case 6:
-                        _l_sbytefield = typeDeserialize.ReadValue<sbyte, SByteWrap>(_l_index_);
+                        _l_sbytefield = typeDeserialize.ReadValue<sbyte, global::Serde.SByteWrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 6;
                         break;
                     case 7:
-                        _l_shortfield = typeDeserialize.ReadValue<short, Int16Wrap>(_l_index_);
+                        _l_shortfield = typeDeserialize.ReadValue<short, global::Serde.Int16Wrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 7;
                         break;
                     case 8:
-                        _l_intfield = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                        _l_intfield = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 8;
                         break;
                     case 9:
-                        _l_longfield = typeDeserialize.ReadValue<long, Int64Wrap>(_l_index_);
+                        _l_longfield = typeDeserialize.ReadValue<long, global::Serde.Int64Wrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 9;
                         break;
                     case 10:
-                        _l_stringfield = typeDeserialize.ReadValue<string, StringWrap>(_l_index_);
+                        _l_stringfield = typeDeserialize.ReadValue<string, global::Serde.StringWrap>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 10;
                         break;
                     case 11:
-                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, global::Serde.StringWrap>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 11;
                         break;
                     case 12:
-                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayWrap.DeserializeImpl<uint, UInt32Wrap>>(_l_index_);
+                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayWrap.DeserializeImpl<uint, global::Serde.UInt32Wrap>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 12;
                         break;
                     case 13:
-                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayWrap.DeserializeImpl<int[], Serde.ArrayWrap.DeserializeImpl<int, Int32Wrap>>>(_l_index_);
+                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayWrap.DeserializeImpl<int[], Serde.ArrayWrap.DeserializeImpl<int, global::Serde.Int32Wrap>>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 13;
                         break;
                     case 14:
-                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayWrap.DeserializeImpl<int, Int32Wrap>>(_l_index_);
+                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayWrap.DeserializeImpl<int, global::Serde.Int32Wrap>>(_l_index_);
                         _r_assignedValid |= ((ushort)1) << 14;
                         break;
                     case 15:

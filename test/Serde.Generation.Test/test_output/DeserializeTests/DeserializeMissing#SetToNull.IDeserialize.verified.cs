@@ -12,7 +12,7 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
         string? _l_missing = default !;
         string? _l_throwmissing = default !;
         byte _r_assignedValid = 0;
-        var _l_serdeInfo = SetToNullSerdeInfo.Instance;
+        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<SetToNull>();
         var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
         while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -20,15 +20,15 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
             switch (_l_index_)
             {
                 case 0:
-                    _l_present = typeDeserialize.ReadValue<string, StringWrap>(_l_index_);
+                    _l_present = typeDeserialize.ReadValue<string, global::Serde.StringWrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case 1:
-                    _l_missing = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                    _l_missing = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, global::Serde.StringWrap>>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 1;
                     break;
                 case 2:
-                    _l_throwmissing = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                    _l_throwmissing = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, global::Serde.StringWrap>>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 2;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:
