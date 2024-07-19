@@ -8,7 +8,7 @@ partial struct ColorLongWrap : Serde.IDeserialize<ColorLong>
 {
     static ColorLong IDeserialize<ColorLong>.Deserialize(IDeserializer deserializer)
     {
-        var serdeInfo = ColorLongSerdeInfo.Instance;
+        var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorLongWrap>();
         var de = deserializer.DeserializeType(serdeInfo);
         int index;
         if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)

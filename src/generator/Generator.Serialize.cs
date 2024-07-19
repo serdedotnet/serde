@@ -18,6 +18,7 @@ namespace Serde;
 public partial class SerializeImplGen
 {
     internal static (MemberDeclarationSyntax[], BaseListSyntax) GenSerialize(
+        TypeDeclContext typeDeclContext,
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
         ImmutableList<ITypeSymbol> inProgress)
@@ -40,7 +41,7 @@ public partial class SerializeImplGen
             var enumType = (INamedTypeSymbol)receiverType;
             var typeSyntax = enumType.ToFqnSyntax();
             var underlying = enumType.EnumUnderlyingType!;
-            statements.Add(ParseStatement($"var _l_serdeInfo = {receiverType.ToFqnSyntax()}SerdeInfo.Instance;"));
+            statements.Add(ParseStatement($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Wrap>();"));
             statements.Add(ParseStatement($$"""
             var index = value switch
             {
@@ -62,7 +63,7 @@ public partial class SerializeImplGen
             // type.End();
 
             // `var _l_serdeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
-            statements.Add(ParseStatement($"var _l_serdeInfo = {receiverType.Name}SerdeInfo.Instance;"));
+            statements.Add(ParseStatement($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}{typeDeclContext.TypeParameterList}>();"));
 
             // `var type = serializer.SerializeType(_l_serdeInfo);`
             statements.Add(ParseStatement("var type = serializer.SerializeType(_l_serdeInfo);"));
@@ -98,6 +99,9 @@ public partial class SerializeImplGen
 
         var receiverSyntax = ((INamedTypeSymbol)receiverType).ToFqnSyntax();
 
+        string serdeInfoText = $"""
+static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}>.SerdeInfo => {receiverSyntax}SerdeInfo.Instance;
+""";
         // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
         var members = new MemberDeclarationSyntax[] {
             MethodDeclaration(

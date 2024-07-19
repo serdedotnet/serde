@@ -14,7 +14,7 @@ namespace Serde.Test
                 string? _l_s = default !;
                 System.Collections.Generic.Dictionary<string, string?> _l_dict = default !;
                 byte _r_assignedValid = 0;
-                var _l_serdeInfo = NullableFieldsSerdeInfo.Instance;
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<NullableFields>();
                 var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -22,11 +22,11 @@ namespace Serde.Test
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_s = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>(_l_index_);
+                            _l_s = typeDeserialize.ReadValue<string?, Serde.NullableRefWrap.DeserializeImpl<string, global::Serde.StringWrap>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_dict = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictWrap.DeserializeImpl<string, StringWrap, string?, Serde.NullableRefWrap.DeserializeImpl<string, StringWrap>>>(_l_index_);
+                            _l_dict = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictWrap.DeserializeImpl<string, global::Serde.StringWrap, string?, Serde.NullableRefWrap.DeserializeImpl<string, global::Serde.StringWrap>>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

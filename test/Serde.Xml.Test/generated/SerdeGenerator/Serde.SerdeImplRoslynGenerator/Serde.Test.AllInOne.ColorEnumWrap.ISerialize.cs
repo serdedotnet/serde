@@ -11,7 +11,7 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.AllInOne.ColorEnum>.Serialize(Serde.Test.AllInOne.ColorEnum value, ISerializer serializer)
             {
-                var _l_serdeInfo = Serde.Test.AllInOne.ColorEnumSerdeInfo.Instance;
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorEnumWrap>();
                 var index = value switch
                 {
                     Serde.Test.AllInOne.ColorEnum.Red => 0,
@@ -19,7 +19,7 @@ namespace Serde.Test
                     Serde.Test.AllInOne.ColorEnum.Green => 2,
                     var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorEnum'"),
                 };
-                serializer.SerializeEnumValue(_l_serdeInfo, index, (int)value, default(Int32Wrap));
+                serializer.SerializeEnumValue(_l_serdeInfo, index, (int)value, default(global::Serde.Int32Wrap));
             }
         }
     }

@@ -13,7 +13,7 @@ partial record struct Wrap : Serde.IDeserialize<System.Runtime.InteropServices.C
         int _l_grfflags = default !;
         int _l_grfmode = default !;
         byte _r_assignedValid = 0;
-        var _l_serdeInfo = BIND_OPTSSerdeInfo.Instance;
+        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Wrap>();
         var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
         while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -21,19 +21,19 @@ partial record struct Wrap : Serde.IDeserialize<System.Runtime.InteropServices.C
             switch (_l_index_)
             {
                 case 0:
-                    _l_cbstruct = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _l_cbstruct = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case 1:
-                    _l_dwtickcountdeadline = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _l_dwtickcountdeadline = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 1;
                     break;
                 case 2:
-                    _l_grfflags = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _l_grfflags = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 2;
                     break;
                 case 3:
-                    _l_grfmode = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _l_grfmode = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 3;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:

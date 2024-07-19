@@ -11,7 +11,7 @@ partial struct S : Serde.IDeserialize<S>
         int _l_one = default !;
         int _l_twoword = default !;
         byte _r_assignedValid = 0;
-        var _l_serdeInfo = SSerdeInfo.Instance;
+        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S>();
         var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
         while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
@@ -19,11 +19,11 @@ partial struct S : Serde.IDeserialize<S>
             switch (_l_index_)
             {
                 case 0:
-                    _l_one = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _l_one = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 0;
                     break;
                 case 1:
-                    _l_twoword = typeDeserialize.ReadValue<int, Int32Wrap>(_l_index_);
+                    _l_twoword = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
                     _r_assignedValid |= ((byte)1) << 1;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:

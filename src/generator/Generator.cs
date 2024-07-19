@@ -116,12 +116,14 @@ namespace Serde
                             generationContext);
                     }
 
-                    SerdeTypeInfoGenerator.GenerateSerdeInfo(
+                    var inProgress = ImmutableList.Create<ITypeSymbol>(receiverType);
+
+                    SerdeInfoGenerator.GenerateSerdeInfo(
                         typeDecl,
                         receiverType,
-                        generationContext);
-
-                    var inProgress = ImmutableList.Create<ITypeSymbol>(receiverType);
+                        generationContext,
+                        usage.HasFlag(SerdeUsage.Serialize) ? SerdeUsage.Serialize : SerdeUsage.Deserialize,
+                        inProgress);
 
                     if (usage.HasFlag(SerdeUsage.Serialize))
                     {

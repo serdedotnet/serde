@@ -10,7 +10,7 @@ namespace Test
     {
         void ISerialize<Test.Parent>.Serialize(Test.Parent value, ISerializer serializer)
         {
-            var _l_serdeInfo = ParentSerdeInfo.Instance;
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Parent>();
             var type = serializer.SerializeType(_l_serdeInfo);
             type.SerializeField<Recursive, Test.RecursiveWrap>(_l_serdeInfo, 0, value.R);
             type.End();

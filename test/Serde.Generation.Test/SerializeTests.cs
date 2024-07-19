@@ -309,6 +309,13 @@ public struct S
 }
 public struct SWrap : ISerialize<S>
 {
+    public static SerdeInfo SerdeInfo { get; } = SerdeInfo.Create(
+        ""S"",
+        SerdeInfo.TypeKind.CustomType,
+        new (string, SerdeInfo, System.Reflection.MemberInfo)[] {
+            (""x"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""X"")!),
+            (""y"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""Y"")!),
+        });
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
         serializer.SerializeI32(value.X);
@@ -350,6 +357,7 @@ public static class SWrap
     public readonly struct SerializeImpl<T, TWrap> : ISerialize<S<T>>
         where TWrap : struct, ISerialize<T>
     {
+        public static SerdeInfo SerdeInfo => SWrapTypeInfo.TypeInfo;
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
             var _l_serdeInfo = SWrapTypeInfo.TypeInfo;
@@ -386,14 +394,15 @@ public readonly struct SWrap<T, TWrap>
     : ISerialize<T>
     where TWrap : struct, ISerialize<T>
 {
-    private static readonly Serde.TypeInfo s_typeInfo = Serde.TypeInfo.Create(
+    public static SerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.Create(
         ""S"",
-        Serde.TypeInfo.TypeKind.CustomType,
-        new (string, System.Reflection.MemberInfo)[] { (""s"", typeof(S<>).GetField(""Field"")!) });
+        Serde.SerdeInfo.TypeKind.CustomType,
+        new (string, SerdeInfo, System.Reflection.MemberInfo)[] {
+            (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")!) });
 
     void ISerialize<T>.Serialize(T value, ISerializer serializer)
     {
-        var _l_serdeInfo = s_typeInfo;
+        var _l_serdeInfo = SerdeInfo;
         var type = serializer.SerializeType(_l_serdeInfo);
         type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value);
         type.End();

@@ -70,7 +70,7 @@ partial {{TypeKindToString(kind)}} {{name}}
             return newType;
         }
 
-        private static string TypeKindToString(SyntaxKind kind) => kind switch
+        public static string TypeKindToString(SyntaxKind kind) => kind switch
         {
             SyntaxKind.ClassDeclaration => "class",
             SyntaxKind.StructDeclaration => "struct",

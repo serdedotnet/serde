@@ -6,11 +6,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using System.Collections.Generic;
-using System.Diagnostics;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 using static Serde.WellKnownTypes;
-using System.Reflection.Metadata.Ecma335;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Serde;
@@ -85,7 +83,7 @@ readonly partial struct {{wrapperName}} { }
             SpecialType.System_Decimal => "DecimalWrap",
             _ => null
         };
-        return name is null ? null : new(type.ToFqnSyntax(), IdentifierName(name));
+        return name is null ? null : new(type.ToFqnSyntax(), ParseTypeName("global::Serde." + name));
     }
 
     private static TypeWithWrapper? TryGetCompoundWrapper(
@@ -197,11 +195,7 @@ readonly partial struct {{wrapperName}} { }
                 //if (elemTypes.Length > 1)
                 if (usage == SerdeUsage.Serialize)
                 {
-                    wrapperTypes.Add(GenericName(
-                        Identifier("IdWrap"), TypeArgumentList(SeparatedList(new TypeSyntax[] {
-                            elemTypeSyntax
-                        }))
-                    ));
+                    wrapperTypes.Add(ParseTypeName($"global::Serde.IdWrap<{elemTypeSyntax}>"));
                 }
                 else
                 {
@@ -247,7 +241,7 @@ readonly partial struct {{wrapperName}} { }
             var allTypes = typeName;
             for (var parent = elemType.ContainingType; parent is not null; parent = parent.ContainingType)
             {
-                allTypes = parent.Name + allTypes;
+                allTypes = parent.Name + "." + allTypes;
             }
             var wrapperName = GetWrapperName(allTypes);
             return new(elemType.ToFqnSyntax(), IdentifierName(wrapperName));

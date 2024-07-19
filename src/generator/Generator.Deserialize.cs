@@ -17,11 +17,13 @@ namespace Serde
     internal class DeserializeImplGenerator
     {
         internal static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
+            TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
             ImmutableList<ITypeSymbol> inProgress)
         {
-            TypeSyntax typeSyntax = ParseTypeName(receiverType.ToDisplayString());
+            var typeFqn = receiverType.ToDisplayString();
+            TypeSyntax typeSyntax = ParseTypeName(typeFqn);
 
             // `Serde.IDeserialize<'typeName'>
             var interfaceSyntax = QualifiedName(IdentifierName("Serde"), GenericName(
@@ -38,7 +40,7 @@ namespace Serde
             }
             else
             {
-                var method = GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, inProgress);
+                var method = GenerateCustomDeserializeMethod(typeDeclContext, context, receiverType, typeSyntax, inProgress);
                 members = [ method ];
             }
             var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) }));
@@ -51,7 +53,7 @@ namespace Serde
         /// <code>
         /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
         /// {
-        ///    var serdeInfo = TSerdeInfo.Instance;
+        ///    var serdeInfo = SerdeInfoProvider.GetInfo{T}();
         ///    var de = deserializer.DeserializeType(serdeInfo);
         ///    int index;
         ///    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
@@ -85,7 +87,7 @@ namespace Serde
             var src = $$"""
 static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
-    var serdeInfo = {{typeFqn}}SerdeInfo.Instance;
+    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Wrap>();
     var de = deserializer.DeserializeType(serdeInfo);
     int index;
     if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
@@ -124,6 +126,7 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
         /// </code>
         /// </summary>
         private static MethodDeclarationSyntax GenerateCustomDeserializeMethod(
+            TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol type,
             TypeSyntax typeSyntax,
@@ -152,7 +155,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;
 
-    var {{typeInfoLocalName}} = {{type.Name}}SerdeInfo.Instance;
+    var {{typeInfoLocalName}} = global::Serde.SerdeInfoProvider.GetInfo<{{typeDeclContext.Name}}>();
     var typeDeserialize = deserializer.DeserializeType({{typeInfoLocalName}});
     int {{indexLocalName}};
     while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out var _l_errorName)) != IDeserializeType.EndOfType)

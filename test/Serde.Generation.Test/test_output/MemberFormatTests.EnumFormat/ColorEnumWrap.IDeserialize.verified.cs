@@ -8,7 +8,7 @@ partial struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
 {
     static ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
     {
-        var serdeInfo = ColorEnumSerdeInfo.Instance;
+        var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorEnumWrap>();
         var de = deserializer.DeserializeType(serdeInfo);
         int index;
         if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)

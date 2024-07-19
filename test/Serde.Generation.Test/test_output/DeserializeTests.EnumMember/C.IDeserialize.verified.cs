@@ -13,7 +13,7 @@ partial class C : Serde.IDeserialize<C>
         ColorLong _l_colorlong = default !;
         ColorULong _l_colorulong = default !;
         byte _r_assignedValid = 0;
-        var _l_serdeInfo = CSerdeInfo.Instance;
+        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<C>();
         var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
         int _l_index_;
         while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)

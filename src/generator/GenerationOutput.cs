@@ -29,7 +29,7 @@ public readonly record struct GenerationOutput
                 diagBuilder.Add(diag);
             }
         }
-        var outputBuilder = ImmutableSortedSet.CreateBuilder<(string, string)>();
+        var outputBuilder = ImmutableSortedSet.CreateBuilder<(string, string)>(SerdeInfoImplComparer.Instance);
         foreach (var source in sources)
         {
             outputBuilder.Add(source);
@@ -56,5 +56,24 @@ public readonly record struct GenerationOutput
             hash.Add(source);
         }
         return hash.ToHashCode();
+    }
+
+    /// <summary>
+    /// Generally compares the source and content of SerdeInfo implementations. For ISerdeInfoProvider
+    /// implementations, in particular, we only care about the source name.
+    /// </summary>
+    private sealed class SerdeInfoImplComparer : IComparer<(string SrcName, string Content)>
+    {
+        private SerdeInfoImplComparer() { }
+        public static readonly SerdeInfoImplComparer Instance = new SerdeInfoImplComparer();
+
+        public int Compare((string SrcName, string Content) x, (string SrcName, string Content) y)
+        {
+            if (x.SrcName.EndsWith(".ISerdeInfoProvider") && y.SrcName.EndsWith(".ISerdeInfoProvider"))
+            {
+                return x.SrcName.CompareTo(y.SrcName);
+            }
+            return x.CompareTo(y);
+        }
     }
 }

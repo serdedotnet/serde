@@ -1,9 +1,6 @@
-﻿using System;
-using System.Text;
+﻿namespace Serde;
 
-namespace Serde;
-
-public interface ISerialize<T>
+public interface ISerialize<T> : ISerdeInfoProvider
 {
     void Serialize(T value, ISerializer serializer);
 }

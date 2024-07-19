@@ -10,7 +10,7 @@ namespace Some.Nested.Namespace
     {
         void ISerialize<Some.Nested.Namespace.ColorInt>.Serialize(Some.Nested.Namespace.ColorInt value, ISerializer serializer)
         {
-            var _l_serdeInfo = Some.Nested.Namespace.ColorIntSerdeInfo.Instance;
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorIntWrap>();
             var index = value switch
             {
                 Some.Nested.Namespace.ColorInt.Red => 0,
@@ -18,7 +18,7 @@ namespace Some.Nested.Namespace
                 Some.Nested.Namespace.ColorInt.Blue => 2,
                 var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorInt'"),
             };
-            serializer.SerializeEnumValue(_l_serdeInfo, index, (int)value, default(Int32Wrap));
+            serializer.SerializeEnumValue(_l_serdeInfo, index, (int)value, default(global::Serde.Int32Wrap));
         }
     }
 }

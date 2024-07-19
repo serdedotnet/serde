@@ -11,9 +11,9 @@ namespace Serde.Test
         {
             void ISerialize<Serde.Test.XmlTests.TypeWithArrayField>.Serialize(Serde.Test.XmlTests.TypeWithArrayField value, ISerializer serializer)
             {
-                var _l_serdeInfo = TypeWithArrayFieldSerdeInfo.Instance;
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<TypeWithArrayField>();
                 var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<Serde.Test.XmlTests.StructWithIntField[], Serde.ArrayWrap.SerializeImpl<Serde.Test.XmlTests.StructWithIntField, IdWrap<Serde.Test.XmlTests.StructWithIntField>>>(_l_serdeInfo, 0, value.ArrayField);
+                type.SerializeField<Serde.Test.XmlTests.StructWithIntField[], Serde.ArrayWrap.SerializeImpl<Serde.Test.XmlTests.StructWithIntField, global::Serde.IdWrap<Serde.Test.XmlTests.StructWithIntField>>>(_l_serdeInfo, 0, value.ArrayField);
                 type.End();
             }
         }

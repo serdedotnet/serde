@@ -34,8 +34,8 @@ partial class SerdeImplRoslynGenerator
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
         {
-            SerdeUsage.Serialize => SerializeImplGen.GenSerialize(context, receiverType, inProgress),
-            SerdeUsage.Deserialize => DeserializeImplGenerator.GenerateDeserializeImpl(context, receiverType, inProgress),
+            SerdeUsage.Serialize => SerializeImplGen.GenSerialize(typeDeclContext, context, receiverType, inProgress),
+            SerdeUsage.Deserialize => DeserializeImplGenerator.GenerateDeserializeImpl(typeDeclContext, context, receiverType, inProgress),
             _ => throw ExceptionUtilities.Unreachable
         };
 
@@ -98,6 +98,35 @@ partial class SerdeImplRoslynGenerator
 
         context.AddSource(srcName,
             Environment.NewLine + "#nullable enable" + Environment.NewLine + tree.ToFullString());
+    }
+
+    internal static (string FileName, string Body) MakePartialDecl(
+        TypeDeclContext typeDeclContext,
+        BaseListSyntax? baseList,
+        string implMembers,
+        string fileNameSuffix)
+    {
+        string typeName = typeDeclContext.Name;
+        var typeKind = typeDeclContext.Kind;
+        string declKeywords;
+        (typeName, declKeywords) = typeKind == SyntaxKind.EnumDeclaration
+            ? (Wrappers.GetWrapperName(typeName), "struct")
+            : (typeName, TypeDeclContext.TypeKindToString(typeKind));
+        var newType = $$"""
+partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Serde.ISerdeInfoProvider
+{
+    {{implMembers}}
+}
+""";
+        string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
+            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
+            .Concat(new[] { typeName }));
+
+        var srcName = fullTypeName + "." + fileNameSuffix;
+
+        newType = typeDeclContext.WrapNewType(newType);
+
+        return (srcName, Environment.NewLine + "#nullable enable" + Environment.NewLine + newType);
     }
 
     /// <summary>
