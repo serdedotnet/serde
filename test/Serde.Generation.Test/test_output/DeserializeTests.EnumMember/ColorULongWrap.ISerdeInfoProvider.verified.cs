@@ -3,12 +3,12 @@
 #nullable enable
 partial struct ColorULongWrap : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "ColorULong",
-        Serde.SerdeInfo.TypeKind.Enum,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<ColorULongWrap>(), typeof(ColorULong).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<ColorULongWrap>(), typeof(ColorULong).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<ColorULongWrap>(), typeof(ColorULong).GetField("Blue")!)
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.UInt64Wrap>(),
+        new (string, System.Reflection.MemberInfo)[] {
+("red", typeof(ColorULong).GetField("Red")!),
+("green", typeof(ColorULong).GetField("Green")!),
+("blue", typeof(ColorULong).GetField("Blue")!)
     });
 }

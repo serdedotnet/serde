@@ -309,10 +309,9 @@ public struct S
 }
 public struct SWrap : ISerialize<S>
 {
-    public static SerdeInfo SerdeInfo { get; } = SerdeInfo.Create(
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
-        SerdeInfo.TypeKind.CustomType,
-        new (string, SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
             (""x"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""X"")!),
             (""y"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""Y"")!),
         });
@@ -347,20 +346,20 @@ public struct S<T>
 }
 public static class SWrap
 {
-    internal static class SWrapTypeInfo
+    internal static class SWrapTypeInfo<T> where T : ISerdeInfoProvider
     {
-        public static readonly Serde.TypeInfo TypeInfo = Serde.TypeInfo.Create(
+        public static readonly ISerdeInfo TypeInfo = Serde.SerdeInfo.MakeCustom(
             ""S"",
-            Serde.TypeInfo.TypeKind.CustomType,
-            new (string, System.Reflection.MemberInfo)[] { (""s"", typeof(S<>).GetField(""Field"")!) });
+            new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
+                (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")!) });
     }
     public readonly struct SerializeImpl<T, TWrap> : ISerialize<S<T>>
         where TWrap : struct, ISerialize<T>
     {
-        public static SerdeInfo SerdeInfo => SWrapTypeInfo.TypeInfo;
+        public static ISerdeInfo SerdeInfo => SWrapTypeInfo<TWrap>.TypeInfo;
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
-            var _l_serdeInfo = SWrapTypeInfo.TypeInfo;
+            var _l_serdeInfo = SerdeInfo;
             var type = serializer.SerializeType(_l_serdeInfo);
             type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value.Field);
             type.End();
@@ -394,10 +393,9 @@ public readonly struct SWrap<T, TWrap>
     : ISerialize<T>
     where TWrap : struct, ISerialize<T>
 {
-    public static SerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
-        Serde.SerdeInfo.TypeKind.CustomType,
-        new (string, SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
             (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")!) });
 
     void ISerialize<T>.Serialize(T value, ISerializer serializer)

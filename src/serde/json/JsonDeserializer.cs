@@ -87,9 +87,9 @@ namespace Serde.Json
             return v.VisitDictionary(ref map);
         }
 
-        public IDeserializeCollection DeserializeCollection(SerdeInfo typeInfo)
+        public IDeserializeCollection DeserializeCollection(ISerdeInfo typeInfo)
         {
-            if (typeInfo.Kind is not (SerdeInfo.TypeKind.Enumerable or SerdeInfo.TypeKind.Dictionary))
+            if (typeInfo.Kind is not (ISerdeInfo.TypeKind.Enumerable or ISerdeInfo.TypeKind.Dictionary))
             {
                 throw new ArgumentException($"TypeKind is {typeInfo.Kind}, expected Enumerable or Dictionary");
             }
@@ -97,8 +97,8 @@ namespace Serde.Json
             ref var reader = ref GetReader();
             reader.ReadOrThrow();
 
-            if (typeInfo.Kind == SerdeInfo.TypeKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
-                || typeInfo.Kind == SerdeInfo.TypeKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
+            if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
+                || typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
             {
                 throw new InvalidDeserializeValueException("Expected object start");
             }
@@ -116,20 +116,20 @@ namespace Serde.Json
 
             public int? SizeOpt => null;
 
-            public bool TryReadValue<T, D>(SerdeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
+            public bool TryReadValue<T, D>(ISerdeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
             {
                 var reader = _deserializer.GetReader();
                 reader.ReadOrThrow();
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.EndArray:
-                        if (typeInfo.Kind != SerdeInfo.TypeKind.Enumerable)
+                        if (typeInfo.Kind != ISerdeInfo.TypeKind.Enumerable)
                         {
                             throw new InvalidDeserializeValueException($"Unexpected end of array in type kind: {typeInfo.Kind}");
                         }
                         break;
                     case JsonTokenType.EndObject:
-                        if (typeInfo.Kind != SerdeInfo.TypeKind.Dictionary)
+                        if (typeInfo.Kind != ISerdeInfo.TypeKind.Dictionary)
                         {
                             throw new InvalidDeserializeValueException($"Unexpected end of object in type kind: {typeInfo.Kind}");
                         }
@@ -301,10 +301,10 @@ namespace Serde.Json
         public T DeserializeIdentifier<T>(IDeserializeVisitor<T> v)
             => DeserializeString(v);
 
-        public IDeserializeType DeserializeType(SerdeInfo fieldMap)
+        public IDeserializeType DeserializeType(ISerdeInfo fieldMap)
         {
             // Custom types look like dictionaries, enums are inline strings
-            if (fieldMap.Kind == SerdeInfo.TypeKind.CustomType)
+            if (fieldMap.Kind == ISerdeInfo.TypeKind.CustomType)
             {
                 ref var reader = ref GetReader();
                 reader.ReadOrThrow();
@@ -314,7 +314,7 @@ namespace Serde.Json
                     throw new InvalidDeserializeValueException("Expected object start");
                 }
             }
-            else if (fieldMap.Kind != SerdeInfo.TypeKind.Enum)
+            else if (fieldMap.Kind != ISerdeInfo.TypeKind.Enum)
             {
                 throw new ArgumentException("Expected either CustomType or Enum kind, found " + fieldMap.Kind);
             }
@@ -365,10 +365,10 @@ namespace Serde.Json
             return D.Deserialize(this);
         }
 
-        int IDeserializeType.TryReadIndex(SerdeInfo map, out string? errorName)
+        int IDeserializeType.TryReadIndex(ISerdeInfo serdeInfo, out string? errorName)
         {
             ref var reader = ref GetReader();
-            if (map.Kind == SerdeInfo.TypeKind.Enum)
+            if (serdeInfo.Kind == ISerdeInfo.TypeKind.Enum)
             {
                 // Enums are just treated as strings
                 reader.ReadOrThrow();
@@ -410,7 +410,7 @@ namespace Serde.Json
             {
                 span = reader.ValueSpan;
             }
-            var index = map.TryGetIndex(span);
+            var index = serdeInfo.TryGetIndex(span);
             errorName = index == IDeserializeType.IndexNotFound ? span.ToString() : null;
             return index;
         }

@@ -1,11 +1,14 @@
-﻿//HintName: C.ISerdeInfoProvider.cs
-
+﻿
 #nullable enable
-partial record C : Serde.ISerdeInfoProvider
+namespace Serde.Test;
+partial class SerdeInfoTests
+{
+    partial record EmptyRecord : Serde.ISerdeInfoProvider
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-        "C",
+        "EmptyRecord",
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("x", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(C).GetProperty("X")!)
+
     });
+}
 }

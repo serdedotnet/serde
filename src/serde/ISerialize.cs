@@ -7,8 +7,8 @@ public interface ISerialize<T> : ISerdeInfoProvider
 
 public interface ISerializeType
 {
-    void SerializeField<T, U>(SerdeInfo typeInfo, int index, T value, U serialize) where U : ISerialize<T>;
-    void SkipField(SerdeInfo typeInfo, int index) { }
+    void SerializeField<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize) where U : ISerialize<T>;
+    void SkipField(ISerdeInfo typeInfo, int index) { }
     void End();
 }
 
@@ -16,7 +16,7 @@ public static class ISerializeTypeExt
 {
     public static void SerializeField<T, U>(
         this ISerializeType serializeType,
-        SerdeInfo typeInfo,
+        ISerdeInfo typeInfo,
         int index,
         T value) where U : struct, ISerialize<T>
     {
@@ -25,7 +25,7 @@ public static class ISerializeTypeExt
 
     public static void SerializeFieldIfNotNull<T, U>(
         this ISerializeType serializeType,
-        SerdeInfo typeInfo,
+        ISerdeInfo typeInfo,
         int index,
         T value,
         U serialize) where U : ISerialize<T>
@@ -42,7 +42,7 @@ public static class ISerializeTypeExt
 
     public static void SerializeFieldIfNotNull<T, U>(
         this ISerializeType serializeType,
-        SerdeInfo typeInfo,
+        ISerdeInfo typeInfo,
         int index,
         T value) where U : struct, ISerialize<T>
     {
@@ -53,7 +53,7 @@ public static class ISerializeTypeExt
 public interface ISerializeCollection
 {
     void SerializeElement<T, U>(T value, U serialize) where U : ISerialize<T>;
-    void End(SerdeInfo typeInfo);
+    void End(ISerdeInfo typeInfo);
 }
 
 public interface ISerializer
@@ -73,10 +73,10 @@ public interface ISerializer
     void SerializeDecimal(decimal d);
     void SerializeString(string s);
     void SerializeNull();
-    void SerializeEnumValue<T, U>(SerdeInfo typeInfo, int index, T value, U serialize)
+    void SerializeEnumValue<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize)
         where T : unmanaged
         where U : ISerialize<T>;
 
-    ISerializeType SerializeType(SerdeInfo typeInfo);
-    ISerializeCollection SerializeCollection(SerdeInfo typeInfo, int? length);
+    ISerializeType SerializeType(ISerdeInfo typeInfo);
+    ISerializeCollection SerializeCollection(ISerdeInfo typeInfo, int? length);
 }

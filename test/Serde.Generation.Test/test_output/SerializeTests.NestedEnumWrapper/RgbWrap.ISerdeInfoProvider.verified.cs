@@ -3,12 +3,12 @@
 #nullable enable
 partial struct RgbWrap : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "Rgb",
-        Serde.SerdeInfo.TypeKind.Enum,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<RgbWrap>(), typeof(Rgb).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<RgbWrap>(), typeof(Rgb).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<RgbWrap>(), typeof(Rgb).GetField("Blue")!)
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(),
+        new (string, System.Reflection.MemberInfo)[] {
+("red", typeof(Rgb).GetField("Red")!),
+("green", typeof(Rgb).GetField("Green")!),
+("blue", typeof(Rgb).GetField("Blue")!)
     });
 }

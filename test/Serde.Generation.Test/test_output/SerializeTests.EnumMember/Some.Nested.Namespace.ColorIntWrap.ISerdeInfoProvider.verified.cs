@@ -4,12 +4,12 @@
 namespace Some.Nested.Namespace;
 partial struct ColorIntWrap : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "ColorInt",
-        Serde.SerdeInfo.TypeKind.Enum,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<ColorIntWrap>(), typeof(Some.Nested.Namespace.ColorInt).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<ColorIntWrap>(), typeof(Some.Nested.Namespace.ColorInt).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<ColorIntWrap>(), typeof(Some.Nested.Namespace.ColorInt).GetField("Blue")!)
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(),
+        new (string, System.Reflection.MemberInfo)[] {
+("red", typeof(Some.Nested.Namespace.ColorInt).GetField("Red")!),
+("green", typeof(Some.Nested.Namespace.ColorInt).GetField("Green")!),
+("blue", typeof(Some.Nested.Namespace.ColorInt).GetField("Blue")!)
     });
 }

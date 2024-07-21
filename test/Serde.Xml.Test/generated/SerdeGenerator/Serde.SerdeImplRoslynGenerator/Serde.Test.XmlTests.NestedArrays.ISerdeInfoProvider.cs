@@ -5,10 +5,9 @@ partial class XmlTests
 {
     partial class NestedArrays : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "NestedArrays",
-        Serde.SerdeInfo.TypeKind.CustomType,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("A", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<int[][],Serde.ArrayWrap.SerializeImpl<int[],Serde.ArrayWrap.SerializeImpl<int,global::Serde.Int32Wrap>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A")!)
     });
 }

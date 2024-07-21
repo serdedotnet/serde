@@ -4,8 +4,7 @@ namespace Serde
 {
     internal static class DictSerdeInfo<TKey, TValue> where TKey : notnull
     {
-        public static readonly SerdeInfo Instance = SerdeInfo.Create(
-            typeof(Dictionary<TKey, TValue>).ToString(), SerdeInfo.TypeKind.Dictionary, []);
+        public static readonly ISerdeInfo Instance = SerdeInfo.MakeDictionary(typeof(Dictionary<TKey, TValue>).ToString());
     }
 
     public static class DictWrap
@@ -15,7 +14,7 @@ namespace Serde
             where TKeyWrap : struct, ISerialize<TKey>
             where TValueWrap : struct, ISerialize<TValue>
         {
-            public static SerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
+            public static ISerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
             public void Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
             {
                 var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
@@ -34,7 +33,7 @@ namespace Serde
             where TKeyWrap : IDeserialize<TKey>
             where TValueWrap : IDeserialize<TValue>
         {
-            public static SerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
+            public static ISerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
             public static Dictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;

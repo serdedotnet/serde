@@ -4,10 +4,9 @@
 namespace Test;
 partial record Parent : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "Parent",
-        Serde.SerdeInfo.TypeKind.CustomType,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("r", global::Serde.SerdeInfoProvider.GetInfo<Test.RecursiveWrap>(), typeof(Test.Parent).GetProperty("R")!)
     });
 }

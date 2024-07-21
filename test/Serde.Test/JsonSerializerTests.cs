@@ -104,10 +104,9 @@ namespace Serde.Test
 
         private struct JsonDictionaryWrapper : ISerialize<JsonDictionaryWrapper>
         {
-            public static SerdeInfo SerdeInfo { get; } = SerdeInfo.Create(
+            public static ISerdeInfo SerdeInfo { get; } = new CollectionSerdeInfo(
                 typeof(Dictionary<int, int>).ToString(),
-                SerdeInfo.TypeKind.Dictionary,
-                []);
+                ISerdeInfo.TypeKind.Dictionary);
 
             private readonly Dictionary<int, int> _d;
             public JsonDictionaryWrapper(Dictionary<int, int> d)

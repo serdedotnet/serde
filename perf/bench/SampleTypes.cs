@@ -58,19 +58,19 @@ namespace Benchmarks
 
     public partial record LocationWrap : IDeserialize<Location>
     {
-        public static SerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.Create(
+        public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "Location",
-            SerdeInfo.TypeKind.CustomType, [
-            ("id", StringWrap.SerdeInfo, typeof(Location).GetProperty("Id")!),
-            ("address1", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address1")!),
-            ("address2", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address2")!),
-            ("city", StringWrap.SerdeInfo, typeof(Location).GetProperty("City")!),
-            ("state", StringWrap.SerdeInfo, typeof(Location).GetProperty("State")!),
-            ("postalCode", StringWrap.SerdeInfo, typeof(Location).GetProperty("PostalCode")!),
-            ("name", StringWrap.SerdeInfo, typeof(Location).GetProperty("Name")!),
-            ("phoneNumber", StringWrap.SerdeInfo, typeof(Location).GetProperty("PhoneNumber")!),
-            ("country", StringWrap.SerdeInfo, typeof(Location).GetProperty("Country")!)
-        ]);
+            [
+                ("id", StringWrap.SerdeInfo, typeof(Location).GetProperty("Id")!),
+                ("address1", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address1")!),
+                ("address2", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address2")!),
+                ("city", StringWrap.SerdeInfo, typeof(Location).GetProperty("City")!),
+                ("state", StringWrap.SerdeInfo, typeof(Location).GetProperty("State")!),
+                ("postalCode", StringWrap.SerdeInfo, typeof(Location).GetProperty("PostalCode")!),
+                ("name", StringWrap.SerdeInfo, typeof(Location).GetProperty("Name")!),
+                ("phoneNumber", StringWrap.SerdeInfo, typeof(Location).GetProperty("PhoneNumber")!),
+                ("country", StringWrap.SerdeInfo, typeof(Location).GetProperty("Country")!)
+            ]);
 
         static Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
         {

@@ -5,10 +5,9 @@ partial class XmlTests
 {
     partial record StructWithIntField : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "StructWithIntField",
-        Serde.SerdeInfo.TypeKind.CustomType,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("X", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.XmlTests.StructWithIntField).GetProperty("X")!)
     });
 }

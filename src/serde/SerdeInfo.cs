@@ -7,17 +7,94 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 
 namespace Serde;
 
+public static class SerdeInfo
+{
+    /// <summary>
+    /// Create an <see cref="ISerdeInfo"/> for a custom type. The ordering of the fields is
+    /// important: it corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
+    /// </summary>
+    public static ISerdeInfo MakeCustom(
+        string typeName,
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
+        => TypeWithFieldsInfo.Create(typeName, ISerdeInfo.TypeKind.CustomType, fields);
+
+    public static ISerdeInfo MakeEnum(
+        string typeName,
+        ISerdeInfo underlyingInfo,
+        ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
+    {
+        var fieldsWithInfo = new (string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)[fields.Length];
+        for (int i = 0; i < fields.Length; i++)
+        {
+            fieldsWithInfo[i] = (fields[i].SerializeName, underlyingInfo, fields[i].MemberInfo);
+        }
+
+        return TypeWithFieldsInfo.Create(typeName, ISerdeInfo.TypeKind.Enum, fieldsWithInfo);
+    }
+
+    internal static ISerdeInfo MakeEnumerable(
+        string typeName)
+        => new CollectionInfo(typeName, ISerdeInfo.TypeKind.Enumerable);
+    internal static ISerdeInfo MakeDictionary(
+        string typeName)
+        => new CollectionInfo(typeName, ISerdeInfo.TypeKind.Dictionary);
+}
+
+internal sealed record CollectionInfo(
+    string TypeName,
+    ISerdeInfo.TypeKind Kind) : ISerdeInfo
+{
+    public int FieldCount => 0;
+
+    public IList<CustomAttributeData> GetCustomAttributeData(int index)
+        => throw GetAOOR(index);
+
+    public Utf8Span GetSerializeName(int index)
+        => throw GetAOOR(index);
+
+    public string GetStringSerializeName(int index)
+        => throw GetAOOR(index);
+
+    public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
+
+    private ArgumentOutOfRangeException GetAOOR(int index)
+        => new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
+}
+
 /// <summary>
-/// <see cref="SerdeInfo"/> holds a variety of indexed information about a type. The most important
-/// is a map from field names to int indices. This is an optimization for deserializing types that
-/// avoids allocating strings for field names.
+/// Represents a wrapper type over one field.
+/// </summary>
+internal sealed record WrapperSerdeInfo(
+    string TypeName,
+    ISerdeInfo WrappedInfo) : ISerdeInfo
+{
+    public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.CustomType;
+    public int FieldCount => 1;
+
+    public Utf8Span GetSerializeName(int index)
+        => index == 0 ? "Value"u8 : throw new ArgumentOutOfRangeException(nameof(index));
+
+    public string GetStringSerializeName(int index)
+        => index == 0 ? "Value" : throw new ArgumentOutOfRangeException(nameof(index));
+
+    public IList<CustomAttributeData> GetCustomAttributeData(int index)
+        => index == 0 ? [] : throw new ArgumentOutOfRangeException(nameof(index));
+
+    public int TryGetIndex(Utf8Span fieldName) => fieldName == "Value"u8 ? 0 : IDeserializeType.IndexNotFound;
+}
+
+/// <summary>
+/// <see cref="TypeWithFieldsInfo"/> holds a variety of indexed information about a custom type. The
+/// most important is a map from field names to int indices. This is an optimization for
+/// deserializing types that avoids allocating strings for field names.
 ///
 /// It can also be used to get the custom attributes for a field.
 /// </summary>
-public sealed record SerdeInfo
+file sealed record TypeWithFieldsInfo : ISerdeInfo
 {
     // The field names are sorted by the Utf8 representation of the field name.
     private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
@@ -30,24 +107,15 @@ public sealed record SerdeInfo
         string StringName,
         int Utf8NameIndex,
         IList<CustomAttributeData> CustomAttributesData,
-        SerdeInfo FieldSerdeInfo);
+        ISerdeInfo FieldSerdeInfo);
 
     public string TypeName { get; init; }
 
-    public enum TypeKind
-    {
-        Primitive,
-        CustomType,
-        Enumerable,
-        Dictionary,
-        Enum,
-    }
+    public ISerdeInfo.TypeKind Kind { get; }
 
-    public TypeKind Kind { get; }
-
-    private SerdeInfo(
+    private TypeWithFieldsInfo(
         string typeName,
-        TypeKind typeKind,
+        ISerdeInfo.TypeKind typeKind,
         ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
         ImmutableArray<PrivateFieldInfo> indexToInfo)
     {
@@ -63,10 +131,10 @@ public sealed record SerdeInfo
     /// Create a new field mapping. The ordering of the fields is important -- it
     /// corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
     /// </summary>
-    public static SerdeInfo Create(
+    public static TypeWithFieldsInfo Create(
         string typeName,
-        TypeKind typeKind,
-        ReadOnlySpan<(string SerializeName, SerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
+        ISerdeInfo.TypeKind typeKind,
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
@@ -92,7 +160,7 @@ public sealed record SerdeInfo
             indexToInfoBuilder[index] = indexToInfoBuilder[index] with { Utf8NameIndex = i };
         }
 
-        return new SerdeInfo(typeName, typeKind, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
+        return new TypeWithFieldsInfo(typeName, typeKind, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
     }
 
     /// <summary>
@@ -102,7 +170,7 @@ public sealed record SerdeInfo
 
     /// <summary>
     /// Returns an index corresponding to the location of the field in the original
-    /// ReadOnlySpan passed during creation of the <see cref="SerdeInfo"/>. This can be
+    /// ReadOnlySpan passed during creation of the <see cref="TypeWithFieldsInfo"/>. This can be
     /// used as a fast lookup for a field based on its UTF-8 name.
     /// </summary>
     public int TryGetIndex(Utf8Span utf8FieldName)
@@ -113,7 +181,7 @@ public sealed record SerdeInfo
     }
 
     [Experimental("SerdeExperimentalFieldInfo")]
-    public SerdeInfo GetFieldInfo(int index) => _indexToInfo[index].FieldSerdeInfo;
+    public ISerdeInfo GetFieldInfo(int index) => _indexToInfo[index].FieldSerdeInfo;
 
     public IList<CustomAttributeData> GetCustomAttributeData(int index)
     {

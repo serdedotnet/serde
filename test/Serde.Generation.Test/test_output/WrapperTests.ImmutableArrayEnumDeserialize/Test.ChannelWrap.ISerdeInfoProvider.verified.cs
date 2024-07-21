@@ -4,12 +4,12 @@
 namespace Test;
 partial struct ChannelWrap : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "Channel",
-        Serde.SerdeInfo.TypeKind.Enum,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-("a", global::Serde.SerdeInfoProvider.GetInfo<ChannelWrap>(), typeof(Test.Channel).GetField("A")!),
-("b", global::Serde.SerdeInfoProvider.GetInfo<ChannelWrap>(), typeof(Test.Channel).GetField("B")!),
-("c", global::Serde.SerdeInfoProvider.GetInfo<ChannelWrap>(), typeof(Test.Channel).GetField("C")!)
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(),
+        new (string, System.Reflection.MemberInfo)[] {
+("a", typeof(Test.Channel).GetField("A")!),
+("b", typeof(Test.Channel).GetField("B")!),
+("c", typeof(Test.Channel).GetField("C")!)
     });
 }

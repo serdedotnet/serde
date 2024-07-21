@@ -3,10 +3,9 @@
 #nullable enable
 partial class C : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "C",
-        Serde.SerdeInfo.TypeKind.CustomType,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("s", global::Serde.SerdeInfoProvider.GetInfo<SWrap>(), typeof(C).GetField("S")!)
     });
 }

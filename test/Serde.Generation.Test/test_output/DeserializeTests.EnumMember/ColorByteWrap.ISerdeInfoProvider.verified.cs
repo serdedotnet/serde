@@ -3,12 +3,12 @@
 #nullable enable
 partial struct ColorByteWrap : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "ColorByte",
-        Serde.SerdeInfo.TypeKind.Enum,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<ColorByteWrap>(), typeof(ColorByte).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<ColorByteWrap>(), typeof(ColorByte).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<ColorByteWrap>(), typeof(ColorByte).GetField("Blue")!)
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteWrap>(),
+        new (string, System.Reflection.MemberInfo)[] {
+("red", typeof(ColorByte).GetField("Red")!),
+("green", typeof(ColorByte).GetField("Green")!),
+("blue", typeof(ColorByte).GetField("Blue")!)
     });
 }

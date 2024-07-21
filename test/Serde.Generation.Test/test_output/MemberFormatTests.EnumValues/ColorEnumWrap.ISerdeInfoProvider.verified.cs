@@ -3,12 +3,12 @@
 #nullable enable
 partial struct ColorEnumWrap : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "ColorEnum",
-        Serde.SerdeInfo.TypeKind.Enum,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<ColorEnumWrap>(), typeof(ColorEnum).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<ColorEnumWrap>(), typeof(ColorEnum).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<ColorEnumWrap>(), typeof(ColorEnum).GetField("Blue")!)
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(),
+        new (string, System.Reflection.MemberInfo)[] {
+("red", typeof(ColorEnum).GetField("Red")!),
+("green", typeof(ColorEnum).GetField("Green")!),
+("blue", typeof(ColorEnum).GetField("Blue")!)
     });
 }

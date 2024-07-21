@@ -12,13 +12,13 @@ public sealed partial class CustomImplTests
     {
         public int Red, Green, Blue;
 
-        public static SerdeInfo SerdeInfo { get; } = SerdeInfo.Create(
+        public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "RgbWithFieldMap",
-            SerdeInfo.TypeKind.CustomType, [
-            ("red", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Red")!),
-            ("green", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Green")!),
-            ("blue", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Blue")!)
-        ]);
+            [
+                ("red", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Red")!),
+                ("green", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Green")!),
+                ("blue", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Blue")!)
+            ]);
 
         static RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
