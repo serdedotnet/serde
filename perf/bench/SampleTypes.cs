@@ -60,6 +60,7 @@ namespace Benchmarks
     {
         public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "Location",
+            typeof(Location).GetCustomAttributesData(),
             [
                 ("id", StringWrap.SerdeInfo, typeof(Location).GetProperty("Id")!),
                 ("address1", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address1")!),

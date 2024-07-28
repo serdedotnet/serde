@@ -14,6 +14,13 @@ public interface ISerdeInfo
     TypeKind Kind { get; }
 
     /// <summary>
+    /// Get the attributes for the type. This list may be modified from the original set of attributes
+    /// in source code or metadata to reflect only the attributes that are relevant to serialization or
+    /// deserialization.
+    /// </summary>
+    IList<CustomAttributeData> TypeAttributes { get; }
+
+    /// <summary>
     /// The number of serializable or deserializable fields or properties on the type.
     /// </summary>
     int FieldCount { get; }

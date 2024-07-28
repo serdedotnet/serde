@@ -7,6 +7,7 @@ partial class SampleTest
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "PurchaseOrder",
+        typeof(Serde.Test.SampleTest.PurchaseOrder).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("ShipTo", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.SampleTest.Address>(), typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("ShipTo")!),
 ("OrderDate", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderDate")!),

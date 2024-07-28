@@ -17,10 +17,13 @@ internal static class SerdeInfoGenerator
     /// <code>
     /// partial {typeKind} {typeName}
     /// {
-    ///     internal static readonly SerdeInfo TypeInfo = TypeInfo.Create([
-    ///         ("{{fieldName}}", typeof({typeName}).GetField("{fieldName}")!),
-    ///         ...
-    ///     ]);
+    ///     internal static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    ///         {typeName},
+    ///         typeof({typeName}).GetCustomAttributesData(),
+    ///         [
+    ///             ("{{fieldName}}", SerdeInfoProvider.GetInfo&lt;{wrapperName}&gt;typeof({typeName}).GetField("{fieldName}")!),
+    ///             ...
+    ///         ]);
     /// }
     /// </code>
     /// </summary>
@@ -57,7 +60,7 @@ internal static class SerdeInfoGenerator
         var membersString = string.Join("," + Environment.NewLine,
             SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
 
-        List<string> makeArgs = [ $"\"{receiverType.Name}\"" ];
+        List<string> makeArgs = [ $"\"{receiverType.Name}\"", $"typeof({typeString}).GetCustomAttributesData()" ];
 
         if (isEnum)
         {

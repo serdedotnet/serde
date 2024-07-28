@@ -5,6 +5,7 @@ partial record struct OPTSWrap : Serde.ISerdeInfoProvider
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "BIND_OPTS",
+        typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("cbStruct", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("cbStruct")!),
 ("dwTickCountDeadline", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("dwTickCountDeadline")!),

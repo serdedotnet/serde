@@ -6,6 +6,7 @@ partial record AllInOne : Serde.ISerdeInfoProvider
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "AllInOne",
+        typeof(Serde.Test.AllInOne).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("boolField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.BoolWrap>(), typeof(Serde.Test.AllInOne).GetField("BoolField")!),
 ("charField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.CharWrap>(), typeof(Serde.Test.AllInOne).GetField("CharField")!),

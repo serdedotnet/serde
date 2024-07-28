@@ -19,11 +19,13 @@ public static class SerdeInfo
     /// </summary>
     public static ISerdeInfo MakeCustom(
         string typeName,
+        IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
-        => TypeWithFieldsInfo.Create(typeName, ISerdeInfo.TypeKind.CustomType, fields);
+        => TypeWithFieldsInfo.Create(typeName, ISerdeInfo.TypeKind.CustomType, typeAttributes, fields);
 
     public static ISerdeInfo MakeEnum(
         string typeName,
+        IList<CustomAttributeData> typeAttributes,
         ISerdeInfo underlyingInfo,
         ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
     {
@@ -33,7 +35,7 @@ public static class SerdeInfo
             fieldsWithInfo[i] = (fields[i].SerializeName, underlyingInfo, fields[i].MemberInfo);
         }
 
-        return TypeWithFieldsInfo.Create(typeName, ISerdeInfo.TypeKind.Enum, fieldsWithInfo);
+        return TypeWithFieldsInfo.Create(typeName, ISerdeInfo.TypeKind.Enum, typeAttributes, fieldsWithInfo);
     }
 
     internal static ISerdeInfo MakeEnumerable(
@@ -49,6 +51,8 @@ internal sealed record CollectionInfo(
     ISerdeInfo.TypeKind Kind) : ISerdeInfo
 {
     public int FieldCount => 0;
+
+    public IList<CustomAttributeData> TypeAttributes => [];
 
     public IList<CustomAttributeData> GetFieldAttributes(int index)
         => throw GetAOOR(index);
@@ -77,6 +81,8 @@ internal sealed record WrapperSerdeInfo(
 {
     public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.CustomType;
     public int FieldCount => 1;
+
+    public IList<CustomAttributeData> TypeAttributes => [];
 
     public Utf8Span GetFieldName(int index)
         => index == 0 ? "Value"u8 : throw GetOOR(index);
@@ -117,18 +123,23 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         IList<CustomAttributeData> CustomAttributesData,
         ISerdeInfo FieldSerdeInfo);
 
-    public string TypeName { get; init; }
+    public string TypeName { get; }
 
     public ISerdeInfo.TypeKind Kind { get; }
+
+    public IList<CustomAttributeData> TypeAttributes { get; }
+
 
     private TypeWithFieldsInfo(
         string typeName,
         ISerdeInfo.TypeKind typeKind,
+        IList<CustomAttributeData> typeAttributes,
         ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
         ImmutableArray<PrivateFieldInfo> indexToInfo)
     {
         TypeName = typeName;
         Kind = typeKind;
+        TypeAttributes = typeAttributes;
         _nameToIndex = nameToIndex;
         _indexToInfo = indexToInfo;
     }
@@ -142,6 +153,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
     public static TypeWithFieldsInfo Create(
         string typeName,
         ISerdeInfo.TypeKind typeKind,
+        IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
@@ -168,7 +180,12 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             indexToInfoBuilder[index] = indexToInfoBuilder[index] with { Utf8NameIndex = i };
         }
 
-        return new TypeWithFieldsInfo(typeName, typeKind, nameToIndexBuilder.ToImmutable(), indexToInfoBuilder.ToImmutable());
+        return new TypeWithFieldsInfo(
+            typeName,
+            typeKind,
+            typeAttributes,
+            nameToIndexBuilder.ToImmutable(),
+            indexToInfoBuilder.ToImmutable());
     }
 
     /// <summary>

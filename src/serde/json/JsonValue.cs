@@ -30,6 +30,8 @@ namespace Serde.Json
 
             public int FieldCount => 0;
 
+            public IList<CustomAttributeData> TypeAttributes => [];
+
             public IEnumerable<ISerdeInfo> CaseInfos { get; } = [
                 SerdeInfoProvider.GetInfo<JsonValue.Number>(),
                 SerdeInfoProvider.GetInfo<JsonValue.Bool>(),
