@@ -70,7 +70,7 @@ public sealed partial class XmlSerializer : ISerializer
 
     void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo serdeInfo, int index, T value, U serialize)
     {
-        var name = serdeInfo.GetStringSerializeName(index);
+        var name = serdeInfo.GetFieldStringName(index);
         SerializeString(name);
     }
 
@@ -231,8 +231,8 @@ public sealed partial class XmlSerializer : ISerializer
         public void SerializeField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U impl)
             where U : ISerialize<T>
         {
-            var name = typeInfo.GetStringSerializeName(fieldIndex);
-            foreach (var attr in typeInfo.GetCustomAttributeData(fieldIndex))
+            var name = typeInfo.GetFieldStringName(fieldIndex);
+            foreach (var attr in typeInfo.GetFieldAttributes(fieldIndex))
             {
                 if (attr.AttributeType == typeof(XmlAttributeAttribute))
                 {

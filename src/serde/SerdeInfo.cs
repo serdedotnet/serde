@@ -50,13 +50,16 @@ internal sealed record CollectionInfo(
 {
     public int FieldCount => 0;
 
-    public IList<CustomAttributeData> GetCustomAttributeData(int index)
+    public IList<CustomAttributeData> GetFieldAttributes(int index)
         => throw GetAOOR(index);
 
-    public Utf8Span GetSerializeName(int index)
+    public ISerdeInfo GetFieldInfo(int index)
         => throw GetAOOR(index);
 
-    public string GetStringSerializeName(int index)
+    public Utf8Span GetFieldName(int index)
+        => throw GetAOOR(index);
+
+    public string GetFieldStringName(int index)
         => throw GetAOOR(index);
 
     public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
@@ -75,16 +78,21 @@ internal sealed record WrapperSerdeInfo(
     public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.CustomType;
     public int FieldCount => 1;
 
-    public Utf8Span GetSerializeName(int index)
-        => index == 0 ? "Value"u8 : throw new ArgumentOutOfRangeException(nameof(index));
+    public Utf8Span GetFieldName(int index)
+        => index == 0 ? "Value"u8 : throw GetOOR(index);
 
-    public string GetStringSerializeName(int index)
-        => index == 0 ? "Value" : throw new ArgumentOutOfRangeException(nameof(index));
+    public string GetFieldStringName(int index)
+        => index == 0 ? "Value" : throw GetOOR(index);
 
-    public IList<CustomAttributeData> GetCustomAttributeData(int index)
-        => index == 0 ? [] : throw new ArgumentOutOfRangeException(nameof(index));
+    public IList<CustomAttributeData> GetFieldAttributes(int index)
+        => index == 0 ? [] : throw GetOOR(index);
 
     public int TryGetIndex(Utf8Span fieldName) => fieldName == "Value"u8 ? 0 : IDeserializeType.IndexNotFound;
+
+    public ISerdeInfo GetFieldInfo(int index) => index == 0 ? WrappedInfo : throw GetOOR(index);
+
+    private ArgumentOutOfRangeException GetOOR(int index)
+        => new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has only one field.");
 }
 
 /// <summary>
@@ -183,17 +191,17 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
     [Experimental("SerdeExperimentalFieldInfo")]
     public ISerdeInfo GetFieldInfo(int index) => _indexToInfo[index].FieldSerdeInfo;
 
-    public IList<CustomAttributeData> GetCustomAttributeData(int index)
+    public IList<CustomAttributeData> GetFieldAttributes(int index)
     {
         return _indexToInfo[index].CustomAttributesData;
     }
 
-    public ReadOnlySpan<byte> GetSerializeName(int index)
+    public ReadOnlySpan<byte> GetFieldName(int index)
     {
         return _nameToIndex[_indexToInfo[index].Utf8NameIndex].Utf8Name.Span;
     }
 
-    public string GetStringSerializeName(int index)
+    public string GetFieldStringName(int index)
     {
         return _indexToInfo[index].StringName;
     }
