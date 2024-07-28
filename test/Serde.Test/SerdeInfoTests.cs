@@ -15,4 +15,20 @@ public sealed partial class SerdeInfoTests
         Assert.Equal(nameof(EmptyRecord), info.TypeName);
         Assert.Equal(0, info.FieldCount);
     }
+
+    public partial record Rgb
+    {
+        public byte R, G, B;
+    }
+
+    [GenerateDeserialize(ThroughType = typeof(Rgb))]
+    public partial record RgbProxy;
+
+    [Fact]
+    public void TestProxy()
+    {
+        var info = SerdeInfoProvider.GetInfo<RgbProxy>();
+        Assert.Equal(nameof(Rgb), info.TypeName);
+        Assert.Equal(3, info.FieldCount);
+    }
 }
