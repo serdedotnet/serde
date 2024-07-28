@@ -311,6 +311,7 @@ public struct SWrap : ISerialize<S>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
+        typeof(S).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
             (""x"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""X"")!),
             (""y"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""Y"")!),
@@ -350,6 +351,7 @@ public static class SWrap
     {
         public static readonly ISerdeInfo TypeInfo = Serde.SerdeInfo.MakeCustom(
             ""S"",
+            typeof(S<>).GetCustomAttributesData(),
             new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
                 (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")!) });
     }
@@ -395,6 +397,7 @@ public readonly struct SWrap<T, TWrap>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
+        typeof(S<>).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
             (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")!) });
 

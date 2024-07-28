@@ -7,6 +7,7 @@ partial class JsonSerializerTests
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "Color",
+        typeof(Serde.Test.JsonSerializerTests.Color).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.JsonSerializerTests.Color).GetField("Red")!),
 ("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.JsonSerializerTests.Color).GetField("Green")!),

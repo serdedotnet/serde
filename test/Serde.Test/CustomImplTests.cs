@@ -14,6 +14,7 @@ public sealed partial class CustomImplTests
 
         public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "RgbWithFieldMap",
+            typeof(RgbWithFieldMap).GetCustomAttributesData(),
             [
                 ("red", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Red")!),
                 ("green", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Green")!),

@@ -324,6 +324,7 @@ namespace Serde.Test
         {
             public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
                 nameof(JsonDeserializeTests.ColorEnum),
+                typeof(ColorEnum).GetCustomAttributesData(),
                 Int32Wrap.SerdeInfo,
                 [
                     ("red", typeof(ColorEnum).GetField("Red")!),

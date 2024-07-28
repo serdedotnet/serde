@@ -11,6 +11,8 @@ internal sealed record CollectionSerdeInfo(
 {
     public int FieldCount => 0;
 
+    public IList<CustomAttributeData> TypeAttributes => [];
+
     public IList<CustomAttributeData> GetFieldAttributes(int index)
         => throw GetAOOR(index);
 

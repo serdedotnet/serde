@@ -5,6 +5,7 @@ partial struct MaxSizeType : Serde.ISerdeInfoProvider
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "MaxSizeType",
+        typeof(Serde.Test.MaxSizeType).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("field1", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteWrap>(), typeof(Serde.Test.MaxSizeType).GetProperty("Field1")!),
 ("field2", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteWrap>(), typeof(Serde.Test.MaxSizeType).GetProperty("Field2")!),

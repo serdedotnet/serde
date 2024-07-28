@@ -8,6 +8,7 @@ partial record AllInOne
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "ColorEnum",
+        typeof(Serde.Test.AllInOne.ColorEnum).GetCustomAttributesData(),
         global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(),
         new (string, System.Reflection.MemberInfo)[] {
 ("red", typeof(Serde.Test.AllInOne.ColorEnum).GetField("Red")!),

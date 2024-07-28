@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text;
 
 namespace Serde
@@ -11,6 +12,9 @@ namespace Serde
     {
         public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.Primitive;
         public int FieldCount => 0;
+
+        public IList<CustomAttributeData> TypeAttributes => [];
+
         public Utf8Span GetFieldName(int index)
             => throw GetOOR(index);
         public string GetFieldStringName(int index)

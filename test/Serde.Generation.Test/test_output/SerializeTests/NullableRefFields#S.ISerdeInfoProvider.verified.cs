@@ -5,6 +5,7 @@ partial struct S<T1, T2, T3, T4, T5> : Serde.ISerdeInfoProvider
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "S",
+        typeof(S<,,,,>).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("fS", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefWrap.SerializeImpl<string,global::Serde.StringWrap>>(), typeof(S<,,,,>).GetField("FS")!),
 ("f1", global::Serde.SerdeInfoProvider.GetInfo<T1>(), typeof(S<,,,,>).GetField("F1")!),

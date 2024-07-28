@@ -7,6 +7,7 @@ partial class SerdeInfoTests
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "EmptyRecord",
+        typeof(Serde.Test.SerdeInfoTests.EmptyRecord).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 
     });
