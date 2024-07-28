@@ -39,11 +39,13 @@ namespace Serde.Json
                 SerdeInfoProvider.GetInfo<JsonValue.Null>(),
             ];
 
-            public IList<CustomAttributeData> GetCustomAttributeData(int index) => throw GetOOR(index);
+            public IList<CustomAttributeData> GetFieldAttributes(int index) => throw GetOOR(index);
 
-            public Utf8Span GetSerializeName(int index) => throw GetOOR(index);
+            public ISerdeInfo GetFieldInfo(int index) => throw GetOOR(index);
 
-            public string GetStringSerializeName(int index) => throw GetOOR(index);
+            public Utf8Span GetFieldName(int index) => throw GetOOR(index);
+
+            public string GetFieldStringName(int index) => throw GetOOR(index);
 
             public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
 

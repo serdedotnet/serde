@@ -1,7 +1,7 @@
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Reflection.Metadata;
 
 namespace Serde;
 
@@ -21,25 +21,28 @@ public interface ISerdeInfo
     /// <summary>
     /// Get the field name as a string for the field at the given index. The index must be valid.
     /// </summary>
-    string GetStringSerializeName(int index);
+    string GetFieldStringName(int index);
 
     /// <summary>
     /// Get the field name as a UTF8 string for the field at the given index. The index must be valid.
     /// </summary>
-    Utf8Span GetSerializeName(int index);
+    Utf8Span GetFieldName(int index);
 
     /// <summary>
     /// Get the attributes for the field at the given index. The index must be valid. This list may be
     /// modified from the original set of attributes in source code or metadata to reflect only the
     /// attributes that are relevant to serialization or deserialization.
     /// </summary>
-    IList<CustomAttributeData> GetCustomAttributeData(int index);
+    IList<CustomAttributeData> GetFieldAttributes(int index);
 
     /// <summary>
     /// Search the fields for one with the given name and return its index. Returns
     /// <see cref="IDeserializeType.IndexNotFound"/> if not found.
     /// </summary>
     int TryGetIndex(Utf8Span fieldName);
+
+    [Experimental("SerdeExperimentalFieldInfo")]
+    ISerdeInfo GetFieldInfo(int index);
 
     public enum TypeKind
     {

@@ -11,17 +11,20 @@ namespace Serde
     {
         public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.Primitive;
         public int FieldCount => 0;
-        public Utf8Span GetSerializeName(int index)
+        public Utf8Span GetFieldName(int index)
             => throw GetOOR(index);
-        public string GetStringSerializeName(int index)
+        public string GetFieldStringName(int index)
             => throw GetOOR(index);
-        public IList<System.Reflection.CustomAttributeData> GetCustomAttributeData(int index)
+        public IList<System.Reflection.CustomAttributeData> GetFieldAttributes(int index)
+            => throw GetOOR(index);
+
+        public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
+
+        public ISerdeInfo GetFieldInfo(int index)
             => throw GetOOR(index);
 
         private ArgumentOutOfRangeException GetOOR(int index)
             => new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
-
-        public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
     }
 
     public readonly struct IdWrap<T> : ISerialize<T>

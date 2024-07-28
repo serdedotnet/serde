@@ -11,13 +11,15 @@ internal sealed record CollectionSerdeInfo(
 {
     public int FieldCount => 0;
 
-    public IList<CustomAttributeData> GetCustomAttributeData(int index)
+    public IList<CustomAttributeData> GetFieldAttributes(int index)
         => throw GetAOOR(index);
 
-    public ReadOnlySpan<byte> GetSerializeName(int index)
+    public ISerdeInfo GetFieldInfo(int index) => throw GetAOOR(index);
+
+    public ReadOnlySpan<byte> GetFieldName(int index)
         => throw GetAOOR(index);
 
-    public string GetStringSerializeName(int index)
+    public string GetFieldStringName(int index)
         => throw GetAOOR(index);
 
     public int TryGetIndex(ReadOnlySpan<byte> fieldName) => IDeserializeType.IndexNotFound;

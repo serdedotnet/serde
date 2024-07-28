@@ -64,7 +64,7 @@ namespace Serde.Json
 
         void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize)
         {
-            var valueName = typeInfo.GetSerializeName(index);
+            var valueName = typeInfo.GetFieldName(index);
             _writer.WriteStringValue(valueName);
         }
 
@@ -196,7 +196,7 @@ namespace Serde.Json
     {
         void ISerializeType.SerializeField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U serialize)
         {
-            _writer.WritePropertyName(typeInfo.GetSerializeName(fieldIndex));
+            _writer.WritePropertyName(typeInfo.GetFieldName(fieldIndex));
             serialize.Serialize(value, this);
         }
 
