@@ -68,9 +68,9 @@ public sealed partial class XmlSerializer : ISerializer
         _writer.WriteValue(d);
     }
 
-    void ISerializer.SerializeEnumValue<T, U>(SerdeInfo typeInfo, int index, T value, U serialize)
+    void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo serdeInfo, int index, T value, U serialize)
     {
-        var name = typeInfo.GetStringSerializeName(index);
+        var name = serdeInfo.GetStringSerializeName(index);
         SerializeString(name);
     }
 
@@ -156,13 +156,13 @@ public sealed partial class XmlSerializer : ISerializer
         return formattingListener.ToString();
     }
 
-    public ISerializeCollection SerializeCollection(SerdeInfo typeInfo, int? length)
+    public ISerializeCollection SerializeCollection(ISerdeInfo typeInfo, int? length)
     {
-        if (typeInfo.Kind == SerdeInfo.TypeKind.Dictionary)
+        if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
         {
             throw new NotSupportedException("Serde.XmlSerializer doesn't currently support serializing dictionaries");
         }
-        else if (typeInfo.Kind != SerdeInfo.TypeKind.Enumerable)
+        else if (typeInfo.Kind != ISerdeInfo.TypeKind.Enumerable)
         {
             throw new ArgumentException("typeInfo must be a collection type", nameof(typeInfo));
         }
@@ -188,7 +188,7 @@ public sealed partial class XmlSerializer : ISerializer
         void ISerializeCollection.SerializeElement<T, U>(T value, U serialize)
             => serialize.Serialize(value, _serializer);
 
-        void ISerializeCollection.End(SerdeInfo typeInfo)
+        void ISerializeCollection.End(ISerdeInfo typeInfo)
         {
             if (_savedState == State.Enumerable)
             {
@@ -198,7 +198,7 @@ public sealed partial class XmlSerializer : ISerializer
         }
     }
 
-    public ISerializeType SerializeType(SerdeInfo typeInfo)
+    public ISerializeType SerializeType(ISerdeInfo typeInfo)
     {
         var saved = _state;
         bool writeEnd;
@@ -228,7 +228,7 @@ public sealed partial class XmlSerializer : ISerializer
             _savedState = savedState;
         }
 
-        public void SerializeField<T, U>(SerdeInfo typeInfo, int fieldIndex, T value, U impl)
+        public void SerializeField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U impl)
             where U : ISerialize<T>
         {
             var name = typeInfo.GetStringSerializeName(fieldIndex);

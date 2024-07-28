@@ -62,26 +62,26 @@ namespace Serde.Json
         void ISerializer.SerializeString(string s) => SerializeString(s);
         void ISerializer.SerializeNull() => _writer.WriteNullValue();
 
-        void ISerializer.SerializeEnumValue<T, U>(SerdeInfo typeInfo, int index, T value, U serialize)
+        void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize)
         {
             var valueName = typeInfo.GetSerializeName(index);
             _writer.WriteStringValue(valueName);
         }
 
-        ISerializeType ISerializer.SerializeType(SerdeInfo typeInfo)
+        ISerializeType ISerializer.SerializeType(ISerdeInfo typeInfo)
         {
             _writer.WriteStartObject();
             return this;
         }
 
-        ISerializeCollection ISerializer.SerializeCollection(SerdeInfo typeInfo, int? length)
+        ISerializeCollection ISerializer.SerializeCollection(ISerdeInfo typeInfo, int? length)
         {
-            if (typeInfo.Kind == SerdeInfo.TypeKind.Dictionary)
+            if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
             {
                 _dictState.Add(DictState.Key);
                 _writer.WriteStartObject();
             }
-            else if (typeInfo.Kind == SerdeInfo.TypeKind.Enumerable)
+            else if (typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable)
             {
                 _writer.WriteStartArray();
             }
@@ -89,7 +89,7 @@ namespace Serde.Json
             {
                 throw new InvalidOperationException("SerializeCollection called on non-collection type");
             }
-            return new CollectionImpl(this, typeInfo.Kind == SerdeInfo.TypeKind.Dictionary);
+            return new CollectionImpl(this, typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary);
         }
 
         partial class CollectionImpl(JsonSerializer serializer, bool isDict) : ISerializeCollection
@@ -102,14 +102,14 @@ namespace Serde.Json
                 _isValue = !_isValue;
             }
 
-            void ISerializeCollection.End(SerdeInfo typeInfo)
+            void ISerializeCollection.End(ISerdeInfo typeInfo)
             {
-                if (typeInfo.Kind == SerdeInfo.TypeKind.Dictionary)
+                if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
                 {
                     isDict = false;
                     serializer._writer.WriteEndObject();
                 }
-                else if (typeInfo.Kind == SerdeInfo.TypeKind.Enumerable)
+                else if (typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable)
                 {
                     serializer._writer.WriteEndArray();
                 }
@@ -151,11 +151,11 @@ namespace Serde.Json
                 _parent._writer.WritePropertyName(s);
             }
 
-            void ISerializer.SerializeEnumValue<T, U>(SerdeInfo typeInfo, int index, T value, U serialize)
+            void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize)
                 => throw new KeyNotStringException();
 
-            public ISerializeCollection SerializeCollection(SerdeInfo typeInfo, int? length) => throw new KeyNotStringException();
-            public ISerializeType SerializeType(SerdeInfo typeInfo) => throw new KeyNotStringException();
+            public ISerializeCollection SerializeCollection(ISerdeInfo typeInfo, int? length) => throw new KeyNotStringException();
+            public ISerializeType SerializeType(ISerdeInfo typeInfo) => throw new KeyNotStringException();
             public void SerializeNull() => throw new KeyNotStringException();
         }
     }
@@ -173,14 +173,14 @@ namespace Serde.Json
             }
         }
 
-        void ISerializeCollection.End(SerdeInfo typeInfo)
+        void ISerializeCollection.End(ISerdeInfo typeInfo)
         {
-            if (typeInfo.Kind == SerdeInfo.TypeKind.Dictionary)
+            if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
             {
                 _dictState.RemoveAt(_dictState.Count - 1);
                 _writer.WriteEndObject();
             }
-            else if (typeInfo.Kind == SerdeInfo.TypeKind.Enumerable)
+            else if (typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable)
             {
                 _writer.WriteEndArray();
             }
@@ -194,7 +194,7 @@ namespace Serde.Json
 
     partial class JsonSerializer : ISerializeType
     {
-        void ISerializeType.SerializeField<T, U>(SerdeInfo typeInfo, int fieldIndex, T value, U serialize)
+        void ISerializeType.SerializeField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U serialize)
         {
             _writer.WritePropertyName(typeInfo.GetSerializeName(fieldIndex));
             serialize.Serialize(value, this);

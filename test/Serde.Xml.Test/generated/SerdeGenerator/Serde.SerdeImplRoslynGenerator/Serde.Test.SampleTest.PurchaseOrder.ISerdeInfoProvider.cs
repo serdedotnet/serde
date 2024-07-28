@@ -5,10 +5,9 @@ partial class SampleTest
 {
     partial record PurchaseOrder : Serde.ISerdeInfoProvider
 {
-    static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
+    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "PurchaseOrder",
-        Serde.SerdeInfo.TypeKind.CustomType,
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 ("ShipTo", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.SampleTest.Address>(), typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("ShipTo")!),
 ("OrderDate", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderDate")!),
 ("Items", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<Serde.Test.SampleTest.OrderedItem,global::Serde.IdWrap<Serde.Test.SampleTest.OrderedItem>>>(), typeof(Serde.Test.SampleTest.PurchaseOrder).GetField("OrderedItems")!),

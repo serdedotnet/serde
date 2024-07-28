@@ -61,7 +61,7 @@ namespace Serde
     {
         int? SizeOpt { get; }
 
-        bool TryReadValue<T, D>(SerdeInfo typeInfo, [MaybeNullWhen(false)] out T next)
+        bool TryReadValue<T, D>(ISerdeInfo typeInfo, [MaybeNullWhen(false)] out T next)
             where D : IDeserialize<T>;
     }
 
@@ -96,7 +96,7 @@ namespace Serde
         /// cref="IndexNotFound" /> and set <paramref name="errorName" /> to the name of the missing
         /// field, or the best-possible user-facing name.
         /// </summary>
-        int TryReadIndex(SerdeInfo map, out string? errorName);
+        int TryReadIndex(ISerdeInfo map, out string? errorName);
 
         V ReadValue<V, D>(int index) where D : IDeserialize<V>;
     }
@@ -120,7 +120,7 @@ namespace Serde
         T DeserializeString<T>(IDeserializeVisitor<T> v);
         T DeserializeIdentifier<T>(IDeserializeVisitor<T> v);
         T DeserializeNullableRef<T>(IDeserializeVisitor<T> v);
-        IDeserializeCollection DeserializeCollection(SerdeInfo typeInfo);
-        IDeserializeType DeserializeType(SerdeInfo typeInfo);
+        IDeserializeCollection DeserializeCollection(ISerdeInfo typeInfo);
+        IDeserializeType DeserializeType(ISerdeInfo typeInfo);
     }
 }

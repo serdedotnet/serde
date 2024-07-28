@@ -31,24 +31,62 @@ internal static class SerdeInfoGenerator
         SerdeUsage usage,
         ImmutableList<ITypeSymbol> inProgress)
     {
-        var statements = new List<StatementSyntax>();
-        var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both);
-        var typeDeclContext = new TypeDeclContext(typeDecl);
-        var typeName = receiverType.Name;
+        bool isEnum;
+        string makeFuncSuffix;
+        string fieldArrayType;
+        if (receiverType.TypeKind == TypeKind.Enum)
+        {
+            isEnum = true;
+            makeFuncSuffix = "Enum";
+            fieldArrayType = "(string, System.Reflection.MemberInfo)[]";
+        }
+        else
+        {
+            isEnum = false;
+            makeFuncSuffix = "Custom";
+            fieldArrayType = "(string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[]";
+        }
+
         var typeString = receiverType.ToDisplayString();
         if (typeString.IndexOf('<') is var index && index != -1)
         {
             typeString = typeString[..index];
             typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
         }
+
+        var membersString = string.Join("," + Environment.NewLine,
+            SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
+
+        List<string> makeArgs = [ $"\"{receiverType.Name}\"" ];
+
+        if (isEnum)
+        {
+            string underlyingInfo;
+            if (Wrappers.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress) is { Wrapper: { } wrap })
+            {
+                underlyingInfo = wrap.ToString();
+            }
+            else
+            {
+                // This should never happen. Produce a bogus string
+                underlyingInfo = "<underlying info not found, this is a bug>";
+            }
+            makeArgs.Add($"global::Serde.SerdeInfoProvider.GetInfo<{underlyingInfo}>()");
+        }
+
+        makeArgs.Add($$"""
+new {{fieldArrayType}} {
+{{membersString}}
+    }
+""");
+
+        var argsString = string.Join("," + Environment.NewLine + "        ", makeArgs);
+
         var body = $$"""
-static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Create(
-        "{{typeName}}",
-        Serde.SerdeInfo.TypeKind.{{(receiverType.TypeKind == TypeKind.Enum ? "Enum" : "CustomType")}},
-        new (string, global::Serde.SerdeInfo, System.Reflection.MemberInfo)[] {
-{{string.Join("," + Environment.NewLine, fieldsAndProps.SelectNotNull(GetMemberEntry))}}
-    });
+static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
+        {{argsString}});
 """;
+        var typeDeclContext = new TypeDeclContext(typeDecl);
         var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
             typeDeclContext,
             baseList: null,
@@ -60,30 +98,50 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get;
         // Returns a string that represents a single member in the custom SerdeInfo member list.
         string? GetMemberEntry(DataMemberSymbol m)
         {
-            var fieldName = m.GetFormattedName();
-            var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
-            string wrapperName;
-            if (Wrappers.TryGetExplicitWrapper(m, context, usage, inProgress) is { } explicitWrap)
-            {
-                wrapperName = explicitWrap.ToString();
-            }
-            else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, usage))
-            {
-                wrapperName = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-            }
-            else if (Wrappers.TryGetImplicitWrapper(m.Type, context, usage, inProgress) is { Wrapper: { } wrap })
-            {
-                wrapperName = wrap.ToString();
-            }
-            else
-            {
-                // This is an error, but it should have already been produced by the serialization
-                // or deserialization generator
-                return null;
-            }
-            var fieldInfo = $"global::Serde.SerdeInfoProvider.GetInfo<{wrapperName}>()";
+            List<string> elements = [ $"\"{m.GetFormattedName()}\"" ];
 
-            return $"""("{fieldName}", {fieldInfo}, typeof({typeString}).{getAccessor}("{m.Name}")!)""";
+            if (!isEnum)
+            {
+                string? wrapperName = GetWrapperName(m, context, usage, inProgress);
+                if (wrapperName is null)
+                {
+                    // This is an error, but it should have already been produced by the serialization
+                    // or deserialization generator
+                    return null;
+                }
+                elements.Add($"global::Serde.SerdeInfoProvider.GetInfo<{wrapperName}>()");
+            }
+
+            var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
+            elements.Add($"typeof({typeString}).{getAccessor}(\"{m.Name}\")!");
+
+            return $"""({string.Join(", ", elements)})""";
         }
+    }
+
+    private static string? GetWrapperName(
+        DataMemberSymbol m,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<ITypeSymbol> inProgress)
+    {
+        string? wrapperName;
+        if (Wrappers.TryGetExplicitWrapper(m, context, usage, inProgress) is { } explicitWrap)
+        {
+            wrapperName = explicitWrap.ToString();
+        }
+        else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, usage))
+        {
+            wrapperName = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
+        }
+        else if (Wrappers.TryGetImplicitWrapper(m.Type, context, usage, inProgress) is { Wrapper: { } wrap })
+        {
+            wrapperName = wrap.ToString();
+        }
+        else
+        {
+            wrapperName = null;
+        }
+        return wrapperName;
     }
 }

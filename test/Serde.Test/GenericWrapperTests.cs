@@ -94,26 +94,25 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArrayWrap
     {
-        private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
+        private static readonly ISerdeInfo s_typeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray<int>).ToString(),
-            SerdeInfo.TypeKind.Enumerable,
-            []);
+            ISerdeInfo.TypeKind.Enumerable);
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray<T>>
             where TWrap : struct, ISerialize<T>
         {
-            public static SerdeInfo SerdeInfo => s_typeInfo;
+            public static ISerdeInfo SerdeInfo => s_typeInfo;
             void ISerialize<CustomImArray<T>>.Serialize(CustomImArray<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(s_typeInfo, value.Backing.AsSpan(), serializer);
         }
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<CustomImArray<T>>
             where TWrap : IDeserialize<T>
         {
-            public static SerdeInfo SerdeInfo => s_typeInfo;
+            public static ISerdeInfo SerdeInfo => s_typeInfo;
             public static CustomImArray<T> Deserialize(IDeserializer deserializer)
             {
-                SerdeInfo typeInfo = s_typeInfo;
+                var serdeInfo = s_typeInfo;
                 ImmutableArray<T>.Builder builder;
-                var d = deserializer.DeserializeCollection(typeInfo);
+                var d = deserializer.DeserializeCollection(serdeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);
@@ -124,7 +123,7 @@ public sealed partial class GenericWrapperTests
                     builder = ImmutableArray.CreateBuilder<T>();
                 }
 
-                while (d.TryReadValue<T, TWrap>(typeInfo, out T? next))
+                while (d.TryReadValue<T, TWrap>(serdeInfo, out T? next))
                 {
                     builder.Add(next);
                 }
@@ -139,14 +138,14 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArray2Wrap
     {
-        private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
+        private static readonly ISerdeInfo s_typeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray2<int>).ToString(),
-            SerdeInfo.TypeKind.Enumerable,
-            []);
+            ISerdeInfo.TypeKind.Enumerable);
+
         public readonly record struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray2<T>>
             where TWrap : struct, ISerialize<T>
         {
-            static SerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
 
             void ISerialize<CustomImArray2<T>>.Serialize(CustomImArray2<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(s_typeInfo, value.Backing.AsSpan(), serializer);
@@ -154,7 +153,7 @@ public sealed partial class GenericWrapperTests
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<CustomImArray2<T>>
             where TWrap : IDeserialize<T>
         {
-            static SerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
 
             public static CustomImArray2<T> Deserialize(IDeserializer deserializer)
             {

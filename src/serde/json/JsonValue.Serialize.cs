@@ -41,11 +41,6 @@ namespace Serde.Json
 
         partial record Object
         {
-            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
-                typeof(Object).ToString(),
-                SerdeInfo.TypeKind.Dictionary,
-                []);
-
             public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
                 : this(members.ToImmutableDictionary())
             { }
@@ -56,7 +51,7 @@ namespace Serde.Json
 
             public override void Serialize(ISerializer serializer)
             {
-                var typeInfo = s_typeInfo;
+                var typeInfo = SerdeInfoProvider.GetInfo<Object>();
                 var dict = serializer.SerializeCollection(typeInfo, Members.Count);
                 foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
                 {
@@ -69,18 +64,13 @@ namespace Serde.Json
 
         partial record Array
         {
-            private static readonly SerdeInfo s_typeInfo = SerdeInfo.Create(
-                typeof(Array).ToString(),
-                SerdeInfo.TypeKind.Enumerable,
-                []);
-
             public Array(IEnumerable<JsonValue> elements)
                 : this(elements.ToImmutableArray())
             { }
 
             public override void Serialize(ISerializer serializer)
             {
-                var typeInfo = s_typeInfo;
+                var typeInfo = SerdeInfoProvider.GetInfo<Array>();
                 var enumerable = serializer.SerializeCollection(typeInfo, Elements.Length);
                 foreach (var element in Elements)
                 {

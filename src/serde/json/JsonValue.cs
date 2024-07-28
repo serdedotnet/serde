@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -20,28 +21,63 @@ namespace Serde.Json
     // helpers
     partial record JsonValue
     {
-        public static SerdeInfo SerdeInfo => SerdeInfo.Create(
-            typeof(JsonValue).ToString(),
-            SerdeInfo.TypeKind.CustomType,
-            []);
+        static ISerdeInfo ISerdeInfoProvider.SerdeInfo => UnionInfo.Instance;
+
+        private sealed class UnionInfo : ISerdeInfo, IUnionSerdeInfo
+        {
+            public static readonly UnionInfo Instance = new UnionInfo();
+            public string TypeName => nameof(JsonValue);
+
+            public int FieldCount => 0;
+
+            public IEnumerable<ISerdeInfo> CaseInfos { get; } = [
+                SerdeInfoProvider.GetInfo<JsonValue.Number>(),
+                SerdeInfoProvider.GetInfo<JsonValue.Bool>(),
+                SerdeInfoProvider.GetInfo<JsonValue.String>(),
+                SerdeInfoProvider.GetInfo<JsonValue.Object>(),
+                SerdeInfoProvider.GetInfo<JsonValue.Array>(),
+                SerdeInfoProvider.GetInfo<JsonValue.Null>(),
+            ];
+
+            public IList<CustomAttributeData> GetCustomAttributeData(int index) => throw GetOOR(index);
+
+            public Utf8Span GetSerializeName(int index) => throw GetOOR(index);
+
+            public string GetStringSerializeName(int index) => throw GetOOR(index);
+
+            public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
+
+            private ArgumentOutOfRangeException GetOOR(int index)
+            {
+                return new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
+            }
+        }
 
         private JsonValue() { }
 
         public static implicit operator JsonValue(int i) => new Number(i);
         public static implicit operator JsonValue(string s) => new String(s);
 
-        partial record Number
+        partial record Number : ISerdeInfoProvider
         {
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(Number));
             public override string ToString() => Value.ToString();
         }
 
-        partial record String
+        partial record Bool : ISerdeInfoProvider
         {
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(Bool));
+            public override string ToString() => Value.ToString();
+        }
+        partial record String : ISerdeInfoProvider
+        {
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(String));
             public override string ToString() => Value;
         }
 
-        partial record Array
+        partial record Array : ISerdeInfoProvider
         {
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnumerable(nameof(Array));
             public static readonly Array Empty = new Array(ImmutableArray<JsonValue>.Empty);
 
             public bool Equals(Array? other)
@@ -83,8 +119,9 @@ namespace Serde.Json
             }
         }
 
-        partial record Object
+        partial record Object : ISerdeInfoProvider
         {
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeDictionary(nameof(Object));
             public bool Equals(Object? other)
             {
                 if (other is null || Members.Count != other.Members.Count)
@@ -131,8 +168,9 @@ namespace Serde.Json
             }
         }
 
-        partial record Null
+        partial record Null : ISerdeInfoProvider
         {
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(Null));
             public static readonly Null Instance = new Null();
             private Null() { }
         }

@@ -11,7 +11,7 @@ namespace Serde
     public static class EnumerableHelpers
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeSpan<T, U>(SerdeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
+        public static void SerializeSpan<T, U>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
             where U : ISerialize<T>
         {
             var enumerable = serializer.SerializeCollection(typeInfo, arr.Length);
@@ -23,14 +23,14 @@ namespace Serde
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeSpan<T, U>(SerdeInfo typeInfo, ReadOnlySpan<T> arr, ISerializer serializer)
+        public static void SerializeSpan<T, U>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, ISerializer serializer)
             where U : struct, ISerialize<T>
             => SerializeSpan(typeInfo, arr, default(U), serializer);
     }
 
     internal static class ArraySerdeTypeInfo<T>
     {
-        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(typeof(T[]).ToString(), SerdeInfo.TypeKind.Enumerable, []);
+        public static readonly ISerdeInfo TypeInfo = SerdeInfo.MakeEnumerable(typeof(T[]).ToString());
     }
 
     public static class ArrayWrap
@@ -38,7 +38,7 @@ namespace Serde
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<T[]>
            where TWrap : struct, ISerialize<T>
         {
-            public static SerdeInfo SerdeInfo => ArraySerdeTypeInfo<T>.TypeInfo;
+            public static ISerdeInfo SerdeInfo => ArraySerdeTypeInfo<T>.TypeInfo;
             public void Serialize(T[] value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(ArraySerdeTypeInfo<T>.TypeInfo, value, serializer);
         }
@@ -46,7 +46,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<T[]>
             where TWrap : IDeserialize<T>
         {
-            public static SerdeInfo SerdeInfo => ArraySerdeTypeInfo<T>.TypeInfo;
+            public static ISerdeInfo SerdeInfo => ArraySerdeTypeInfo<T>.TypeInfo;
             public static T[] Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = ArraySerdeTypeInfo<T>.TypeInfo;
@@ -79,7 +79,7 @@ namespace Serde
 
     internal static class ListSerdeTypeInfo<T>
     {
-        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(typeof(List<T>).ToString(), SerdeInfo.TypeKind.Enumerable, []);
+        public static readonly ISerdeInfo TypeInfo = SerdeInfo.MakeEnumerable(typeof(List<T>).ToString());
     }
 
     public static class ListWrap
@@ -87,7 +87,7 @@ namespace Serde
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<List<T>>
             where TWrap : struct, ISerialize<T>
         {
-            public static SerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
+            public static ISerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
             public void Serialize(List<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(ListSerdeTypeInfo<T>.TypeInfo, CollectionsMarshal.AsSpan(value), serializer);
         }
@@ -95,7 +95,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<List<T>>
             where TWrap : IDeserialize<T>
         {
-            public static SerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
+            public static ISerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
             public static List<T> Deserialize(IDeserializer deserializer)
             {
                 List<T> list;
@@ -125,8 +125,7 @@ namespace Serde
 
     internal static class ImmutableArraySerdeTypeInfo<T>
     {
-        public static readonly SerdeInfo TypeInfo = SerdeInfo.Create(
-            typeof(ImmutableArray<T>).ToString(), SerdeInfo.TypeKind.Enumerable, []);
+        public static readonly ISerdeInfo TypeInfo = SerdeInfo.MakeEnumerable(typeof(ImmutableArray<T>).ToString());
     }
 
     public static class ImmutableArrayWrap
@@ -134,7 +133,7 @@ namespace Serde
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<ImmutableArray<T>>
             where TWrap : struct, ISerialize<T>
         {
-            public static SerdeInfo SerdeInfo => ImmutableArraySerdeTypeInfo<T>.TypeInfo;
+            public static ISerdeInfo SerdeInfo => ImmutableArraySerdeTypeInfo<T>.TypeInfo;
             public void Serialize(ImmutableArray<T> value, ISerializer serializer)
                 => EnumerableHelpers.SerializeSpan<T, TWrap>(ImmutableArraySerdeTypeInfo<T>.TypeInfo, value.AsSpan(), serializer);
         }
@@ -142,7 +141,7 @@ namespace Serde
         public readonly struct DeserializeImpl<T, TWrap> : IDeserialize<ImmutableArray<T>>
             where TWrap : IDeserialize<T>
         {
-            public static SerdeInfo SerdeInfo => ImmutableArraySerdeTypeInfo<T>.TypeInfo;
+            public static ISerdeInfo SerdeInfo => ImmutableArraySerdeTypeInfo<T>.TypeInfo;
             public static ImmutableArray<T> Deserialize(IDeserializer deserializer)
             {
                 ImmutableArray<T>.Builder builder;
