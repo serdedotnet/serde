@@ -136,15 +136,15 @@ partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Ser
     internal static bool ImplementsSerde(ITypeSymbol targetType, ITypeSymbol argType, GeneratorExecutionContext context, SerdeUsage usage)
     {
         // Nullable types are not considered as implementing the Serde interfaces -- they use wrappers to map to the underlying
-        if (argType.NullableAnnotation == NullableAnnotation.Annotated ||
-            argType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+        if (targetType.NullableAnnotation == NullableAnnotation.Annotated ||
+            targetType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
         {
             return false;
         }
 
         // Check if the type either has the GenerateSerialize attribute, or directly implements ISerialize
         // (If the type has the GenerateSerialize attribute then the generator will implement the interface)
-        if (argType.TypeKind is not TypeKind.Enum && HasGenerateAttribute(argType, usage))
+        if (targetType.TypeKind is not TypeKind.Enum && HasGenerateAttribute(targetType, usage))
         {
             return true;
         }
