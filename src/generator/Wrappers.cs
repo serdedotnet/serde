@@ -265,21 +265,30 @@ readonly partial struct {{wrapperName}} { }
         if (TryGetExplicitWrapperType(member, usage, context) is {} wrapperType)
         {
             var memberType = member.Type;
-            if (SerdeImplRoslynGenerator.ImplementsSerde(wrapperType, memberType, context, usage))
+            if (wrapperType.IsGenericType && wrapperType.Equals(wrapperType.OriginalDefinition, SymbolEqualityComparer.Default))
             {
-                // If the wrapper type directly implements the interface, just return it
-                return ParseTypeName(wrapperType.ToDisplayString());
+                // If the wrapper type is an unconstructed generic type which we need to construct
+                // with the appropriate wrappers for the member type's type arguments.
+                var baseName = wrapperType.ToDisplayString(s_baseNameFormat);
+                var typeArgs = memberType switch
+                {
+                    INamedTypeSymbol n => n.TypeArguments,
+                    _ => ImmutableArray<ITypeSymbol>.Empty
+                };
+                return MakeWrappedExpression(baseName, typeArgs, context, usage, inProgress);
             }
 
-            // Otherwise, the wrapper type should be an unconstructed generic type which we need to
-            // construct with the appropriate wrappers for the member type's type arguments.
-            var baseName = wrapperType.ToDisplayString(s_baseNameFormat);
-            var typeArgs = memberType switch
+            if (!SerdeImplRoslynGenerator.ImplementsSerde(wrapperType, memberType, context, usage))
             {
-                INamedTypeSymbol n => n.TypeArguments,
-                _ => ImmutableArray<ITypeSymbol>.Empty
-            };
-            return MakeWrappedExpression(baseName, typeArgs, context, usage, inProgress);
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_WrapperDoesntImplementInterface,
+                    member.Symbol.Locations[0],
+                    wrapperType,
+                    memberType,
+                    usage.GetInterfaceName()));
+            }
+
+            return ParseTypeName(wrapperType.ToDisplayString());
         }
         return null;
 

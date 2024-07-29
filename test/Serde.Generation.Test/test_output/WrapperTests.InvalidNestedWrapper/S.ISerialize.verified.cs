@@ -10,7 +10,7 @@ partial struct S : Serde.ISerialize<S>
     {
         var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S>();
         var type = serializer.SerializeType(_l_serdeInfo);
-        type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ArrayWrap.SerializeImpl<int, global::Serde.Int32Wrap>>(_l_serdeInfo, 0, value.Sections);
+        type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ArrayWrap.SerializeImpl<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>>(_l_serdeInfo, 0, value.Sections);
         type.End();
     }
 }

@@ -1,0 +1,14 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_WrapperDoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (16,31)-(16,39),
+      MessageFormat: The proxy type 'Serde.ArrayWrap.SerializeImpl<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>' doesn't implement the interface 'ISerialize<System.Collections.Immutable.ImmutableArray<int>>'.,
+      Message: The proxy type 'Serde.ArrayWrap.SerializeImpl<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>' doesn't implement the interface 'ISerialize<System.Collections.Immutable.ImmutableArray<int>>'.,
+      Category: Serde
+    }
+  ]
+}

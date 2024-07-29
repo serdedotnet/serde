@@ -1,0 +1,14 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_WrapperDoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (32,21)-(32,27),
+      MessageFormat: The proxy type 'Proxy' doesn't implement the interface 'IDeserialize<Original?>'.,
+      Message: The proxy type 'Proxy' doesn't implement the interface 'IDeserialize<Original?>'.,
+      Category: Serde
+    }
+  ]
+}

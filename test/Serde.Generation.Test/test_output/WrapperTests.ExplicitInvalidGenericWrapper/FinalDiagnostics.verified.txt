@@ -1,0 +1,13 @@
+﻿[
+  {
+    "Id": "CS0311",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Container.IDeserialize.cs: (19,48)-(19,75)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0311)",
+    "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.",
+    "Message": "The type 'Proxy' cannot be used as type parameter 'D' in the generic type or method 'IDeserializeType.ReadValue<V, D>(int)'. There is no implicit reference conversion from 'Proxy' to 'Serde.IDeserialize<Original?>'.",
+    "Category": "Compiler"
+  }
+]
