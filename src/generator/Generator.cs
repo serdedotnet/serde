@@ -75,16 +75,16 @@ public partial class SerdeImplRoslynGenerator : IIncrementalGenerator
                 var attributeData = attrCtx.Attributes.Single();
 
                 INamedTypeSymbol receiverType = typeSymbol;
+                var proxiedOpt = TryGetProxiedType(attributeData, model, typeDecl, typeSymbol);
                 // If the Through property is set, then we are implementing a wrapper type
-                if (attributeData.NamedArguments is [(nameof(GenerateSerialize.ThroughMember), { Value: string memberName })])
+                if (proxiedOpt is { Item1: null } )
                 {
-                    var members = model.LookupSymbols(typeDecl.SpanStart, typeSymbol, memberName);
-                    if (members.Length != 1)
-                    {
-                        // TODO: Error about bad lookup
-                        return;
-                    }
-                    receiverType = (INamedTypeSymbol)SymbolUtilities.GetSymbolType(members[0]);
+                    // Error already reported
+                    return;
+                }
+                else if (proxiedOpt is { Item1: { } proxiedType })
+                {
+                    receiverType = proxiedType;
 
                     if (receiverType.SpecialType != SpecialType.None)
                     {
@@ -188,5 +188,47 @@ public partial class SerdeImplRoslynGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(generateSerdeTypes, provideOutput);
         context.RegisterSourceOutput(combined, provideOutput);
+    }
+
+
+    /// <summary>
+    /// If the type has a `Through` property then we are generating a proxy type and need to find
+    /// the proxied type.
+    /// </summary>
+    /// <returns>
+    /// Returns null if there is no `Through` property. Returns ValueTuple(null) if there is an
+    /// error. Returns ValueTuple(ITypeSymbol) if there is a valid proxied type.
+    /// </returns>
+    private static ValueTuple<INamedTypeSymbol?>? TryGetProxiedType(
+        AttributeData attributeData,
+        SemanticModel model,
+        BaseTypeDeclarationSyntax typeDecl,
+        ITypeSymbol attributedSymbol)
+    {
+        foreach (var namedArg in attributeData.NamedArguments)
+        {
+            switch (namedArg)
+            {
+                case { Key: nameof(GenerateSerialize.ThroughMember),
+                       Value: { Kind: TypedConstantKind.Primitive, Value: string memberName } }:
+                    var members = model.LookupSymbols(typeDecl.SpanStart, attributedSymbol, memberName);
+                    if (members.Length != 1)
+                    {
+                        // TODO: Error about bad lookup
+                        return new(null);
+                    }
+                    return new((INamedTypeSymbol)SymbolUtilities.GetSymbolType(members[0]));
+
+                case { Key: nameof(GenerateSerialize.ThroughType),
+                       Value: { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol } }:
+                    if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
+                    {
+                        // TODO: Error about bad type
+                        return new(null);
+                    }
+                    return new(namedTypeSymbol);
+            }
+        }
+        return null;
     }
 }
