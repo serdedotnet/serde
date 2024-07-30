@@ -27,7 +27,7 @@ partial record struct Original()
 
 internal class Proxy : ISerialize<Original>, IDeserialize<Original>
 {
-    public static ISerdeInfo SerdeInfo { get; } = new PrimitiveInfo(nameof(Original));
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Original));
 
     public static Original Deserialize(IDeserializer deserializer)
     {
@@ -47,26 +47,6 @@ partial record Container
     // Wrong wrapper type, should have a NullableWrapper outside
     [SerdeMemberOptions(WrapperDeserialize = typeof(Proxy))]
     public Original? SdkDir { get; init; } = null;
-}
-
-internal sealed record PrimitiveInfo(string TypeName) : ISerdeInfo
-{
-    public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.Primitive;
-    public int FieldCount => 0;
-
-    public IList<CustomAttributeData> TypeAttributes => Array.Empty<CustomAttributeData>();
-
-    public ReadOnlySpan<byte> GetFieldName(int index) => throw GetOOR(index);
-    public string GetFieldStringName(int index) => throw GetOOR(index);
-    public IList<CustomAttributeData> GetFieldAttributes(int index)
-        => throw GetOOR(index);
-
-    public int TryGetIndex(ReadOnlySpan<byte> fieldName) => IDeserializeType.IndexNotFound;
-
-    public ISerdeInfo GetFieldInfo(int index) => throw GetOOR(index);
-
-    private ArgumentOutOfRangeException GetOOR(int index)
-        => new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
 }
 """;
             return VerifyMultiFile(src);
@@ -89,7 +69,7 @@ partial record struct Original()
 
 internal class Proxy : ISerialize<Original>, IDeserialize<Original>
 {
-    public static ISerdeInfo SerdeInfo { get; } = new PrimitiveInfo(nameof(Original));
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Original));
 
     public static Original Deserialize(IDeserializer deserializer)
     {
@@ -109,26 +89,6 @@ partial record Container
     // Wrong wrapper type, should have a NullableWrapper outside
     [SerdeMemberOptions(WrapperDeserialize = typeof(NullableWrap.DeserializeImpl<Original, Proxy>))]
     public Original? SdkDir { get; init; } = null;
-}
-
-internal sealed record PrimitiveInfo(string TypeName) : ISerdeInfo
-{
-    public ISerdeInfo.TypeKind Kind => ISerdeInfo.TypeKind.Primitive;
-    public int FieldCount => 0;
-
-    public IList<CustomAttributeData> TypeAttributes => Array.Empty<CustomAttributeData>();
-
-    public ReadOnlySpan<byte> GetFieldName(int index) => throw GetOOR(index);
-    public string GetFieldStringName(int index) => throw GetOOR(index);
-    public IList<CustomAttributeData> GetFieldAttributes(int index)
-        => throw GetOOR(index);
-
-    public int TryGetIndex(ReadOnlySpan<byte> fieldName) => IDeserializeType.IndexNotFound;
-
-    public ISerdeInfo GetFieldInfo(int index) => throw GetOOR(index);
-
-    private ArgumentOutOfRangeException GetOOR(int index)
-        => new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
 }
 """;
             return VerifyMultiFile(src);

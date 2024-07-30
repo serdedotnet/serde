@@ -6,12 +6,12 @@ using System.Reflection;
 namespace Serde.Test;
 
 internal sealed record CollectionSerdeInfo(
-    string TypeName,
-    ISerdeInfo.TypeKind Kind) : ISerdeInfo
+    string Name,
+    InfoKind Kind) : ISerdeInfo
 {
     public int FieldCount => 0;
 
-    public IList<CustomAttributeData> TypeAttributes => [];
+    public IList<CustomAttributeData> Attributes => [];
 
     public IList<CustomAttributeData> GetFieldAttributes(int index)
         => throw GetAOOR(index);
@@ -27,5 +27,5 @@ internal sealed record CollectionSerdeInfo(
     public int TryGetIndex(ReadOnlySpan<byte> fieldName) => IDeserializeType.IndexNotFound;
 
     private ArgumentOutOfRangeException GetAOOR(int index)
-        => new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
+        => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
 }

@@ -12,7 +12,7 @@ public sealed partial class SerdeInfoTests
     public void TestEmptyRecord()
     {
         var info = SerdeInfoProvider.GetInfo<EmptyRecord>();
-        Assert.Equal(nameof(EmptyRecord), info.TypeName);
+        Assert.Equal(nameof(EmptyRecord), info.Name);
         Assert.Equal(0, info.FieldCount);
     }
 
@@ -28,7 +28,7 @@ public sealed partial class SerdeInfoTests
     public void TestProxy()
     {
         var info = SerdeInfoProvider.GetInfo<RgbProxy>();
-        Assert.Equal(nameof(Rgb), info.TypeName);
+        Assert.Equal(nameof(Rgb), info.Name);
         Assert.Equal(3, info.FieldCount);
     }
 }

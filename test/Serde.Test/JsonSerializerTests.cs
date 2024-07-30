@@ -106,7 +106,7 @@ namespace Serde.Test
         {
             public static ISerdeInfo SerdeInfo { get; } = new CollectionSerdeInfo(
                 typeof(Dictionary<int, int>).ToString(),
-                ISerdeInfo.TypeKind.Dictionary);
+                InfoKind.Dictionary);
 
             private readonly Dictionary<int, int> _d;
             public JsonDictionaryWrapper(Dictionary<int, int> d)
