@@ -17,7 +17,7 @@ internal static class SerdeInfoGenerator
     /// <code>
     /// partial {typeKind} {typeName}
     /// {
-    ///     internal static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    ///     internal static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
     ///         {typeName},
     ///         typeof({typeName}).GetCustomAttributesData(),
     ///         [

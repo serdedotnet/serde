@@ -76,12 +76,12 @@ namespace Serde.Json
 
         ISerializeCollection ISerializer.SerializeCollection(ISerdeInfo typeInfo, int? length)
         {
-            if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
+            if (typeInfo.Kind == InfoKind.Dictionary)
             {
                 _dictState.Add(DictState.Key);
                 _writer.WriteStartObject();
             }
-            else if (typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable)
+            else if (typeInfo.Kind == InfoKind.Enumerable)
             {
                 _writer.WriteStartArray();
             }
@@ -89,7 +89,7 @@ namespace Serde.Json
             {
                 throw new InvalidOperationException("SerializeCollection called on non-collection type");
             }
-            return new CollectionImpl(this, typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary);
+            return new CollectionImpl(this, typeInfo.Kind == InfoKind.Dictionary);
         }
 
         partial class CollectionImpl(JsonSerializer serializer, bool isDict) : ISerializeCollection
@@ -104,12 +104,12 @@ namespace Serde.Json
 
             void ISerializeCollection.End(ISerdeInfo typeInfo)
             {
-                if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
+                if (typeInfo.Kind == InfoKind.Dictionary)
                 {
                     isDict = false;
                     serializer._writer.WriteEndObject();
                 }
-                else if (typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable)
+                else if (typeInfo.Kind == InfoKind.Enumerable)
                 {
                     serializer._writer.WriteEndArray();
                 }
@@ -175,12 +175,12 @@ namespace Serde.Json
 
         void ISerializeCollection.End(ISerdeInfo typeInfo)
         {
-            if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
+            if (typeInfo.Kind == InfoKind.Dictionary)
             {
                 _dictState.RemoveAt(_dictState.Count - 1);
                 _writer.WriteEndObject();
             }
-            else if (typeInfo.Kind == ISerdeInfo.TypeKind.Enumerable)
+            else if (typeInfo.Kind == InfoKind.Enumerable)
             {
                 _writer.WriteEndArray();
             }

@@ -96,7 +96,7 @@ public sealed partial class GenericWrapperTests
     {
         private static readonly ISerdeInfo s_typeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray<int>).ToString(),
-            ISerdeInfo.TypeKind.Enumerable);
+            InfoKind.Enumerable);
         public readonly struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray<T>>
             where TWrap : struct, ISerialize<T>
         {
@@ -140,7 +140,7 @@ public sealed partial class GenericWrapperTests
     {
         private static readonly ISerdeInfo s_typeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray2<int>).ToString(),
-            ISerdeInfo.TypeKind.Enumerable);
+            InfoKind.Enumerable);
 
         public readonly record struct SerializeImpl<T, TWrap> : ISerialize<CustomImArray2<T>>
             where TWrap : struct, ISerialize<T>

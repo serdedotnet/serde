@@ -26,11 +26,11 @@ namespace Serde.Json
         private sealed class UnionInfo : ISerdeInfo, IUnionSerdeInfo
         {
             public static readonly UnionInfo Instance = new UnionInfo();
-            public string TypeName => nameof(JsonValue);
+            public string Name => nameof(JsonValue);
 
             public int FieldCount => 0;
 
-            public IList<CustomAttributeData> TypeAttributes => [];
+            public IList<CustomAttributeData> Attributes => [];
 
             public IEnumerable<ISerdeInfo> CaseInfos { get; } = [
                 SerdeInfoProvider.GetInfo<JsonValue.Number>(),
@@ -53,7 +53,7 @@ namespace Serde.Json
 
             private ArgumentOutOfRangeException GetOOR(int index)
             {
-                return new ArgumentOutOfRangeException(nameof(index), index, $"{TypeName} has no fields or properties.");
+                return new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
             }
         }
 
@@ -64,18 +64,18 @@ namespace Serde.Json
 
         partial record Number : ISerdeInfoProvider
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(Number));
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Number));
             public override string ToString() => Value.ToString();
         }
 
         partial record Bool : ISerdeInfoProvider
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(Bool));
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Bool));
             public override string ToString() => Value.ToString();
         }
         partial record String : ISerdeInfoProvider
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(String));
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(String));
             public override string ToString() => Value;
         }
 
@@ -174,7 +174,7 @@ namespace Serde.Json
 
         partial record Null : ISerdeInfoProvider
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new PrimitiveInfo(nameof(Null));
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Null));
             public static readonly Null Instance = new Null();
             private Null() { }
         }

@@ -158,18 +158,18 @@ public sealed partial class XmlSerializer : ISerializer
 
     public ISerializeCollection SerializeCollection(ISerdeInfo typeInfo, int? length)
     {
-        if (typeInfo.Kind == ISerdeInfo.TypeKind.Dictionary)
+        if (typeInfo.Kind == InfoKind.Dictionary)
         {
             throw new NotSupportedException("Serde.XmlSerializer doesn't currently support serializing dictionaries");
         }
-        else if (typeInfo.Kind != ISerdeInfo.TypeKind.Enumerable)
+        else if (typeInfo.Kind != InfoKind.Enumerable)
         {
             throw new ArgumentException("typeInfo must be a collection type", nameof(typeInfo));
         }
         var savedState = _state;
         if (savedState == State.Enumerable)
         {
-            _writer.WriteStartElement(FormatTypeName(typeInfo.TypeName));
+            _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
         }
         _state = State.Enumerable;
         return new SerializeCollectionImpl(this, savedState);
@@ -204,7 +204,7 @@ public sealed partial class XmlSerializer : ISerializer
         bool writeEnd;
         if (_state is State.Start or State.Enumerable)
         {
-            _writer.WriteStartElement(typeInfo.TypeName);
+            _writer.WriteStartElement(typeInfo.Name);
             writeEnd = true;
         }
         else
