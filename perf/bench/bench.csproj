@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
-    <PackageReference Include="Newtonsoft.JSON" Version="13.0.1" />
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Newtonsoft.JSON" />
     <ProjectReference Include="../../src/serde/Serde.csproj" />
     <ProjectReference Include="../../src/generator/SerdeGenerator.csproj" OutputItemType="Analyzer" />
   </ItemGroup>

@@ -1,8 +1,8 @@
 <Project>
-    <PropertyGroup>
-        <UseArtifactsOutput>true</UseArtifactsOutput>
-        <Nullable>enable</Nullable>
-        <Deterministic>true</Deterministic>
-        <TestTfm>net8.0</TestTfm>
-    </PropertyGroup>
+  <PropertyGroup>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <TestTfm>net8.0</TestTfm>
+  </PropertyGroup>
 </Project>
