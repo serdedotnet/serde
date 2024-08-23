@@ -17,7 +17,7 @@
     <ProjectReference Include="Serde.Pkg.proj" />
     <ProjectReference Include="../serde-xml/Serde.Xml.csproj" />
 
-    <PackageReference Include="NuGetizer" Version="0.9.0">
+    <PackageReference Include="NuGetizer">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
