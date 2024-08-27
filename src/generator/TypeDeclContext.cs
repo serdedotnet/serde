@@ -64,7 +64,7 @@ partial {{TypeKindToString(kind)}} {{name}}
             }
             if (NamespaceNames.Count > 0)
             {
-                newType = "namespace " + string.Join(".", NamespaceNames) + ";" + Environment.NewLine + newType;
+                newType = "namespace " + string.Join(".", NamespaceNames) + ";" + Utilities.NewLine + newType;
             }
 
             return newType;

@@ -45,7 +45,7 @@ public partial class SerializeImplGen
             statements.Add(ParseStatement($$"""
             var index = value switch
             {
-                {{string.Join("," + Environment.NewLine, fieldsAndProps
+                {{string.Join("," + Utilities.NewLine, fieldsAndProps
                     .Select((m, i) => $"{typeSyntax}.{m.Name} => {i}")) }},
                 var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
             };

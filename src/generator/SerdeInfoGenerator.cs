@@ -57,7 +57,7 @@ internal static class SerdeInfoGenerator
             typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
         }
 
-        var membersString = string.Join("," + Environment.NewLine,
+        var membersString = string.Join("," + Utilities.NewLine,
             SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
 
         List<string> makeArgs = [ $"\"{receiverType.Name}\"", $"typeof({typeString}).GetCustomAttributesData()" ];
@@ -83,7 +83,7 @@ new {{fieldArrayType}} {
     }
 """);
 
-        var argsString = string.Join("," + Environment.NewLine + "        ", makeArgs);
+        var argsString = string.Join("," + Utilities.NewLine + "        ", makeArgs);
 
         var body = $$"""
 static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Make{{makeFuncSuffix}}(

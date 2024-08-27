@@ -53,9 +53,9 @@ readonly partial struct {{wrapperName}} { }
             usings: default,
             attributeLists: default,
             members: List<MemberDeclarationSyntax>(new[] { newType }));
-        tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
+        tree = tree.NormalizeWhitespace(eol: Utilities.NewLine);
 
-        context.AddSource(fullWrapperName, Environment.NewLine + tree.ToFullString());
+        context.AddSource(fullWrapperName, Utilities.NewLine + tree.ToFullString());
     }
 
     // If the target is a core type, we can wrap it

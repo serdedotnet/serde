@@ -95,7 +95,7 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
         throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
     }
     return index switch {
-        {{string.Join("," + Environment.NewLine, members
+        {{string.Join("," + Utilities.NewLine, members
             .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}")) }},
         _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")
     };
