@@ -94,10 +94,10 @@ partial class SerdeImplRoslynGenerator
             usings: List(new[] { UsingDirective(IdentifierName("System")), UsingDirective(IdentifierName("Serde")) }),
             attributeLists: default,
             members: List<MemberDeclarationSyntax>(new[] { newType }));
-        tree = tree.NormalizeWhitespace(eol: Environment.NewLine);
+        tree = tree.NormalizeWhitespace(eol: Utilities.NewLine);
 
         context.AddSource(srcName,
-            Environment.NewLine + "#nullable enable" + Environment.NewLine + tree.ToFullString());
+            Utilities.NewLine + "#nullable enable" + Utilities.NewLine + tree.ToFullString());
     }
 
     internal static (string FileName, string Body) MakePartialDecl(
@@ -126,7 +126,7 @@ partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Ser
 
         newType = typeDeclContext.WrapNewType(newType);
 
-        return (srcName, Environment.NewLine + "#nullable enable" + Environment.NewLine + newType);
+        return (srcName, Utilities.NewLine + "#nullable enable" + Utilities.NewLine + newType);
     }
 
     /// <summary>

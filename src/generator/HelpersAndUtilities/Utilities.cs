@@ -33,6 +33,10 @@ namespace Serde
 
     internal static class Utilities
     {
+#pragma warning disable RS1035
+        public static readonly string NewLine = Environment.NewLine;
+#pragma warning restore RS1035
+
         public static T NotNull<T>(this T? value) where T : struct => value!.Value;
 
         public static string Concat(this string recv, string other)
