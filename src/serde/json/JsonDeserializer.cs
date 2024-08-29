@@ -60,7 +60,7 @@ namespace Serde.Json
                     break;
 
                 default:
-                    throw new InvalidDeserializeValueException($"Could not deserialize '{reader.TokenType}");
+                    throw new DeserializeException($"Could not deserialize '{reader.TokenType}");
             }
             return result;
         }
@@ -80,7 +80,7 @@ namespace Serde.Json
 
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new InvalidDeserializeValueException("Expected object start");
+                throw new DeserializeException("Expected object start");
             }
 
             var map = new DeDictionary(this);
@@ -100,7 +100,7 @@ namespace Serde.Json
             if (typeInfo.Kind == InfoKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
                 || typeInfo.Kind == InfoKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new InvalidDeserializeValueException("Expected object start");
+                throw new DeserializeException("Expected object start");
             }
 
             return new DeCollection(this);
@@ -125,13 +125,13 @@ namespace Serde.Json
                     case JsonTokenType.EndArray:
                         if (typeInfo.Kind != InfoKind.Enumerable)
                         {
-                            throw new InvalidDeserializeValueException($"Unexpected end of array in type kind: {typeInfo.Kind}");
+                            throw new DeserializeException($"Unexpected end of array in type kind: {typeInfo.Kind}");
                         }
                         break;
                     case JsonTokenType.EndObject:
                         if (typeInfo.Kind != InfoKind.Dictionary)
                         {
-                            throw new InvalidDeserializeValueException($"Unexpected end of object in type kind: {typeInfo.Kind}");
+                            throw new DeserializeException($"Unexpected end of object in type kind: {typeInfo.Kind}");
                         }
                         break;
                     default:
@@ -171,7 +171,7 @@ namespace Serde.Json
 
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new InvalidDeserializeValueException("Expected array start");
+                throw new DeserializeException("Expected array start");
             }
 
             var enumerable = new DeEnumerable(this);
@@ -311,7 +311,7 @@ namespace Serde.Json
 
                 if (reader.TokenType != JsonTokenType.StartObject)
                 {
-                    throw new InvalidDeserializeValueException("Expected object start");
+                    throw new DeserializeException("Expected object start");
                 }
             }
             else if (fieldMap.Kind != InfoKind.Enum)
@@ -422,7 +422,7 @@ namespace Serde.Json
         {
             if (!reader.Read())
             {
-                throw new InvalidDeserializeValueException("Unexpected end of stream");
+                throw new DeserializeException("Unexpected end of stream");
             }
         }
     }

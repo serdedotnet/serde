@@ -219,7 +219,7 @@ namespace Serde.Test
     ""present"": ""abc"",
     ""extra"": ""def""
 }";
-            Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
+            Assert.Throws<DeserializeException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
         }
 
         [GenerateDeserialize]
@@ -251,7 +251,7 @@ namespace Serde.Test
     ""present"": ""abc"",
     ""extra"": ""def""
 }";
-            Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<DenyUnknown>(src));
+            Assert.Throws<DeserializeException>(() => JsonSerializer.Deserialize<DenyUnknown>(src));
         }
 
         [GenerateDeserialize]
@@ -340,13 +340,13 @@ namespace Serde.Test
                 int index;
                 if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {
-                    throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+                    throw new DeserializeException($"Unexpected value: {errorName}");
                 }
                 return index switch {
                     0 => ColorEnum.Red,
                     1 => ColorEnum.Green,
                     2 => ColorEnum.Blue,
-                    _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")
+                    _ => throw new DeserializeException($"Unexpected index: {index}")
                 };
             }
         }

@@ -62,7 +62,7 @@ public readonly partial record struct CharWrap(char Value)
             {
                 return s[0];
             }
-            throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+            throw new DeserializeException("Expected type " + ExpectedTypeName);
         }
         char IDeserializeVisitor<char>.VisitUtf8Span(Utf8Span s)
         {

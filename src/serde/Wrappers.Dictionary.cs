@@ -52,13 +52,13 @@ namespace Serde
                 {
                     if (!deCollection.TryReadValue<TValue, TValueWrap>(typeInfo, out var value))
                     {
-                        throw new InvalidDeserializeValueException("Expected value, but reached end of collection.");
+                        throw new DeserializeException("Expected value, but reached end of collection.");
                     }
                     dict.Add(key, value);
                 }
                 if (size >= 0 && size != dict.Count)
                 {
-                    throw new InvalidDeserializeValueException($"Expected {size} items, found {dict.Count}");
+                    throw new DeserializeException($"Expected {size} items, found {dict.Count}");
                 }
                 return dict;
             }
