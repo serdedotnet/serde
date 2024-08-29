@@ -13,7 +13,7 @@ partial struct ColorLongWrap : Serde.IDeserialize<ColorLong>
         int index;
         if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         {
-            throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+            throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
         }
 
         return index switch
@@ -21,6 +21,6 @@ partial struct ColorLongWrap : Serde.IDeserialize<ColorLong>
             0 => ColorLong.Red,
             1 => ColorLong.Green,
             2 => ColorLong.Blue,
-            _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")};
+            _ => throw new InvalidOperationException($"Unexpected index: {index}")};
     }
 }

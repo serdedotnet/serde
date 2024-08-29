@@ -30,7 +30,7 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
 
         if ((_r_assignedValid & 0b1) != 0b1)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new ArrayField()

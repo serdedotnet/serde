@@ -45,7 +45,7 @@ partial class C : Serde.IDeserialize<C>
 
         if ((_r_assignedValid & 0b1111) != 0b1111)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new C()

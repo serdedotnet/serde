@@ -40,7 +40,7 @@ partial record struct SetToNull : Serde.IDeserialize<SetToNull>
 
         if ((_r_assignedValid & 0b101) != 0b101)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new SetToNull()

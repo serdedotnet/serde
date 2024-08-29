@@ -45,7 +45,7 @@ partial record struct OptsWrap : Serde.IDeserialize<System.Runtime.InteropServic
 
         if ((_r_assignedValid & 0b1111) != 0b1111)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new System.Runtime.InteropServices.ComTypes.BIND_OPTS()

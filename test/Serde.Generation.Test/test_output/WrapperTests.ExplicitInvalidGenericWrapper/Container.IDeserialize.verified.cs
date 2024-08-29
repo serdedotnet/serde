@@ -30,7 +30,7 @@ partial record Container : Serde.IDeserialize<Container>
 
         if ((_r_assignedValid & 0b0) != 0b0)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new Container()
