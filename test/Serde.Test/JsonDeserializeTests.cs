@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
+using Array = Serde.Json.JsonValue.Array;
 
 namespace Serde.Test
 {
@@ -219,7 +220,7 @@ namespace Serde.Test
     ""present"": ""abc"",
     ""extra"": ""def""
 }";
-            Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
+            Assert.Throws<DeserializeException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
         }
 
         [GenerateDeserialize]
@@ -251,7 +252,7 @@ namespace Serde.Test
     ""present"": ""abc"",
     ""extra"": ""def""
 }";
-            Assert.Throws<InvalidDeserializeValueException>(() => JsonSerializer.Deserialize<DenyUnknown>(src));
+            Assert.Throws<DeserializeException>(() => JsonSerializer.Deserialize<DenyUnknown>(src));
         }
 
         [GenerateDeserialize]
@@ -340,13 +341,13 @@ namespace Serde.Test
                 int index;
                 if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {
-                    throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+                    throw DeserializeException.UnknownMember(errorName!, typeInfo);
                 }
                 return index switch {
                     0 => ColorEnum.Red,
                     1 => ColorEnum.Green,
                     2 => ColorEnum.Blue,
-                    _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")
+                    _ => throw new System.InvalidOperationException($"Unexpected index: {index}")
                 };
             }
         }

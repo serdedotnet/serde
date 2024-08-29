@@ -58,7 +58,7 @@ namespace Serde
                     {
                         if (!deCollection.TryReadValue<T, TWrap>(typeInfo, out var value))
                         {
-                            throw new InvalidDeserializeValueException($"Expected array of size {size}, but only received {i} items");
+                            throw new DeserializeException($"Expected array of size {size}, but only received {i} items");
                         }
                         array[i] = value;
                     }
@@ -116,7 +116,7 @@ namespace Serde
                 }
                 if (size >= 0 && list.Count != size)
                 {
-                    throw new InvalidDeserializeValueException($"Expected enumerable of size {size}, but only received {list.Count} items");
+                    throw new DeserializeException($"Expected enumerable of size {size}, but only received {list.Count} items");
                 }
                 return list;
             }
@@ -163,7 +163,7 @@ namespace Serde
                 }
                 if (size >= 0 && builder.Count != size)
                 {
-                    throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
+                    throw new DeserializeException($"Expected {size} items, found {builder.Count}");
                 }
                 return builder.ToImmutable();
             }

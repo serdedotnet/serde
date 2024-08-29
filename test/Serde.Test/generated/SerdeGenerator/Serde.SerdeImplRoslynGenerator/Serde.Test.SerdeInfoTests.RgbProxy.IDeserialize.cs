@@ -43,7 +43,7 @@ namespace Serde.Test
 
                 if ((_r_assignedValid & 0b111) != 0b111)
                 {
-                    throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    throw Serde.DeserializeException.UnassignedMember();
                 }
 
                 var newType = new Serde.Test.SerdeInfoTests.Rgb()

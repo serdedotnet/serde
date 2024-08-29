@@ -24,35 +24,43 @@ namespace Serde
     /// Thrown from implementations of <see cref="IDeserializer" />. Indicates that an unexpected
     /// value was seen in the input which cannot be converted to the target type.
     /// </summary>
-    public sealed class InvalidDeserializeValueException : Exception
+    public class DeserializeException : Exception
     {
-        public InvalidDeserializeValueException(string msg)
+        internal DeserializeException(string msg)
         : base(msg)
         { }
+
+        public static DeserializeException UnassignedMember() => throw new DeserializeException("Not all members were assigned.");
+
+        public static DeserializeException UnknownMember(string name, ISerdeInfo info)
+            => new DeserializeException($"Could not find member named '{name ?? "<null>"}' in type '{info.Name}'.");
+
+        public static DeserializeException WrongItemCount(int expected, int actual)
+            => new DeserializeException($"Expected {expected} items, got {actual}.");
     }
 
     public interface IDeserializeVisitor<T>
     {
         string ExpectedTypeName { get; }
-        T VisitBool(bool b) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        T VisitBool(bool b) => throw new DeserializeException("Expected type " + ExpectedTypeName);
         T VisitChar(char c) => VisitString(c.ToString());
         T VisitByte(byte b) => VisitU64(b);
         T VisitU16(ushort u16) => VisitU64(u16);
         T VisitU32(uint u32) => VisitU64(u32);
-        T VisitU64(ulong u64) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        T VisitU64(ulong u64) => throw new DeserializeException("Expected type " + ExpectedTypeName);
         T VisitSByte(sbyte b) => VisitI64(b);
         T VisitI16(short i16) => VisitI64(i16);
         T VisitI32(int i32) => VisitI64(i32);
-        T VisitI64(long i64) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        T VisitI64(long i64) => throw new DeserializeException("Expected type " + ExpectedTypeName);
         T VisitFloat(float f) => VisitDouble(f);
-        T VisitDouble(double d) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
-        T VisitDecimal(decimal d) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
-        T VisitString(string s) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
-        T VisitUtf8Span(ReadOnlySpan<byte> s) => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+        T VisitDouble(double d) => throw new DeserializeException("Expected type " + ExpectedTypeName);
+        T VisitDecimal(decimal d) => throw new DeserializeException("Expected type " + ExpectedTypeName);
+        T VisitString(string s) => throw new DeserializeException("Expected type " + ExpectedTypeName);
+        T VisitUtf8Span(ReadOnlySpan<byte> s) => throw new DeserializeException("Expected type " + ExpectedTypeName);
         T VisitEnumerable<D>(ref D d) where D : IDeserializeEnumerable
-            => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+            => throw new DeserializeException("Expected type " + ExpectedTypeName);
         T VisitDictionary<D>(ref D d) where D : IDeserializeDictionary
-            => throw new InvalidDeserializeValueException("Expected type " + ExpectedTypeName);
+            => throw new DeserializeException("Expected type " + ExpectedTypeName);
         T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
         T VisitNotNull(IDeserializer d) => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
     }

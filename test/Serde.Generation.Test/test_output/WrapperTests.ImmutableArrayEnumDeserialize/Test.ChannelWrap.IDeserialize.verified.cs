@@ -15,7 +15,7 @@ namespace Test
             int index;
             if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
             {
-                throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+                throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
             }
 
             return index switch
@@ -23,7 +23,7 @@ namespace Test
                 0 => Test.Channel.A,
                 1 => Test.Channel.B,
                 2 => Test.Channel.C,
-                _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")};
+                _ => throw new InvalidOperationException($"Unexpected index: {index}")};
         }
     }
 }

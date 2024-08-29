@@ -13,7 +13,7 @@ partial struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
         int index;
         if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         {
-            throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+            throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
         }
 
         return index switch
@@ -21,6 +21,6 @@ partial struct ColorEnumWrap : Serde.IDeserialize<ColorEnum>
             0 => ColorEnum.Red,
             1 => ColorEnum.Green,
             2 => ColorEnum.Blue,
-            _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")};
+            _ => throw new InvalidOperationException($"Unexpected index: {index}")};
     }
 }

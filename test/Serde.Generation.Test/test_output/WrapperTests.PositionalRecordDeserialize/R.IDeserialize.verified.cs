@@ -35,7 +35,7 @@ partial record R : Serde.IDeserialize<R>
 
         if ((_r_assignedValid & 0b11) != 0b11)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new R(_l_a, _l_b)

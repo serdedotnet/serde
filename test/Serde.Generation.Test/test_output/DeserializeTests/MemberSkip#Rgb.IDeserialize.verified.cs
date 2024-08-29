@@ -35,7 +35,7 @@ partial struct Rgb : Serde.IDeserialize<Rgb>
 
         if ((_r_assignedValid & 0b11) != 0b11)
         {
-            throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+            throw Serde.DeserializeException.UnassignedMember();
         }
 
         var newType = new Rgb()

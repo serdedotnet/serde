@@ -129,7 +129,7 @@ public sealed partial class GenericWrapperTests
                 }
                 if (size >= 0 && builder.Count != size)
                 {
-                    throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
+                    throw DeserializeException.WrongItemCount(size, builder.Count);
                 }
                 return new CustomImArray<T>(builder.ToImmutable());
             }
@@ -176,7 +176,7 @@ public sealed partial class GenericWrapperTests
                 }
                 if (size >= 0 && builder.Count != size)
                 {
-                    throw new InvalidDeserializeValueException($"Expected {size} items, found {builder.Count}");
+                    throw DeserializeException.WrongItemCount(size, builder.Count);
                 }
                 return new CustomImArray2<T>(builder.ToImmutable());
             }

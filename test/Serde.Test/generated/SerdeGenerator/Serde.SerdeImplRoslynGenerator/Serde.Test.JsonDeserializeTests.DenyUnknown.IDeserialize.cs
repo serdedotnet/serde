@@ -30,7 +30,7 @@ namespace Serde.Test
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:
-                            throw new InvalidDeserializeValueException("Unexpected field or property name in type DenyUnknown: '" + _l_errorName + "'");
+                            throw Serde.DeserializeException.UnknownMember(_l_errorName!, _l_serdeInfo);
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
                     }
@@ -38,7 +38,7 @@ namespace Serde.Test
 
                 if ((_r_assignedValid & 0b1) != 0b1)
                 {
-                    throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+                    throw Serde.DeserializeException.UnassignedMember();
                 }
 
                 var newType = new Serde.Test.JsonDeserializeTests.DenyUnknown()
