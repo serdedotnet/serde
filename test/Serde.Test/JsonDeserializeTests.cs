@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
+using Array = Serde.Json.JsonValue.Array;
 
 namespace Serde.Test
 {
@@ -340,13 +341,13 @@ namespace Serde.Test
                 int index;
                 if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {
-                    throw new DeserializeException($"Unexpected value: {errorName}");
+                    throw DeserializeException.UnknownMember(errorName!, typeInfo);
                 }
                 return index switch {
                     0 => ColorEnum.Red,
                     1 => ColorEnum.Green,
                     2 => ColorEnum.Blue,
-                    _ => throw new DeserializeException($"Unexpected index: {index}")
+                    _ => throw new System.InvalidOperationException($"Unexpected index: {index}")
                 };
             }
         }

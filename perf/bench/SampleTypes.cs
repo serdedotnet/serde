@@ -133,7 +133,7 @@ namespace Benchmarks
 
             if (_r_assignedValid != 0b111111111)
             {
-                throw new Serde.DeserializeException("Not all members were assigned");
+                throw Serde.DeserializeException.UnassignedMember();
             }
 
             var newType = new Benchmarks.Location()

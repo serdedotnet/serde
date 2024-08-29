@@ -16,7 +16,7 @@ namespace Serde.Test
                 int index;
                 if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {
-                    throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+                    throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
                 }
 
                 return index switch
@@ -24,7 +24,7 @@ namespace Serde.Test
                     0 => Serde.Test.AllInOne.ColorEnum.Red,
                     1 => Serde.Test.AllInOne.ColorEnum.Blue,
                     2 => Serde.Test.AllInOne.ColorEnum.Green,
-                    _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")};
+                    _ => throw new InvalidOperationException($"Unexpected index: {index}")};
             }
         }
     }

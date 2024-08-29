@@ -92,12 +92,12 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
     int index;
     if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
     {
-        throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+        throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
     }
     return index switch {
         {{string.Join("," + Utilities.NewLine, members
             .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}")) }},
-        _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")
+        _ => throw new InvalidOperationException($"Unexpected index: {index}")
     };
 }
 """;
@@ -229,7 +229,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                 }
                 var unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
                     ? $"""
-                    throw new InvalidDeserializeValueException("Unexpected field or property name in type {type.Name}: '" + _l_errorName + "'");
+                    throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
                     """
                     : "break;";
                 foreach (var i in skippedIndices)
@@ -340,7 +340,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
             return $$"""
     if (({{AssignedVarName}} & {{assignedMask}}) != {{assignedMask}})
     {
-        throw new Serde.InvalidDeserializeValueException("Not all members were assigned");
+        throw Serde.DeserializeException.UnassignedMember();
     }
     var newType = new {{typeName}}({{parameters}}) {
         {{assignments}}

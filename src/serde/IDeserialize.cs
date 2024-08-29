@@ -26,9 +26,17 @@ namespace Serde
     /// </summary>
     public class DeserializeException : Exception
     {
-        public DeserializeException(string msg)
+        internal DeserializeException(string msg)
         : base(msg)
         { }
+
+        public static DeserializeException UnassignedMember() => throw new DeserializeException("Not all members were assigned.");
+
+        public static DeserializeException UnknownMember(string name, ISerdeInfo info)
+            => new DeserializeException($"Could not find member named '{name ?? "<null>"}' in type '{info.Name}'.");
+
+        public static DeserializeException WrongItemCount(int expected, int actual)
+            => new DeserializeException($"Expected {expected} items, got {actual}.");
     }
 
     public interface IDeserializeVisitor<T>
