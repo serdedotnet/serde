@@ -2,7 +2,7 @@
 
   <!-- Package settings -->
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 
     <PackageId>Serde.Xml</PackageId>
     <Version>0.2.0</Version>
