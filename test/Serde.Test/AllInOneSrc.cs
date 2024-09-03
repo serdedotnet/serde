@@ -30,6 +30,8 @@ namespace Serde.Test
 
         public string StringField = "StringValue";
 
+        public required string EscapedStringField;
+
         public string? NullStringField = null;
 
         public uint[] UIntArr = null!;
@@ -62,6 +64,7 @@ namespace Serde.Test
                 IntField == other.IntField &&
                 LongField == other.LongField &&
                 StringField == other.StringField &&
+                EscapedStringField == other.EscapedStringField &&
                 NullStringField == other.NullStringField &&
                 UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
                 NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
@@ -102,6 +105,7 @@ namespace Serde.Test
             LongField = long.MaxValue,
 
             StringField = "StringValue",
+            EscapedStringField = "+0 11 222 333 44",
 
             UIntArr = new uint[] { 1, 2, 3 },
             NestedArr = new[] { new[] { 1 }, new[] { 2 } },
@@ -124,6 +128,7 @@ namespace Serde.Test
   "intField": 2147483647,
   "longField": 9223372036854775807,
   "stringField": "StringValue",
+  "escapedStringField": "\u002B0 11 222 333 44",
   "uIntArr": [
     1,
     2,

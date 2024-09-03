@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 
 namespace Serde.Json
 {
-    partial struct Utf8JsonReader
+    partial struct Utf8JsonReader_Old
     {
         /// <summary>
         /// Parses the current JSON token value from the source, unescaped, and transcoded as a <see cref="string"/>.

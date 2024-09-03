@@ -23,11 +23,12 @@ namespace Serde.Test
             type.SerializeField<int, global::Serde.Int32Wrap>(_l_serdeInfo, 8, value.IntField);
             type.SerializeField<long, global::Serde.Int64Wrap>(_l_serdeInfo, 9, value.LongField);
             type.SerializeField<string, global::Serde.StringWrap>(_l_serdeInfo, 10, value.StringField);
-            type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, global::Serde.StringWrap>>(_l_serdeInfo, 11, value.NullStringField);
-            type.SerializeField<uint[], Serde.ArrayWrap.SerializeImpl<uint, global::Serde.UInt32Wrap>>(_l_serdeInfo, 12, value.UIntArr);
-            type.SerializeField<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, global::Serde.Int32Wrap>>>(_l_serdeInfo, 13, value.NestedArr);
-            type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayWrap.SerializeImpl<int, global::Serde.Int32Wrap>>(_l_serdeInfo, 14, value.IntImm);
-            type.SerializeField<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumWrap>(_l_serdeInfo, 15, value.Color);
+            type.SerializeField<string, global::Serde.StringWrap>(_l_serdeInfo, 11, value.EscapedStringField);
+            type.SerializeFieldIfNotNull<string?, Serde.NullableRefWrap.SerializeImpl<string, global::Serde.StringWrap>>(_l_serdeInfo, 12, value.NullStringField);
+            type.SerializeField<uint[], Serde.ArrayWrap.SerializeImpl<uint, global::Serde.UInt32Wrap>>(_l_serdeInfo, 13, value.UIntArr);
+            type.SerializeField<int[][], Serde.ArrayWrap.SerializeImpl<int[], Serde.ArrayWrap.SerializeImpl<int, global::Serde.Int32Wrap>>>(_l_serdeInfo, 14, value.NestedArr);
+            type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayWrap.SerializeImpl<int, global::Serde.Int32Wrap>>(_l_serdeInfo, 15, value.IntImm);
+            type.SerializeField<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumWrap>(_l_serdeInfo, 16, value.Color);
             type.End();
         }
     }

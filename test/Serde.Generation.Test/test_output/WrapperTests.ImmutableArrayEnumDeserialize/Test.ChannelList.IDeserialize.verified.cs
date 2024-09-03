@@ -24,6 +24,7 @@ namespace Test
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.IDeserializeType.IndexNotFound:
+                        typeDeserialize.SkipValue();
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

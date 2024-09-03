@@ -18,6 +18,7 @@ partial record AllInOne : Serde.ISerdeInfoProvider
 ("intField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.AllInOne).GetField("IntField")!),
 ("longField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int64Wrap>(), typeof(Serde.Test.AllInOne).GetField("LongField")!),
 ("stringField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(Serde.Test.AllInOne).GetField("StringField")!),
+("escapedStringField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(Serde.Test.AllInOne).GetField("EscapedStringField")!),
 ("nullStringField", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefWrap.SerializeImpl<string,global::Serde.StringWrap>>(), typeof(Serde.Test.AllInOne).GetField("NullStringField")!),
 ("uIntArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<uint,global::Serde.UInt32Wrap>>(), typeof(Serde.Test.AllInOne).GetField("UIntArr")!),
 ("nestedArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<int[],Serde.ArrayWrap.SerializeImpl<int,global::Serde.Int32Wrap>>>(), typeof(Serde.Test.AllInOne).GetField("NestedArr")!),

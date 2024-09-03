@@ -22,6 +22,7 @@ namespace Serde.Test
   <intField>2147483647</intField>
   <longField>9223372036854775807</longField>
   <stringField>StringValue</stringField>
+  <escapedStringField>+0 11 222 333 44</escapedStringField>
   <uIntArr>
     <int>1</int>
     <int>2</int>

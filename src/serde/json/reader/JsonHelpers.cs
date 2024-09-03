@@ -17,7 +17,7 @@ namespace Serde.Json
         /// Returns the span for the given reader.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<byte> GetSpan(this scoped ref Utf8JsonReader reader)
+        public static ReadOnlySpan<byte> GetSpan(this scoped ref Utf8JsonReader_Old reader)
         {
             return reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
         }
@@ -82,7 +82,7 @@ namespace Serde.Json
         /// This should be called when the Read() return value is not used, such as non-Stream cases where there is only one buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ReadWithVerify(this ref Utf8JsonReader reader)
+        public static void ReadWithVerify(this ref Utf8JsonReader_Old reader)
         {
             bool result = reader.Read();
             Debug.Assert(result);

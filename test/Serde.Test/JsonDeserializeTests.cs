@@ -58,6 +58,13 @@ namespace Serde.Test
         }
 
         [Fact]
+        public void BadValueAtEnd()
+        {
+            var src = "123 456";
+            Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<JsonValue>(src));
+        }
+
+        [Fact]
         public void DeserializeBool()
         {
             var src = "true";
@@ -357,6 +364,54 @@ namespace Serde.Test
             Red,
             Green,
             Blue
+        }
+
+        [Fact]
+        public void StringsWithEscapes()
+        {
+            var loc = JsonSerializer.Deserialize<Location>(Location.SampleString);
+            Assert.Equal(Location.Sample, loc);
+        }
+
+        [GenerateDeserialize]
+        public partial record Location
+        {
+            public int Id { get; set; }
+            public required string Address1 { get; set; }
+            public required string Address2 { get; set; }
+            public required string City { get; set; }
+            public required string State { get; set; }
+            public required string PostalCode { get; set; }
+            public required string Name { get; set; }
+            public required string PhoneNumber { get; set; }
+            public required string Country { get; set; }
+
+            public const string SampleString = """
+{
+    "id": 1234,
+    "address1": "The Street Name",
+    "address2": "20/11",
+    "city": "The City",
+    "state": "The State",
+    "postalCode": "abc-12",
+    "name": "Nonexisting",
+    "phoneNumber": "+0 11 222 333 44",
+    "country": "The Greatest"
+}
+""";
+
+            public static Location Sample => new Location
+            {
+                Id = 1234,
+                Address1 = "The Street Name",
+                Address2 = "20/11",
+                City = "The City",
+                State = "The State",
+                PostalCode = "abc-12",
+                Name = "Nonexisting",
+                PhoneNumber = "+0 11 222 333 44",
+                Country = "The Greatest"
+            };
         }
     }
 }

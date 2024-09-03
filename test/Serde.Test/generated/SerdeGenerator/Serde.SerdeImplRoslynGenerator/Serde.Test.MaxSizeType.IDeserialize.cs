@@ -338,6 +338,7 @@ namespace Serde.Test
                         _r_assignedValid |= ((ulong)1) << 63;
                         break;
                     case Serde.IDeserializeType.IndexNotFound:
+                        typeDeserialize.SkipValue();
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

@@ -37,6 +37,7 @@ partial record struct OptsWrap : Serde.IDeserialize<System.Runtime.InteropServic
                     _r_assignedValid |= ((byte)1) << 3;
                     break;
                 case Serde.IDeserializeType.IndexNotFound:
+                    typeDeserialize.SkipValue();
                     break;
                 default:
                     throw new InvalidOperationException("Unexpected index: " + _l_index_);

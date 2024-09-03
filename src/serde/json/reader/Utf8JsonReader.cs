@@ -13,14 +13,14 @@ namespace Serde.Json
     /// Provides a high-performance API for forward-only, read-only access to the UTF-8 encoded JSON text.
     /// It processes the text sequentially with no caching and adheres strictly to the JSON RFC
     /// by default (https://tools.ietf.org/html/rfc8259). When it encounters invalid JSON, it throws
-    /// a JsonException with basic error information like line number and byte position on the line.
+    /// a JsonException_Old with basic error information like line number and byte position on the line.
     /// Since this type is a ref struct, it does not directly support async. However, it does provide
     /// support for reentrancy to read incomplete data, and continue reading once more data is presented.
     /// To be able to set max depth while reading OR allow skipping comments, create an instance of
     /// <see cref="JsonReaderState"/> and pass that in to the reader.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    internal partial struct Utf8JsonReader
+    internal partial struct Utf8JsonReader_Old
     {
         private ReadOnlyMemory<byte> _buffer;
         private ReadOnlySpan<byte> GetBufferSpan => _buffer.Span;
@@ -64,8 +64,8 @@ namespace Serde.Json
         public readonly ReadOnlySpan<byte> ValueSpan => _valueMemory.Span;
 
         /// <summary>
-        /// Returns the total amount of bytes consumed by the <see cref="Utf8JsonReader"/> so far
-        /// for the current instance of the <see cref="Utf8JsonReader"/> with the given UTF-8 encoded input text.
+        /// Returns the total amount of bytes consumed by the <see cref="Utf8JsonReader_Old"/> so far
+        /// for the current instance of the <see cref="Utf8JsonReader_Old"/> with the given UTF-8 encoded input text.
         /// </summary>
         public readonly long BytesConsumed
         {
@@ -143,11 +143,11 @@ namespace Serde.Json
         public ReadOnlySequence<byte> ValueSequence { get; private set; }
 
         /// <summary>
-        /// Returns the current snapshot of the <see cref="Utf8JsonReader"/> state which must
-        /// be captured by the caller and passed back in to the <see cref="Utf8JsonReader"/> ctor with more data.
-        /// Unlike the <see cref="Utf8JsonReader"/>, which is a ref struct, the state can survive
+        /// Returns the current snapshot of the <see cref="Utf8JsonReader_Old"/> state which must
+        /// be captured by the caller and passed back in to the <see cref="Utf8JsonReader_Old"/> ctor with more data.
+        /// Unlike the <see cref="Utf8JsonReader_Old"/>, which is a ref struct, the state can survive
         /// across async/await boundaries and hence this type is required to provide support for reading
-        /// in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader"/>.
+        /// in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader_Old"/>.
         /// </summary>
         public readonly JsonReaderState CurrentState => new JsonReaderState
         {
@@ -164,16 +164,16 @@ namespace Serde.Json
         };
 
         /// <summary>
-        /// Constructs a new <see cref="Utf8JsonReader"/> instance.
+        /// Constructs a new <see cref="Utf8JsonReader_Old"/> instance.
         /// </summary>
         /// <param name="jsonData">The ReadOnlySpan&lt;byte&gt; containing the UTF-8 encoded JSON text to process.</param>
         /// <param name="state">If this is the first call to the ctor, pass in a default state. Otherwise,
-        /// capture the state from the previous instance of the <see cref="Utf8JsonReader"/> and pass that back.</param>
+        /// capture the state from the previous instance of the <see cref="Utf8JsonReader_Old"/> and pass that back.</param>
         /// <remarks>
         /// Since this type is a ref struct, it is a stack-only type and all the limitations of ref structs apply to it.
         /// This is the reason why the ctor accepts a <see cref="JsonReaderState"/>.
         /// </remarks>
-        public Utf8JsonReader(ReadOnlyMemory<byte> jsonData, JsonReaderState state)
+        public Utf8JsonReader_Old(ReadOnlyMemory<byte> jsonData, JsonReaderState state)
         {
             _buffer = jsonData;
 
@@ -207,7 +207,7 @@ namespace Serde.Json
         /// Read the next JSON token from input source.
         /// </summary>
         /// <returns>True if the token was read successfully, else false.</returns>
-        /// <exception cref="JsonException">
+        /// <exception cref="JsonException_Old">
         /// Thrown when an invalid JSON token is encountered according to the JSON RFC
         /// or if the current depth exceeds the recursive limit set by the max depth.
         /// </exception>
@@ -228,7 +228,7 @@ namespace Serde.Json
         /// <summary>
         /// Skips the children of the current JSON token.
         /// </summary>
-        /// <exception cref="JsonException">
+        /// <exception cref="JsonException_Old">
         /// Thrown when an invalid JSON token is encountered while skipping, according to the JSON RFC,
         /// or if the current depth exceeds the recursive limit set by the max depth.
         /// </exception>
@@ -275,7 +275,7 @@ namespace Serde.Json
         /// Tries to skip the children of the current JSON token.
         /// </summary>
         /// <returns>True if there was enough data for the children to be skipped successfully, else false.</returns>
-        /// <exception cref="JsonException">
+        /// <exception cref="JsonException_Old">
         /// Thrown when an invalid JSON token is encountered while skipping, according to the JSON RFC,
         /// or if the current depth exceeds the recursive limit set by the max depth.
         /// </exception>

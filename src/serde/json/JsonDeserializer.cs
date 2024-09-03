@@ -3,427 +3,546 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using System.Xml.Linq;
+using Serde.IO;
+using static Serde.Json.ThrowHelpers;
 
-namespace Serde.Json
+namespace Serde.Json;
+
+internal static class JsonDeserializer
 {
-    internal sealed partial class JsonDeserializer : IDeserializer
+    public static JsonDeserializer<ArrayReader> FromString(string s)
     {
-        private Utf8JsonReader Reader;
+        return FromUtf8_Unsafe(Encoding.UTF8.GetBytes(s));
+    }
 
-        public static JsonDeserializer FromString(string s)
+    /// <summary>
+    /// Assumes that the input is valid UTF-8.
+    /// </summary>
+    internal static JsonDeserializer<ArrayReader> FromUtf8_Unsafe(byte[] utf8Bytes)
+    {
+        var byteReader = new ArrayReader(utf8Bytes);
+        return new JsonDeserializer<ArrayReader>(byteReader);
+    }
+}
+
+internal sealed partial class JsonDeserializer<TReader> : IDeserializer
+    where TReader : IByteReader
+{
+    private Utf8JsonLexer<TReader> Reader;
+    private ScratchBuffer _scratch;
+
+    /// <summary>
+    /// Tracks whether we are before the first element of an array or object.
+    /// </summary>
+    private bool _first = false;
+
+    internal JsonDeserializer(TReader byteReader)
+    {
+        Reader = new Utf8JsonLexer<TReader>(byteReader);
+        _scratch = new ScratchBuffer();
+    }
+
+    public T DeserializeAny<T>(IDeserializeVisitor<T> v)
+    {
+        var peek = Reader.SkipWhitespace();
+        T result;
+        switch (ThrowIfEos(peek))
         {
-            return new JsonDeserializer(Encoding.UTF8.GetBytes(s));
+            case (byte)'[':
+                result = DeserializeEnumerable(v);
+                break;
+
+            case (byte)'-' or (>= (byte)'0' and <= (byte)'9'):
+                result = DeserializeDouble(v);
+                break;
+
+            case (byte)'{':
+                result = DeserializeDictionary(v);
+                break;
+
+            case (byte)'"':
+                result = DeserializeString(v);
+                break;
+
+            case (byte)'n' when Reader.StartsWith("null"u8):
+                Reader.Advance(4);
+                result = v.VisitNull();
+                break;
+
+            case (byte)'t' when Reader.StartsWith("true"u8):
+                Reader.Advance(4);
+                result = v.VisitBool(true);
+                break;
+
+            case (byte)'f' when Reader.StartsWith("false"u8):
+                Reader.Advance(5);
+                result = v.VisitBool(false);
+                break;
+
+            default:
+                throw new JsonException($"Could not deserialize '{(char)peek}");
+        }
+        return result;
+    }
+
+    public T DeserializeBool<T>(IDeserializeVisitor<T> v)
+    {
+        bool b = Reader.GetBoolean();
+        return v.VisitBool(b);
+    }
+
+    public T DeserializeDictionary<T>(IDeserializeVisitor<T> v)
+    {
+        var peek = Reader.SkipWhitespace();
+
+        if (peek != (short)'{')
+        {
+            throw new JsonException("Expected object start");
         }
 
-        private JsonDeserializer(byte[] bytes)
+        Reader.Advance();
+        var map = new DeDictionary(this);
+        return v.VisitDictionary(ref map);
+    }
+
+    public IDeserializeCollection DeserializeCollection(ISerdeInfo typeInfo)
+    {
+        var kind = typeInfo.Kind;
+        if (kind is not (InfoKind.Enumerable or InfoKind.Dictionary))
         {
-            Reader = new Utf8JsonReader(bytes, default);
+            throw new ArgumentException($"TypeKind is {typeInfo.Kind}, expected Enumerable or Dictionary");
+        }
+        switch ((ThrowIfEos(Reader.SkipWhitespace()), kind))
+        {
+            case ((byte)'[', InfoKind.Enumerable):
+            case ((byte)'{', InfoKind.Dictionary):
+                Reader.Advance();
+                break;
+            case (_, InfoKind.Enumerable):
+                throw new JsonException("Expected array start");
+            case (_, InfoKind.Dictionary):
+                throw new JsonException("Expected object start");
         }
 
-        private void SaveState(in Utf8JsonReader reader)
+        return new DeCollection(this);
+    }
+
+    private struct DeCollection : IDeserializeCollection
+    {
+        private JsonDeserializer<TReader> _deserializer;
+        private bool _first = true;
+        private bool _afterKey = false;
+
+        public DeCollection(JsonDeserializer<TReader> de)
         {
-            Reader = reader;
+            _deserializer = de;
         }
 
-        private ref Utf8JsonReader GetReader()
-        {
-            return ref Reader;
-        }
+        public int? SizeOpt => null;
 
-        public T DeserializeAny<T>(IDeserializeVisitor<T> v)
+        public bool TryReadValue<T, D>(ISerdeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            T result;
-            switch (reader.TokenType)
+            var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
+            if (peek == (short)',')
             {
-                case JsonTokenType.StartArray:
-                    result = DeserializeEnumerable(v);
-                    break;
+                if (_first)
+                {
+                    throw new JsonException("Unexpected comma before first element");
+                }
+                if (_afterKey)
+                {
+                    throw new JsonException("Unexpected comma after key");
+                }
+                _deserializer.Reader.Advance();
+                peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
+            }
 
-                case JsonTokenType.Number:
-                    result = DeserializeDouble(v);
-                    break;
+            if (_afterKey && peek != (short)':' && typeInfo.Kind == InfoKind.Dictionary)
+            {
+                throw new JsonException("Expected ':' after key");
+            }
 
-                case JsonTokenType.StartObject:
-                    result = DeserializeDictionary(v);
-                    break;
+            if (peek == (short)':')
+            {
+                if (typeInfo.Kind == InfoKind.Enumerable)
+                {
+                    throw new JsonException("Unexpected ':' in array");
+                }
+                if (_first || !_afterKey)
+                {
+                    throw new JsonException("Unexpected ':' before key");
+                }
+                _deserializer.Reader.Advance();
+                peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
+            }
 
-                case JsonTokenType.String:
-                    result = DeserializeString(v);
-                    break;
+            switch (peek)
+            {
+                case (byte)']' when typeInfo.Kind == InfoKind.Enumerable:
+                    _deserializer.Reader.Advance();
+                    next = default;
+                    return false;
 
-                case JsonTokenType.True:
-                case JsonTokenType.False:
-                    result = DeserializeBool(v);
-                    break;
+                case (byte)'}':
+                    if (typeInfo.Kind != InfoKind.Dictionary)
+                    {
+                        throw new JsonException("Unexpected '}' in array");
+                    }
+                    if (_afterKey)
+                    {
+                        throw new JsonException("Expected object value, found '}'");
+                    }
+                    _deserializer.Reader.Advance();
+                    next = default;
+                    return false;
 
                 default:
-                    throw new DeserializeException($"Could not deserialize '{reader.TokenType}");
+                    next = D.Deserialize(_deserializer);
+                    _first = false;
+                    _afterKey = typeInfo.Kind == InfoKind.Dictionary && !_afterKey;
+                    return true;
             }
-            return result;
         }
+    }
 
-        public T DeserializeBool<T>(IDeserializeVisitor<T> v)
+    public T DeserializeFloat<T>(IDeserializeVisitor<T> v)
+        => DeserializeDouble(v);
+
+    public T DeserializeDouble<T>(IDeserializeVisitor<T> v)
+    {
+        _ = ThrowIfEos(Reader.SkipWhitespace());
+        _scratch.Clear();
+        var d = Reader.GetDouble(_scratch);
+        return v.VisitDouble(d);
+    }
+
+    public T DeserializeDecimal<T>(IDeserializeVisitor<T> v)
+    {
+        _ = ThrowIfEos(Reader.SkipWhitespace());
+        _scratch.Clear();
+        var d = Reader.GetDecimal(_scratch);
+        return v.VisitDecimal(d);
+    }
+
+    /// <summary>
+    /// Expects to be one byte after '['
+    /// </summary>
+    private T DeserializeEnumerable<T>(IDeserializeVisitor<T> v)
+    {
+        var peek = Reader.Peek();
+        if (peek != (byte)'[')
         {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-            bool b = reader.GetBoolean();
-            return v.VisitBool(b);
+            throw new JsonException("Expected array start");
         }
+        Reader.Advance();
 
-        public T DeserializeDictionary<T>(IDeserializeVisitor<T> v)
+        var enumerable = new DeEnumerable(this);
+        return v.VisitEnumerable(ref enumerable);
+    }
+
+    private struct DeEnumerable : IDeserializeEnumerable
+    {
+        private JsonDeserializer<TReader> _deserializer;
+        private bool _first = true;
+        public DeEnumerable(JsonDeserializer<TReader> de)
         {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                throw new DeserializeException("Expected object start");
-            }
-
-            var map = new DeDictionary(this);
-            return v.VisitDictionary(ref map);
+            _deserializer = de;
         }
+        public int? SizeOpt => null;
 
-        public IDeserializeCollection DeserializeCollection(ISerdeInfo typeInfo)
+        public bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
+            where D : IDeserialize<T>
         {
-            if (typeInfo.Kind is not (InfoKind.Enumerable or InfoKind.Dictionary))
+            while (true)
             {
-                throw new ArgumentException($"TypeKind is {typeInfo.Kind}, expected Enumerable or Dictionary");
-            }
-
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-
-            if (typeInfo.Kind == InfoKind.Dictionary && reader.TokenType != JsonTokenType.StartObject
-                || typeInfo.Kind == InfoKind.Enumerable && reader.TokenType != JsonTokenType.StartArray)
-            {
-                throw new DeserializeException("Expected object start");
-            }
-
-            return new DeCollection(this);
-        }
-
-        private struct DeCollection : IDeserializeCollection
-        {
-            private JsonDeserializer _deserializer;
-            public DeCollection(JsonDeserializer de)
-            {
-                _deserializer = de;
-            }
-
-            public int? SizeOpt => null;
-
-            public bool TryReadValue<T, D>(ISerdeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
-            {
-                var reader = _deserializer.GetReader();
-                reader.ReadOrThrow();
-                switch (reader.TokenType)
+                var peek = _deserializer.Reader.SkipWhitespace();
+                if (peek == (short)',')
                 {
-                    case JsonTokenType.EndArray:
-                        if (typeInfo.Kind != InfoKind.Enumerable)
-                        {
-                            throw new DeserializeException($"Unexpected end of array in type kind: {typeInfo.Kind}");
-                        }
-                        break;
-                    case JsonTokenType.EndObject:
-                        if (typeInfo.Kind != InfoKind.Dictionary)
-                        {
-                            throw new DeserializeException($"Unexpected end of object in type kind: {typeInfo.Kind}");
-                        }
-                        break;
+                    if (_first)
+                    {
+                        throw new JsonException("Unexpected comma before first element");
+                    }
+                    _deserializer.Reader.Advance();
+                    peek = _deserializer.Reader.SkipWhitespace();
+                }
+
+                switch (peek)
+                {
+                    case IByteReader.EndOfStream:
+                        throw new JsonException("Unexpected end of stream");
+
+                    case (short)']':
+                        _deserializer.Reader.Advance();
+                        next = default;
+                        return false;
+
                     default:
+                        _first = false;
                         next = D.Deserialize(_deserializer);
                         return true;
                 }
-                _deserializer.SaveState(reader);
+            }
+        }
+    }
+
+    private struct DeDictionary : IDeserializeDictionary
+    {
+        private JsonDeserializer<TReader> _deserializer;
+        private bool _first = true;
+        public DeDictionary(JsonDeserializer<TReader> de)
+        {
+            _deserializer = de;
+        }
+
+        public int? SizeOpt => null;
+
+        public bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
+            where DK : IDeserialize<K>
+            where DV : IDeserialize<V>
+        {
+            // Don't save state
+            if (!TryGetNextKey<K, DK>(out K? nextKey))
+            {
                 next = default;
-                _deserializer = null!;
                 return false;
             }
+            var nextValue = GetNextValue<V, DV>();
+            next = (nextKey, nextValue);
+            return true;
         }
 
-        public T DeserializeFloat<T>(IDeserializeVisitor<T> v)
-            => DeserializeDouble(v);
-
-        public T DeserializeDouble<T>(IDeserializeVisitor<T> v)
+        public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
         {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-            var d = reader.GetDouble();
-            return v.VisitDouble(d);
-        }
-
-        public T DeserializeDecimal<T>(IDeserializeVisitor<T> v)
-        {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-            var d = reader.GetDecimal();
-            return v.VisitDecimal(d);
-        }
-
-        public T DeserializeEnumerable<T>(IDeserializeVisitor<T> v)
-        {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-
-            if (reader.TokenType != JsonTokenType.StartArray)
+            while (true)
             {
-                throw new DeserializeException("Expected array start");
-            }
+                var peek = _deserializer.Reader.SkipWhitespace();
 
-            var enumerable = new DeEnumerable(this);
-            return v.VisitEnumerable(ref enumerable);
-        }
-
-        private struct DeEnumerable : IDeserializeEnumerable
-        {
-            private JsonDeserializer _deserializer;
-            public DeEnumerable(JsonDeserializer de)
-            {
-                _deserializer = de;
-            }
-            public int? SizeOpt => null;
-
-            public bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
-                where D : IDeserialize<T>
-            {
-                var reader = _deserializer.GetReader();
-                // Check if the next token is the end of the array, but don't advance the stream if not
-                reader.ReadOrThrow();
-                if (reader.TokenType == JsonTokenType.EndArray)
+                if (peek == (short)',')
                 {
-                    _deserializer.SaveState(reader);
-                    next = default;
-                    return false;
-                }
-                // Don't save state
-                next = D.Deserialize(_deserializer);
-                return true;
-            }
-        }
-
-        private struct DeDictionary : IDeserializeDictionary
-        {
-            private JsonDeserializer _deserializer;
-            public DeDictionary(JsonDeserializer de)
-            {
-                _deserializer = de;
-            }
-
-            public int? SizeOpt => null;
-
-            public bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
-                where DK : IDeserialize<K>
-                where DV : IDeserialize<V>
-            {
-                // Don't save state
-                if (!TryGetNextKey<K, DK>(out K? nextKey))
-                {
-                    next = default;
-                    return false;
-                }
-                var nextValue = GetNextValue<V, DV>();
-                next = (nextKey, nextValue);
-                return true;
-            }
-
-            public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
-            {
-                while (true)
-                {
-                    var reader = _deserializer.GetReader();
-                    reader.ReadOrThrow();
-                    switch (reader.TokenType)
+                    if (_first)
                     {
-                        case JsonTokenType.EndObject:
-                            // Check if the next token is the end of the object, but don't advance the stream if not
-                            _deserializer.SaveState(reader);
-                            next = default;
-                            return false;
-                        case JsonTokenType.PropertyName:
-                            next = D.Deserialize(_deserializer);
-                            return true;
-                        default:
-                            // If we aren't at a property name, we must be at a value and intending to skip it
-                            // Call Skip in case we are starting a new array or object. Doesn't do
-                            // anything for bare tokens, but we've already read one token forward above,
-                            // so we can simply save the state and continue
-                            reader.Skip();
-                            _deserializer.SaveState(reader);
-                            break;
+                        throw new JsonException("Unexpected comma before first element");
                     }
+                    _deserializer.Reader.Advance();
+                    peek = _deserializer.Reader.SkipWhitespace();
                 }
-            }
 
-            public V GetNextValue<V, D>() where D : IDeserialize<V>
-            {
-                return D.Deserialize(_deserializer);
-            }
-        }
-
-        public T DeserializeSByte<T>(IDeserializeVisitor<T> v)
-            => DeserializeI64(v);
-
-        public T DeserializeI16<T>(IDeserializeVisitor<T> v)
-            => DeserializeI64(v);
-
-
-        public T DeserializeI32<T>(IDeserializeVisitor<T> v)
-            => DeserializeI64(v);
-
-        public T DeserializeI64<T>(IDeserializeVisitor<T> v)
-        {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-            var i64 = reader.GetInt64();
-            return v.VisitI64(i64);
-        }
-
-        public T DeserializeString<T>(IDeserializeVisitor<T> v)
-        {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-            if (reader.HasValueSequence || reader.ValueIsEscaped)
-            {
-                var s = reader.GetString()!;
-                return v.VisitString(s);
-            }
-            else
-            {
-                var result = v.VisitUtf8Span(reader.ValueSpan);
-                return result;
-            }
-        }
-
-        public T DeserializeIdentifier<T>(IDeserializeVisitor<T> v)
-            => DeserializeString(v);
-
-        public IDeserializeType DeserializeType(ISerdeInfo fieldMap)
-        {
-            // Custom types look like dictionaries, enums are inline strings
-            if (fieldMap.Kind == InfoKind.CustomType)
-            {
-                ref var reader = ref GetReader();
-                reader.ReadOrThrow();
-
-                if (reader.TokenType != JsonTokenType.StartObject)
+                switch (peek)
                 {
-                    throw new DeserializeException("Expected object start");
+                    case IByteReader.EndOfStream:
+                        throw new JsonException("Unexpected end of stream");
+
+                    case (short)'}':
+                        // Check if the next token is the end of the object, but don't advance the stream if not
+                        _deserializer.Reader.Advance();
+                        next = default;
+                        _first = false;
+                        return false;
+
+                    case (short)'"':
+                        next = D.Deserialize(_deserializer);
+                        _first = false;
+                        return true;
+
+                    default:
+                        throw new JsonException("Expected property name, found: " + (char)peek);
                 }
             }
-            else if (fieldMap.Kind != InfoKind.Enum)
+        }
+
+        public V GetNextValue<V, D>() where D : IDeserialize<V>
+        {
+            var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
+            if (peek != (byte)':')
             {
-                throw new ArgumentException("Expected either CustomType or Enum kind, found " + fieldMap.Kind);
+                throw new JsonException("Expected ':'");
             }
-
-            return this;
+            _deserializer.Reader.Advance();
+            return D.Deserialize(_deserializer);
         }
+    }
 
-        public T DeserializeByte<T>(IDeserializeVisitor<T> v)
-            => DeserializeU64(v);
+    public T DeserializeSByte<T>(IDeserializeVisitor<T> v)
+        => DeserializeI64(v);
 
-        public T DeserializeU16<T>(IDeserializeVisitor<T> v)
-            => DeserializeU64(v);
+    public T DeserializeI16<T>(IDeserializeVisitor<T> v)
+        => DeserializeI64(v);
 
-        public T DeserializeU32<T>(IDeserializeVisitor<T> v)
-            => DeserializeU64(v);
+    public T DeserializeI32<T>(IDeserializeVisitor<T> v)
+        => DeserializeI64(v);
 
-        public T DeserializeU64<T>(IDeserializeVisitor<T> v)
+    public T DeserializeI64<T>(IDeserializeVisitor<T> v)
+    {
+        _ = ThrowIfEos(Reader.SkipWhitespace());
+        _scratch.Clear();
+        return v.VisitI64(Reader.GetInt64(_scratch));
+    }
+
+    public T DeserializeString<T>(IDeserializeVisitor<T> v)
+    {
+        var peek = ThrowIfEos(Reader.SkipWhitespace());
+        if (peek != (byte)'"')
         {
-            ref var reader = ref GetReader();
-            reader.ReadOrThrow();
-            var u64 = reader.GetUInt64();
-            return v.VisitU64(u64);
+            throw new JsonException($"Expected '\"', found: '{(char)peek}'");
         }
+        Reader.Advance();
+        _scratch.Clear();
+        var span = Reader.LexUtf8Span(_scratch);
+        return v.VisitUtf8Span(span);
+    }
 
-        public T DeserializeChar<T>(IDeserializeVisitor<T> v)
-            => DeserializeString(v);
+    public T DeserializeIdentifier<T>(IDeserializeVisitor<T> v)
+        => DeserializeString(v);
 
-        public T DeserializeNullableRef<T>(IDeserializeVisitor<T> v)
+    public IDeserializeType DeserializeType(ISerdeInfo fieldMap)
+    {
+        // Custom types look like dictionaries, enums are inline strings
+        if (fieldMap.Kind == InfoKind.CustomType)
         {
-            var reader = GetReader();
-            reader.ReadOrThrow();
-            if (reader.TokenType == JsonTokenType.Null)
+            var peek = Reader.SkipWhitespace();
+            if (peek != (short)'{')
             {
-                SaveState(reader);
+                throw new JsonException("Expected object start");
+            }
+            Reader.Advance();
+        }
+        else if (fieldMap.Kind != InfoKind.Enum)
+        {
+            throw new ArgumentException("Expected either CustomType or Enum kind, found " + fieldMap.Kind);
+        }
+
+        _first = true;
+        return this;
+    }
+
+    public T DeserializeByte<T>(IDeserializeVisitor<T> v)
+        => DeserializeU64(v);
+
+    public T DeserializeU16<T>(IDeserializeVisitor<T> v)
+        => DeserializeU64(v);
+
+    public T DeserializeU32<T>(IDeserializeVisitor<T> v)
+        => DeserializeU64(v);
+
+    public T DeserializeU64<T>(IDeserializeVisitor<T> v)
+    {
+        Reader.SkipWhitespace();
+        _scratch.Clear();
+        var u64 = Reader.GetUInt64(_scratch);
+        return v.VisitU64(u64);
+    }
+
+    public T DeserializeChar<T>(IDeserializeVisitor<T> v)
+        => DeserializeString(v);
+
+    public T DeserializeNullableRef<T>(IDeserializeVisitor<T> v)
+    {
+        var peek = Reader.SkipWhitespace();
+        switch (ThrowIfEos(peek))
+        {
+            case (byte)'n' when Reader.StartsWith("null"u8):
+                Reader.Advance(4);
                 return v.VisitNull();
-            }
-            else
-            {
+            default:
                 return v.VisitNotNull(this);
-            }
         }
     }
 
-    partial class JsonDeserializer : IDeserializeType
+    public void Eof()
     {
-        V IDeserializeType.ReadValue<V, D>(int index)
+        if (Reader.SkipWhitespace() != IByteReader.EndOfStream)
         {
-            return D.Deserialize(this);
+            throw new JsonException("Expected end of stream");
         }
+    }
 
-        int IDeserializeType.TryReadIndex(ISerdeInfo serdeInfo, out string? errorName)
+    void IDisposable.Dispose()
+    {
+        _scratch.Dispose();
+        _scratch = null!;
+    }
+}
+
+partial class JsonDeserializer<TReader> : IDeserializeType
+{
+    V IDeserializeType.ReadValue<V, D>(int index)
+    {
+        var peek = ThrowIfEos(Reader.SkipWhitespace());
+        if (peek != (byte)':')
         {
-            ref var reader = ref GetReader();
-            if (serdeInfo.Kind == InfoKind.Enum)
+            throw new JsonException("Expected ':'");
+        }
+        Reader.Advance();
+        return D.Deserialize(this);
+    }
+
+    void IDeserializeType.SkipValue()
+    {
+        var peek = ThrowIfEos(Reader.SkipWhitespace());
+        if (peek != (byte)':')
+        {
+            throw new JsonException("Expected ':'");
+        }
+        Reader.Advance();
+        Reader.Skip();
+    }
+
+    int IDeserializeType.TryReadIndex(ISerdeInfo serdeInfo, out string? errorName)
+    {
+        if (serdeInfo.Kind == InfoKind.Enum)
+        {
+            switch (ThrowIfEos(Reader.SkipWhitespace()))
             {
-                // Enums are just treated as strings
-                reader.ReadOrThrow();
-                Debug.Assert(reader.TokenType == JsonTokenType.String);
-            }
-            else
+                default:
+                    throw new JsonException("Expected enum name as string");
+                case (byte)'"':
+                    goto ReadIndexAsString;
+            };
+        }
+        else
+        {
+            while (true)
             {
-                bool foundProperty = false;
-                while (!foundProperty)
+                var peek = Reader.SkipWhitespace();
+                if (peek == (short)',')
                 {
-                    reader.ReadOrThrow();
-                    switch (reader.TokenType)
+                    if (_first)
                     {
-                        case JsonTokenType.EndObject:
-                            errorName = null;
-                            return IDeserializeType.EndOfType;
-                        case JsonTokenType.PropertyName:
-                            foundProperty = true;
-                            break;
-                        default:
-                            // If we aren't at a property name, we must be at a value and intending to skip it
-                            // Call Skip in case we are starting a new array or object. Doesn't do
-                            // anything for bare tokens, but we've already read one token forward above,
-                            // so we can simply continue
-                            reader.Skip();
-                            break;
+                        throw new JsonException("Unexpected comma before first element");
                     }
+
+                    Reader.Advance();
+                    peek = Reader.SkipWhitespace();
                 }
-                Debug.Assert(reader.TokenType == JsonTokenType.PropertyName);
-            }
 
-            Utf8Span span;
-            if (reader.HasValueSequence || reader.ValueIsEscaped)
-            {
-                var s = reader.GetString()!;
-                span = Encoding.UTF8.GetBytes(s);
-            }
-            else
-            {
-                span = reader.ValueSpan;
-            }
-            var index = serdeInfo.TryGetIndex(span);
-            errorName = index == IDeserializeType.IndexNotFound ? span.ToString() : null;
-            return index;
-        }
-    }
+                switch (ThrowIfEos(peek))
+                {
+                    case (byte)'}':
+                        errorName = null;
+                        Reader.Advance();
+                        _first = false;
+                        return IDeserializeType.EndOfType;
 
-    internal static class Utf8JsonReaderExtensions
-    {
-        public static void ReadOrThrow(ref this Utf8JsonReader reader)
-        {
-            if (!reader.Read())
-            {
-                throw new DeserializeException("Unexpected end of stream");
+                    case (byte)'"':
+                        goto ReadIndexAsString;
+
+                    case var x:
+                        throw new JsonException($"Expected property name, got: '{(char)x}'");
+                }
             }
         }
+
+    ReadIndexAsString:
+        Reader.Advance();
+        _scratch.Clear();
+        var span = Reader.LexUtf8Span(_scratch);
+        var localIndex = serdeInfo.TryGetIndex(span);
+        errorName = localIndex == IDeserializeType.IndexNotFound ? span.ToString() : null;
+        _first = false;
+        return localIndex;
     }
 }

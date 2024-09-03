@@ -26,6 +26,7 @@ namespace Serde.Test
                             break;
                         case 1:
                         case Serde.IDeserializeType.IndexNotFound:
+                            typeDeserialize.SkipValue();
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
