@@ -16,7 +16,7 @@ namespace Serde.Json.Test;
 [GenerateDeserialize]
 public partial class PocoDictionary
 {
-    public Dictionary<string, string> key { get; set; }
+    public required Dictionary<string, string> key { get; set; }
 }
 
 [GenerateDeserialize]
