@@ -5,9 +5,9 @@ namespace Serde.Json
 {
     /// <summary>
     /// This enum defines the various JSON tokens that make up a JSON text and is used by
-    /// the <see cref="Utf8JsonReader"/> when moving from one token to the next.
-    /// The <see cref="Utf8JsonReader"/> starts at 'None' by default. The 'Comment' enum value
-    /// is only ever reached in a specific <see cref="Utf8JsonReader"/> mode and is not
+    /// the <see cref="Utf8JsonReader_Old"/> when moving from one token to the next.
+    /// The <see cref="Utf8JsonReader_Old"/> starts at 'None' by default. The 'Comment' enum value
+    /// is only ever reached in a specific <see cref="Utf8JsonReader_Old"/> mode and is not
     /// reachable by default.
     /// </summary>
     internal enum JsonTokenType : byte
@@ -19,7 +19,7 @@ namespace Serde.Json
         ///   Indicates that there is no value (as distinct from <see cref="Null"/>).
         /// </summary>
         /// <remarks>
-        ///   This is the default token type if no data has been read by the <see cref="Utf8JsonReader"/>.
+        ///   This is the default token type if no data has been read by the <see cref="Utf8JsonReader_Old"/>.
         /// </remarks>
         None,
 

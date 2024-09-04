@@ -301,13 +301,13 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowJsonReaderException(ref Utf8JsonReader json, ExceptionResource resource, byte nextByte = default, ReadOnlySpan<byte> bytes = default)
+        public static void ThrowJsonReaderException(ref Utf8JsonReader_Old json, ExceptionResource resource, byte nextByte = default, ReadOnlySpan<byte> bytes = default)
         {
             throw GetJsonReaderException(ref json, resource, nextByte, bytes);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static JsonException GetJsonReaderException(ref Utf8JsonReader json, ExceptionResource resource, byte nextByte, ReadOnlySpan<byte> bytes)
+        public static JsonException_Old GetJsonReaderException(ref Utf8JsonReader_Old json, ExceptionResource resource, byte nextByte, ReadOnlySpan<byte> bytes)
         {
             string message = GetResourceString(ref json, resource, nextByte, JsonHelpers.Utf8GetString(bytes));
 
@@ -328,7 +328,7 @@ namespace Serde.Json
 
         // This function will convert an ExceptionResource enum value to the resource string.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string GetResourceString(ref Utf8JsonReader json, ExceptionResource resource, byte nextByte, string characters)
+        private static string GetResourceString(ref Utf8JsonReader_Old json, ExceptionResource resource, byte nextByte, string characters)
         {
             string character = GetPrintableString(nextByte);
 

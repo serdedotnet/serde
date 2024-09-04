@@ -17,13 +17,13 @@ namespace Serde.Json
         private JsonCommentHandling _commentHandling;
 
         /// <summary>
-        /// Defines how the <see cref="Utf8JsonReader"/> should handle comments when reading through the JSON.
+        /// Defines how the <see cref="Utf8JsonReader_Old"/> should handle comments when reading through the JSON.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown when the comment handling enum is set to a value that is not supported (i.e. not within the <see cref="JsonCommentHandling"/> enum range).
         /// </exception>
         /// <remarks>
-        /// By default <exception cref="JsonException"/> is thrown if a comment is encountered.
+        /// By default <exception cref="JsonException_Old"/> is thrown if a comment is encountered.
         /// </remarks>
         public JsonCommentHandling CommentHandling
         {
@@ -47,7 +47,7 @@ namespace Serde.Json
         /// Thrown when the max depth is set to a negative value.
         /// </exception>
         /// <remarks>
-        /// Reading past this depth will throw a <exception cref="JsonException"/>.
+        /// Reading past this depth will throw a <exception cref="JsonException_Old"/>.
         /// </remarks>
         public int MaxDepth
         {
@@ -68,7 +68,7 @@ namespace Serde.Json
         /// is allowed (and ignored) within the JSON payload being read.
         /// </summary>
         /// <remarks>
-        /// By default, it's set to false, and <exception cref="JsonException"/> is thrown if a trailing comma is encountered.
+        /// By default, it's set to false, and <exception cref="JsonException_Old"/> is thrown if a trailing comma is encountered.
         /// </remarks>
         public bool AllowTrailingCommas { get; set; }
     }

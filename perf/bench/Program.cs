@@ -20,10 +20,13 @@ var loc2 = Serde.Json.JsonSerializer.Deserialize<Location, LocationWrap>(Locatio
 Console.WriteLine("Checking correctness of serialization: " + (loc1 == loc2));
 if (loc1 != loc2)
 {
-    throw new InvalidOperationException(@"""
+    throw new InvalidOperationException($"""
 Serialization is not correct
-STJ: {json1}
-Serde: {json2}
+STJ:
+{loc1}
+
+Serde:
+{loc2}
 """);
 }
 

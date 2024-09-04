@@ -107,9 +107,11 @@ namespace Serde
         int TryReadIndex(ISerdeInfo map, out string? errorName);
 
         V ReadValue<V, D>(int index) where D : IDeserialize<V>;
+
+        void SkipValue();
     }
 
-    public interface IDeserializer
+    public interface IDeserializer : IDisposable
     {
         T DeserializeAny<T>(IDeserializeVisitor<T> v);
         T DeserializeBool<T>(IDeserializeVisitor<T> v);

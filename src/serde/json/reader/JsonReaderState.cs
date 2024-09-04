@@ -5,11 +5,11 @@ namespace Serde.Json
 {
     /// <summary>
     /// Defines an opaque type that holds and saves all the relevant state information which must be provided
-    /// to the <see cref="Utf8JsonReader"/> to continue reading after processing incomplete data.
+    /// to the <see cref="Utf8JsonReader_Old"/> to continue reading after processing incomplete data.
     /// This type is required to support reentrancy when reading incomplete data, and to continue
-    /// reading once more data is available. Unlike the <see cref="Utf8JsonReader"/>, which is a ref struct,
+    /// reading once more data is available. Unlike the <see cref="Utf8JsonReader_Old"/>, which is a ref struct,
     /// this type can survive across async/await boundaries and hence this type is required to provide
-    /// support for reading in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader"/>.
+    /// support for reading in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader_Old"/>.
     /// </summary>
     internal struct JsonReaderState
     {
@@ -27,14 +27,14 @@ namespace Serde.Json
         /// <summary>
         /// Constructs a new <see cref="JsonReaderState"/> instance.
         /// </summary>
-        /// <param name="options">Defines the customized behavior of the <see cref="Utf8JsonReader"/>
+        /// <param name="options">Defines the customized behavior of the <see cref="Utf8JsonReader_Old"/>
         /// that is different from the JSON RFC (for example how to handle comments or maximum depth allowed when reading).
-        /// By default, the <see cref="Utf8JsonReader"/> follows the JSON RFC strictly (i.e. comments within the JSON are invalid) and reads up to a maximum depth of 64.</param>
+        /// By default, the <see cref="Utf8JsonReader_Old"/> follows the JSON RFC strictly (i.e. comments within the JSON are invalid) and reads up to a maximum depth of 64.</param>
         /// <remarks>
-        /// An instance of this state must be passed to the <see cref="Utf8JsonReader"/> ctor with the JSON data.
-        /// Unlike the <see cref="Utf8JsonReader"/>, which is a ref struct, the state can survive
+        /// An instance of this state must be passed to the <see cref="Utf8JsonReader_Old"/> ctor with the JSON data.
+        /// Unlike the <see cref="Utf8JsonReader_Old"/>, which is a ref struct, the state can survive
         /// across async/await boundaries and hence this type is required to provide support for reading
-        /// in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader"/>.
+        /// in more data asynchronously before continuing with a new instance of the <see cref="Utf8JsonReader_Old"/>.
         /// </remarks>
         public JsonReaderState(JsonReaderOptions options = default)
         {
@@ -55,7 +55,7 @@ namespace Serde.Json
 
         /// <summary>
         /// Gets the custom behavior when reading JSON using
-        /// the <see cref="Utf8JsonReader"/> that may deviate from strict adherence
+        /// the <see cref="Utf8JsonReader_Old"/> that may deviate from strict adherence
         /// to the JSON specification, which is the default behavior.
         /// </summary>
         public JsonReaderOptions Options => _readerOptions;

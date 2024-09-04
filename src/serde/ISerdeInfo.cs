@@ -70,7 +70,11 @@ public enum InfoKind
     /// Represents a closed union of types. Any type that returns this value from <see
     /// cref="ISerdeInfo.Kind"/> must also implement <see cref="IUnionSerdeInfo"/>.
     /// </summary>
-    Union
+    Union,
+    /// <summary>
+    /// Only used for skipping a value during deserialization.
+    /// </summary>
+    Skip
 }
 
 /// <summary>

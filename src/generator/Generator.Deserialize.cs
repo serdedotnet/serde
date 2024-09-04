@@ -231,7 +231,10 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     ? $"""
                     throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
                     """
-                    : "break;";
+                    : """
+                    typeDeserialize.SkipValue();
+                    break;
+                    """;
                 foreach (var i in skippedIndices)
                 {
                     casesBuilder.AppendLine($"""

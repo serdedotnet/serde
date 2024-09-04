@@ -11,7 +11,7 @@ namespace Serde.Json
     /// or the JSON text is not compatible with the type of a property on an object.
     /// </summary>
     [Serializable]
-    internal class JsonException : Exception
+    internal class JsonException_Old : Exception
     {
         // Allow the message to mutate to avoid re-throwing and losing the StackTrace to an inner exception.
         internal string? _message;
@@ -27,7 +27,7 @@ namespace Serde.Json
         /// <remarks>
         /// Note that the <paramref name="bytePositionInLine"/> counts the number of bytes (i.e. UTF-8 code units) and not characters or scalars.
         /// </remarks>
-        public JsonException(string? message, string? path, long? lineNumber, long? bytePositionInLine, Exception? innerException) : base(message, innerException)
+        public JsonException_Old(string? message, string? path, long? lineNumber, long? bytePositionInLine, Exception? innerException) : base(message, innerException)
         {
             _message = message;
             LineNumber = lineNumber;
@@ -45,7 +45,7 @@ namespace Serde.Json
         /// <remarks>
         /// Note that the <paramref name="bytePositionInLine"/> counts the number of bytes (i.e. UTF-8 code units) and not characters or scalars.
         /// </remarks>
-        public JsonException(string? message, string? path, long? lineNumber, long? bytePositionInLine) : base(message)
+        public JsonException_Old(string? message, string? path, long? lineNumber, long? bytePositionInLine) : base(message)
         {
             _message = message;
             LineNumber = lineNumber;
@@ -58,7 +58,7 @@ namespace Serde.Json
         /// </summary>
         /// <param name="message">The context specific error message.</param>
         /// <param name="innerException">The exception that caused the current exception.</param>
-        public JsonException(string? message, Exception? innerException) : base(message, innerException)
+        public JsonException_Old(string? message, Exception? innerException) : base(message, innerException)
         {
             _message = message;
         }
@@ -67,7 +67,7 @@ namespace Serde.Json
         /// Creates a new exception object to relay error information to the user.
         /// </summary>
         /// <param name="message">The context specific error message.</param>
-        public JsonException(string? message) : base(message)
+        public JsonException_Old(string? message) : base(message)
         {
             _message = message;
         }
@@ -75,7 +75,7 @@ namespace Serde.Json
         /// <summary>
         /// Creates a new exception object to relay error information to the user.
         /// </summary>
-        public JsonException() : base() { }
+        public JsonException_Old() : base() { }
 
         /// <summary>
         /// Specifies that 'try' logic should append Path information to the exception message.

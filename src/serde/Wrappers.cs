@@ -303,6 +303,30 @@ public readonly partial record struct Int64Wrap(long Value)
     }
 }
 
+public readonly record struct SingleWrap : ISerialize<float>, IDeserialize<float>
+{
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float");
+    public void Serialize(float value, ISerializer serializer)
+        => serializer.SerializeFloat(value);
+    public static float Deserialize(IDeserializer deserializer)
+        => deserializer.DeserializeFloat(SerdeVisitor.Instance);
+    private sealed class SerdeVisitor : IDeserializeVisitor<float>
+    {
+        public static readonly SerdeVisitor Instance = new SerdeVisitor();
+        public string ExpectedTypeName => "float";
+        float IDeserializeVisitor<float>.VisitByte(byte b)    => b;
+        float IDeserializeVisitor<float>.VisitU16(ushort u16) => u16;
+        float IDeserializeVisitor<float>.VisitU32(uint u32)   => u32;
+        float IDeserializeVisitor<float>.VisitU64(ulong u64)  => u64;
+        float IDeserializeVisitor<float>.VisitSByte(sbyte b)  => b;
+        float IDeserializeVisitor<float>.VisitI16(short i16)  => i16;
+        float IDeserializeVisitor<float>.VisitI32(int i32)    => i32;
+        float IDeserializeVisitor<float>.VisitI64(long i64)   => i64;
+        float IDeserializeVisitor<float>.VisitFloat(float f) => f;
+        float IDeserializeVisitor<float>.VisitDouble(double d) => Convert.ToSingle(d);
+    }
+}
+
 public readonly partial record struct DoubleWrap(double Value)
     : ISerialize<double>, IDeserialize<double>
 {
