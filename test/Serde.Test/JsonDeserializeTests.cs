@@ -344,7 +344,7 @@ namespace Serde.Test
             static ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = SerdeInfo;
-                var de = deserializer.DeserializeType(typeInfo);
+                var de = deserializer.ReadType(typeInfo);
                 int index;
                 if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {

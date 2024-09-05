@@ -13,7 +13,7 @@ namespace Serde.Test
             static Serde.Test.AllInOne.ColorEnum IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize(IDeserializer deserializer)
             {
                 var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.AllInOne.ColorEnumWrap>();
-                var de = deserializer.DeserializeType(serdeInfo);
+                var de = deserializer.ReadType(serdeInfo);
                 int index;
                 if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
                 {

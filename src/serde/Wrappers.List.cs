@@ -50,7 +50,7 @@ namespace Serde
             public static T[] Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = ArraySerdeTypeInfo<T>.TypeInfo;
-                var deCollection = deserializer.DeserializeCollection(typeInfo);
+                var deCollection = deserializer.ReadCollection(typeInfo);
                 if (deCollection.SizeOpt is int size)
                 {
                     var array = new T[size];
@@ -100,7 +100,7 @@ namespace Serde
             {
                 List<T> list;
                 var typeInfo = ListSerdeTypeInfo<T>.TypeInfo;
-                var deCollection = deserializer.DeserializeCollection(typeInfo);
+                var deCollection = deserializer.ReadCollection(typeInfo);
                 if (deCollection.SizeOpt is int size)
                 {
                     list = new List<T>(size);
@@ -146,7 +146,7 @@ namespace Serde
             {
                 ImmutableArray<T>.Builder builder;
                 var typeInfo = ImmutableArraySerdeTypeInfo<T>.TypeInfo;
-                var d = deserializer.DeserializeCollection(typeInfo);
+                var d = deserializer.ReadCollection(typeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);

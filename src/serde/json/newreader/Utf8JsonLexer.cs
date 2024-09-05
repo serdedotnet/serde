@@ -364,8 +364,6 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
             var s = byteReader.Peek();
             switch (s)
             {
-                case IByteReader.EndOfStream:
-                    return s;
                 case (short)' ':
                 case (short)'\t':
                 case (short)'\n':

@@ -11,7 +11,7 @@ partial struct S2 : Serde.IDeserialize<S2>
         ColorEnum _l_e = default !;
         byte _r_assignedValid = 0;
         var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S2>();
-        var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
+        var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
         int _l_index_;
         while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
         {

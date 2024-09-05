@@ -120,7 +120,7 @@ namespace Serde.Test
                 foreach (var (k,v) in value._d)
                 {
                     sd.SerializeElement(k.ToString(), new StringWrap());
-                    sd.SerializeElement(v, new Int32Wrap(v));
+                    sd.SerializeElement(v, new Int32Wrap());
                 }
                 sd.End(typeInfo);
             }

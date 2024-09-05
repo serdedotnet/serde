@@ -38,7 +38,7 @@ public static class DictWrap
         public static Dictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
         {
             var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
-            var deCollection = deserializer.DeserializeCollection(typeInfo);
+            var deCollection = deserializer.ReadCollection(typeInfo);
             Dictionary<TKey, TValue> dict;
             if (deCollection.SizeOpt is int size)
             {
@@ -96,7 +96,7 @@ public static class ImmutableDictWrap
         public static ImmutableDictionary<TKey, TValue> Deserialize(IDeserializer deserializer)
         {
             var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
-            var deCollection = deserializer.DeserializeCollection(typeInfo);
+            var deCollection = deserializer.ReadCollection(typeInfo);
             var builder = ImmutableDictionary.CreateBuilder<TKey, TValue>();
             while (deCollection.TryReadValue<TKey, TKeyWrap>(typeInfo, out var key))
             {
