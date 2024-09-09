@@ -17,16 +17,16 @@ namespace Serde.Test
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ThrowMissingFalse>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_present = typeDeserialize.ReadValue<string, global::Serde.StringWrap>(_l_index_);
+                            _l_present = typeDeserialize.ReadString(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_missing = typeDeserialize.ReadValue<bool, global::Serde.BoolWrap>(_l_index_);
+                            _l_missing = typeDeserialize.ReadBool(_l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

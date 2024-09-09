@@ -22,7 +22,7 @@ namespace Serde.Test
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_present = typeDeserialize.ReadValue<string, global::Serde.StringWrap>(_l_index_);
+                            _l_present = typeDeserialize.ReadString(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:

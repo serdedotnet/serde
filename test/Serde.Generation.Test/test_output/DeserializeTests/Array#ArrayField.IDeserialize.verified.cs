@@ -13,7 +13,7 @@ partial class ArrayField : Serde.IDeserialize<ArrayField>
         var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ArrayField>();
         var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
         int _l_index_;
-        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
+        while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
         {
             switch (_l_index_)
             {
