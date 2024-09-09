@@ -24,7 +24,7 @@ public sealed partial class CustomImplTests
         static RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
             var fieldMap = SerdeInfo;
-            var deType = deserializer.DeserializeType(fieldMap);
+            var deType = deserializer.ReadType(fieldMap);
             int red = default;
             int green = default;
             int blue = default;

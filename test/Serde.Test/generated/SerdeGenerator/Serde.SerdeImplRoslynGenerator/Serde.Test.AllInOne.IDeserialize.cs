@@ -28,58 +28,58 @@ namespace Serde.Test
             Serde.Test.AllInOne.ColorEnum _l_color = default !;
             uint _r_assignedValid = 0;
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<AllInOne>();
-            var typeDeserialize = deserializer.DeserializeType(_l_serdeInfo);
+            var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != IDeserializeType.EndOfType)
+            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
             {
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_boolfield = typeDeserialize.ReadValue<bool, global::Serde.BoolWrap>(_l_index_);
+                        _l_boolfield = typeDeserialize.ReadBool(_l_index_);
                         _r_assignedValid |= ((uint)1) << 0;
                         break;
                     case 1:
-                        _l_charfield = typeDeserialize.ReadValue<char, global::Serde.CharWrap>(_l_index_);
+                        _l_charfield = typeDeserialize.ReadChar(_l_index_);
                         _r_assignedValid |= ((uint)1) << 1;
                         break;
                     case 2:
-                        _l_bytefield = typeDeserialize.ReadValue<byte, global::Serde.ByteWrap>(_l_index_);
+                        _l_bytefield = typeDeserialize.ReadByte(_l_index_);
                         _r_assignedValid |= ((uint)1) << 2;
                         break;
                     case 3:
-                        _l_ushortfield = typeDeserialize.ReadValue<ushort, global::Serde.UInt16Wrap>(_l_index_);
+                        _l_ushortfield = typeDeserialize.ReadU16(_l_index_);
                         _r_assignedValid |= ((uint)1) << 3;
                         break;
                     case 4:
-                        _l_uintfield = typeDeserialize.ReadValue<uint, global::Serde.UInt32Wrap>(_l_index_);
+                        _l_uintfield = typeDeserialize.ReadU32(_l_index_);
                         _r_assignedValid |= ((uint)1) << 4;
                         break;
                     case 5:
-                        _l_ulongfield = typeDeserialize.ReadValue<ulong, global::Serde.UInt64Wrap>(_l_index_);
+                        _l_ulongfield = typeDeserialize.ReadU64(_l_index_);
                         _r_assignedValid |= ((uint)1) << 5;
                         break;
                     case 6:
-                        _l_sbytefield = typeDeserialize.ReadValue<sbyte, global::Serde.SByteWrap>(_l_index_);
+                        _l_sbytefield = typeDeserialize.ReadSByte(_l_index_);
                         _r_assignedValid |= ((uint)1) << 6;
                         break;
                     case 7:
-                        _l_shortfield = typeDeserialize.ReadValue<short, global::Serde.Int16Wrap>(_l_index_);
+                        _l_shortfield = typeDeserialize.ReadI16(_l_index_);
                         _r_assignedValid |= ((uint)1) << 7;
                         break;
                     case 8:
-                        _l_intfield = typeDeserialize.ReadValue<int, global::Serde.Int32Wrap>(_l_index_);
+                        _l_intfield = typeDeserialize.ReadI32(_l_index_);
                         _r_assignedValid |= ((uint)1) << 8;
                         break;
                     case 9:
-                        _l_longfield = typeDeserialize.ReadValue<long, global::Serde.Int64Wrap>(_l_index_);
+                        _l_longfield = typeDeserialize.ReadI64(_l_index_);
                         _r_assignedValid |= ((uint)1) << 9;
                         break;
                     case 10:
-                        _l_stringfield = typeDeserialize.ReadValue<string, global::Serde.StringWrap>(_l_index_);
+                        _l_stringfield = typeDeserialize.ReadString(_l_index_);
                         _r_assignedValid |= ((uint)1) << 10;
                         break;
                     case 11:
-                        _l_escapedstringfield = typeDeserialize.ReadValue<string, global::Serde.StringWrap>(_l_index_);
+                        _l_escapedstringfield = typeDeserialize.ReadString(_l_index_);
                         _r_assignedValid |= ((uint)1) << 11;
                         break;
                     case 12:

@@ -54,7 +54,7 @@ namespace Serde
         /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
         /// {
         ///    var serdeInfo = SerdeInfoProvider.GetInfo{T}();
-        ///    var de = deserializer.DeserializeType(serdeInfo);
+        ///    var de = deserializer.ReadType(serdeInfo);
         ///    int index;
         ///    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
         ///    {
@@ -88,7 +88,7 @@ namespace Serde
 static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Wrap>();
-    var de = deserializer.DeserializeType(serdeInfo);
+    var de = deserializer.ReadType(serdeInfo);
     int index;
     if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
     {
@@ -148,6 +148,11 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
 
             const string typeInfoLocalName = "_l_serdeInfo";
             const string indexLocalName = "_l_index_";
+            const string IndexErrorName = "_l_errorName";
+
+            var errorNameOrDiscard = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
+                ? $"var {IndexErrorName}"
+                : "_";
 
             var methodText = $$"""
 static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
@@ -156,9 +161,9 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
     {{assignedVarType}} {{AssignedVarName}} = 0;
 
     var {{typeInfoLocalName}} = global::Serde.SerdeInfoProvider.GetInfo<{{typeDeclContext.Name}}>();
-    var typeDeserialize = deserializer.DeserializeType({{typeInfoLocalName}});
+    var typeDeserialize = deserializer.ReadType({{typeInfoLocalName}});
     int {{indexLocalName}};
-    while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out var _l_errorName)) != IDeserializeType.EndOfType)
+    while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out {{errorNameOrDiscard}})) != IDeserializeType.EndOfType)
     {
         switch ({{indexLocalName}})
         {
@@ -177,15 +182,15 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                 var localsBuilder = new StringBuilder();
                 long assignedMaskValue = 0;
                 var skippedIndices = new List<int>();
-                for (int i = 0; i < members.Count; i++)
+                for (int fieldIndex = 0; fieldIndex < members.Count; fieldIndex++)
                 {
-                    if (members[i].SkipDeserialize)
+                    if (members[fieldIndex].SkipDeserialize)
                     {
-                        skippedIndices.Add(i);
+                        skippedIndices.Add(fieldIndex);
                         continue;
                     }
 
-                    var m = members[i];
+                    var m = members[fieldIndex];
                     string wrapperName;
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
                     if (Wrappers.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
@@ -196,7 +201,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     {
                         wrapperName = memberType;
                     }
-                    else if (Wrappers.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Wrapper: {} wrap })
+                    else if (Wrappers.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Wrapper: { } wrap })
                     {
                         wrapperName = wrap.ToString();
                     }
@@ -213,10 +218,11 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     }
                     var localName = GetLocalName(m);
                     localsBuilder.AppendLine($"{memberType} {localName} = default!;");
+                    var readValueCall = GetReadValueCall(memberType, wrapperName);
                     casesBuilder.AppendLine($"""
-                    case {i}:
-                        {localName} = typeDeserialize.ReadValue<{memberType}, {wrapperName}>({indexLocalName});
-                        {AssignedVarName} |= (({assignedVarType})1) << {i};
+                    case {fieldIndex}:
+                        {localName} = typeDeserialize.{readValueCall}({indexLocalName});
+                        {AssignedVarName} |= (({assignedVarType})1) << {fieldIndex};
                         break;
                     """);
 
@@ -224,7 +230,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     // and ThrowIfMissing is unset
                     if (m.ThrowIfMissing == true || (!m.IsNullable && m.ThrowIfMissing == null))
                     {
-                        assignedMaskValue |= 1L << i;
+                        assignedMaskValue |= 1L << fieldIndex;
                     }
                 }
                 var unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
@@ -252,6 +258,29 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                 return (casesBuilder.ToString(),
                         localsBuilder.ToString(),
                         "0b" + Convert.ToString(assignedMaskValue, 2));
+
+                static string GetReadValueCall(
+                    string memberType,
+                    string wrapperName)
+                {
+                    return memberType switch {
+                        "bool" => "ReadBool",
+                        "char" => "ReadChar",
+                        "byte" => "ReadByte",
+                        "ushort" => "ReadU16",
+                        "uint" => "ReadU32",
+                        "ulong" => "ReadU64",
+                        "sbyte" => "ReadSByte",
+                        "short" => "ReadI16",
+                        "int"   => "ReadI32",
+                        "long"  => "ReadI64",
+                        "float" => "ReadFloat",
+                        "double" => "ReadDouble",
+                        "decimal" => "ReadDecimal",
+                        "string" => "ReadString",
+                        _ => $"ReadValue<{memberType}, {wrapperName}>"
+                    };
+                }
             }
         }
 

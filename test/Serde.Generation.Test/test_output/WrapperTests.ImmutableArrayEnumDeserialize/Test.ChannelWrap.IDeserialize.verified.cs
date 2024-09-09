@@ -11,7 +11,7 @@ namespace Test
         static Test.Channel IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
         {
             var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Test.ChannelWrap>();
-            var de = deserializer.DeserializeType(serdeInfo);
+            var de = deserializer.ReadType(serdeInfo);
             int index;
             if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
             {

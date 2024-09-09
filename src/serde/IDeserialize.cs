@@ -109,28 +109,42 @@ namespace Serde
         V ReadValue<V, D>(int index) where D : IDeserialize<V>;
 
         void SkipValue();
+
+        bool ReadBool(int index);
+        char ReadChar(int index);
+        byte ReadByte(int index);
+        ushort ReadU16(int index);
+        uint ReadU32(int index);
+        ulong ReadU64(int index);
+        sbyte ReadSByte(int index);
+        short ReadI16(int index);
+        int ReadI32(int index);
+        long ReadI64(int index);
+        float ReadFloat(int index);
+        double ReadDouble(int index);
+        decimal ReadDecimal(int index);
+        string ReadString(int index);
     }
 
     public interface IDeserializer : IDisposable
     {
-        T DeserializeAny<T>(IDeserializeVisitor<T> v);
-        T DeserializeBool<T>(IDeserializeVisitor<T> v);
-        T DeserializeChar<T>(IDeserializeVisitor<T> v);
-        T DeserializeByte<T>(IDeserializeVisitor<T> v);
-        T DeserializeU16<T>(IDeserializeVisitor<T> v);
-        T DeserializeU32<T>(IDeserializeVisitor<T> v);
-        T DeserializeU64<T>(IDeserializeVisitor<T> v);
-        T DeserializeSByte<T>(IDeserializeVisitor<T> v);
-        T DeserializeI16<T>(IDeserializeVisitor<T> v);
-        T DeserializeI32<T>(IDeserializeVisitor<T> v);
-        T DeserializeI64<T>(IDeserializeVisitor<T> v);
-        T DeserializeFloat<T>(IDeserializeVisitor<T> v);
-        T DeserializeDouble<T>(IDeserializeVisitor<T> v);
-        T DeserializeDecimal<T>(IDeserializeVisitor<T> v);
-        T DeserializeString<T>(IDeserializeVisitor<T> v);
-        T DeserializeIdentifier<T>(IDeserializeVisitor<T> v);
-        T DeserializeNullableRef<T>(IDeserializeVisitor<T> v);
-        IDeserializeCollection DeserializeCollection(ISerdeInfo typeInfo);
-        IDeserializeType DeserializeType(ISerdeInfo typeInfo);
+        T ReadAny<T>(IDeserializeVisitor<T> v);
+        T ReadNullableRef<T>(IDeserializeVisitor<T> v);
+        bool ReadBool();
+        char ReadChar();
+        byte ReadByte();
+        ushort ReadU16();
+        uint ReadU32();
+        ulong ReadU64();
+        sbyte ReadSByte();
+        short ReadI16();
+        int ReadI32();
+        long ReadI64();
+        float ReadFloat();
+        double ReadDouble();
+        decimal ReadDecimal();
+        string ReadString();
+        IDeserializeCollection ReadCollection(ISerdeInfo typeInfo);
+        IDeserializeType ReadType(ISerdeInfo typeInfo);
     }
 }

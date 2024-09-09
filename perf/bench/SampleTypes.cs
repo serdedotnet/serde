@@ -62,7 +62,7 @@ namespace Benchmarks
             "Location",
             typeof(Location).GetCustomAttributesData(),
             [
-                ("id", StringWrap.SerdeInfo, typeof(Location).GetProperty("Id")!),
+                ("id", Int32Wrap.SerdeInfo, typeof(Location).GetProperty("Id")!),
                 ("address1", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address1")!),
                 ("address2", StringWrap.SerdeInfo, typeof(Location).GetProperty("Address2")!),
                 ("city", StringWrap.SerdeInfo, typeof(Location).GetProperty("City")!),
@@ -86,48 +86,54 @@ namespace Benchmarks
             string _l_country = default !;
             ushort _r_assignedValid = 0b0;
 
-            var typeDeserialize = deserializer.DeserializeType(SerdeInfo);
+            var _l_serdeInfo = SerdeInfo;
+            var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int index;
-            while ((index = typeDeserialize.TryReadIndex(SerdeInfo, out _)) != IDeserializeType.EndOfType)
+            while ((index = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
             {
                 switch (index)
                 {
                     case 0:
-                        _l_id = typeDeserialize.ReadValue<int, Int32Wrap>(index);
+                        _l_id = typeDeserialize.ReadI32(index);
                         _r_assignedValid |= ((ushort)1) << 0;
                         break;
                     case 1:
-                        _l_address1 = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_address1 = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 1;
                         break;
                     case 2:
-                        _l_address2 = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_address2 = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 2;
                         break;
                     case 3:
-                        _l_city = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_city = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 3;
                         break;
                     case 4:
-                        _l_state = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_state = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 4;
                         break;
                     case 5:
-                        _l_postalcode = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_postalcode = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 5;
                         break;
                     case 6:
-                        _l_name = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_name = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 6;
                         break;
                     case 7:
-                        _l_phonenumber = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_phonenumber = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 7;
                         break;
                     case 8:
-                        _l_country = typeDeserialize.ReadValue<string, StringWrap>(index);
+                        _l_country = typeDeserialize.ReadString(index);
                         _r_assignedValid |= ((ushort)1) << 8;
                         break;
+                    case Serde.IDeserializeType.IndexNotFound:
+                        typeDeserialize.SkipValue();
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unexpected index: " + index);
                 }
             }
 

@@ -112,7 +112,7 @@ public sealed partial class GenericWrapperTests
             {
                 var serdeInfo = s_typeInfo;
                 ImmutableArray<T>.Builder builder;
-                var d = deserializer.DeserializeCollection(serdeInfo);
+                var d = deserializer.ReadCollection(serdeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);
@@ -159,7 +159,7 @@ public sealed partial class GenericWrapperTests
             {
                 ImmutableArray<T>.Builder builder;
                 var typeInfo = s_typeInfo;
-                var d = deserializer.DeserializeCollection(typeInfo);
+                var d = deserializer.ReadCollection(typeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);

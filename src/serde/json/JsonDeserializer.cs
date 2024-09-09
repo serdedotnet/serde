@@ -3,6 +3,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -46,18 +47,19 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         _scratch = new ScratchBuffer();
     }
 
-    public T DeserializeAny<T>(IDeserializeVisitor<T> v)
+    public T ReadAny<T>(IDeserializeVisitor<T> v)
     {
         var peek = Reader.SkipWhitespace();
         T result;
         switch (ThrowIfEos(peek))
         {
             case (byte)'[':
-                result = DeserializeEnumerable(v);
+                result = ReadEnumerable(v);
                 break;
 
             case (byte)'-' or (>= (byte)'0' and <= (byte)'9'):
-                result = DeserializeDouble(v);
+                var d = ReadDouble();
+                result = v.VisitDouble(d);
                 break;
 
             case (byte)'{':
@@ -65,7 +67,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                 break;
 
             case (byte)'"':
-                result = DeserializeString(v);
+                result = VisitString(v);
                 break;
 
             case (byte)'n' when Reader.StartsWith("null"u8):
@@ -89,10 +91,29 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         return result;
     }
 
-    public T DeserializeBool<T>(IDeserializeVisitor<T> v)
+    private T VisitString<T>(IDeserializeVisitor<T> v)
     {
-        bool b = Reader.GetBoolean();
-        return v.VisitBool(b);
+        var span = ReadUtf8Span();
+        return v.VisitUtf8Span(span);
+    }
+
+    public T ReadNullableRef<T>(IDeserializeVisitor<T> v)
+    {
+        var peek = Reader.SkipWhitespace();
+        switch (ThrowIfEos(peek))
+        {
+            case (byte)'n' when Reader.StartsWith("null"u8):
+                Reader.Advance(4);
+                return v.VisitNull();
+            default:
+                return v.VisitNotNull(this);
+        }
+    }
+
+
+    public bool ReadBool()
+    {
+        return Reader.GetBoolean();
     }
 
     public T DeserializeDictionary<T>(IDeserializeVisitor<T> v)
@@ -109,7 +130,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         return v.VisitDictionary(ref map);
     }
 
-    public IDeserializeCollection DeserializeCollection(ISerdeInfo typeInfo)
+    public IDeserializeCollection ReadCollection(ISerdeInfo typeInfo)
     {
         var kind = typeInfo.Kind;
         if (kind is not (InfoKind.Enumerable or InfoKind.Dictionary))
@@ -209,29 +230,26 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         }
     }
 
-    public T DeserializeFloat<T>(IDeserializeVisitor<T> v)
-        => DeserializeDouble(v);
+    public float ReadFloat() => Convert.ToSingle(ReadDouble());
 
-    public T DeserializeDouble<T>(IDeserializeVisitor<T> v)
+    public double ReadDouble()
     {
         _ = ThrowIfEos(Reader.SkipWhitespace());
         _scratch.Clear();
-        var d = Reader.GetDouble(_scratch);
-        return v.VisitDouble(d);
+        return Reader.GetDouble(_scratch);
     }
 
-    public T DeserializeDecimal<T>(IDeserializeVisitor<T> v)
+    public decimal ReadDecimal()
     {
         _ = ThrowIfEos(Reader.SkipWhitespace());
         _scratch.Clear();
-        var d = Reader.GetDecimal(_scratch);
-        return v.VisitDecimal(d);
+        return Reader.GetDecimal(_scratch);
     }
 
     /// <summary>
     /// Expects to be one byte after '['
     /// </summary>
-    private T DeserializeEnumerable<T>(IDeserializeVisitor<T> v)
+    private T ReadEnumerable<T>(IDeserializeVisitor<T> v)
     {
         var peek = Reader.Peek();
         if (peek != (byte)'[')
@@ -366,23 +384,25 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         }
     }
 
-    public T DeserializeSByte<T>(IDeserializeVisitor<T> v)
-        => DeserializeI64(v);
+    public sbyte ReadSByte() => Convert.ToSByte(ReadI64());
 
-    public T DeserializeI16<T>(IDeserializeVisitor<T> v)
-        => DeserializeI64(v);
+    public short ReadI16() => Convert.ToInt16(ReadI64());
 
-    public T DeserializeI32<T>(IDeserializeVisitor<T> v)
-        => DeserializeI64(v);
+    public int ReadI32() => Convert.ToInt32(ReadI64());
 
-    public T DeserializeI64<T>(IDeserializeVisitor<T> v)
+    public long ReadI64()
     {
         _ = ThrowIfEos(Reader.SkipWhitespace());
         _scratch.Clear();
-        return v.VisitI64(Reader.GetInt64(_scratch));
+        return Reader.GetInt64(_scratch);
     }
 
-    public T DeserializeString<T>(IDeserializeVisitor<T> v)
+    public string ReadString()
+    {
+        return Encoding.UTF8.GetString(ReadUtf8Span());
+    }
+
+    private Utf8Span ReadUtf8Span()
     {
         var peek = ThrowIfEos(Reader.SkipWhitespace());
         if (peek != (byte)'"')
@@ -391,14 +411,10 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         }
         Reader.Advance();
         _scratch.Clear();
-        var span = Reader.LexUtf8Span(_scratch);
-        return v.VisitUtf8Span(span);
+        return Reader.LexUtf8Span(_scratch);
     }
 
-    public T DeserializeIdentifier<T>(IDeserializeVisitor<T> v)
-        => DeserializeString(v);
-
-    public IDeserializeType DeserializeType(ISerdeInfo fieldMap)
+    public IDeserializeType ReadType(ISerdeInfo fieldMap)
     {
         // Custom types look like dictionaries, enums are inline strings
         if (fieldMap.Kind == InfoKind.CustomType)
@@ -419,38 +435,21 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         return this;
     }
 
-    public T DeserializeByte<T>(IDeserializeVisitor<T> v)
-        => DeserializeU64(v);
+    public byte ReadByte() => Convert.ToByte(ReadU64());
 
-    public T DeserializeU16<T>(IDeserializeVisitor<T> v)
-        => DeserializeU64(v);
+    public ushort ReadU16() => Convert.ToUInt16(ReadU64());
 
-    public T DeserializeU32<T>(IDeserializeVisitor<T> v)
-        => DeserializeU64(v);
+    public uint ReadU32() => Convert.ToUInt32(ReadU64());
 
-    public T DeserializeU64<T>(IDeserializeVisitor<T> v)
+    public ulong ReadU64()
     {
         Reader.SkipWhitespace();
         _scratch.Clear();
         var u64 = Reader.GetUInt64(_scratch);
-        return v.VisitU64(u64);
+        return u64;
     }
 
-    public T DeserializeChar<T>(IDeserializeVisitor<T> v)
-        => DeserializeString(v);
-
-    public T DeserializeNullableRef<T>(IDeserializeVisitor<T> v)
-    {
-        var peek = Reader.SkipWhitespace();
-        switch (ThrowIfEos(peek))
-        {
-            case (byte)'n' when Reader.StartsWith("null"u8):
-                Reader.Advance(4);
-                return v.VisitNull();
-            default:
-                return v.VisitNotNull(this);
-        }
-    }
+    public char ReadChar() => ReadString().Single();
 
     public void Eof()
     {
@@ -471,16 +470,11 @@ partial class JsonDeserializer<TReader> : IDeserializeType
 {
     V IDeserializeType.ReadValue<V, D>(int index)
     {
-        var peek = ThrowIfEos(Reader.SkipWhitespace());
-        if (peek != (byte)':')
-        {
-            throw new JsonException("Expected ':'");
-        }
-        Reader.Advance();
+        ReadColon();
         return D.Deserialize(this);
     }
 
-    void IDeserializeType.SkipValue()
+    private void ReadColon()
     {
         var peek = ThrowIfEos(Reader.SkipWhitespace());
         if (peek != (byte)':')
@@ -488,6 +482,82 @@ partial class JsonDeserializer<TReader> : IDeserializeType
             throw new JsonException("Expected ':'");
         }
         Reader.Advance();
+    }
+
+    bool IDeserializeType.ReadBool(int index)
+    {
+        ReadColon();
+        return ReadBool();
+    }
+    char IDeserializeType.ReadChar(int index)
+    {
+        ReadColon();
+        return ReadChar();
+    }
+    byte IDeserializeType.ReadByte(int index)
+    {
+        ReadColon();
+        return ReadByte();
+    }
+    ushort IDeserializeType.ReadU16(int index)
+    {
+        ReadColon();
+        return ReadU16();
+    }
+    uint IDeserializeType.ReadU32(int index)
+    {
+        ReadColon();
+        return ReadU32();
+    }
+    ulong IDeserializeType.ReadU64(int index)
+    {
+        ReadColon();
+        return ReadU64();
+    }
+    sbyte IDeserializeType.ReadSByte(int index)
+    {
+        ReadColon();
+        return ReadSByte();
+    }
+    short IDeserializeType.ReadI16(int index)
+    {
+        ReadColon();
+        return ReadI16();
+    }
+    int IDeserializeType.ReadI32(int index)
+    {
+        ReadColon();
+        return ReadI32();
+    }
+    long IDeserializeType.ReadI64(int index)
+    {
+        ReadColon();
+        return ReadI64();
+    }
+    float IDeserializeType.ReadFloat(int index)
+    {
+        ReadColon();
+        return ReadFloat();
+    }
+    double IDeserializeType.ReadDouble(int index)
+    {
+        ReadColon();
+        return ReadDouble();
+    }
+    decimal IDeserializeType.ReadDecimal(int index)
+    {
+        ReadColon();
+        return ReadDecimal();
+    }
+    string IDeserializeType.ReadString(int index)
+    {
+        ReadColon();
+        return this.ReadString();
+    }
+
+    void IDeserializeType.SkipValue()
+    {
+        ReadColon();
         Reader.Skip();
     }
 

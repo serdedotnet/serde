@@ -24,19 +24,11 @@ public readonly partial record struct BoolWrap
         => serializer.SerializeBool(value);
     static bool IDeserialize<bool>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeBool(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<bool>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        bool IDeserializeVisitor<bool>.VisitBool(bool x) => x;
+        return deserializer.ReadBool();
     }
 }
 
-public readonly partial record struct CharWrap(char Value)
+public readonly partial struct CharWrap
     : ISerialize<char>, IDeserialize<char>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -46,32 +38,11 @@ public readonly partial record struct CharWrap(char Value)
         => serializer.SerializeChar(value);
     static char IDeserialize<char>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeChar(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<char>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        char IDeserializeVisitor<char>.VisitChar(char c) => c;
-        char IDeserializeVisitor<char>.VisitString(string s) => GetChar(s);
-        private char GetChar(string s)
-        {
-            if (s.Length == 1)
-            {
-                return s[0];
-            }
-            throw new DeserializeException("Expected type " + ExpectedTypeName);
-        }
-        char IDeserializeVisitor<char>.VisitUtf8Span(Utf8Span s)
-        {
-            return GetChar(Encoding.UTF8.GetString(s));
-        }
+        return deserializer.ReadChar();
     }
 }
 
-public readonly partial record struct ByteWrap(byte Value)
+public readonly partial struct ByteWrap
     : ISerialize<byte>, IDeserialize<byte>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -82,26 +53,11 @@ public readonly partial record struct ByteWrap(byte Value)
     }
     static byte IDeserialize<byte>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeByte(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<byte>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => ByteWrap.s_typeName;
-        byte IDeserializeVisitor<byte>.VisitByte(byte b)    => b;
-        byte IDeserializeVisitor<byte>.VisitU16(ushort u16) => Convert.ToByte(u16);
-        byte IDeserializeVisitor<byte>.VisitU32(uint u32)   => Convert.ToByte(u32);
-        byte IDeserializeVisitor<byte>.VisitU64(ulong u64)  => Convert.ToByte(u64);
-        byte IDeserializeVisitor<byte>.VisitSByte(sbyte b)  => Convert.ToByte(b);
-        byte IDeserializeVisitor<byte>.VisitI16(short i16)  => Convert.ToByte(i16);
-        byte IDeserializeVisitor<byte>.VisitI32(int i32)    => Convert.ToByte(i32);
-        byte IDeserializeVisitor<byte>.VisitI64(long i64)   => Convert.ToByte(i64);
+        return deserializer.ReadByte();
     }
 }
 
-public readonly partial record struct UInt16Wrap(ushort Value)
+public readonly partial struct UInt16Wrap
     : ISerialize<ushort>, IDeserialize<ushort>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -112,26 +68,11 @@ public readonly partial record struct UInt16Wrap(ushort Value)
     }
     static ushort IDeserialize<ushort>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeU16(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<ushort>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        ushort IDeserializeVisitor<ushort>.VisitByte(byte b)    => b;
-        ushort IDeserializeVisitor<ushort>.VisitU16(ushort u16) => u16;
-        ushort IDeserializeVisitor<ushort>.VisitU32(uint u32)   => Convert.ToUInt16(u32);
-        ushort IDeserializeVisitor<ushort>.VisitU64(ulong u64)  => Convert.ToUInt16(u64);
-        ushort IDeserializeVisitor<ushort>.VisitSByte(sbyte b)  => Convert.ToUInt16(b);
-        ushort IDeserializeVisitor<ushort>.VisitI16(short i16)  => Convert.ToUInt16(i16);
-        ushort IDeserializeVisitor<ushort>.VisitI32(int i32)    => Convert.ToUInt16(i32);
-        ushort IDeserializeVisitor<ushort>.VisitI64(long i64)   => Convert.ToUInt16(i64);
+        return deserializer.ReadU16();
     }
 }
 
-public readonly partial record struct UInt32Wrap
+public readonly partial struct UInt32Wrap
     : ISerialize<uint>, IDeserialize<uint>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -140,26 +81,11 @@ public readonly partial record struct UInt32Wrap
         => serializer.SerializeU32(value);
     static uint IDeserialize<uint>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeU32(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<uint>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        uint IDeserializeVisitor<uint>.VisitByte(byte b)    => b;
-        uint IDeserializeVisitor<uint>.VisitU16(ushort u16) => u16;
-        uint IDeserializeVisitor<uint>.VisitU32(uint u32)   => u32;
-        uint IDeserializeVisitor<uint>.VisitU64(ulong u64)  => Convert.ToUInt32(u64);
-        uint IDeserializeVisitor<uint>.VisitSByte(sbyte b)  => Convert.ToUInt32(b);
-        uint IDeserializeVisitor<uint>.VisitI16(short i16)  => Convert.ToUInt32(i16);
-        uint IDeserializeVisitor<uint>.VisitI32(int i32)    => Convert.ToUInt32(i32);
-        uint IDeserializeVisitor<uint>.VisitI64(long i64)   => Convert.ToUInt32(i64);
+        return deserializer.ReadU32();
     }
 }
 
-public readonly partial record struct UInt64Wrap(ulong Value)
+public readonly partial struct UInt64Wrap
     : ISerialize<ulong>, IDeserialize<ulong>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -168,26 +94,11 @@ public readonly partial record struct UInt64Wrap(ulong Value)
         => serializer.SerializeU64(value);
     static ulong IDeserialize<ulong>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeU64(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<ulong>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        ulong IDeserializeVisitor<ulong>.VisitByte(byte b)    => b;
-        ulong IDeserializeVisitor<ulong>.VisitU16(ushort u16) => u16;
-        ulong IDeserializeVisitor<ulong>.VisitU32(uint u32)   => u32;
-        ulong IDeserializeVisitor<ulong>.VisitU64(ulong u64)  => u64;
-        ulong IDeserializeVisitor<ulong>.VisitSByte(sbyte b)  => Convert.ToUInt64(b);
-        ulong IDeserializeVisitor<ulong>.VisitI16(short i16)  => Convert.ToUInt64(i16);
-        ulong IDeserializeVisitor<ulong>.VisitI32(int i32)    => Convert.ToUInt64(i32);
-        ulong IDeserializeVisitor<ulong>.VisitI64(long i64)   => Convert.ToUInt64(i64);
+        return deserializer.ReadU64();
     }
 }
 
-public readonly partial record struct SByteWrap(sbyte Value)
+public readonly partial struct SByteWrap
     : ISerialize<sbyte>, IDeserialize<sbyte>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -196,26 +107,11 @@ public readonly partial record struct SByteWrap(sbyte Value)
         => serializer.SerializeSByte(value);
     static sbyte IDeserialize<sbyte>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeSByte(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<sbyte>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        sbyte IDeserializeVisitor<sbyte>.VisitByte(byte b)    => Convert.ToSByte(b);
-        sbyte IDeserializeVisitor<sbyte>.VisitU16(ushort u16) => Convert.ToSByte(u16);
-        sbyte IDeserializeVisitor<sbyte>.VisitU32(uint u32)   => Convert.ToSByte(u32);
-        sbyte IDeserializeVisitor<sbyte>.VisitU64(ulong u64)  => Convert.ToSByte(u64);
-        sbyte IDeserializeVisitor<sbyte>.VisitSByte(sbyte b)  => b;
-        sbyte IDeserializeVisitor<sbyte>.VisitI16(short i16)  => Convert.ToSByte(i16);
-        sbyte IDeserializeVisitor<sbyte>.VisitI32(int i32)    => Convert.ToSByte(i32);
-        sbyte IDeserializeVisitor<sbyte>.VisitI64(long i64)   => Convert.ToSByte(i64);
+        return deserializer.ReadSByte();
     }
 }
 
-public readonly partial record struct Int16Wrap(short Value)
+public readonly partial struct Int16Wrap
     : ISerialize<short>, IDeserialize<short>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -226,26 +122,11 @@ public readonly partial record struct Int16Wrap(short Value)
     }
     static short IDeserialize<short>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeI16(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<short>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        short IDeserializeVisitor<short>.VisitByte(byte b)    => b;
-        short IDeserializeVisitor<short>.VisitU16(ushort u16) => Convert.ToInt16(u16);
-        short IDeserializeVisitor<short>.VisitU32(uint u32)   => Convert.ToInt16(u32);
-        short IDeserializeVisitor<short>.VisitU64(ulong u64)  => Convert.ToInt16(u64);
-        short IDeserializeVisitor<short>.VisitSByte(sbyte b)  => b;
-        short IDeserializeVisitor<short>.VisitI16(short i16)  => i16;
-        short IDeserializeVisitor<short>.VisitI32(int i32)    => Convert.ToInt16(i32);
-        short IDeserializeVisitor<short>.VisitI64(long i64)   => Convert.ToInt16(i64);
+        return deserializer.ReadI16();
     }
 }
 
-public readonly partial record struct Int32Wrap(int Value)
+public readonly partial struct Int32Wrap
     : ISerialize<int>, IDeserialize<int>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -256,26 +137,11 @@ public readonly partial record struct Int32Wrap(int Value)
     }
     static int IDeserialize<int>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeI32(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<int>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        int IDeserializeVisitor<int>.VisitByte(byte b)    => b;
-        int IDeserializeVisitor<int>.VisitU16(ushort u16) => u16;
-        int IDeserializeVisitor<int>.VisitU32(uint u32)   => Convert.ToInt32(u32);
-        int IDeserializeVisitor<int>.VisitU64(ulong u64)  => Convert.ToInt32(u64);
-        int IDeserializeVisitor<int>.VisitSByte(sbyte b)  => b;
-        int IDeserializeVisitor<int>.VisitI16(short i16)  => i16;
-        int IDeserializeVisitor<int>.VisitI32(int i32)    => i32;
-        int IDeserializeVisitor<int>.VisitI64(long i64)   => Convert.ToInt32(i64);
+        return deserializer.ReadI32();
     }
 }
 
-public readonly partial record struct Int64Wrap(long Value)
+public readonly partial struct Int64Wrap
     : ISerialize<long>, IDeserialize<long>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -284,8 +150,7 @@ public readonly partial record struct Int64Wrap(long Value)
         => serializer.SerializeI64(value);
     static long IDeserialize<long>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeI64(visitor);
+        return deserializer.ReadI64();
     }
 
     private sealed class SerdeVisitor : IDeserializeVisitor<long>
@@ -309,110 +174,48 @@ public readonly record struct SingleWrap : ISerialize<float>, IDeserialize<float
     public void Serialize(float value, ISerializer serializer)
         => serializer.SerializeFloat(value);
     public static float Deserialize(IDeserializer deserializer)
-        => deserializer.DeserializeFloat(SerdeVisitor.Instance);
-    private sealed class SerdeVisitor : IDeserializeVisitor<float>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => "float";
-        float IDeserializeVisitor<float>.VisitByte(byte b)    => b;
-        float IDeserializeVisitor<float>.VisitU16(ushort u16) => u16;
-        float IDeserializeVisitor<float>.VisitU32(uint u32)   => u32;
-        float IDeserializeVisitor<float>.VisitU64(ulong u64)  => u64;
-        float IDeserializeVisitor<float>.VisitSByte(sbyte b)  => b;
-        float IDeserializeVisitor<float>.VisitI16(short i16)  => i16;
-        float IDeserializeVisitor<float>.VisitI32(int i32)    => i32;
-        float IDeserializeVisitor<float>.VisitI64(long i64)   => i64;
-        float IDeserializeVisitor<float>.VisitFloat(float f) => f;
-        float IDeserializeVisitor<float>.VisitDouble(double d) => Convert.ToSingle(d);
-    }
+        => deserializer.ReadFloat();
 }
 
-public readonly partial record struct DoubleWrap(double Value)
+public readonly partial record struct DoubleWrap
     : ISerialize<double>, IDeserialize<double>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("double");
-    public static DoubleWrap Create(double d) => new DoubleWrap(d);
     void ISerialize<double>.Serialize(double value, ISerializer serializer)
     {
         serializer.SerializeDouble(value);
     }
     static double IDeserialize<double>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeDouble(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<double>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => "double";
-        double IDeserializeVisitor<double>.VisitByte(byte b)    => b;
-        double IDeserializeVisitor<double>.VisitU16(ushort u16) => u16;
-        double IDeserializeVisitor<double>.VisitU32(uint u32)   => u32;
-        double IDeserializeVisitor<double>.VisitU64(ulong u64)  => Convert.ToDouble(u64);
-        double IDeserializeVisitor<double>.VisitSByte(sbyte b)  => b;
-        double IDeserializeVisitor<double>.VisitI16(short i16)  => i16;
-        double IDeserializeVisitor<double>.VisitI32(int i32)    => i32;
-        double IDeserializeVisitor<double>.VisitI64(long i64)   => Convert.ToDouble(i64);
-        double IDeserializeVisitor<double>.VisitFloat(float f) => f;
-        double IDeserializeVisitor<double>.VisitDouble(double d) => d;
+        return deserializer.ReadDouble();
     }
 }
 
-public readonly partial record struct DecimalWrap(decimal Value)
+public readonly partial struct DecimalWrap
     : ISerialize<decimal>, IDeserialize<decimal>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("decimal");
-    public static DecimalWrap Create(decimal d) => new DecimalWrap(d);
     void ISerialize<decimal>.Serialize(decimal value, ISerializer serializer)
     {
         serializer.SerializeDecimal(value);
     }
     static decimal IDeserialize<decimal>.Deserialize(IDeserializer deserializer)
     {
-        var visitor = SerdeVisitor.Instance;
-        return deserializer.DeserializeDecimal(visitor);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<decimal>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => "decimal";
-        decimal IDeserializeVisitor<decimal>.VisitByte(byte b)    => b;
-        decimal IDeserializeVisitor<decimal>.VisitU16(ushort u16) => u16;
-        decimal IDeserializeVisitor<decimal>.VisitU32(uint u32)   => u32;
-        decimal IDeserializeVisitor<decimal>.VisitU64(ulong u64)  => u64;
-        decimal IDeserializeVisitor<decimal>.VisitSByte(sbyte b)  => b;
-        decimal IDeserializeVisitor<decimal>.VisitI16(short i16)  => i16;
-        decimal IDeserializeVisitor<decimal>.VisitI32(int i32)    => i32;
-        decimal IDeserializeVisitor<decimal>.VisitI64(long i64)   => i64;
-        decimal IDeserializeVisitor<decimal>.VisitFloat(float f) => Convert.ToDecimal(f);
-        decimal IDeserializeVisitor<decimal>.VisitDouble(double d) => Convert.ToDecimal(d);
-        decimal IDeserializeVisitor<decimal>.VisitDecimal(decimal d) => d;
+        return deserializer.ReadDecimal();
     }
 }
-public readonly partial record struct StringWrap(string Value)
+public readonly partial struct StringWrap
     : ISerialize<string>, IDeserialize<string>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
     private const string s_typeName = "string";
-    public static StringWrap Create(string s) => new StringWrap(s);
     void ISerialize<string>.Serialize(string value, ISerializer serializer)
     {
         serializer.SerializeString(value);
     }
     public static string Deserialize(IDeserializer deserializer)
     {
-        return deserializer.DeserializeString(SerdeVisitor.Instance);
-    }
-
-    private sealed class SerdeVisitor : IDeserializeVisitor<string>
-    {
-        public static readonly SerdeVisitor Instance = new SerdeVisitor();
-        public string ExpectedTypeName => s_typeName;
-        public string VisitString(string s) => s;
-        string IDeserializeVisitor<string>.VisitChar(char c) => c.ToString();
-        string IDeserializeVisitor<string>.VisitUtf8Span(Utf8Span s) => Encoding.UTF8.GetString(s);
+        return deserializer.ReadString();
     }
 }
 
@@ -486,7 +289,7 @@ public static class NullableWrap
         public static ISerdeInfo SerdeInfo => NullableSerdeInfo<TWrap>.Instance;
         public static T? Deserialize(IDeserializer deserializer)
         {
-            return deserializer.DeserializeNullableRef(new Visitor());
+            return deserializer.ReadNullableRef(new Visitor());
         }
 
         private sealed class Visitor : IDeserializeVisitor<T?>
@@ -536,7 +339,7 @@ public static class NullableRefWrap
 
         public static T? Deserialize(IDeserializer deserializer)
         {
-            return deserializer.DeserializeNullableRef(new Visitor());
+            return deserializer.ReadNullableRef(new Visitor());
         }
 
         private sealed class Visitor : IDeserializeVisitor<T?>
