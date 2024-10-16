@@ -14,7 +14,7 @@ public readonly struct IdWrap<T> : ISerialize<T>
     void ISerialize<T>.Serialize(T value, ISerializer serializer) => value.Serialize(value, serializer);
 }
 
-public readonly partial record struct BoolWrap
+public readonly partial struct BoolWrap
     : ISerialize<bool>, IDeserialize<bool>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -168,7 +168,7 @@ public readonly partial struct Int64Wrap
     }
 }
 
-public readonly record struct SingleWrap : ISerialize<float>, IDeserialize<float>
+public readonly struct SingleWrap : ISerialize<float>, IDeserialize<float>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float");
     public void Serialize(float value, ISerializer serializer)
@@ -177,7 +177,7 @@ public readonly record struct SingleWrap : ISerialize<float>, IDeserialize<float
         => deserializer.ReadFloat();
 }
 
-public readonly partial record struct DoubleWrap
+public readonly partial struct DoubleWrap
     : ISerialize<double>, IDeserialize<double>
 {
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("double");
@@ -263,7 +263,7 @@ file sealed record NullableSerdeInfo<TInfoProvider> : ISerdeInfo
 
 public static class NullableWrap
 {
-    public readonly partial record struct SerializeImpl<T, TWrap> : ISerialize<T?>
+    public readonly partial struct SerializeImpl<T, TWrap> : ISerialize<T?>
         where T : struct
         where TWrap : struct, ISerialize<T>
     {
@@ -281,7 +281,7 @@ public static class NullableWrap
         }
     }
 
-    public readonly partial record struct DeserializeImpl<T, TWrap>
+    public readonly partial struct DeserializeImpl<T, TWrap>
         : IDeserialize<T?>
         where T : struct
         where TWrap : IDeserialize<T>
@@ -311,7 +311,7 @@ public static class NullableWrap
 
 public static class NullableRefWrap
 {
-    public readonly partial record struct SerializeImpl<T, TWrap> : ISerialize<T?>
+    public readonly partial struct SerializeImpl<T, TWrap> : ISerialize<T?>
         where T : class
         where TWrap : struct, ISerialize<T>
     {
@@ -330,7 +330,7 @@ public static class NullableRefWrap
         }
     }
 
-    public readonly partial record struct DeserializeImpl<T, TWrap>(T? Value)
+    public readonly partial struct DeserializeImpl<T, TWrap>
         : IDeserialize<T?>
         where T : class
         where TWrap : IDeserialize<T>
