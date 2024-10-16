@@ -78,7 +78,7 @@ readonly partial struct {{wrapperName}} { }
             SpecialType.System_Int32 => "Int32Wrap",
             SpecialType.System_Int64 => "Int64Wrap",
             SpecialType.System_String => "StringWrap",
-            SpecialType.System_Single => "FloatWrap",
+            SpecialType.System_Single => "SingleWrap",
             SpecialType.System_Double => "DoubleWrap",
             SpecialType.System_Decimal => "DecimalWrap",
             _ => null
