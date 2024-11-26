@@ -17,11 +17,11 @@ namespace Serde;
 
 public partial class SerializeImplGen
 {
-    internal static (MemberDeclarationSyntax[], BaseListSyntax) GenSerialize(
+    internal static (List<MemberDeclarationSyntax>, BaseListSyntax) GenSerialize(
         TypeDeclContext typeDeclContext,
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
-        ImmutableList<ITypeSymbol> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         var statements = new List<StatementSyntax>();
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
@@ -41,7 +41,7 @@ public partial class SerializeImplGen
             var enumType = (INamedTypeSymbol)receiverType;
             var typeSyntax = enumType.ToFqnSyntax();
             var underlying = enumType.EnumUnderlyingType!;
-            statements.Add(ParseStatement($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Wrap>();"));
+            statements.Add(ParseStatement($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Proxy>();"));
             statements.Add(ParseStatement($$"""
             var index = value switch
             {
@@ -50,9 +50,9 @@ public partial class SerializeImplGen
                 var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
             };
             """));
-            var wrapper = Wrappers.TryGetPrimitiveWrapper(underlying, SerdeUsage.Serialize).NotNull().Wrapper;
+            var wrapper = Proxies.TryGetPrimitiveProxy(underlying, SerdeUsage.Serialize).NotNull().Proxy;
             statements.Add(ParseStatement(
-                $"serializer.SerializeEnumValue(_l_serdeInfo, index, ({underlying.ToFqnSyntax()})value, default({wrapper.ToFullString()}));"));
+                $"serializer.SerializeEnumValue(_l_serdeInfo, index, ({underlying.ToFqnSyntax()})value, {wrapper.ToFullString()}.Instance);"));
         }
         else
         {
@@ -81,7 +81,7 @@ public partial class SerializeImplGen
                         m.Locations[0],
                         m.Symbol,
                         m.Type,
-                        "Serde.ISerialize"));
+                        "Serde.ISerializeProvider<T>"));
                 }
                 else
                 {
@@ -98,12 +98,13 @@ public partial class SerializeImplGen
         }
 
         var receiverSyntax = ((INamedTypeSymbol)receiverType).ToFqnSyntax();
+        var receiverString = receiverType.ToDisplayString();
 
         string serdeInfoText = $"""
 static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}>.SerdeInfo => {receiverSyntax}SerdeInfo.Instance;
 """;
         // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
-        var members = new MemberDeclarationSyntax[] {
+        List<MemberDeclarationSyntax> members = [
             MethodDeclaration(
                 attributeLists: default,
                 modifiers: default,
@@ -121,18 +122,26 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
                 constraintClauses: default,
                 body: Block(statements),
                 expressionBody: null)
-        };
-        var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] {
-                SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverType.ToDisplayString()}>"))
-            }));
-        return (members, baseList);
+        ];
+        List<BaseTypeSyntax> bases = [
+            SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverString}>")),
+        ];
+        if (receiverType.TypeKind == TypeKind.Enum)
+        {
+            bases.Add(SimpleBaseType(ParseTypeName($"Serde.ISerializeProvider<{receiverType.ToDisplayString()}>")));
+            members.Add(ParseMemberDeclaration($$"""
+            static ISerialize<{{receiverString}}> ISerializeProvider<{{receiverString}}>.SerializeInstance
+                => {{receiverString}}Proxy.Instance;
+            """)!);
+        }
+        return (members, BaseList(SeparatedList(bases)));
 
         // Make a statement like `type.SerializeField<valueType, SerializeType>("member.Name", value)`
         static ExpressionStatementSyntax MakeSerializeFieldStmt(
             DataMemberSymbol member,
             int index,
             ExpressionSyntax value,
-            TypeWithWrapper typeAndWrapper,
+            TypeWithProxy typeAndWrapper,
             ExpressionSyntax receiver)
         {
             var arguments = new List<ExpressionSyntax>() {
@@ -145,7 +154,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             };
             var typeArgs = new List<TypeSyntax>() {
                 typeAndWrapper.Type,
-                typeAndWrapper.Wrapper
+                typeAndWrapper.Proxy
             };
 
             string methodName;
@@ -172,13 +181,13 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
     /// implements ISerialize.  SerdeDn provides wrappers for primitives and common types in the
     /// framework. If found, we generate and initialize the wrapper.
     /// </summary>
-    private static TypeWithWrapper? MakeSerializeType(
+    private static TypeWithProxy? MakeSerializeType(
         DataMemberSymbol member,
         GeneratorExecutionContext context,
-        ImmutableList<ITypeSymbol> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         // 1. Check for an explicit wrapper
-        if (Wrappers.TryGetExplicitWrapper(member, context, SerdeUsage.Serialize, inProgress) is {} wrapper)
+        if (Proxies.TryGetExplicitWrapper(member, context, SerdeUsage.Serialize, inProgress) is {} wrapper)
         {
             return new(member.Type.ToFqnSyntax(), wrapper);
         }
@@ -186,12 +195,11 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         // 2. Check for a direct implementation of ISerialize
         if (SerdeImplRoslynGenerator.ImplementsSerde(member.Type, member.Type, context, SerdeUsage.Serialize))
         {
-            return new(member.Type.ToFqnSyntax(),
-                GenericName(Identifier("IdWrap"), TypeArgumentList(SeparatedList(new[] { member.Type.ToFqnSyntax() }))));
+            return new(member.Type.ToFqnSyntax(), member.Type.ToFqnSyntax());
         }
 
         // 3. A wrapper that implements ISerialize
-        return Wrappers.TryGetImplicitWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
+        return Proxies.TryGetImplicitWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
     }
 
     private static ParameterSyntax Parameter(string typeName, string paramName, bool byRef = false) => SyntaxFactory.Parameter(

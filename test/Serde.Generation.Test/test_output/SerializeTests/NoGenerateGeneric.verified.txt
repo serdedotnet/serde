@@ -1,0 +1,14 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (5,13)-(5,18),
+      MessageFormat: The member 'C<T>.Field's return type 'T' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T, or specify a proxy type.,
+      Message: The member 'C<T>.Field's return type 'T' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T, or specify a proxy type.,
+      Category: Serde
+    }
+  ]
+}

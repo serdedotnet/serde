@@ -2,8 +2,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
-using VerifyXunit;
 using Xunit;
 using static Serde.Test.GeneratorTestUtils;
 
@@ -20,15 +18,16 @@ using Serde;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices.ComTypes;
 
-[GenerateSerde(ThroughMember = nameof(Value))]
-readonly partial record struct OPTSWrap(BIND_OPTS Value);
+[GenerateSerde(ForType = typeof(BIND_OPTS))]
+sealed partial class OPTSWrap
+{}
 
 [GenerateSerde]
 partial struct S
 {
     [SerdeMemberOptions(
-        WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BIND_OPTS, OPTSWrap>),
-        WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BIND_OPTS, OPTSWrap>))]
+        SerializeProxy = typeof(ImmutableArrayProxy.Serialize<BIND_OPTS, OPTSWrap>),
+        DeserializeProxy = typeof(ImmutableArrayProxy.Deserialize<BIND_OPTS, OPTSWrap>))]
     public ImmutableArray<BIND_OPTS> Opts;
 }
 
@@ -43,8 +42,8 @@ partial struct S
 using Serde;
 using System.Collections.Specialized;
 
-[GenerateSerialize(ThroughMember = nameof(Value))]
-readonly partial record struct SectionWrap(BitVector32.Section Value);
+[GenerateSerialize(ForType = typeof(BitVector32.Section))]
+readonly partial record struct SectionWrap {}
 
 """;
             return VerifyMultiFile(src);
@@ -123,10 +122,10 @@ using Serde;
 
 [GenerateSerialize]
 partial struct S<T1, T2, T3, T4, T5>
-    where T1 : ISerialize<T1>
-    where T2 : ISerialize<T2>?
-    where T3 : class, ISerialize<T3>
-    where T4 : class?, ISerialize<T4>
+    where T1 : ISerializeProvider<T1>
+    where T2 : ISerializeProvider<T2>?
+    where T3 : class, ISerializeProvider<T3>
+    where T4 : class?, ISerializeProvider<T4>
 {
     public string? FS;
     public T1 F1;
@@ -146,7 +145,7 @@ using Serde;
 partial struct S<T1, T2, TSerialize>
     where T1 : int?
     where T2 : TSerialize?
-    where TSerialize : struct, ISerialize<TSerialize>
+    where TSerialize : struct, ISerializeProvider<TSerialize>
 {
     public int? FI;
     public T1 F1;
@@ -307,14 +306,18 @@ public struct S
         Y = y;
     }
 }
-public struct SWrap : ISerialize<S>
+public sealed class SWrap : ISerialize<S>, ISerializeProvider<S>
 {
+    public static SWrap Instance { get; } = new();
+    static ISerialize<S> ISerializeProvider<S>.SerializeInstance => Instance;
+    private SWrap() { }
+
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
         typeof(S).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
-            (""x"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""X"")!),
-            (""y"", SerdeInfoProvider.GetInfo<Int32Wrap>(), typeof(S).GetField(""Y"")!),
+            (""x"", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(S).GetField(""X"")!),
+            (""y"", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(S).GetField(""Y"")!),
         });
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
@@ -325,7 +328,7 @@ public struct SWrap : ISerialize<S>
 [GenerateSerialize]
 partial class C
 {
-    [SerdeWrap(typeof(SWrap))]
+    [SerdeMemberOptions(Proxy = typeof(SWrap))]
     public S S = new S();
 }";
             return VerifySerialize(src);
@@ -355,9 +358,13 @@ public static class SWrap
             new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
                 (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")!) });
     }
-    public readonly struct SerializeImpl<T, TWrap> : ISerialize<S<T>>
-        where TWrap : struct, ISerialize<T>
+    public sealed class Serialize<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
+        where TWrap : ISerializeProvider<T>
     {
+        public static Serialize<T, TWrap> Instance { get; } = new Serialize<T, TWrap>();
+        static ISerialize<S<T>> ISerializeProvider<S<T>>.SerializeInstance => Instance;
+        private Serialize() { }
+
         public static ISerdeInfo SerdeInfo => SWrapTypeInfo<TWrap>.TypeInfo;
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
@@ -371,7 +378,7 @@ public static class SWrap
 [GenerateSerialize]
 partial class C
 {
-    [SerdeWrap(typeof(SWrap))]
+    [SerdeMemberOptions(Proxy = typeof(SWrap))]
     public S<int> S = new S<int>(5);
 }";
             return VerifySerialize(src);
@@ -391,28 +398,30 @@ public struct S<T>
         Field = f;
     }
 }
-public readonly struct SWrap<T, TWrap>
-    : ISerialize<T>
-    where TWrap : struct, ISerialize<T>
+public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
+    where TWrap : ISerializeProvider<T>
 {
+    public static SWrap<T, TWrap> Instance { get; } = new();
+    static ISerialize<S<T>> ISerializeProvider<S<T>>.SerializeInstance => Instance;
+    private SWrap() { }
+
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
         typeof(S<>).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
             (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")!) });
-
-    void ISerialize<T>.Serialize(T value, ISerializer serializer)
+    void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
     {
         var _l_serdeInfo = SerdeInfo;
         var type = serializer.SerializeType(_l_serdeInfo);
-        type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value);
+        type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value.Field);
         type.End();
     }
 }
 [GenerateSerialize]
 partial class C
 {
-    [SerdeWrap(typeof(SWrap<,>))]
+    [SerdeMemberOptions(Proxy = typeof(SWrap<,>))]
     public S<int> S = new S<int>(5);
 }";
             return VerifySerialize(src);
@@ -482,6 +491,21 @@ partial class A
             }
         }
     }
+}
+""";
+            return VerifySerialize(src);
+        }
+
+        [Fact]
+        public Task NoGenerateGeneric()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+partial class C<T>
+{
+    public T Field;
 }
 """;
             return VerifySerialize(src);

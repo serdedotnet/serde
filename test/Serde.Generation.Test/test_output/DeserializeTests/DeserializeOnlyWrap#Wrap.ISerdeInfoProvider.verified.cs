@@ -7,9 +7,9 @@ partial record struct Wrap : Serde.ISerdeInfoProvider
         "BIND_OPTS",
         typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("cbStruct", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("cbStruct")!),
-("dwTickCountDeadline", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("dwTickCountDeadline")!),
-("grfFlags", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("grfFlags")!),
-("grfMode", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("grfMode")!)
+("cbStruct", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("cbStruct")!),
+("dwTickCountDeadline", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("dwTickCountDeadline")!),
+("grfFlags", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("grfFlags")!),
+("grfMode", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetField("grfMode")!)
     });
 }

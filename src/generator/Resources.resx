@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ERR_DoesntImplementInterface" xml:space="preserve">
-    <value>The member '{0}'s return type '{1}' doesn't implement {2}. Either implement the interface, or use a wrapper.</value>
+    <value>The member '{0}'s return type '{1}' doesn't implement {2}. Either implement '{2}' on {1}, or specify a proxy type.</value>
   </data>
   <data name="ERR_TypeNotPartial" xml:space="preserve">
     <value>The type '{0}' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.</value>
@@ -130,7 +130,7 @@
     <value>Could not find a constructor with the target signature listed by the ConstructorSignature parameter.</value>
   </data>
   <data name="ERR_CantFindNestedWrapper" xml:space="preserve">
-    <value>Could not find nested type named '{0}' inside type '{1}'. The wrapped type '{2}' is generic, so the expected wrapper is a parent type with SerializeImpl and DeserializeImpl nested wrappers.</value>
+    <value>Could not find nested type named '{0}' inside type '{1}'. The proxied type '{2}' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.</value>
   </data>
   <data name="ERR_WrapperDoesntImplementInterface" xml:space="preserve">
     <value>The proxy type '{0}' doesn't implement the interface '{2}&lt;{1}&gt;'.</value>

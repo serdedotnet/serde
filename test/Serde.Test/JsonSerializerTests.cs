@@ -102,8 +102,11 @@ namespace Serde.Test
 ]");
         }
 
-        private struct JsonDictionaryWrapper : ISerialize<JsonDictionaryWrapper>
+        private struct JsonDictionaryWrapper : ISerialize<JsonDictionaryWrapper>, ISerializeProvider<JsonDictionaryWrapper>
         {
+            public static JsonDictionaryWrapper Instance { get; } = new();
+            static ISerialize<JsonDictionaryWrapper> ISerializeProvider<JsonDictionaryWrapper>.SerializeInstance => Instance;
+
             public static ISerdeInfo SerdeInfo { get; } = new CollectionSerdeInfo(
                 typeof(Dictionary<int, int>).ToString(),
                 InfoKind.Dictionary);
@@ -119,8 +122,8 @@ namespace Serde.Test
                 var sd = serializer.SerializeCollection(typeInfo, value._d.Count);
                 foreach (var (k,v) in value._d)
                 {
-                    sd.SerializeElement(k.ToString(), new StringWrap());
-                    sd.SerializeElement(v, new Int32Wrap());
+                    sd.SerializeElement(k.ToString(), StringProxy.Instance);
+                    sd.SerializeElement(v, Int32Proxy.Instance);
                 }
                 sd.End(typeInfo);
             }
@@ -147,7 +150,7 @@ namespace Serde.Test
         public void NullableString()
         {
             string? s = null;
-            var js = Serde.Json.JsonSerializer.Serialize<string?, NullableRefWrap.SerializeImpl<string, StringWrap>>(s);
+            var js = Serde.Json.JsonSerializer.Serialize<string?, NullableRefProxy.Serialize<string, StringProxy>>(s);
             Assert.Equal("null", js);
             js = Serde.Json.JsonSerializer.Serialize<JsonValue>(JsonValue.Null.Instance);
             Assert.Equal("null", js);
@@ -182,6 +185,14 @@ namespace Serde.Test
                 Assert.Equal(v, de.D[k]);
             }
             Assert.Equal(s.D.Count, de.D.Count);
+        }
+
+        [Fact]
+        public void DeserializeIntArray()
+        {
+            var js = "[1,2,3]";
+            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.Deserialize<int, Int32Proxy>>(js);
+            Assert.Equal(new int[] { 1, 2, 3 }, arr);
         }
     }
 }

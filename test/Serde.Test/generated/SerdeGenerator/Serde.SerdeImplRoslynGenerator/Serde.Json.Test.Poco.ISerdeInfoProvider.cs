@@ -7,6 +7,6 @@ partial class Poco : Serde.ISerdeInfoProvider
         "Poco",
         typeof(Serde.Json.Test.Poco).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("id", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Json.Test.Poco).GetProperty("Id")!)
+("id", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Json.Test.Poco).GetProperty("Id")!)
     });
 }

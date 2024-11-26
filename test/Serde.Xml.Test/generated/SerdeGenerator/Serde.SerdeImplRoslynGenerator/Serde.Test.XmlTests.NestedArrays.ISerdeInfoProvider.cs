@@ -9,7 +9,7 @@ partial class XmlTests
         "NestedArrays",
         typeof(Serde.Test.XmlTests.NestedArrays).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("A", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<int[][],Serde.ArrayWrap.SerializeImpl<int[],Serde.ArrayWrap.SerializeImpl<int,global::Serde.Int32Wrap>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A")!)
+("A", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<int[][],Serde.ArrayProxy.Serialize<int[],Serde.ArrayProxy.Serialize<int,global::Serde.Int32Proxy>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A")!)
     });
 }
 }

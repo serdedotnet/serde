@@ -177,7 +177,7 @@ namespace Serde.Test
         }
 
         private static void VerifyCompatSerialize<T>(T t, string expected)
-            where T : ISerialize<T>
+            where T : ISerializeProvider<T>
         {
             var result = LegacySerialize(t);
             Assert.Equal(expected, result);

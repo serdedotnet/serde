@@ -31,6 +31,11 @@ namespace Serde
                 {
                     continue;
                 }
+                if (m is IPropertySymbol { Parameters: { Length: > 0 } })
+                {
+                    // Skip indexers
+                    continue;
+                }
                 if (type.TypeKind != TypeKind.Enum && m.IsStatic)
                 {
                     continue;

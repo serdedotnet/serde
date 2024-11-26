@@ -4,13 +4,23 @@
 using System;
 using Serde;
 
-partial struct S : Serde.ISerialize<S>
+partial struct S : Serde.ISerializeProvider<S>
 {
-    void ISerialize<S>.Serialize(S value, ISerializer serializer)
+    static ISerialize<S> ISerializeProvider<S>.SerializeInstance => SSerializeProxy.Instance;
+
+    sealed class SSerializeProxy : Serde.ISerialize<S>
     {
-        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S>();
-        var type = serializer.SerializeType(_l_serdeInfo);
-        type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ArrayWrap.SerializeImpl<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>>(_l_serdeInfo, 0, value.Sections);
-        type.End();
+        void ISerialize<S>.Serialize(S value, ISerializer serializer)
+        {
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S>();
+            var type = serializer.SerializeType(_l_serdeInfo);
+            type.SerializeField<System.Collections.Immutable.ImmutableArray<int>, Serde.ArrayProxy.Serialize<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>>(_l_serdeInfo, 0, value.Sections);
+            type.End();
+        }
+
+        public static readonly SSerializeProxy Instance = new();
+        private SSerializeProxy()
+        {
+        }
     }
 }

@@ -6,85 +6,60 @@ using System.Linq;
 
 namespace Serde.Json
 {
-    partial record JsonValue : ISerialize<JsonValue>
+    partial record JsonValue : ISerializeProvider<JsonValue>
     {
-        public abstract void Serialize(ISerializer serializer);
+        static ISerialize<JsonValue> ISerializeProvider<JsonValue>.SerializeInstance { get; }
+            = JsonValueSerialize.Instance;
+    }
+
+    file sealed class JsonValueSerialize : ISerialize<JsonValue>
+    {
+        public static JsonValueSerialize Instance { get; } = new();
+        public ISerdeInfo SerdeInfo { get; } = JsonValue.UnionInfo.Instance;
+
+        private JsonValueSerialize() { }
 
         void ISerialize<JsonValue>.Serialize(JsonValue value, ISerializer serializer)
         {
-            value.Serialize(serializer);
-        }
-
-        partial record Number
-        {
-            public override void Serialize(ISerializer serializer)
+            switch (value)
             {
-                serializer.SerializeDouble(Value);
-            }
-        }
-
-        partial record Bool
-        {
-            public override void Serialize(ISerializer serializer)
-            {
-                serializer.SerializeBool(Value);
-            }
-        }
-
-        partial record String
-        {
-            public override void Serialize(ISerializer serializer)
-            {
-                serializer.SerializeString(Value);
-            }
-        }
-
-        partial record Object
-        {
-            public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
-                : this(members.ToImmutableDictionary())
-            { }
-
-            public Object((string FieldName, JsonValue Value)[] members)
-                : this(members.ToImmutableDictionary(t => t.FieldName, t => t.Value))
-            { }
-
-            public override void Serialize(ISerializer serializer)
-            {
-                var typeInfo = SerdeInfoProvider.GetInfo<Object>();
-                var dict = serializer.SerializeCollection(typeInfo, Members.Count);
-                foreach (var (name, node) in Members.OrderBy(kvp => kvp.Key))
-                {
-                    dict.SerializeElement(name, default(StringWrap));
-                    dict.SerializeElement(node, node);
-                }
-                dict.End(typeInfo);
-            }
-        }
-
-        partial record Array
-        {
-            public Array(IEnumerable<JsonValue> elements)
-                : this(elements.ToImmutableArray())
-            { }
-
-            public override void Serialize(ISerializer serializer)
-            {
-                var typeInfo = SerdeInfoProvider.GetInfo<Array>();
-                var enumerable = serializer.SerializeCollection(typeInfo, Elements.Length);
-                foreach (var element in Elements)
-                {
-                    enumerable.SerializeElement(element, element);
-                }
-                enumerable.End(typeInfo);
-            }
-        }
-
-        partial record Null
-        {
-            public override void Serialize(ISerializer serializer)
-            {
-                serializer.SerializeNull();
+                case JsonValue.Number(double v):
+                    serializer.SerializeDouble(v);
+                    break;
+                case JsonValue.Bool(bool v):
+                    serializer.SerializeBool(v);
+                    break;
+                case JsonValue.String(string v):
+                    serializer.SerializeString(v);
+                    break;
+                case JsonValue.Object(ImmutableDictionary<string, JsonValue> members):
+                    {
+                        var serdeInfo = JsonValue.UnionInfo.ObjectInfo;
+                        var dict = serializer.SerializeCollection(serdeInfo, members.Count);
+                        foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
+                        {
+                            dict.SerializeElement(name, StringProxy.Instance);
+                            dict.SerializeElement(node, Instance);
+                        }
+                        dict.End(serdeInfo);
+                        break;
+                    }
+                case JsonValue.Array(ImmutableArray<JsonValue> elements):
+                    {
+                        var serdeInfo = JsonValue.UnionInfo.ArrayInfo;
+                        var enumerable = serializer.SerializeCollection(serdeInfo, elements.Length);
+                        foreach (var element in elements)
+                        {
+                            enumerable.SerializeElement(element, Instance);
+                        }
+                        enumerable.End(serdeInfo);
+                        break;
+                    }
+                case JsonValue.Null n:
+                    serializer.SerializeNull();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown JsonValue type: {value.GetType()}");
             }
         }
     }

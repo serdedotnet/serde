@@ -9,8 +9,8 @@ partial class JsonSerializerTests
         "NullableFields",
         typeof(Serde.Test.JsonSerializerTests.NullableFields).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("s", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefWrap.SerializeImpl<string,global::Serde.StringWrap>>(), typeof(Serde.Test.JsonSerializerTests.NullableFields).GetField("S")!),
-("d", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictWrap.SerializeImpl<string,global::Serde.StringWrap,string?,Serde.NullableRefWrap.SerializeImpl<string,global::Serde.StringWrap>>>(), typeof(Serde.Test.JsonSerializerTests.NullableFields).GetField("D")!)
+("s", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(), typeof(Serde.Test.JsonSerializerTests.NullableFields).GetField("S")!),
+("d", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.Serialize<string,string?,global::Serde.StringProxy,Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>>(), typeof(Serde.Test.JsonSerializerTests.NullableFields).GetField("D")!)
     });
 }
 }

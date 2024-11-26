@@ -32,7 +32,7 @@ internal static class SerdeInfoGenerator
         INamedTypeSymbol receiverType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<ITypeSymbol> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         bool isEnum;
         string makeFuncSuffix;
@@ -65,7 +65,7 @@ internal static class SerdeInfoGenerator
         if (isEnum)
         {
             string underlyingInfo;
-            if (Wrappers.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress) is { Wrapper: { } wrap })
+            if (Proxies.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress) is { Proxy: { } wrap })
             {
                 underlyingInfo = wrap.ToString();
             }
@@ -126,10 +126,10 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
         DataMemberSymbol m,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<ITypeSymbol> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         string? wrapperName;
-        if (Wrappers.TryGetExplicitWrapper(m, context, usage, inProgress) is { } explicitWrap)
+        if (Proxies.TryGetExplicitWrapper(m, context, usage, inProgress) is { } explicitWrap)
         {
             wrapperName = explicitWrap.ToString();
         }
@@ -137,7 +137,7 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
         {
             wrapperName = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
         }
-        else if (Wrappers.TryGetImplicitWrapper(m.Type, context, usage, inProgress) is { Wrapper: { } wrap })
+        else if (Proxies.TryGetImplicitWrapper(m.Type, context, usage, inProgress) is { Proxy: { } wrap })
         {
             wrapperName = wrap.ToString();
         }

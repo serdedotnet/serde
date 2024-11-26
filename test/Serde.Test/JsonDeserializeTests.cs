@@ -1,5 +1,6 @@
 
 using System.Collections.Generic;
+using System.Drawing;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
@@ -328,12 +329,16 @@ namespace Serde.Test
             Assert.Equal(ColorEnum.Red, JsonSerializer.Deserialize<ColorEnum, ColorEnumWrap>("\"red\""));
         }
 
-        private struct ColorEnumWrap : IDeserialize<ColorEnum>
+        private sealed class ColorEnumWrap : IDeserialize<ColorEnum>, IDeserializeProvider<ColorEnum>
         {
+            public static ColorEnumWrap Instance { get; } = new();
+            static IDeserialize<ColorEnum> IDeserializeProvider<ColorEnum>.DeserializeInstance => Instance;
+            private ColorEnumWrap() { }
+
             public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
                 nameof(JsonDeserializeTests.ColorEnum),
                 typeof(ColorEnum).GetCustomAttributesData(),
-                Int32Wrap.SerdeInfo,
+                Int32Proxy.SerdeInfo,
                 [
                     ("red", typeof(ColorEnum).GetField("Red")!),
                     ("green", typeof(ColorEnum).GetField("Green")!),
@@ -341,7 +346,7 @@ namespace Serde.Test
                 ]
             );
 
-            static ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
+            ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = SerdeInfo;
                 var de = deserializer.ReadType(typeInfo);

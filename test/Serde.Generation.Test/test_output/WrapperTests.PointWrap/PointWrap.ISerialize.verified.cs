@@ -4,14 +4,24 @@
 using System;
 using Serde;
 
-partial struct PointWrap : Serde.ISerialize<Point>
+partial struct PointWrap : Serde.ISerializeProvider<Point>
 {
-    void ISerialize<Point>.Serialize(Point value, ISerializer serializer)
+    static ISerialize<Point> ISerializeProvider<Point>.SerializeInstance => PointWrapSerializeProxy.Instance;
+
+    sealed class PointWrapSerializeProxy : Serde.ISerialize<Point>
     {
-        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<PointWrap>();
-        var type = serializer.SerializeType(_l_serdeInfo);
-        type.SerializeField<int, global::Serde.Int32Wrap>(_l_serdeInfo, 0, value.X);
-        type.SerializeField<int, global::Serde.Int32Wrap>(_l_serdeInfo, 1, value.Y);
-        type.End();
+        void ISerialize<Point>.Serialize(Point value, ISerializer serializer)
+        {
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<PointWrap>();
+            var type = serializer.SerializeType(_l_serdeInfo);
+            type.SerializeField<int, global::Serde.Int32Proxy>(_l_serdeInfo, 0, value.X);
+            type.SerializeField<int, global::Serde.Int32Proxy>(_l_serdeInfo, 1, value.Y);
+            type.End();
+        }
+
+        public static readonly PointWrapSerializeProxy Instance = new();
+        private PointWrapSerializeProxy()
+        {
+        }
     }
 }

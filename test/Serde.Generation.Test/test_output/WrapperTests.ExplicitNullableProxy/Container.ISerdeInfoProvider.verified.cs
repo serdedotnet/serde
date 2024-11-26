@@ -7,6 +7,6 @@ partial record Container : Serde.ISerdeInfoProvider
         "Container",
         typeof(Container).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("sdkDir", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableWrap.DeserializeImpl<Original, Proxy>>(), typeof(Container).GetProperty("SdkDir")!)
+("sdkDir", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Deserialize<Original, Proxy>>(), typeof(Container).GetProperty("SdkDir")!)
     });
 }

@@ -78,17 +78,5 @@ namespace Serde
             WellKnownType.Dictionary_2 => "System.Collections.Generic.Dictionary`2",
             _ => throw ExceptionUtilities.Unreachable
         };
-
-        internal static string ToWrapper(this WellKnownType wk, SerdeUsage usage)
-        {
-            var baseName = wk switch
-            {
-                WellKnownType.ImmutableArray_1 => "ImmutableArrayWrap",
-                WellKnownType.List_1 => "ListWrap",
-                WellKnownType.Dictionary_2 => "DictWrap",
-                _ => throw ExceptionUtilities.Unreachable
-            };
-            return baseName + "." + usage.GetImplName();
-        }
     }
 }

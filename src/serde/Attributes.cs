@@ -20,16 +20,10 @@ internal
 sealed class GenerateSerialize : Attribute
 {
     /// <summary>
-    /// If non-null, the name of the member used to implement serialization. This is used to
-    /// implement serialization for a wrapper type.
+    /// If non-null, the name of the type being serialized or deserialized.
+    /// This is used to implement serialization and deserialization for a proxy type.
     /// </summary>
-    public string? ThroughMember { get; init; }
-
-    /// <summary>
-    /// If non-null, the name of the type used to implement serialization and deserialization.
-    /// This is used to implement serialization and deserialization for a wrapper type.
-    /// </summary>
-    public Type? ThroughType { get; init; }
+    public Type? ForType { get; init; }
 }
 
 /// <summary>
@@ -45,16 +39,10 @@ internal
 sealed class GenerateDeserialize : Attribute
 {
     /// <summary>
-    /// If non-null, the name of the member used to implement deserialization. This is used to
-    /// implement deserialization for a wrapper type.
+    /// If non-null, the name of the type being serialized or deserialized.
+    /// This is used to implement serialization and deserialization for a proxy type.
     /// </summary>
-    public string? ThroughMember { get; init; }
-
-    /// <summary>
-    /// If non-null, the name of the type used to implement serialization and deserialization.
-    /// This is used to implement serialization and deserialization for a wrapper type.
-    /// </summary>
-    public Type? ThroughType { get; init; }
+    public Type? ForType { get; init; }
 }
 
 /// <summary>
@@ -70,38 +58,11 @@ internal
 sealed class GenerateSerde : Attribute
 {
     /// <summary>
-    /// If non-null, the name of the member used to implement serialization and deserialization.
-    /// This is used to implement serialization and deserialization for a wrapper type.
+    /// If non-null, the name of the type being serialized or deserialized.
+    /// This is used to implement serialization and deserialization for a proxy type.
     /// </summary>
-    public string? ThroughMember { get; init; }
-
-    /// <summary>
-    /// If non-null, the name of the type used to implement serialization and deserialization.
-    /// This is used to implement serialization and deserialization for a wrapper type.
-    /// </summary>
-    public Type? ThroughType { get; init; }
+    public Type? ForType { get; init; }
 }
-
-[AttributeUsage(
-    AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct,
-    AllowMultiple = false,
-    Inherited = false)]
-[Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
-#if !SRCGEN
-public
-#else
-internal
-#endif
-sealed class SerdeWrapAttribute : Attribute
-{
-    public SerdeWrapAttribute(Type wrapper)
-    {
-        Wrapper = wrapper;
-    }
-    public Type Wrapper { get; }
-}
-
-#pragma warning restore CS1574
 
 /// <summary>
 /// Set options for the Serde source generator for the current type.
@@ -114,6 +75,11 @@ internal
 #endif
 sealed class SerdeTypeOptions : Attribute
 {
+    /// <summary>
+    /// If non-null, the type of the proxy to use for serialization and deserialization.
+    /// </summary>
+    public Type? Proxy { get; init; }
+
     /// <summary>
     /// Throw an exception during deserialization if any members not expected by the current
     /// type are present.
@@ -189,14 +155,19 @@ sealed class SerdeMemberOptions : Attribute
     public bool SkipDeserialize { get; init; } = false;
 
     /// <summary>
-    /// Type to use as the wrapper for the ISerialize implementation.
+    /// Proxy type for the ISerialize and IDeserialize implementations.
     /// </summary>
-    public Type? WrapperSerialize { get; init; } = null;
+    public Type? Proxy { get; init; } = null;
 
     /// <summary>
-    /// Type to use as the wrapper for the IDeserialize implementation.
+    /// Proxy type for the ISerialize implementation.
     /// </summary>
-    public Type? WrapperDeserialize { get; init; } = null;
+    public Type? SerializeProxy { get; init; } = null;
+
+    /// <summary>
+    /// Proxy type for the IDeserialize implementation.
+    /// </summary>
+    public Type? DeserializeProxy { get; init; } = null;
 }
 
 /// <summary>

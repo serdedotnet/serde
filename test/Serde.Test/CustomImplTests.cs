@@ -8,7 +8,7 @@ namespace Serde.Test;
 public sealed partial class CustomImplTests
 {
     [GenerateSerialize]
-    private sealed partial record RgbWithFieldMap : IDeserialize<RgbWithFieldMap>
+    private sealed partial record RgbWithFieldMap : IDeserializeProvider<RgbWithFieldMap>
     {
         public int Red, Green, Blue;
 
@@ -16,14 +16,20 @@ public sealed partial class CustomImplTests
             "RgbWithFieldMap",
             typeof(RgbWithFieldMap).GetCustomAttributesData(),
             [
-                ("red", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Red")!),
-                ("green", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Green")!),
-                ("blue", Int32Wrap.SerdeInfo, typeof(RgbWithFieldMap).GetField("Blue")!)
+                ("red", Int32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Red")!),
+                ("green", Int32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Green")!),
+                ("blue", Int32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Blue")!)
             ]);
 
-        static RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
+        static IDeserialize<RgbWithFieldMap> IDeserializeProvider<RgbWithFieldMap>.DeserializeInstance { get; }
+            = new RgbWithFieldMapDeserialize();
+    }
+
+    private sealed class RgbWithFieldMapDeserialize : IDeserialize<RgbWithFieldMap>
+    {
+        RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
-            var fieldMap = SerdeInfo;
+            var fieldMap = RgbWithFieldMap.SerdeInfo;
             var deType = deserializer.ReadType(fieldMap);
             int red = default;
             int green = default;
@@ -34,13 +40,13 @@ public sealed partial class CustomImplTests
                 switch (index)
                 {
                     case 0:
-                        red = deType.ReadValue<int, Int32Wrap>(index);
+                        red = deType.ReadI32(index);
                         break;
                     case 1:
-                        green = deType.ReadValue<int, Int32Wrap>(index);
+                        green = deType.ReadI32(index);
                         break;
                     case 2:
-                        blue = deType.ReadValue<int, Int32Wrap>(index);
+                        blue = deType.ReadI32(index);
                         break;
                 }
             }

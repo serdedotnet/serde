@@ -9,7 +9,7 @@ partial class InvalidJsonTests
         "ClassWithPocoArray",
         typeof(Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("obj", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.DeserializeImpl<Serde.Json.Test.Poco,Serde.Json.Test.Poco>>(), typeof(Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray).GetProperty("Obj")!)
+("obj", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Deserialize<Serde.Json.Test.Poco,Serde.Json.Test.Poco>>(), typeof(Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray).GetProperty("Obj")!)
     });
 }
 }

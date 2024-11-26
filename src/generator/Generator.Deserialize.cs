@@ -16,34 +16,44 @@ namespace Serde
 {
     internal class DeserializeImplGenerator
     {
-        internal static (MemberDeclarationSyntax[], BaseListSyntax) GenerateDeserializeImpl(
+        internal static (List<MemberDeclarationSyntax>, BaseListSyntax) GenerateDeserializeImpl(
             TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
-            ImmutableList<ITypeSymbol> inProgress)
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
         {
             var typeFqn = receiverType.ToDisplayString();
             TypeSyntax typeSyntax = ParseTypeName(typeFqn);
 
-            // `Serde.IDeserialize<'typeName'>
-            var interfaceSyntax = QualifiedName(IdentifierName("Serde"), GenericName(
-                Identifier("IDeserialize"),
-                TypeArgumentList(SeparatedList(new[] { typeSyntax }))
-            ));
-
-            // Generate members for ISerialize.Deserialize implementation
-            MemberDeclarationSyntax[] members;
+            // Generate members for IDeserialize.Deserialize implementation
+            var members = new List<MemberDeclarationSyntax>();
+            List<BaseTypeSyntax> bases = [
+                // `Serde.IDeserialize<'typeName'>
+                SimpleBaseType(QualifiedName(IdentifierName("Serde"), GenericName(
+                    Identifier("IDeserialize"),
+                    TypeArgumentList(SeparatedList(new[] { typeSyntax }))
+                ))),
+            ];
             if (receiverType.TypeKind == TypeKind.Enum)
             {
-                var method = GenerateEnumDeserializeMethod(receiverType, typeSyntax);
-                members = [ method ];
+                // `Serde.IDeserializeProvider<'typeName'>. Enums generate a proxy
+                bases.Add(SimpleBaseType(ParseTypeName($"Serde.IDeserializeProvider<{typeFqn}>")));
+
+                var deserialize = GenerateEnumDeserializeMethod(receiverType, typeSyntax);
+                members.Add(deserialize);
+
+                var deserializeInstance = ParseMemberDeclaration($"""
+                static IDeserialize<{typeFqn}> IDeserializeProvider<{typeFqn}>.DeserializeInstance
+                    => {typeFqn}Proxy.Instance;
+                """)!;
+                members.Add(deserializeInstance);
             }
             else
             {
                 var method = GenerateCustomDeserializeMethod(typeDeclContext, context, receiverType, typeSyntax, inProgress);
-                members = [ method ];
+                members.Add(method);
             }
-            var baseList = BaseList(SeparatedList(new BaseTypeSyntax[] { SimpleBaseType(interfaceSyntax) }));
+            var baseList = BaseList(SeparatedList(bases));
             return (members, baseList);
         }
 
@@ -85,9 +95,9 @@ namespace Serde
                 _ => throw new InvalidOperationException("Too many members in type")
             };
             var src = $$"""
-static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+{{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
-    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Wrap>();
+    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Proxy>();
     var de = deserializer.ReadType(serdeInfo);
     int index;
     if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
@@ -130,7 +140,7 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
             GeneratorExecutionContext context,
             ITypeSymbol type,
             TypeSyntax typeSyntax,
-            ImmutableList<ITypeSymbol> inProgress)
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
 
@@ -155,7 +165,7 @@ static {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deseriali
                 : "_";
 
             var methodText = $$"""
-static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+{{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;
@@ -193,7 +203,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     var m = members[fieldIndex];
                     string wrapperName;
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                    if (Wrappers.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
+                    if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
                     {
                         wrapperName = explicitWrap.ToString();
                     }
@@ -201,7 +211,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                     {
                         wrapperName = memberType;
                     }
-                    else if (Wrappers.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Wrapper: { } wrap })
+                    else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Proxy: { } wrap })
                     {
                         wrapperName = wrap.ToString();
                     }
@@ -213,7 +223,7 @@ static {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer des
                             m.Locations[0],
                             m.Symbol,
                             memberType,
-                            "Serde.IDeserialize"));
+                            "Serde.IDeserializeProvider<T>"));
                         wrapperName = memberType;
                     }
                     var localName = GetLocalName(m);

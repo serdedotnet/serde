@@ -13,7 +13,7 @@ partial class A
         "D",
         typeof(A.B.C.D).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("field", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(A.B.C.D).GetField("Field")!)
+("field", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(A.B.C.D).GetField("Field")!)
     });
 }
 }

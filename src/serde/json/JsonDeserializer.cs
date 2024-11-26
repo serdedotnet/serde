@@ -165,7 +165,8 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
         public int? SizeOpt => null;
 
-        public bool TryReadValue<T, D>(ISerdeInfo typeInfo, [MaybeNullWhen(false)] out T next) where D : IDeserialize<T>
+        public bool TryReadValue<T, TProxy>(ISerdeInfo typeInfo, TProxy d, [MaybeNullWhen(false)] out T next)
+            where TProxy : IDeserialize<T>
         {
             var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
             if (peek == (short)',')
@@ -222,7 +223,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                     return false;
 
                 default:
-                    next = D.Deserialize(_deserializer);
+                    next = d.Deserialize(_deserializer);
                     _first = false;
                     _afterKey = typeInfo.Kind == InfoKind.Dictionary && !_afterKey;
                     return true;
@@ -272,8 +273,8 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         }
         public int? SizeOpt => null;
 
-        public bool TryGetNext<T, D>([MaybeNullWhen(false)] out T next)
-            where D : IDeserialize<T>
+        public bool TryGetNext<T, TProxy>(TProxy proxy, [MaybeNullWhen(false)] out T next)
+            where TProxy : IDeserialize<T>
         {
             while (true)
             {
@@ -300,7 +301,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
                     default:
                         _first = false;
-                        next = D.Deserialize(_deserializer);
+                        next = proxy.Deserialize(_deserializer);
                         return true;
                 }
             }
@@ -318,22 +319,23 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
         public int? SizeOpt => null;
 
-        public bool TryGetNextEntry<K, DK, V, DV>([MaybeNullWhen(false)] out (K, V) next)
+        public bool TryGetNextEntry<K, V, DK, DV>(DK dk, DV dv, [MaybeNullWhen(false)] out (K, V) next)
             where DK : IDeserialize<K>
             where DV : IDeserialize<V>
         {
             // Don't save state
-            if (!TryGetNextKey<K, DK>(out K? nextKey))
+            if (!TryGetNextKey<K, DK>(dk, out K? nextKey))
             {
                 next = default;
                 return false;
             }
-            var nextValue = GetNextValue<V, DV>();
+            var nextValue = GetNextValue<V, DV>(dv);
             next = (nextKey, nextValue);
             return true;
         }
 
-        public bool TryGetNextKey<K, D>([MaybeNullWhen(false)] out K next) where D : IDeserialize<K>
+        public bool TryGetNextKey<K, D>(D d, [MaybeNullWhen(false)] out K next)
+            where D : IDeserialize<K>
         {
             while (true)
             {
@@ -362,7 +364,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                         return false;
 
                     case (short)'"':
-                        next = D.Deserialize(_deserializer);
+                        next = d.Deserialize(_deserializer);
                         _first = false;
                         return true;
 
@@ -372,7 +374,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
             }
         }
 
-        public V GetNextValue<V, D>() where D : IDeserialize<V>
+        public V GetNextValue<V, D>(D d) where D : IDeserialize<V>
         {
             var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
             if (peek != (byte)':')
@@ -380,7 +382,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                 throw new JsonException("Expected ':'");
             }
             _deserializer.Reader.Advance();
-            return D.Deserialize(_deserializer);
+            return d.Deserialize(_deserializer);
         }
     }
 
@@ -468,10 +470,10 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
 partial class JsonDeserializer<TReader> : IDeserializeType
 {
-    V IDeserializeType.ReadValue<V, D>(int index)
+    T IDeserializeType.ReadValue<T>(int index, IDeserialize<T> d)
     {
         ReadColon();
-        return D.Deserialize(this);
+        return d.Deserialize(this);
     }
 
     private void ReadColon()

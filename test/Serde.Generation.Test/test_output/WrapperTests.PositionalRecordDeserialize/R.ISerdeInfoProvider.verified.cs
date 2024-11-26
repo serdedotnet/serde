@@ -7,7 +7,7 @@ partial record R : Serde.ISerdeInfoProvider
         "R",
         typeof(R).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("a", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(R).GetProperty("A")!),
-("b", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(R).GetProperty("B")!)
+("a", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(R).GetProperty("A")!),
+("b", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(R).GetProperty("B")!)
     });
 }
