@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
 
     <PackageId>Serde</PackageId>
-    <PackageVersion>0.7.0</PackageVersion>
+    <PackageVersion>$(SerdeVersion)</PackageVersion>
     <IsPackable>true</IsPackable>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/agocke/serde-dn</RepositoryUrl>
