@@ -24,12 +24,8 @@ namespace Serde
     /// Thrown from implementations of <see cref="IDeserializer" />. Indicates that an unexpected
     /// value was seen in the input which cannot be converted to the target type.
     /// </summary>
-    public class DeserializeException : Exception
+    public class DeserializeException(string msg) : Exception(msg)
     {
-        internal DeserializeException(string msg)
-        : base(msg)
-        { }
-
         public static DeserializeException UnassignedMember() => throw new DeserializeException("Not all members were assigned.");
 
         public static DeserializeException UnknownMember(string name, ISerdeInfo info)
