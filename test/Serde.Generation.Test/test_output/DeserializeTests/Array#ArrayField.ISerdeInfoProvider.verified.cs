@@ -7,6 +7,6 @@ partial class ArrayField : Serde.ISerdeInfoProvider
         "ArrayField",
         typeof(ArrayField).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("intArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.DeserializeImpl<int,global::Serde.Int32Wrap>>(), typeof(ArrayField).GetField("IntArr")!)
+("intArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Deserialize<int,global::Serde.Int32Proxy>>(), typeof(ArrayField).GetField("IntArr")!)
     });
 }

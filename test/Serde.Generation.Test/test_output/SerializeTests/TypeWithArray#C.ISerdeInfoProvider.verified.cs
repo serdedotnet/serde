@@ -7,6 +7,6 @@ partial class C : Serde.ISerdeInfoProvider
         "C",
         typeof(C).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("intArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<int,global::Serde.Int32Wrap>>(), typeof(C).GetField("IntArr")!)
+("intArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<int,global::Serde.Int32Proxy>>(), typeof(C).GetField("IntArr")!)
     });
 }

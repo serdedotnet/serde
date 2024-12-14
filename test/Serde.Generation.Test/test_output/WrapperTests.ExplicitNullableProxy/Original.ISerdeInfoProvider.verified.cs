@@ -7,6 +7,6 @@ partial record struct Original : Serde.ISerdeInfoProvider
         "Original",
         typeof(Original).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("name", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(Original).GetProperty("Name")!)
+("name", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Original).GetProperty("Name")!)
     });
 }

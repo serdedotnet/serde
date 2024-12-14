@@ -9,7 +9,7 @@ partial class XmlTests
         "BoolStruct",
         typeof(Serde.Test.XmlTests.BoolStruct).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("BoolField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.BoolWrap>(), typeof(Serde.Test.XmlTests.BoolStruct).GetField("BoolField")!)
+("BoolField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.BoolProxy>(), typeof(Serde.Test.XmlTests.BoolStruct).GetField("BoolField")!)
     });
 }
 }

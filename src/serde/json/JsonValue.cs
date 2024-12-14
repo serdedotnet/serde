@@ -21,9 +21,7 @@ namespace Serde.Json
     // helpers
     partial record JsonValue
     {
-        static ISerdeInfo ISerdeInfoProvider.SerdeInfo => UnionInfo.Instance;
-
-        private sealed class UnionInfo : ISerdeInfo, IUnionSerdeInfo
+        internal sealed class UnionInfo : ISerdeInfo, IUnionSerdeInfo
         {
             public static readonly UnionInfo Instance = new UnionInfo();
             public string Name => nameof(JsonValue);
@@ -32,13 +30,16 @@ namespace Serde.Json
 
             public IList<CustomAttributeData> Attributes => [];
 
+            internal static readonly ISerdeInfo ObjectInfo = SerdeInfo.MakeDictionary(nameof(Object));
+            internal static readonly ISerdeInfo ArrayInfo = SerdeInfo.MakeEnumerable(nameof(Array));
+
             public IEnumerable<ISerdeInfo> CaseInfos { get; } = [
-                SerdeInfoProvider.GetInfo<JsonValue.Number>(),
-                SerdeInfoProvider.GetInfo<JsonValue.Bool>(),
-                SerdeInfoProvider.GetInfo<JsonValue.String>(),
-                SerdeInfoProvider.GetInfo<JsonValue.Object>(),
-                SerdeInfoProvider.GetInfo<JsonValue.Array>(),
-                SerdeInfoProvider.GetInfo<JsonValue.Null>(),
+                SerdeInfo.MakePrimitive(nameof(Number)),
+                SerdeInfo.MakePrimitive(nameof(Bool)),
+                SerdeInfo.MakePrimitive(nameof(String)),
+                ObjectInfo,
+                ArrayInfo,
+                SerdeInfo.MakePrimitive(nameof(Null)),
             ];
 
             public IList<CustomAttributeData> GetFieldAttributes(int index) => throw GetOOR(index);
@@ -62,26 +63,26 @@ namespace Serde.Json
         public static implicit operator JsonValue(int i) => new Number(i);
         public static implicit operator JsonValue(string s) => new String(s);
 
-        partial record Number : ISerdeInfoProvider
+        partial record Number
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Number));
             public override string ToString() => Value.ToString();
         }
 
-        partial record Bool : ISerdeInfoProvider
+        partial record Bool
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Bool));
             public override string ToString() => Value.ToString();
         }
-        partial record String : ISerdeInfoProvider
+        partial record String
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(String));
             public override string ToString() => Value;
         }
 
-        partial record Array : ISerdeInfoProvider
+        partial record Array
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnumerable(nameof(Array));
+            public Array(IEnumerable<JsonValue> elements)
+                : this(elements.ToImmutableArray())
+            { }
+
             public static readonly Array Empty = new Array(ImmutableArray<JsonValue>.Empty);
 
             public bool Equals(Array? other)
@@ -123,9 +124,16 @@ namespace Serde.Json
             }
         }
 
-        partial record Object : ISerdeInfoProvider
+        partial record Object
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeDictionary(nameof(Object));
+            public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
+                : this(members.ToImmutableDictionary())
+            { }
+
+            public Object((string FieldName, JsonValue Value)[] members)
+                : this(members.ToImmutableDictionary(t => t.FieldName, t => t.Value))
+            { }
+
             public bool Equals(Object? other)
             {
                 if (other is null || Members.Count != other.Members.Count)
@@ -172,9 +180,8 @@ namespace Serde.Json
             }
         }
 
-        partial record Null : ISerdeInfoProvider
+        partial record Null
         {
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Null));
             public static readonly Null Instance = new Null();
             private Null() { }
         }

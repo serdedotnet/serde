@@ -27,7 +27,7 @@ partial class SerdeImplRoslynGenerator
         TypeDeclContext typeDeclContext,
         ITypeSymbol receiverType,
         GeneratorExecutionContext context,
-        ImmutableList<ITypeSymbol> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         var typeName = typeDeclContext.Name;
 
@@ -41,14 +41,15 @@ partial class SerdeImplRoslynGenerator
 
         var typeKind = typeDeclContext.Kind;
         MemberDeclarationSyntax newType;
+        var newTypes = new List<MemberDeclarationSyntax>();
         if (typeKind == SyntaxKind.EnumDeclaration)
         {
-            var wrapperName = Wrappers.GetWrapperName(typeName);
-            newType = StructDeclaration(
+            var proxyName = Proxies.GetProxyName(typeName);
+            newType = ClassDeclaration(
                 attributeLists: default,
-                modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
-                keyword: Token(SyntaxKind.StructKeyword),
-                identifier: Identifier(wrapperName),
+                modifiers: TokenList(Token(SyntaxKind.SealedKeyword), Token(SyntaxKind.PartialKeyword)),
+                keyword: Token(SyntaxKind.ClassKeyword),
+                identifier: Identifier(proxyName),
                 typeParameterList: default,
                 baseList: baseList,
                 constraintClauses: default,
@@ -56,10 +57,40 @@ partial class SerdeImplRoslynGenerator
                 members: List(implMembers),
                 closeBraceToken: Token(SyntaxKind.CloseBraceToken),
                 semicolonToken: default);
-            typeName = wrapperName;
+            typeName = proxyName;
         }
         else
         {
+            var suffix = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
+            var proxyName = typeName + suffix + "Proxy";
+
+            implMembers.Add(ParseMemberDeclaration($$"""
+                public static readonly {{proxyName}} Instance = new();
+                """)!
+            );
+            implMembers.Add(ParseMemberDeclaration($$"""
+                private {{proxyName}}() { }
+                """)!
+            );
+
+            var interfaceName = usage.GetProxyInterfaceName();
+            MemberDeclarationSyntax proxyType = ClassDeclaration(
+                attributeLists: default,
+                modifiers: TokenList([ Token(SyntaxKind.SealedKeyword) ]),
+                keyword: Token(SyntaxKind.ClassKeyword),
+                identifier: Identifier(proxyName),
+                typeParameterList: default,
+                baseList: baseList,
+                constraintClauses: default,
+                openBraceToken: Token(SyntaxKind.OpenBraceToken),
+                members: List(implMembers),
+                closeBraceToken: Token(SyntaxKind.CloseBraceToken),
+                semicolonToken: default);
+
+            var member = ParseMemberDeclaration($$"""
+            static {{interfaceName}}<{{receiverType.ToDisplayString()}}> {{interfaceName}}Provider<{{receiverType.ToDisplayString()}}>.{{suffix}}Instance
+                => {{proxyName}}.Instance;
+            """)!;
             newType = TypeDeclaration(
                 typeKind,
                 attributes: default,
@@ -74,10 +105,12 @@ partial class SerdeImplRoslynGenerator
                 }),
                 identifier: Identifier(typeName),
                 typeParameterList: typeDeclContext.TypeParameterList,
-                baseList: baseList,
+                baseList: BaseList(SeparatedList(new BaseTypeSyntax[] {
+                    SimpleBaseType(ParseTypeName($"Serde.{interfaceName}Provider<{receiverType.ToDisplayString()}>"))
+                })),
                 constraintClauses: default,
                 openBraceToken: Token(SyntaxKind.OpenBraceToken),
-                members: List(implMembers),
+                members: List([ member, proxyType ]),
                 closeBraceToken: Token(SyntaxKind.CloseBraceToken),
                 semicolonToken: default);
         }
@@ -85,15 +118,17 @@ partial class SerdeImplRoslynGenerator
             .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
             .Concat(new[] { typeName }));
 
-        var srcName = fullTypeName + "." + usage.GetInterfaceName();
+        var srcName = fullTypeName + "." + usage.GetProxyInterfaceName();
 
         newType = typeDeclContext.WrapNewType(newType);
+
+        newTypes.Insert(0, newType);
 
         var tree = CompilationUnit(
             externs: default,
             usings: List(new[] { UsingDirective(IdentifierName("System")), UsingDirective(IdentifierName("Serde")) }),
             attributeLists: default,
-            members: List<MemberDeclarationSyntax>(new[] { newType }));
+            members: List(newTypes));
         tree = tree.NormalizeWhitespace(eol: Utilities.NewLine);
 
         context.AddSource(srcName,
@@ -110,7 +145,7 @@ partial class SerdeImplRoslynGenerator
         var typeKind = typeDeclContext.Kind;
         string declKeywords;
         (typeName, declKeywords) = typeKind == SyntaxKind.EnumDeclaration
-            ? (Wrappers.GetWrapperName(typeName), "struct")
+            ? (Proxies.GetProxyName(typeName), "class")
             : (typeName, TypeDeclContext.TypeKindToString(typeKind));
         var newType = $$"""
 partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Serde.ISerdeInfoProvider
@@ -150,8 +185,8 @@ partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Ser
         }
 
         var mdName = usage switch {
-            SerdeUsage.Serialize => "Serde.ISerialize`1",
-            SerdeUsage.Deserialize => "Serde.IDeserialize`1",
+            SerdeUsage.Serialize => "Serde.ISerializeProvider`1",
+            SerdeUsage.Deserialize => "Serde.IDeserializeProvider`1",
             _ => throw new ArgumentException("Invalid SerdeUsage", nameof(usage))
         };
         var serdeSymbol = context.Compilation.GetTypeByMetadataName(mdName)?.Construct(argType);

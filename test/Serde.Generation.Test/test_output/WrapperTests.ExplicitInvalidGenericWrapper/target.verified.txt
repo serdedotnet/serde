@@ -5,9 +5,9 @@
       Title: ,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (32,21)-(32,27),
-      MessageFormat: The proxy type 'Proxy' doesn't implement the interface 'IDeserialize<Original?>'.,
-      Message: The proxy type 'Proxy' doesn't implement the interface 'IDeserialize<Original?>'.,
+      Location: : (38,21)-(38,27),
+      MessageFormat: The proxy type 'Proxy' doesn't implement the interface 'IDeserializeProvider<Original?>'.,
+      Message: The proxy type 'Proxy' doesn't implement the interface 'IDeserializeProvider<Original?>'.,
       Category: Serde
     }
   ]

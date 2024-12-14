@@ -9,8 +9,8 @@ partial class TestCase15
         "Class0",
         typeof(TestCase15.Class0).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("field0", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<TestCase15.Class1,global::Serde.IdWrap<TestCase15.Class1>>>(), typeof(TestCase15.Class0).GetField("Field0")!),
-("field1", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<bool,global::Serde.BoolWrap>>(), typeof(TestCase15.Class0).GetField("Field1")!)
+("field0", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<TestCase15.Class1,TestCase15.Class1>>(), typeof(TestCase15.Class0).GetField("Field0")!),
+("field1", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<bool,global::Serde.BoolProxy>>(), typeof(TestCase15.Class0).GetField("Field1")!)
     });
 }
 }

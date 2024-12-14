@@ -9,7 +9,7 @@ partial class XmlTests
         "TypeWithArrayField",
         typeof(Serde.Test.XmlTests.TypeWithArrayField).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("ArrayField", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayWrap.SerializeImpl<Serde.Test.XmlTests.StructWithIntField,global::Serde.IdWrap<Serde.Test.XmlTests.StructWithIntField>>>(), typeof(Serde.Test.XmlTests.TypeWithArrayField).GetField("ArrayField")!)
+("ArrayField", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<Serde.Test.XmlTests.StructWithIntField,Serde.Test.XmlTests.StructWithIntField>>(), typeof(Serde.Test.XmlTests.TypeWithArrayField).GetField("ArrayField")!)
     });
 }
 }

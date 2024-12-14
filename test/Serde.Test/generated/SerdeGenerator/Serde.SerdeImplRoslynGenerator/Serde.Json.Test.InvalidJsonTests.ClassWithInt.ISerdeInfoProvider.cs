@@ -9,7 +9,7 @@ partial class InvalidJsonTests
         "ClassWithInt",
         typeof(Serde.Json.Test.InvalidJsonTests.ClassWithInt).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("obj", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Json.Test.InvalidJsonTests.ClassWithInt).GetProperty("Obj")!)
+("obj", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.ClassWithInt).GetProperty("Obj")!)
     });
 }
 }

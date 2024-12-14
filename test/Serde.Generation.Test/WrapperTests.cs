@@ -25,13 +25,19 @@ partial record struct Original()
     public string Name { get; init; }
 }
 
-internal class Proxy : ISerialize<Original>, IDeserialize<Original>
+internal sealed class Proxy : ISerialize<Original>, IDeserialize<Original>,
+    ISerializeProvider<Original>, IDeserializeProvider<Original>
 {
+    public static Proxy Instance { get; } = new Proxy();
+    static ISerialize<Original> ISerializeProvider<Original>.SerializeInstance => Instance;
+    static IDeserialize<Original> IDeserializeProvider<Original>.DeserializeInstance => Instance;
+    private Proxy() { }
+
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Original));
 
-    public static Original Deserialize(IDeserializer deserializer)
+    public Original Deserialize(IDeserializer deserializer)
     {
-        var str = StringWrap.Deserialize(deserializer);
+        var str = StringProxy.Instance.Deserialize(deserializer);
         return new Original { Name = str };
     }
 
@@ -45,7 +51,7 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>
 partial record Container
 {
     // Wrong wrapper type, should have a NullableWrapper outside
-    [SerdeMemberOptions(WrapperDeserialize = typeof(Proxy))]
+    [SerdeMemberOptions(DeserializeProxy = typeof(Proxy))]
     public Original? SdkDir { get; init; } = null;
 }
 """;
@@ -67,13 +73,19 @@ partial record struct Original()
     public string Name { get; init; }
 }
 
-internal class Proxy : ISerialize<Original>, IDeserialize<Original>
+internal class Proxy : ISerialize<Original>, IDeserialize<Original>,
+    ISerializeProvider<Original>, IDeserializeProvider<Original>
 {
+    public static Proxy Instance { get; } = new Proxy();
+    static ISerialize<Original> ISerializeProvider<Original>.SerializeInstance => Instance;
+    static IDeserialize<Original> IDeserializeProvider<Original>.DeserializeInstance => Instance;
+    private Proxy() { }
+
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Original));
 
-    public static Original Deserialize(IDeserializer deserializer)
+    public Original Deserialize(IDeserializer deserializer)
     {
-        var str = StringWrap.Deserialize(deserializer);
+        var str = StringProxy.Instance.Deserialize(deserializer);
         return new Original { Name = str };
     }
 
@@ -87,7 +99,7 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>
 partial record Container
 {
     // Wrong wrapper type, should have a NullableWrapper outside
-    [SerdeMemberOptions(WrapperDeserialize = typeof(NullableWrap.DeserializeImpl<Original, Proxy>))]
+    [SerdeMemberOptions(DeserializeProxy = typeof(NullableProxy.Deserialize<Original, Proxy>))]
     public Original? SdkDir { get; init; } = null;
 }
 """;
@@ -105,15 +117,15 @@ using System.Collections.Specialized;
 
 partial class Outer
 {
-    [GenerateSerialize(ThroughMember = nameof(Value))]
-    public readonly partial record struct SectionWrap(BitVector32.Section Value);
+    [GenerateSerialize(ForType = typeof(BitVector32.Section))]
+    public readonly partial record struct SectionWrap {}
 }
 
 [GenerateSerialize]
 partial struct S
 {
     [SerdeMemberOptions(
-        WrapperSerialize = typeof(ImmutableArrayWrap.SerializeImpl<BitVector32.Section, Outer.SectionWrap>))]
+        SerializeProxy = typeof(ImmutableArrayProxy.Serialize<BitVector32.Section, Outer.SectionWrap>))]
     public ImmutableArray<BitVector32.Section> Sections;
 }
 """;
@@ -130,8 +142,8 @@ using System.Collections.Specialized;
 
 partial class Outer
 {
-    [GenerateSerialize(ThroughMember = nameof(Value))]
-    public readonly partial record struct SectionWrap(BitVector32.Section Value);
+    [GenerateSerialize(ForType = typeof(BitVector32.Section))]
+    public sealed partial class SectionWrap {}
 }
 
 [GenerateSerialize]
@@ -139,7 +151,7 @@ partial struct S
 {
     [SerdeMemberOptions(
         // Wrong outer wrapper type
-        WrapperSerialize = typeof(ArrayWrap.SerializeImpl<BitVector32.Section, Outer.SectionWrap>))]
+        SerializeProxy = typeof(ArrayProxy.Serialize<BitVector32.Section, Outer.SectionWrap>))]
     public ImmutableArray<int> Sections;
 }
 """;
@@ -153,8 +165,8 @@ partial struct S
 using System.Runtime.InteropServices.ComTypes;
 using Serde;
 
-[GenerateSerde(ThroughMember = nameof(Value))]
-readonly partial record struct OPTSWrap(BIND_OPTS Value);
+[GenerateSerde(ForType = typeof(BIND_OPTS))]
+readonly partial record struct OPTSWrap {}
 
 """;
             return VerifyMultiFile(src);
@@ -165,7 +177,7 @@ readonly partial record struct OPTSWrap(BIND_OPTS Value);
         {
             var src = @"
 using Serde;
-[GenerateSerde(ThroughMember = nameof(_s))]
+[GenerateSerde(ForType = typeof(string))]
 readonly partial struct StringWrap
 {
     private readonly string _s;
@@ -185,7 +197,7 @@ readonly partial struct StringWrap
         {
             var src = @"
 using Serde;
-[GenerateSerde(ThroughMember = ""Wrapped"")]
+[GenerateSerde(ForType = typeof(string))]
 partial record struct StringWrap(string Wrapped);
 ";
             return VerifyDiagnostics(src,
@@ -204,7 +216,7 @@ class Point
     public int X;
     public int Y;
 }
-[GenerateSerde(ThroughMember = nameof(_point))]
+[GenerateSerde(ForType = typeof(Point))]
 partial struct PointWrap
 {
     private readonly Point _point;
@@ -222,13 +234,13 @@ partial struct PointWrap
             var src = @"
 using System.Runtime.InteropServices.ComTypes;
 
-[Serde.GenerateSerde(ThroughMember = nameof(Value))]
-internal readonly partial record struct OPTSWrap(BIND_OPTS Value);
+[Serde.GenerateSerde(ForType = typeof(BIND_OPTS))]
+internal sealed partial class OPTSWrap {}
 
 [Serde.GenerateDeserialize]
 partial class C
 {
-    [Serde.SerdeWrap(typeof(OPTSWrap))]
+    [Serde.SerdeMemberOptions(Proxy = typeof(OPTSWrap))]
     public BIND_OPTS S = new BIND_OPTS();
 }";
             return VerifyMultiFile(src);
@@ -358,13 +370,13 @@ public partial record Recursive
 using Serde;
 namespace Test;
 
-[GenerateSerde(ThroughMember = nameof(Value))]
-internal partial record struct RecursiveWrap(Recursive Value);
+[GenerateSerde(ForType = typeof(Recursive))]
+internal sealed partial class RecursiveWrap {}
 
 [GenerateSerde]
 public partial record Parent
 {
-    [SerdeWrap(typeof(RecursiveWrap))]
+    [SerdeMemberOptions(Proxy = typeof(RecursiveWrap))]
     public Recursive R { get; init; }
 }
 """;

@@ -7,18 +7,28 @@ namespace Serde.Test
 {
     partial class SampleTest
     {
-        partial record OrderedItem : Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>
+        partial record OrderedItem : Serde.ISerializeProvider<Serde.Test.SampleTest.OrderedItem>
         {
-            void ISerialize<Serde.Test.SampleTest.OrderedItem>.Serialize(Serde.Test.SampleTest.OrderedItem value, ISerializer serializer)
+            static ISerialize<Serde.Test.SampleTest.OrderedItem> ISerializeProvider<Serde.Test.SampleTest.OrderedItem>.SerializeInstance => OrderedItemSerializeProxy.Instance;
+
+            sealed class OrderedItemSerializeProxy : Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<OrderedItem>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<string, global::Serde.StringWrap>(_l_serdeInfo, 0, value.ItemName);
-                type.SerializeField<string, global::Serde.StringWrap>(_l_serdeInfo, 1, value.Description);
-                type.SerializeField<decimal, global::Serde.DecimalWrap>(_l_serdeInfo, 2, value.UnitPrice);
-                type.SerializeField<int, global::Serde.Int32Wrap>(_l_serdeInfo, 3, value.Quantity);
-                type.SerializeField<decimal, global::Serde.DecimalWrap>(_l_serdeInfo, 4, value.LineTotal);
-                type.End();
+                void ISerialize<Serde.Test.SampleTest.OrderedItem>.Serialize(Serde.Test.SampleTest.OrderedItem value, ISerializer serializer)
+                {
+                    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<OrderedItem>();
+                    var type = serializer.SerializeType(_l_serdeInfo);
+                    type.SerializeField<string, global::Serde.StringProxy>(_l_serdeInfo, 0, value.ItemName);
+                    type.SerializeField<string, global::Serde.StringProxy>(_l_serdeInfo, 1, value.Description);
+                    type.SerializeField<decimal, global::Serde.DecimalProxy>(_l_serdeInfo, 2, value.UnitPrice);
+                    type.SerializeField<int, global::Serde.Int32Proxy>(_l_serdeInfo, 3, value.Quantity);
+                    type.SerializeField<decimal, global::Serde.DecimalProxy>(_l_serdeInfo, 4, value.LineTotal);
+                    type.End();
+                }
+
+                public static readonly OrderedItemSerializeProxy Instance = new();
+                private OrderedItemSerializeProxy()
+                {
+                }
             }
         }
     }

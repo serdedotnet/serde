@@ -7,8 +7,8 @@ partial struct Rgb : Serde.ISerdeInfoProvider
         "Rgb",
         typeof(Rgb).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteWrap>(), typeof(Rgb).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteWrap>(), typeof(Rgb).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteWrap>(), typeof(Rgb).GetField("Blue")!)
+("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteProxy>(), typeof(Rgb).GetField("Red")!),
+("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteProxy>(), typeof(Rgb).GetField("Green")!),
+("blue", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteProxy>(), typeof(Rgb).GetField("Blue")!)
     });
 }

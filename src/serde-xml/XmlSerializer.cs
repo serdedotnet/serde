@@ -15,20 +15,20 @@ public sealed partial class XmlSerializer
     /// <summary>
     /// Serialize the given type to a string.
     /// </summary>
-    public static string SerializeIndented<T>(T t) where T : ISerialize<T>
+    public static string SerializeIndented<T>(T t) where T : ISerializeProvider<T>
         => Serialize(t, new XmlWriterSettings() { Indent = true });
 
-    public static string Serialize<T>(T t) where T : ISerialize<T>
+    public static string Serialize<T>(T t) where T : ISerializeProvider<T>
         => Serialize(t, new XmlWriterSettings() { Indent = true });
 
-    private static string Serialize<T>(T s, XmlWriterSettings? settings) where T : ISerialize<T>
+    private static string Serialize<T>(T s, XmlWriterSettings? settings) where T : ISerializeProvider<T>
     {
         using var stringWriter = new StringWriter();
         using (var writer = XmlWriter.Create(stringWriter, settings))
         {
             var serializer = new XmlSerializer(writer);
             writer.WriteProcessingInstruction("xml", $"version=\"1.0\" encoding=\"{stringWriter.Encoding.WebName}\"");
-            s.Serialize(s, serializer);
+            T.SerializeInstance.Serialize(s, serializer);
         }
         return stringWriter.ToString();
     }

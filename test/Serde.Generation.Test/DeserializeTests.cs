@@ -19,13 +19,13 @@ using Serde;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices.ComTypes;
 
-[GenerateDeserialize(ThroughMember = nameof(Value))]
+[GenerateDeserialize(ForType = typeof(BIND_OPTS))]
 readonly partial record struct OptsWrap(BIND_OPTS Value);
 
 [GenerateDeserialize]
 partial struct S
 {
-    [SerdeMemberOptions(WrapperDeserialize = typeof(ImmutableArrayWrap.DeserializeImpl<BIND_OPTS, OptsWrap>))]
+    [SerdeMemberOptions(DeserializeProxy = typeof(ImmutableArrayProxy.Deserialize<BIND_OPTS, OptsWrap>))]
     public ImmutableArray<BIND_OPTS> Opts;
 }
 
@@ -40,7 +40,7 @@ partial struct S
 using Serde;
 using System.Runtime.InteropServices.ComTypes;
 
-[GenerateDeserialize(ThroughMember = nameof(Value))]
+[GenerateDeserialize(ForType = typeof(BIND_OPTS))]
 readonly partial record struct Wrap(BIND_OPTS Value);
 
 """;

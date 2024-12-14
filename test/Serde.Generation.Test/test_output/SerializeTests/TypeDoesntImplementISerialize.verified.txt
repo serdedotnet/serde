@@ -6,8 +6,8 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (5,14)-(5,15),
-      MessageFormat: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
-      Message: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      MessageFormat: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on S2, or specify a proxy type.,
+      Message: The member 'S1.X's return type 'S2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on S2, or specify a proxy type.,
       Category: Serde
     }
   ]

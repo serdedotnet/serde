@@ -21,7 +21,7 @@ public sealed partial class SerdeInfoTests
         public byte R, G, B;
     }
 
-    [GenerateDeserialize(ThroughType = typeof(Rgb))]
+    [GenerateDeserialize(ForType = typeof(Rgb))]
     public partial record RgbProxy;
 
     [Fact]

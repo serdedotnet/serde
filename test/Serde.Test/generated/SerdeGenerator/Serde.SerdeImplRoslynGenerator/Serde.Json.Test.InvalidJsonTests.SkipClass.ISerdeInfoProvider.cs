@@ -9,7 +9,7 @@ partial class InvalidJsonTests
         "SkipClass",
         typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("c", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetProperty("C")!)
+("c", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetProperty("C")!)
     });
 }
 }

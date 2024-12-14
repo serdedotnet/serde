@@ -6,14 +6,24 @@ using Serde;
 
 namespace Test
 {
-    partial record Parent : Serde.ISerialize<Test.Parent>
+    partial record Parent : Serde.ISerializeProvider<Test.Parent>
     {
-        void ISerialize<Test.Parent>.Serialize(Test.Parent value, ISerializer serializer)
+        static ISerialize<Test.Parent> ISerializeProvider<Test.Parent>.SerializeInstance => ParentSerializeProxy.Instance;
+
+        sealed class ParentSerializeProxy : Serde.ISerialize<Test.Parent>
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Parent>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeField<Recursive, Test.RecursiveWrap>(_l_serdeInfo, 0, value.R);
-            type.End();
+            void ISerialize<Test.Parent>.Serialize(Test.Parent value, ISerializer serializer)
+            {
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Parent>();
+                var type = serializer.SerializeType(_l_serdeInfo);
+                type.SerializeField<Recursive, Test.RecursiveWrap>(_l_serdeInfo, 0, value.R);
+                type.End();
+            }
+
+            public static readonly ParentSerializeProxy Instance = new();
+            private ParentSerializeProxy()
+            {
+            }
         }
     }
 }

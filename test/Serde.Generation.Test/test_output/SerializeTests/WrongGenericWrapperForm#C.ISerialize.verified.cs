@@ -4,12 +4,22 @@
 using System;
 using Serde;
 
-partial class C : Serde.ISerialize<C>
+partial class C : Serde.ISerializeProvider<C>
 {
-    void ISerialize<C>.Serialize(C value, ISerializer serializer)
+    static ISerialize<C> ISerializeProvider<C>.SerializeInstance => CSerializeProxy.Instance;
+
+    sealed class CSerializeProxy : Serde.ISerialize<C>
     {
-        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<C>();
-        var type = serializer.SerializeType(_l_serdeInfo);
-        type.End();
+        void ISerialize<C>.Serialize(C value, ISerializer serializer)
+        {
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<C>();
+            var type = serializer.SerializeType(_l_serdeInfo);
+            type.End();
+        }
+
+        public static readonly CSerializeProxy Instance = new();
+        private CSerializeProxy()
+        {
+        }
     }
 }

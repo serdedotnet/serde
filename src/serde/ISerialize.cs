@@ -1,8 +1,15 @@
-﻿namespace Serde;
+﻿using System.Runtime.CompilerServices;
 
-public interface ISerialize<T> : ISerdeInfoProvider
+namespace Serde;
+
+public interface ISerialize<T>
 {
     void Serialize(T value, ISerializer serializer);
+}
+
+public interface ISerializeProvider<T> : ISerdeInfoProvider
+{
+    abstract static ISerialize<T> SerializeInstance { get; }
 }
 
 public interface ISerializeType
@@ -14,13 +21,10 @@ public interface ISerializeType
 
 public static class ISerializeTypeExt
 {
-    public static void SerializeField<T, U>(
-        this ISerializeType serializeType,
-        ISerdeInfo typeInfo,
-        int index,
-        T value) where U : struct, ISerialize<T>
+    public static void SerializeField<T, U>(this ISerializeType serializeType, ISerdeInfo serdeInfo, int index, T value)
+        where U : ISerializeProvider<T>
     {
-        serializeType.SerializeField(typeInfo, index, value, default(U));
+        serializeType.SerializeField(serdeInfo, index, value, U.SerializeInstance);
     }
 
     public static void SerializeFieldIfNotNull<T, U>(
@@ -40,13 +44,13 @@ public static class ISerializeTypeExt
         }
     }
 
-    public static void SerializeFieldIfNotNull<T, U>(
+    public static void SerializeFieldIfNotNull<T, TProvider>(
         this ISerializeType serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value) where U : struct, ISerialize<T>
+        T value) where TProvider : ISerializeProvider<T>
     {
-        serializeType.SerializeFieldIfNotNull(typeInfo, index, value, default(U));
+        serializeType.SerializeFieldIfNotNull(typeInfo, index, value, TProvider.SerializeInstance);
     }
 }
 

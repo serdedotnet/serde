@@ -10,14 +10,24 @@ partial class A
     {
         partial class C
         {
-            partial class D : Serde.ISerialize<A.B.C.D>
+            partial class D : Serde.ISerializeProvider<A.B.C.D>
             {
-                void ISerialize<A.B.C.D>.Serialize(A.B.C.D value, ISerializer serializer)
+                static ISerialize<A.B.C.D> ISerializeProvider<A.B.C.D>.SerializeInstance => DSerializeProxy.Instance;
+
+                sealed class DSerializeProxy : Serde.ISerialize<A.B.C.D>
                 {
-                    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<D>();
-                    var type = serializer.SerializeType(_l_serdeInfo);
-                    type.SerializeField<int, global::Serde.Int32Wrap>(_l_serdeInfo, 0, value.Field);
-                    type.End();
+                    void ISerialize<A.B.C.D>.Serialize(A.B.C.D value, ISerializer serializer)
+                    {
+                        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<D>();
+                        var type = serializer.SerializeType(_l_serdeInfo);
+                        type.SerializeField<int, global::Serde.Int32Proxy>(_l_serdeInfo, 0, value.Field);
+                        type.End();
+                    }
+
+                    public static readonly DSerializeProxy Instance = new();
+                    private DSerializeProxy()
+                    {
+                    }
                 }
             }
         }

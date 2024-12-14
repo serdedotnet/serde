@@ -9,7 +9,7 @@ partial class GenericWrapperTests
         "CustomArrayWrapExplicitOnType",
         typeof(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("a", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.GenericWrapperTests.CustomImArray2Wrap.SerializeImpl<int,global::Serde.Int32Wrap>>(), typeof(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType).GetField("A")!)
+("a", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Serialize<int,global::Serde.Int32Proxy>>(), typeof(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType).GetField("A")!)
     });
 }
 }

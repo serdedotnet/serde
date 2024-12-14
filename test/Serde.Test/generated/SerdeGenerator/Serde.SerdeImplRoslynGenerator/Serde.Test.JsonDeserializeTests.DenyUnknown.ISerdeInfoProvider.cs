@@ -9,8 +9,8 @@ partial class JsonDeserializeTests
         "DenyUnknown",
         typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("present", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringWrap>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Present")!),
-("missing", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefWrap.DeserializeImpl<string,global::Serde.StringWrap>>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Missing")!)
+("present", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Present")!),
+("missing", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Deserialize<string,global::Serde.StringProxy>>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Missing")!)
     });
 }
 }

@@ -6,8 +6,8 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (8,14)-(8,16),
-      MessageFormat: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
-      Message: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      MessageFormat: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T1, or specify a proxy type.,
+      Message: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T1, or specify a proxy type.,
       Category: Serde
     },
     {
@@ -16,8 +16,8 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (9,14)-(9,16),
-      MessageFormat: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
-      Message: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerialize. Either implement the interface, or use a wrapper.,
+      MessageFormat: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T2, or specify a proxy type.,
+      Message: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T2, or specify a proxy type.,
       Category: Serde
     }
   ]

@@ -71,6 +71,10 @@ public partial class SerdeImplRoslynGenerator : IIncrementalGenerator
                 {
                     return;
                 }
+                // Assume that all symbol declarations are non-null, even if in an unnanotated
+                // context
+                typeSymbol = (INamedTypeSymbol)typeSymbol
+                    .WithNullableAnnotation(NullableAnnotation.NotAnnotated);
 
                 var attributeData = attrCtx.Attributes.Single();
 
@@ -110,13 +114,14 @@ public partial class SerdeImplRoslynGenerator : IIncrementalGenerator
 
                 if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
                 {
-                    Wrappers.GenerateEnumWrapper(
+                    Proxies.GenerateEnumProxy(
                         typeDecl,
                         attrCtx.SemanticModel,
                         generationContext);
                 }
 
-                var inProgress = ImmutableList.Create<ITypeSymbol>(receiverType);
+                var inProgress = ImmutableList.Create<(ITypeSymbol Receiver, ITypeSymbol Containing)>(
+                    (receiverType.WithNullableAnnotation(NullableAnnotation.Annotated), typeSymbol));
 
                 SerdeInfoGenerator.GenerateSerdeInfo(
                     typeDecl,
@@ -209,17 +214,7 @@ public partial class SerdeImplRoslynGenerator : IIncrementalGenerator
         {
             switch (namedArg)
             {
-                case { Key: nameof(GenerateSerialize.ThroughMember),
-                       Value: { Kind: TypedConstantKind.Primitive, Value: string memberName } }:
-                    var members = model.LookupSymbols(typeDecl.SpanStart, attributedSymbol, memberName);
-                    if (members.Length != 1)
-                    {
-                        // TODO: Error about bad lookup
-                        return new(null);
-                    }
-                    return new((INamedTypeSymbol)SymbolUtilities.GetSymbolType(members[0]));
-
-                case { Key: nameof(GenerateSerialize.ThroughType),
+                case { Key: nameof(GenerateSerialize.ForType),
                        Value: { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol } }:
                     if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
                     {

@@ -6,41 +6,51 @@ using Serde;
 
 namespace Test
 {
-    partial record struct ChannelList : Serde.IDeserialize<Test.ChannelList>
+    partial record struct ChannelList : Serde.IDeserializeProvider<Test.ChannelList>
     {
-        static Test.ChannelList Serde.IDeserialize<Test.ChannelList>.Deserialize(IDeserializer deserializer)
+        static IDeserialize<Test.ChannelList> IDeserializeProvider<Test.ChannelList>.DeserializeInstance => ChannelListDeserializeProxy.Instance;
+
+        sealed class ChannelListDeserializeProxy : Serde.IDeserialize<Test.ChannelList>
         {
-            System.Collections.Immutable.ImmutableArray<Test.Channel> _l_channels = default !;
-            byte _r_assignedValid = 0;
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ChannelList>();
-            var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
-            int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+            Test.ChannelList Serde.IDeserialize<Test.ChannelList>.Deserialize(IDeserializer deserializer)
             {
-                switch (_l_index_)
+                System.Collections.Immutable.ImmutableArray<Test.Channel> _l_channels = default !;
+                byte _r_assignedValid = 0;
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ChannelList>();
+                var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
+                int _l_index_;
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
                 {
-                    case 0:
-                        _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayWrap.DeserializeImpl<Test.Channel, Test.ChannelWrap>>(_l_index_);
-                        _r_assignedValid |= ((byte)1) << 0;
-                        break;
-                    case Serde.IDeserializeType.IndexNotFound:
-                        typeDeserialize.SkipValue();
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unexpected index: " + _l_index_);
+                    switch (_l_index_)
+                    {
+                        case 0:
+                            _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayProxy.Deserialize<Test.Channel, Test.ChannelProxy>>(_l_index_);
+                            _r_assignedValid |= ((byte)1) << 0;
+                            break;
+                        case Serde.IDeserializeType.IndexNotFound:
+                            typeDeserialize.SkipValue();
+                            break;
+                        default:
+                            throw new InvalidOperationException("Unexpected index: " + _l_index_);
+                    }
                 }
+
+                if ((_r_assignedValid & 0b1) != 0b1)
+                {
+                    throw Serde.DeserializeException.UnassignedMember();
+                }
+
+                var newType = new Test.ChannelList()
+                {
+                    Channels = _l_channels,
+                };
+                return newType;
             }
 
-            if ((_r_assignedValid & 0b1) != 0b1)
+            public static readonly ChannelListDeserializeProxy Instance = new();
+            private ChannelListDeserializeProxy()
             {
-                throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new Test.ChannelList()
-            {
-                Channels = _l_channels,
-            };
-            return newType;
         }
     }
 }

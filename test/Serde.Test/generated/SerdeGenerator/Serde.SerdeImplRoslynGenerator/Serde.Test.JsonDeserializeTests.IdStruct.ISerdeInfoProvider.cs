@@ -9,7 +9,7 @@ partial class JsonDeserializeTests
         "IdStruct",
         typeof(Serde.Test.JsonDeserializeTests.IdStruct).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("id", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.JsonDeserializeTests.IdStruct).GetField("Id")!)
+("id", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.JsonDeserializeTests.IdStruct).GetField("Id")!)
     });
 }
 }

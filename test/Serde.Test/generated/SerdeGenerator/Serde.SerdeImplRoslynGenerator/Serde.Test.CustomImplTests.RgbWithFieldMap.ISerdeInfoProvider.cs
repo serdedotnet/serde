@@ -9,9 +9,9 @@ partial class CustomImplTests
         "RgbWithFieldMap",
         typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Red")!),
-("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Green")!),
-("blue", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Wrap>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Blue")!)
+("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Red")!),
+("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Green")!),
+("blue", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Blue")!)
     });
 }
 }
