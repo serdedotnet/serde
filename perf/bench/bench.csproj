@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

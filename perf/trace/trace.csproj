@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <StripSymbols>false</StripSymbols>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
