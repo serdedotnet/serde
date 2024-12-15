@@ -376,25 +376,18 @@ public static class NullableProxy
         where T : struct
         where TProxy : IDeserialize<T>
     {
-        private readonly Visitor _visitor = new(proxy);
+        private readonly BoxProxy _boxProxy = new(proxy);
 
         public T? Deserialize(IDeserializer deserializer)
         {
-            return deserializer.ReadNullableRef(_visitor);
+            return (T?)deserializer.ReadNullableRef<object, BoxProxy>(_boxProxy);
         }
 
-        private sealed class Visitor(TProxy proxy) : IDeserializeVisitor<T?>
+        private sealed class BoxProxy(TProxy underlyingProxy) : IDeserialize<object>
         {
-            public string ExpectedTypeName => typeof(T).ToString() + "?";
-
-            T? IDeserializeVisitor<T?>.VisitNull()
+            public object Deserialize(IDeserializer deserializer)
             {
-                return null;
-            }
-
-            T? IDeserializeVisitor<T?>.VisitNotNull(IDeserializer d)
-            {
-                return proxy.Deserialize(d);
+                return underlyingProxy.Deserialize(deserializer);
             }
         }
     }
@@ -446,26 +439,9 @@ public static class NullableRefProxy
         where T : class
         where TProxy : IDeserialize<T>
     {
-        private readonly Visitor _visitor = new(proxy);
-
         public T? Deserialize(IDeserializer deserializer)
         {
-            return deserializer.ReadNullableRef(_visitor);
-        }
-
-        private sealed class Visitor(TProxy proxy) : IDeserializeVisitor<T?>
-        {
-            public string ExpectedTypeName => typeof(T).ToString() + "?";
-
-            T? IDeserializeVisitor<T?>.VisitNull()
-            {
-                return null;
-            }
-
-            T? IDeserializeVisitor<T?>.VisitNotNull(IDeserializer d)
-            {
-                return proxy.Deserialize(d);
-            }
+            return deserializer.ReadNullableRef<T, TProxy>(proxy);
         }
     }
 }
