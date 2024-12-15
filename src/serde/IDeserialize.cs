@@ -75,14 +75,6 @@ public interface IDeserializeVisitor<T>
     T VisitNotNull(IDeserializer d) => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
 }
 
-public interface IDeserializeCollection
-{
-    int? SizeOpt { get; }
-
-    bool TryReadValue<T, TProxy>(ISerdeInfo typeInfo, TProxy deserialize, [MaybeNullWhen(false)] out T next)
-        where TProxy : IDeserialize<T>;
-}
-
 public interface IDeserializeEnumerable
 {
     bool TryGetNext<T, TProxy>(TProxy deserialize, [MaybeNullWhen(false)] out T next)
@@ -99,6 +91,14 @@ public interface IDeserializeDictionary
         where DK : IDeserialize<K>
         where DV : IDeserialize<V>;
     int? SizeOpt { get; }
+}
+
+public interface IDeserializeCollection
+{
+    int? SizeOpt { get; }
+
+    bool TryReadValue<T, TProxy>(ISerdeInfo typeInfo, TProxy deserialize, [MaybeNullWhen(false)] out T next)
+        where TProxy : IDeserialize<T>;
 }
 
 public interface IDeserializeType
@@ -147,8 +147,20 @@ public static class IDeserializeTypeExt
 
 public interface IDeserializer : IDisposable
 {
-    T ReadAny<T>(IDeserializeVisitor<T> v);
-    T ReadNullableRef<T>(IDeserializeVisitor<T> v);
+    /// <summary>
+    /// Read a value of any type, as decided by the input. This method can be used when the
+    /// expected type may vary at runtime, such as when reading a union type.
+    /// </summary>
+    /// <remarks>
+    /// Note that `T` is constrained to `class` to avoid GVM size explosion with AOT.
+    /// </remarks>
+    T ReadAny<T>(IDeserializeVisitor<T> v)
+        where T : class;
+
+    T? ReadNullableRef<T, TProxy>(TProxy proxy)
+        where T : class
+        where TProxy : IDeserialize<T>;
+
     bool ReadBool();
     char ReadChar();
     byte ReadByte();
