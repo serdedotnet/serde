@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <TestTfm>net8.0</TestTfm>
-    <SerdeVersion>0.7.1</SerdeVersion>
+    <SerdeAssemblyVersion>0.8.0</SerdeAssemblyVersion>
+    <SerdePkgVersion>0.8.0-preview1</SerdePkgVersion>
   </PropertyGroup>
 </Project>
