@@ -147,7 +147,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
 partial class JsonDeserializer<TReader> : IDeserializeType
 {
-    T IDeserializeType.ReadValue<T>(int index, IDeserialize<T> d)
+    T IDeserializeType.ReadValue<T, D>(int index, D d)
     {
         ReadColon();
         return d.Deserialize(this);
