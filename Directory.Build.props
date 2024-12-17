@@ -5,6 +5,6 @@
     <Deterministic>true</Deterministic>
     <TestTfm>net8.0</TestTfm>
     <SerdeAssemblyVersion>0.8.0</SerdeAssemblyVersion>
-    <SerdePkgVersion>0.8.0-preview1</SerdePkgVersion>
+    <SerdePkgVersion>0.8.0-preview2</SerdePkgVersion>
   </PropertyGroup>
 </Project>

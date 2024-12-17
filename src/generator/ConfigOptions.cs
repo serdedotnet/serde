@@ -8,7 +8,6 @@ internal record TypeOptions
 {
     public bool DenyUnknownMembers { get; init; } = false;
     public MemberFormat MemberFormat { get; init; } = MemberFormat.CamelCase;
-    public ITypeSymbol? ConstructorSignature { get; init; } = null;
     public bool SerializeNull { get; init; } = false;
 }
 

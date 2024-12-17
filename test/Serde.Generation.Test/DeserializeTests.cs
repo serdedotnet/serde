@@ -201,6 +201,21 @@ partial class A
             return VerifyDeserialize(src);
         }
 
+        [Fact]
+        public Task NoParameterlessOrPrimaryCtor()
+        {
+            var src = """
+using Serde;
+[GenerateDeserialize]
+partial class C
+{
+    public int A;
+    public C(int A) { A = this.A; }
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
         private static Task VerifyDeserialize(
             string src,
             [CallerMemberName] string caller = "")

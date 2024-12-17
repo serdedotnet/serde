@@ -299,8 +299,7 @@ namespace Serde
         /// <summary>
         /// If the type has a parameterless constructor then we will use that and just set
         /// each member in the initializer. If there is no parameterlss constructor, there
-        /// must be a constructor signature as specified by the ConstructorSignature property
-        /// in the SerdeTypeOptions.
+        /// must be a primary constructor.
         /// </summary>
         private static string GenerateTypeCreation(
             GeneratorExecutionContext context,
@@ -309,56 +308,40 @@ namespace Serde
             List<DataMemberSymbol> members,
             string assignedMask)
         {
-            var targetSignature = SymbolUtilities.GetTypeOptions(type).ConstructorSignature;
-            var targetTuple = targetSignature as INamedTypeSymbol;
-            var ctors = type.GetMembers(".ctor");
-            IMethodSymbol? targetCtor = null;
-            IMethodSymbol? parameterLessCtor = null;
-            foreach (var ctorSymbol in ctors)
+            IMethodSymbol? primaryCtor = null;
+            IMethodSymbol? parameterlessCtor = null;
+            if (type is INamedTypeSymbol named)
             {
-                if (ctorSymbol is IMethodSymbol ctorMethod)
+                foreach (var ctor in named.InstanceConstructors)
                 {
-                    if (targetTuple is not null && ctorMethod.Parameters.Length == targetTuple.TupleElements.Length)
+                    foreach (var syntaxRef in ctor.DeclaringSyntaxReferences)
                     {
-                        bool mismatch = false;
-                        for(int i = 0; i < targetTuple.TupleElements.Length; i++)
+                        var syntax = syntaxRef.GetSyntax();
+                        if (syntax is TypeDeclarationSyntax)
                         {
-                            var elem = targetTuple.TupleElements[i];
-                            var param = ctorMethod.Parameters[i];
-                            if (!elem.Type.Equals(param.Type, SymbolEqualityComparer.Default))
-                            {
-                                mismatch = true;
-                                break;
-                            }
-                        }
-                        if (!mismatch)
-                        {
-                            targetCtor = ctorMethod;
-                            break;
+                            primaryCtor = ctor;
                         }
                     }
-                    if (ctorMethod is { Parameters.Length: 0 })
+                    if (ctor.Parameters.Length == 0)
                     {
-                        parameterLessCtor = ctorMethod;
-                        if (targetSignature is null)
-                        {
-                            break;
-                        }
+                        parameterlessCtor = ctor;
+                        break;
                     }
                 }
             }
-            if (targetSignature is not null && targetCtor is null)
+
+            if (parameterlessCtor is null && primaryCtor is null)
             {
-                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_CantFindConstructorSignature, type.Locations[0]));
-                return "";
+                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_MissingPrimaryCtor, type.Locations[0]));
+                return $"var newType = new {typeName}();";
             }
 
             var assignmentMembers = new List<DataMemberSymbol>(members);
             var assignments = new StringBuilder();
             var parameters = new StringBuilder();
-            if (targetCtor is not null)
+            if (primaryCtor is not null)
             {
-                foreach (var p in targetCtor.Parameters)
+                foreach (var p in primaryCtor.Parameters)
                 {
                     var index = assignmentMembers.FindIndex(m => m.Name == p.Name);
                     if (parameters.Length != 0)

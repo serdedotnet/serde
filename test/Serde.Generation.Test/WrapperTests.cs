@@ -253,7 +253,6 @@ partial class C
 using Serde;
 
 [GenerateDeserialize]
-[SerdeTypeOptions(ConstructorSignature = typeof((int, string)))]
 partial record R(int A, string B);
 """;
             return VerifyGeneratedCode(src, "R.IDeserialize", """

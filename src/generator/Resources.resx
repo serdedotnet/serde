@@ -126,8 +126,8 @@
   <data name="ERR_CantWrapSpecialType" xml:space="preserve">
     <value>The type '{0}' can't be automatically wrapped because it is a built-in type.</value>
   </data>
-  <data name="ERR_CantFindConstructorSignature" xml:space="preserve">
-    <value>Could not find a constructor with the target signature listed by the ConstructorSignature parameter.</value>
+  <data name="ERR_MissingPrimaryCtor" xml:space="preserve">
+    <value>Type must have either a primary constructor or a parameterless constructor.</value>
   </data>
   <data name="ERR_CantFindNestedWrapper" xml:space="preserve">
     <value>Could not find nested type named '{0}' inside type '{1}'. The proxied type '{2}' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.</value>
