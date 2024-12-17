@@ -1,12 +1,6 @@
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Serde;
 
@@ -97,8 +91,8 @@ public interface IDeserializeCollection
 {
     int? SizeOpt { get; }
 
-    bool TryReadValue<T, TProxy>(ISerdeInfo typeInfo, TProxy deserialize, [MaybeNullWhen(false)] out T next)
-        where TProxy : IDeserialize<T>;
+    bool TryReadValue<T, D>(ISerdeInfo typeInfo, D deserialize, [MaybeNullWhen(false)] out T next)
+        where D : IDeserialize<T>;
 }
 
 public interface IDeserializeType
@@ -116,7 +110,7 @@ public interface IDeserializeType
     /// </summary>
     int TryReadIndex(ISerdeInfo map, out string? errorName);
 
-    T ReadValue<T>(int index, IDeserialize<T> deserialize);
+    T ReadValue<T, D>(int index, D deserialize) where D : IDeserialize<T>;
 
     void SkipValue();
 
@@ -141,7 +135,7 @@ public static class IDeserializeTypeExt
     public static T ReadValue<T, TProvider>(this IDeserializeType deserializeType, int index)
         where TProvider : IDeserializeProvider<T>
     {
-        return deserializeType.ReadValue(index, TProvider.DeserializeInstance);
+        return deserializeType.ReadValue<T, IDeserialize<T>>(index, TProvider.DeserializeInstance);
     }
 }
 
@@ -157,9 +151,9 @@ public interface IDeserializer : IDisposable
     T ReadAny<T>(IDeserializeVisitor<T> v)
         where T : class;
 
-    T? ReadNullableRef<T, TProxy>(TProxy proxy)
+    T? ReadNullableRef<T, D>(D deserialize)
         where T : class
-        where TProxy : IDeserialize<T>;
+        where D : IDeserialize<T>;
 
     bool ReadBool();
     char ReadChar();
