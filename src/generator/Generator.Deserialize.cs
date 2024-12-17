@@ -333,7 +333,7 @@ namespace Serde
             if (parameterlessCtor is null && primaryCtor is null)
             {
                 context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_MissingPrimaryCtor, type.Locations[0]));
-                return "";
+                return $"var newType = new {typeName}();";
             }
 
             var assignmentMembers = new List<DataMemberSymbol>(members);
