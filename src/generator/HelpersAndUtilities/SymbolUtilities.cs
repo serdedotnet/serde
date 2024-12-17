@@ -155,11 +155,6 @@ namespace Serde
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
                             ) => options with { DenyUnknownMembers = (bool)value },
-                            ( nameof(TypeOptions.ConstructorSignature),
-                                {
-                                    Kind: TypedConstantKind.Type,
-                                }
-                            ) => options with { ConstructorSignature = (ITypeSymbol)value },
                             _ => options
                         };
                     }

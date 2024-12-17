@@ -92,12 +92,6 @@ sealed class SerdeTypeOptions : Attribute
     public MemberFormat MemberFormat { get; init; } = MemberFormat.CamelCase;
 
     /// <summary>
-    /// Pick the constructor used for deserialization. Expects a tuple with the same types as
-    /// the desired parameter list of the desired constructor.
-    /// </summary>
-    public Type? ConstructorSignature { get; init; }
-
-    /// <summary>
     /// The default behavior for null is to skip serialization. Set this to true to force
     /// serialization.
     /// </summary>
