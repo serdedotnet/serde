@@ -8,8 +8,9 @@ partial class ColorULongProxy : Serde.ISerdeInfoProvider
         typeof(ColorULong).GetCustomAttributesData(),
         global::Serde.SerdeInfoProvider.GetInfo<global::Serde.UInt64Proxy>(),
         new (string, System.Reflection.MemberInfo)[] {
-("red", typeof(ColorULong).GetField("Red")!),
-("green", typeof(ColorULong).GetField("Green")!),
-("blue", typeof(ColorULong).GetField("Blue")!)
-    });
+            ("red", typeof(ColorULong).GetField("Red")!),
+            ("green", typeof(ColorULong).GetField("Green")!),
+            ("blue", typeof(ColorULong).GetField("Blue")!)
+        }
+    );
 }

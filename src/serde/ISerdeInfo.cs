@@ -57,6 +57,7 @@ public interface ISerdeInfo
     [Experimental("SerdeExperimentalFieldInfo")]
     ISerdeInfo GetFieldInfo(int index);
 
+    internal static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 }
 
 public enum InfoKind
@@ -84,7 +85,7 @@ public interface IUnionSerdeInfo : ISerdeInfo
 {
     InfoKind ISerdeInfo.Kind => InfoKind.Union;
 
-    IEnumerable<ISerdeInfo> CaseInfos { get; }
+    ImmutableArray<ISerdeInfo> CaseInfos { get; }
 }
 
 
@@ -127,6 +128,12 @@ public static class SerdeInfo
         string typeName)
         => new CollectionInfo(typeName, InfoKind.Dictionary);
 
+    public static IUnionSerdeInfo MakeUnion(
+        string typeName,
+        IList<CustomAttributeData> typeAttributes,
+        ImmutableArray<ISerdeInfo> caseInfos)
+        => new UnionSerdeInfo(typeName, typeAttributes, caseInfos);
+
     private sealed record PrimitiveInfo(string Name) : INoFieldsInfo
     {
         public InfoKind Kind => InfoKind.Primitive;
@@ -143,25 +150,26 @@ public static class SerdeInfo
         public IList<CustomAttributeData> Attributes => [];
     }
 
-    private interface INoFieldsInfo : ISerdeInfo
-    {
-        int ISerdeInfo.FieldCount => 0;
+}
 
-        Utf8Span ISerdeInfo.GetFieldName(int index)
-            => throw GetOOR(index);
-        string ISerdeInfo.GetFieldStringName(int index)
-            => throw GetOOR(index);
-        IList<CustomAttributeData> ISerdeInfo.GetFieldAttributes(int index)
-            => throw GetOOR(index);
+file interface INoFieldsInfo : ISerdeInfo
+{
+    int ISerdeInfo.FieldCount => 0;
 
-        int ISerdeInfo.TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
+    Utf8Span ISerdeInfo.GetFieldName(int index)
+        => throw GetOOR(index);
+    string ISerdeInfo.GetFieldStringName(int index)
+        => throw GetOOR(index);
+    IList<CustomAttributeData> ISerdeInfo.GetFieldAttributes(int index)
+        => throw GetOOR(index);
 
-        ISerdeInfo ISerdeInfo.GetFieldInfo(int index)
-            => throw GetOOR(index);
+    int ISerdeInfo.TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
 
-        private ArgumentOutOfRangeException GetOOR(int index)
-            => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
-    }
+    ISerdeInfo ISerdeInfo.GetFieldInfo(int index)
+        => throw GetOOR(index);
+
+    private ArgumentOutOfRangeException GetOOR(int index)
+        => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
 }
 
 /// <summary>
@@ -207,8 +215,6 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         _indexToInfo = indexToInfo;
     }
 
-    private static readonly UTF8Encoding s_utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-
     /// <summary>
     /// Create a new field mapping. The ordering of the fields is important -- it
     /// corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
@@ -225,11 +231,11 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         {
             var (serializeName, serdeInfo, memberInfo) = fields[index];
 
-            nameToIndexBuilder.Add((s_utf8.GetBytes(serializeName), index));
+            nameToIndexBuilder.Add((ISerdeInfo.UTF8Encoding.GetBytes(serializeName), index));
             var fieldInfo = new PrivateFieldInfo(
                 serializeName,
                 -1,
-                memberInfo.GetCustomAttributesData(),
+                memberInfo.GetCustomAttributesData().ToImmutableArray(),
                 serdeInfo);
             indexToInfoBuilder.Add(fieldInfo);
         }
@@ -328,5 +334,47 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         // no larger element, the bitwise complement of `length`, which
         // is `lo` at this point.
         return ~lo;
+    }
+}
+
+file sealed class UnionSerdeInfo(
+    string name,
+    IList<CustomAttributeData> attributes,
+    ImmutableArray<ISerdeInfo> caseInfos) : IUnionSerdeInfo
+{
+    public string Name => name;
+    public IList<CustomAttributeData> Attributes => attributes;
+    public ImmutableArray<ISerdeInfo> CaseInfos => caseInfos;
+    public int FieldCount => caseInfos.Length;
+
+    public IList<CustomAttributeData> GetFieldAttributes(int index)
+    {
+        throw new NotImplementedException();
+    }
+
+    public ISerdeInfo GetFieldInfo(int index)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// The field name for a union is the name of the case.
+    /// </summary>
+    public Utf8Span GetFieldName(int index) => ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
+
+    public string GetFieldStringName(int index) => caseInfos[index].Name;
+
+    public int TryGetIndex(Utf8Span fieldName)
+    {
+        // Simple linear search since unions are expected to be small.
+        var stringName = ISerdeInfo.UTF8Encoding.GetString(fieldName);
+        for (int i = 0; i < caseInfos.Length; i++)
+        {
+            if (caseInfos[i].Name.Equals(stringName, StringComparison.Ordinal))
+            {
+                return i;
+            }
+        }
+        return IDeserializeType.IndexNotFound;
     }
 }

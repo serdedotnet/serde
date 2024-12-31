@@ -1,6 +1,10 @@
 
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Drawing;
+using System.Reflection;
+using System.Text;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
@@ -417,6 +421,207 @@ namespace Serde.Test
                 PhoneNumber = "+0 11 222 333 44",
                 Country = "The Greatest"
             };
+        }
+
+        [GenerateDeserialize]
+        abstract partial record BasicDU
+        {
+            private BasicDU() { }
+
+            public record A(int X) : BasicDU { }
+            public record B(string Y) : BasicDU { }
+        }
+
+        [Fact]
+        public void DeserializeBasicDU()
+        {
+            var aJson = """
+            {"A":{"x":5}}
+            """;
+            var bJson = """
+            {"B":{"y":"hello"}}
+            """;
+            var a = new BasicDU.A(5);
+            var b = new BasicDU.B("hello");
+            Assert.Equal(a, Serde.Json.JsonSerializer.Deserialize<BasicDU>(aJson));
+            Assert.Equal(b, Serde.Json.JsonSerializer.Deserialize<BasicDU>(bJson));
+        }
+
+        private abstract partial record BasicDUManualTag : ISerdeInfoProvider, IDeserializeProvider<BasicDUManualTag>
+        {
+            private BasicDUManualTag() { }
+
+            public record A(int W, int X) : BasicDUManualTag { }
+            public record B(string Y, string Z) : BasicDUManualTag { }
+
+            static IDeserialize<BasicDUManualTag> IDeserializeProvider<BasicDUManualTag>.DeserializeInstance => _DeserializeObject.Instance;
+
+            private sealed class _DeserializeObject : IDeserialize<BasicDUManualTag>
+            {
+                public static readonly _DeserializeObject Instance = new();
+
+                public BasicDUManualTag Deserialize(IDeserializer deserializer)
+                {
+                    var _l_baseInfo = SerdeInfoProvider.GetInfo<BasicDUManualTag>();
+                    var typeDeserialize = deserializer.ReadType(_l_baseInfo);
+                    if (typeDeserialize.TryReadIndex(_l_baseInfo, out var errorName) != 0)
+                    {
+                        throw new DeserializeException($"Unexpected key '{errorName}', expected union tag named 'tag'.");
+                    }
+                    var caseName = typeDeserialize.ReadString(0);
+                    return caseName switch
+                    {
+                        nameof(A) => _m_AProxy.Deserialize(typeDeserialize),
+                        nameof(B) => _m_BProxy.Deserialize(typeDeserialize),
+                        _ => throw new DeserializeException($"Unknown union tag '{caseName}'."),
+                    };
+                }
+            }
+
+            private sealed class _m_AProxy : ISerdeInfoProvider
+            {
+                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                    "A",
+                    System.Array.Empty<CustomAttributeData>(),
+                    [
+                        ("w", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("W")!),
+                        ("x", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("X")!),
+                    ]);
+
+                public static A Deserialize(IDeserializeType typeDeserialize)
+                {
+                    var _l_AProxy = SerdeInfoProvider.GetInfo<_m_AProxy>();
+                    int _l_index;
+                    int _l_w = default;
+                    int _l_x = default;
+                    byte _r_assignedValid = 0;
+                    while ((_l_index = typeDeserialize.TryReadIndex(_l_AProxy, out _)) != IDeserializeType.EndOfType)
+                    {
+                        switch (_l_index)
+                        {
+                            case 0:
+                                _l_w = typeDeserialize.ReadI32(_l_index);
+                                _r_assignedValid |= ((byte)1) << 0;
+                                break;
+                            case 1:
+                                _l_x = typeDeserialize.ReadI32(_l_index);
+                                _r_assignedValid |= ((byte)1) << 1;
+                                break;
+                            case Serde.IDeserializeType.IndexNotFound:
+                                typeDeserialize.SkipValue();
+                                break;
+                            default:
+                                throw new InvalidOperationException("Unexpected index: " + _l_index);
+                        }
+                    }
+
+                    if ((_r_assignedValid & 0b11) != 0b11)
+                    {
+                        throw Serde.DeserializeException.UnassignedMember();
+                    }
+
+                    return new A(_l_w, _l_x);
+                }
+            }
+
+            private sealed class _m_BProxy : ISerdeInfoProvider
+            {
+                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                    "B",
+                    System.Array.Empty<CustomAttributeData>(),
+                    [
+                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")!),
+                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")!),
+                    ]);
+                public static B Deserialize(IDeserializeType d)
+                {
+                    var _l_AProxy = SerdeInfoProvider.GetInfo<_m_BProxy>();
+                    int _l_index;
+                    string _l_y = default!;
+                    string _l_z = default!;
+                    byte _r_assignedValid = 0;
+                    while ((_l_index = d.TryReadIndex(_l_AProxy, out _)) != IDeserializeType.EndOfType)
+                    {
+                        switch (_l_index)
+                        {
+                            case 0:
+                                _l_y = d.ReadString(_l_index);
+                                _r_assignedValid |= ((byte)1) << 0;
+                                break;
+                            case 1:
+                                _l_z = d.ReadString(_l_index);
+                                _r_assignedValid |= ((byte)1) << 1;
+                                break;
+                            case Serde.IDeserializeType.IndexNotFound:
+                                d.SkipValue();
+                                break;
+                            default:
+                                throw new InvalidOperationException("Unexpected index: " + _l_index);
+                        }
+                    }
+
+                    if ((_r_assignedValid & 0b11) != 0b11)
+                    {
+                        throw Serde.DeserializeException.UnassignedMember();
+                    }
+
+                    return new B(_l_y, _l_z);
+                }
+            }
+
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new BaseSerdeInfo(
+                nameof(BasicDUManualTag),
+                "tag",
+                [
+                    SerdeInfoProvider.GetInfo<_m_AProxy>(),
+                    SerdeInfoProvider.GetInfo<_m_BProxy>(),
+                ]
+            );
+
+            private sealed record BaseSerdeInfo(
+                string TypeName,
+                string TagName,
+                ImmutableArray<ISerdeInfo> CaseInfos
+            ) : IUnionSerdeInfo
+            {
+                private readonly byte[] _utf8TagName = Encoding.UTF8.GetBytes(TagName);
+
+                public string Name => TypeName;
+                public IList<CustomAttributeData> Attributes => throw new System.NotImplementedException();
+                public int FieldCount => 1;
+                public IList<CustomAttributeData> GetFieldAttributes(int index) => index switch
+                {
+                    0 => [],
+                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                };
+                public ISerdeInfo GetFieldInfo(int index) => index switch
+                {
+                    0 => StringProxy.SerdeInfo,
+                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                };
+                public ReadOnlySpan<byte> GetFieldName(int index) => Encoding.UTF8.GetBytes(GetFieldStringName(index));
+                public string GetFieldStringName(int index) => index switch
+                {
+                    0 => TagName,
+                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                };
+                public int TryGetIndex(ReadOnlySpan<byte> fieldName) => fieldName.SequenceEqual(_utf8TagName)
+                    ? 0
+                    : IDeserializeType.IndexNotFound;
+            }
+        }
+
+        [Fact]
+        public void SerializeBasicDUManualTag()
+        {
+            var aJson = """
+            {"tag":"A","w":5,"x":6}
+            """;
+            var bJson = """
+            {"tag":"B","y":"hello","z":"world"}
+            """;
+            Assert.Equal(new BasicDUManualTag.A(5, 6), Serde.Json.JsonSerializer.Deserialize<BasicDUManualTag>(aJson));
+            Assert.Equal(new BasicDUManualTag.B("hello", "world"), Serde.Json.JsonSerializer.Deserialize<BasicDUManualTag>(bJson));
         }
     }
 }

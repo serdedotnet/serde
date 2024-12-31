@@ -17,6 +17,7 @@ namespace Serde
         ERR_MissingPrimaryCtor = 4,
         ERR_CantFindNestedWrapper = 5,
         ERR_WrapperDoesntImplementInterface = 6,
+        ERR_CantImplementAbstract = 7,
     }
 
     internal static class Diagnostics
@@ -29,6 +30,7 @@ namespace Serde
             ERR_MissingPrimaryCtor => nameof(ERR_MissingPrimaryCtor),
             ERR_CantFindNestedWrapper => nameof(ERR_CantFindNestedWrapper),
             ERR_WrapperDoesntImplementInterface => nameof(ERR_WrapperDoesntImplementInterface),
+            ERR_CantImplementAbstract => nameof(ERR_CantImplementAbstract),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)

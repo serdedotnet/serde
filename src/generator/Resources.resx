@@ -135,4 +135,11 @@
   <data name="ERR_WrapperDoesntImplementInterface" xml:space="preserve">
     <value>The proxy type '{0}' doesn't implement the interface '{2}&lt;{1}&gt;'.</value>
   </data>
+  <data name="ERR_CantImplementAbstract" xml:space="preserve">
+    <value>Can't generate serialize or deserialize implementations for '{0}' because it is abstract but is not a discriminated union. Implementations can only be generated for abstract types if they are discriminated unions. Discriminated unions are:
+- Abstract
+- Records
+- With only private constructors
+- With one or more nested records that inherit from the parent record</value>
+  </data>
 </root>

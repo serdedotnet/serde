@@ -8,8 +8,9 @@ partial class ColorEnumProxy : Serde.ISerdeInfoProvider
         typeof(ColorEnum).GetCustomAttributesData(),
         global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(),
         new (string, System.Reflection.MemberInfo)[] {
-("red", typeof(ColorEnum).GetField("Red")!),
-("green", typeof(ColorEnum).GetField("Green")!),
-("blue", typeof(ColorEnum).GetField("Blue")!)
-    });
+            ("red", typeof(ColorEnum).GetField("Red")!),
+            ("green", typeof(ColorEnum).GetField("Green")!),
+            ("blue", typeof(ColorEnum).GetField("Blue")!)
+        }
+    );
 }

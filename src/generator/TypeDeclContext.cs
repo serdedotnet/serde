@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -8,19 +9,22 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 namespace Serde
 {
     /// <summary>
-    /// Provides context about a given type declaration, including what kind of typeDecl it is,
-    /// and what types and namespaces it's contained in.
+    /// Provides context about a given type declaration, including what kind of typeDecl it is, and
+    /// what types and namespaces it's contained in. It's useful for generating new partial
+    /// declarations of a type, or new nested types inside it.
     /// </summary>
-    internal readonly struct TypeDeclContext
+    internal sealed class TypeDeclContext
     {
         public SyntaxKind Kind { get; init; }
         public string Name { get; init; }
         public List<string> NamespaceNames { get; init; }
         public List<(string Name, SyntaxKind Kind)> ParentTypeInfo { get; init; }
         public TypeParameterListSyntax? TypeParameterList { get; init; }
+        public BaseTypeDeclarationSyntax TypeDecl { get; }
 
         public TypeDeclContext(BaseTypeDeclarationSyntax typeDecl)
         {
+            TypeDecl = typeDecl;
             Kind = typeDecl.Kind();
             Name = typeDecl.Identifier.ValueText;
             var nsNames = new List<string>();
@@ -49,22 +53,59 @@ namespace Serde
                 : null;
         }
 
-        public string WrapNewType(string newType)
+        public static TypeDeclContext FromFile(string content, string typeDeclName)
+        {
+            var tree = ParseCompilationUnit(content);
+            var typeDecl = FindTypeDecl(tree.Members, typeDeclName) ?? throw new InvalidOperationException($"Type {typeDeclName} not found in file");
+            if (typeDecl is null)
+            {
+                throw new InvalidOperationException($"Type {typeDeclName} not found in file");
+            }
+            return new TypeDeclContext(typeDecl);
+
+            static TypeDeclarationSyntax? FindTypeDecl(SyntaxList<MemberDeclarationSyntax> members, string typeDeclName)
+            {
+                foreach (var member in members)
+                {
+                    switch (member)
+                    {
+                        case BaseNamespaceDeclarationSyntax ns:
+                            return FindTypeDecl(ns.Members, typeDeclName);
+                        case TypeDeclarationSyntax t:
+                            if (t.Identifier.ValueText == typeDeclName)
+                            {
+                                return t;
+                            }
+                            return FindTypeDecl(t.Members, typeDeclName);
+                        default:
+                            throw new InvalidOperationException($"Unexpected declaration kind {member}");
+                    }
+                }
+                return null;
+            }
+        }
+
+        public SourceBuilder MakeNestedType(SourceBuilder newType)
         {
             // If the original type was in a namespace or type, put this decl in the same one
             for (int i = ParentTypeInfo.Count - 1; i >= 0; i--)
             {
                 var (name, kind) = ParentTypeInfo[i];
-                newType = $$"""
+                newType = new SourceBuilder($$"""
 partial {{TypeKindToString(kind)}} {{name}}
 {
     {{newType}}
 }
-""";
+""");
             }
+
             if (NamespaceNames.Count > 0)
             {
-                newType = "namespace " + string.Join(".", NamespaceNames) + ";" + Utilities.NewLine + newType;
+                newType = new SourceBuilder($"""
+                namespace {string.Join(".", NamespaceNames)};
+
+                {newType}
+                """);
             }
 
             return newType;

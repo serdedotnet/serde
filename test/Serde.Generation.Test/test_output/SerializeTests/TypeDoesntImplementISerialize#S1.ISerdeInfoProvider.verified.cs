@@ -8,5 +8,6 @@ partial struct S1 : Serde.ISerdeInfoProvider
         typeof(S1).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 
-    });
+        }
+    );
 }

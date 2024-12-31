@@ -14,9 +14,9 @@ using static Serde.SerdeImplRoslynGenerator;
 
 namespace Serde
 {
-    internal class DeserializeImplGenerator
+    internal class DeserializeImplGen
     {
-        internal static (List<MemberDeclarationSyntax>, BaseListSyntax) GenerateDeserializeImpl(
+        internal static (List<MemberDeclarationSyntax>, BaseListSyntax) GenDeserialize(
             TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
@@ -24,6 +24,19 @@ namespace Serde
         {
             var typeFqn = receiverType.ToDisplayString();
             TypeSyntax typeSyntax = ParseTypeName(typeFqn);
+
+            if (receiverType.IsAbstract)
+            {
+                var memberDecl = ParseMemberDeclaration(GenUnionDeserializeMethod((INamedTypeSymbol)receiverType))!;
+                List<BaseTypeSyntax> unionBase = [
+                    // `Serde.IDeserialize<'typeName'>
+                    SimpleBaseType(QualifiedName(IdentifierName("Serde"), GenericName(
+                        Identifier("IDeserialize"),
+                        TypeArgumentList(SeparatedList(new[] { typeSyntax }))
+                    ))),
+                ];
+                return ([ memberDecl ], BaseList(SeparatedList(unionBase)));
+            }
 
             // Generate members for IDeserialize.Deserialize implementation
             var members = new List<MemberDeclarationSyntax>();
@@ -55,6 +68,72 @@ namespace Serde
             }
             var baseList = BaseList(SeparatedList(bases));
             return (members, baseList);
+        }
+
+        /// <summary>
+        /// Generates the method body for deserializing a union.
+        /// Code looks like:
+        /// <code>
+        /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
+        /// {
+        ///   var serdeInfo = SerdeInfoProvider.GetInfo{T}();
+        ///   var de = deserializer.ReadType(serdeInfo);
+        ///   int index;
+        ///   if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        ///   {
+        ///    throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
+        ///   }
+        ///   return index switch
+        ///   {
+        ///     {index} => deserializer.Deserialize({union member}),
+        ///     ...
+        ///     _ => throw new InvalidDeserializeValueException($"Unexpected index: {index}")
+        ///   };
+        /// }
+        /// </code>
+        /// </summary>
+        private static string GenUnionDeserializeMethod(INamedTypeSymbol type)
+        {
+            Debug.Assert(type.IsAbstract);
+
+            var members = SymbolUtilities.GetDUTypeMembers(type);
+            var typeFqn = type.ToDisplayString();
+            var assignedVarType = members.Length switch {
+                (<= 8) => "byte",
+                (<= 16) => "ushort",
+                (<= 32) => "uint",
+                (<= 64) => "ulong",
+                _ => throw new InvalidOperationException("Too many members in type")
+            };
+            var membersBuilder = new StringBuilder();
+            for (int i = 0; i < members.Length; i++)
+            {
+                var m = members[i];
+                membersBuilder.AppendLine($"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>({i}),");
+            }
+
+            var src = $$"""
+{{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+{
+    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}>();
+    var de = deserializer.ReadType(serdeInfo);
+    int index;
+    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+    {
+        throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
+    }
+    {{typeFqn}} _l_result = index switch {
+        {{membersBuilder}}
+        _ => throw new InvalidOperationException($"Unexpected index: {index}")
+    };
+    if ((index = de.TryReadIndex(serdeInfo, out _)) != IDeserializeType.EndOfType)
+    {
+        throw Serde.DeserializeException.ExpectedEndOfType(index);
+    }
+    return _l_result;
+}
+""";
+            return src;
         }
 
         /// <summary>

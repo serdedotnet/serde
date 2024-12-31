@@ -96,7 +96,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
     public IDeserializeType ReadType(ISerdeInfo fieldMap)
     {
         // Custom types look like dictionaries, enums are inline strings
-        if (fieldMap.Kind == InfoKind.CustomType)
+        if (fieldMap.Kind is InfoKind.CustomType or InfoKind.Union)
         {
             var peek = Reader.SkipWhitespace();
             if (peek != (short)'{')

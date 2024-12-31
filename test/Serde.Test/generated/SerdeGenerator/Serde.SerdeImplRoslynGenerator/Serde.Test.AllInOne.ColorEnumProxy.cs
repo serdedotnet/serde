@@ -1,4 +1,4 @@
-﻿
+
 namespace Serde.Test
 {
     partial record AllInOne

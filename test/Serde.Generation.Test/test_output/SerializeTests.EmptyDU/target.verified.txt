@@ -1,0 +1,24 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_CantImplementAbstract,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (3,24)-(3,28),
+      MessageFormat:
+Can't generate serialize or deserialize implementations for 'Base' because it is abstract but is not a discriminated union. Implementations can only be generated for abstract types if they are discriminated unions. Discriminated unions are:
+- Abstract
+- Records
+- With only private constructors
+- With zero or more nested records that inherit from the parent record,
+      Message:
+Can't generate serialize or deserialize implementations for 'Base' because it is abstract but is not a discriminated union. Implementations can only be generated for abstract types if they are discriminated unions. Discriminated unions are:
+- Abstract
+- Records
+- With only private constructors
+- With zero or more nested records that inherit from the parent record,
+      Category: Serde
+    }
+  ]
+}

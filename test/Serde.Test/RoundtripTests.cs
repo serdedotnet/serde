@@ -1,4 +1,5 @@
 
+using System;
 using Serde.Json;
 using Xunit;
 
