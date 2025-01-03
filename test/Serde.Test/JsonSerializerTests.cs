@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -193,6 +194,134 @@ namespace Serde.Test
             var js = "[1,2,3]";
             var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.Deserialize<int, Int32Proxy>>(js);
             Assert.Equal(new int[] { 1, 2, 3 }, arr);
+        }
+
+        [GenerateSerialize]
+        abstract partial record BasicDU
+        {
+            private BasicDU() { }
+
+            public record A(int X) : BasicDU { }
+            public record B(string Y) : BasicDU { }
+        }
+
+        [Fact]
+        public void SerializeBasicDU()
+        {
+            var a = new BasicDU.A(5);
+            var b = new BasicDU.B("hello");
+            Assert.Equal("""
+            {"A":{"x":5}}
+            """, Serde.Json.JsonSerializer.Serialize<BasicDU>(a));
+            Assert.Equal("""
+            {"B":{"y":"hello"}}
+            """, Serde.Json.JsonSerializer.Serialize<BasicDU>(b));
+        }
+
+        abstract partial record BasicDUManualTag : ISerdeInfoProvider, ISerializeProvider<BasicDUManualTag>
+        {
+            private BasicDUManualTag() { }
+
+            public record A(int W, int X) : BasicDUManualTag { }
+            public record B(string Y, string Z) : BasicDUManualTag { }
+
+            static ISerialize<BasicDUManualTag> ISerializeProvider<BasicDUManualTag>.SerializeInstance => _SerializeObject.Instance;
+
+            private sealed class _SerializeObject : ISerialize<BasicDUManualTag>
+            {
+                public static readonly _SerializeObject Instance = new();
+
+                public void Serialize(BasicDUManualTag value, ISerializer serializer)
+                {
+                    var _l_baseInfo = SerdeInfoProvider.GetInfo<BasicDUManualTag>();
+                    var type = serializer.SerializeType(_l_baseInfo);
+                    switch (value)
+                    {
+                        case BasicDUManualTag.A c:
+                        {
+                            type.SerializeField(_l_baseInfo, 0, "A", StringProxy.Instance);
+                            var caseInfo = SerdeInfoProvider.GetInfo<_m_AProxy>();
+                            type.SerializeField<int, Int32Proxy>(caseInfo, 0, c.W);
+                            type.SerializeField<int, Int32Proxy>(caseInfo, 1, c.X);
+                            break;
+                        }
+                        case BasicDUManualTag.B c:
+                        {
+                            type.SerializeField(_l_baseInfo, 0, "B", StringProxy.Instance);
+                            var caseInfo = SerdeInfoProvider.GetInfo<_m_BProxy>();
+                            type.SerializeField<string, StringProxy>(caseInfo, 0, c.Y);
+                            type.SerializeField<string, StringProxy>(caseInfo, 1, c.Z);
+                            break;
+                        }
+                    }
+                    type.End();
+                }
+            }
+
+            private sealed class _m_AProxy : ISerdeInfoProvider
+            {
+                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                    "A",
+                    System.Array.Empty<CustomAttributeData>(),
+                    [
+                        ("w", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("W")!),
+                        ("x", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("X")!),
+                    ]);
+            }
+
+            private sealed class _m_BProxy : ISerdeInfoProvider
+            {
+                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                    "B",
+                    System.Array.Empty<CustomAttributeData>(),
+                    [
+                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")!),
+                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")!),
+                    ]);
+            }
+
+            static ISerdeInfo ISerdeInfoProvider.SerdeInfo => BaseSerdeInfo.Instance;
+
+            private sealed class BaseSerdeInfo : IUnionSerdeInfo
+            {
+                public static readonly BaseSerdeInfo Instance = new BaseSerdeInfo();
+                private BaseSerdeInfo() { }
+
+                public ImmutableArray<ISerdeInfo> CaseInfos => throw new System.NotImplementedException();
+
+                public string Name => throw new System.NotImplementedException();
+
+                public IList<CustomAttributeData> Attributes => throw new System.NotImplementedException();
+
+                public int FieldCount => throw new System.NotImplementedException();
+
+                public IList<CustomAttributeData> GetFieldAttributes(int index) => throw new System.NotImplementedException();
+
+                public ISerdeInfo GetFieldInfo(int index) => throw new System.NotImplementedException();
+
+                public System.ReadOnlySpan<byte> GetFieldName(int index) => Encoding.UTF8.GetBytes(GetFieldStringName(index));
+
+                public string GetFieldStringName(int index) => index switch
+                {
+                    0 => "tag",
+                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                };
+
+                public int TryGetIndex(System.ReadOnlySpan<byte> fieldName) => throw new System.NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public void SerializeBasicDUManualTag()
+        {
+            var a = new BasicDUManualTag.A(5, 6);
+            var b = new BasicDUManualTag.B("hello", "world");
+            Assert.Equal("""
+            {"tag":"A","w":5,"x":6}
+            """, Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(a));
+            Assert.Equal("""
+            {"tag":"B","y":"hello","z":"world"}
+            """, Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(b));
         }
     }
 }

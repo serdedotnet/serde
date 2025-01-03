@@ -10,6 +10,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 using static Serde.WellKnownTypes;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Serde;
 
@@ -59,7 +60,12 @@ sealed partial class {{proxyName}}
             members: List<MemberDeclarationSyntax>(new[] { newType }));
         tree = tree.NormalizeWhitespace(eol: Utilities.NewLine);
 
-        context.AddSource(fullWrapperName, Utilities.NewLine + tree.ToFullString());
+        var src = new SourceBuilder($"""
+
+        {tree.ToFullString()}
+        """);
+
+        context.AddSource(fullWrapperName, src);
     }
 
     // If the target is a core type, we can wrap it

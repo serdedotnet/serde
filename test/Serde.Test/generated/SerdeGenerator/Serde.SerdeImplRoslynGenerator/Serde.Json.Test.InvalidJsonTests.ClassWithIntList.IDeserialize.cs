@@ -1,4 +1,4 @@
-﻿
+
 #nullable enable
 using System;
 using Serde;

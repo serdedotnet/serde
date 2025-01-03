@@ -96,6 +96,11 @@ sealed class SerdeTypeOptions : Attribute
     /// serialization.
     /// </summary>
     public bool SerializeNull { get; init; } = false;
+
+    /// <summary>
+    /// Use the given name instead of the type name.
+    /// </summary>
+    public string? Rename { get; init; } = null;
 }
 
 /// <summary>

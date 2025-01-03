@@ -8,8 +8,9 @@ partial class ColorIntProxy : Serde.ISerdeInfoProvider
         typeof(ColorInt).GetCustomAttributesData(),
         global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(),
         new (string, System.Reflection.MemberInfo)[] {
-("red", typeof(ColorInt).GetField("Red")!),
-("green", typeof(ColorInt).GetField("Green")!),
-("blue", typeof(ColorInt).GetField("Blue")!)
-    });
+            ("red", typeof(ColorInt).GetField("Red")!),
+            ("green", typeof(ColorInt).GetField("Green")!),
+            ("blue", typeof(ColorInt).GetField("Blue")!)
+        }
+    );
 }

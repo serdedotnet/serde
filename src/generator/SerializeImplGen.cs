@@ -1,17 +1,13 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
-using static Serde.WellKnownTypes;
 
 namespace Serde;
 
@@ -23,6 +19,14 @@ public partial class SerializeImplGen
         ITypeSymbol receiverType,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
+        if (receiverType.IsAbstract)
+        {
+            return ([ ParseMemberDeclaration(GenUnionSerializeMethod((INamedTypeSymbol)receiverType))! ],
+                BaseList(SeparatedList((List<BaseTypeSyntax>)([
+                    SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverType.ToDisplayString()}>")),
+            ]))));
+        }
+
         var statements = new List<StatementSyntax>();
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
 
@@ -174,6 +178,41 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
                     GenericName(Identifier(methodName), TypeArgumentList(SeparatedList(typeArgs)))),
                 ArgumentList(SeparatedList(arguments.Select(Argument)))));
         }
+    }
+
+    /// <summary>
+    /// Generate the ISerialize{T}.Serialize method for a union type.
+    /// </summary>
+    private static string GenUnionSerializeMethod(INamedTypeSymbol baseType)
+    {
+        Debug.Assert(baseType.IsAbstract);
+
+        // Unions are effectively a parent type and nested type. The parent type has a single
+        // field, with the name being the type name and the value being the record case.
+
+        var caseTypes = SymbolUtilities.GetDUTypeMembers(baseType);
+        var casesBuilder = new StringBuilder();
+        for (int i = 0; i < caseTypes.Length; i++)
+        {
+            var t = caseTypes[i];
+            var tString = t.ToDisplayString();
+            casesBuilder.AppendLine($"case {tString} c:");
+            casesBuilder.AppendLine($"    _l_type.SerializeField<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
+            casesBuilder.AppendLine($"    break;");
+        }
+        string methodDecl = $$"""
+        void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
+        {
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{baseType.ToDisplayString()}}>();
+            var _l_type = serializer.SerializeType(_l_serdeInfo);
+            switch (value)
+            {
+                {{casesBuilder}}
+            }
+            _l_type.End();
+        }
+        """;
+        return methodDecl;
     }
 
     /// <summary>

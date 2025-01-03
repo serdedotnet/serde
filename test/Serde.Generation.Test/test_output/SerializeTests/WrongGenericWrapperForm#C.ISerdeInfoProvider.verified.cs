@@ -8,5 +8,6 @@ partial class C : Serde.ISerdeInfoProvider
         typeof(C).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
 
-    });
+        }
+    );
 }

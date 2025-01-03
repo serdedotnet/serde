@@ -3,7 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -34,6 +37,19 @@ internal static class SerdeInfoGenerator
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
+        if (receiverType.IsAbstract)
+        {
+            GenerateUnionSerdeInfo(typeDecl, receiverType, context, usage, inProgress);
+            return;
+        }
+
+        // For custom types we only a single SerdeUsage, either Serialize or Deserialize.
+        // For Both we'll normalize to Serialize.
+        if (usage == SerdeUsage.Both)
+        {
+            usage = SerdeUsage.Serialize;
+        }
+
         bool isEnum;
         string makeFuncSuffix;
         string fieldArrayType;
@@ -77,18 +93,19 @@ internal static class SerdeInfoGenerator
             makeArgs.Add($"global::Serde.SerdeInfoProvider.GetInfo<{underlyingInfo}>()");
         }
 
-        makeArgs.Add($$"""
+        makeArgs.Add(new SourceBuilder($$"""
 new {{fieldArrayType}} {
-{{membersString}}
-    }
-""");
+    {{membersString}}
+}
+""").ToString());
 
-        var argsString = string.Join("," + Utilities.NewLine + "        ", makeArgs);
+        var argsString = string.Join("," + Utilities.NewLine, makeArgs);
 
-        var body = $$"""
+        var body = new SourceBuilder($$"""
 static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
-        {{argsString}});
-""";
+    {{argsString}}
+);
+""");
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
             typeDeclContext,
@@ -121,6 +138,83 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
             return $"""({string.Join(", ", elements)})""";
         }
     }
+
+    private static void GenerateUnionSerdeInfo(
+        BaseTypeDeclarationSyntax typeDecl,
+        INamedTypeSymbol receiverType,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+    {
+        var typeMembers = SymbolUtilities.GetDUTypeMembers(receiverType);
+        var originalCtx = new TypeDeclContext(typeDecl);
+        foreach (var m in typeMembers)
+        {
+            var proxyName = GetUnionProxyName(m);
+            string typeName = originalCtx.Name;
+            var typeKind = originalCtx.Kind;
+            string declKeywords;
+            (typeName, declKeywords) = typeKind == SyntaxKind.EnumDeclaration
+                ? (Proxies.GetProxyName(typeName), "class")
+                : (typeName, TypeDeclContext.TypeKindToString(typeKind));
+            var nestedType = originalCtx.MakeNestedType(new SourceBuilder($$"""
+partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}} : Serde.ISerdeInfoProvider
+{
+    private sealed partial class {{proxyName}} {}
+}
+"""));
+            var newCtx = TypeDeclContext.FromFile(nestedType.ToString(), proxyName);
+            var wrappedDecl = (BaseTypeDeclarationSyntax)newCtx.TypeDecl;
+            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, wrappedDecl, m, inProgress.Add((m, receiverType)));
+        }
+
+        var bodies = new SourceBuilder($$"""
+static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
+    "{{SerdeImplRoslynGenerator.GetSerdeName(receiverType)}}",
+    typeof({{receiverType.ToDisplayString()}}).GetCustomAttributesData(),
+    System.Collections.Immutable.ImmutableArray.Create<global::Serde.ISerdeInfo>(
+        {{GetMembersInfos()}}
+    )
+);
+
+{{GetProxyDefs()}}
+""");
+
+        var typeDeclContext = new TypeDeclContext(typeDecl);
+        var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
+            typeDeclContext,
+            baseList: null,
+            bodies,
+            "ISerdeInfoProvider");
+        context.AddSource(fileName, newType);
+
+        return;
+
+        string GetMembersInfos()
+        {
+            return string.Join("," + Utilities.NewLine,
+                typeMembers.Select(m => $"        global::Serde.SerdeInfoProvider.GetInfo<{GetUnionProxyName(m)}>()"));
+        }
+
+        string GetProxyDefs()
+        {
+            string attrString = usage switch
+            {
+                SerdeUsage.Both => "Serde",
+                SerdeUsage.Serialize => "Serialize",
+                SerdeUsage.Deserialize => "Deserialize",
+            };
+            var sb = new StringBuilder();
+            foreach (var m in typeMembers)
+            {
+                sb.AppendLine($"[global::Serde.Generate{attrString}]");
+                sb.AppendLine($"private sealed partial class {GetUnionProxyName(m)} {{}}");
+            }
+            return sb.ToString();
+        }
+    }
+
+    internal static string GetUnionProxyName(INamedTypeSymbol member) => $"_m_{member.Name}Proxy";
 
     private static string? GetWrapperName(
         DataMemberSymbol m,

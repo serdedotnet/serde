@@ -7,6 +7,7 @@ partial struct S : Serde.ISerdeInfoProvider
         "S",
         typeof(S).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("f", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Deserialize<string,global::Serde.StringProxy>>(), typeof(S).GetField("F")!)
-    });
+            ("f", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Deserialize<string,global::Serde.StringProxy>>(), typeof(S).GetField("F")!)
+        }
+    );
 }

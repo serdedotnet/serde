@@ -2,6 +2,7 @@
 
 #nullable enable
 namespace Some.Nested.Namespace;
+
 partial class ColorULongProxy : Serde.ISerdeInfoProvider
 {
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
@@ -9,8 +10,9 @@ partial class ColorULongProxy : Serde.ISerdeInfoProvider
         typeof(Some.Nested.Namespace.ColorULong).GetCustomAttributesData(),
         global::Serde.SerdeInfoProvider.GetInfo<global::Serde.UInt64Proxy>(),
         new (string, System.Reflection.MemberInfo)[] {
-("red", typeof(Some.Nested.Namespace.ColorULong).GetField("Red")!),
-("green", typeof(Some.Nested.Namespace.ColorULong).GetField("Green")!),
-("blue", typeof(Some.Nested.Namespace.ColorULong).GetField("Blue")!)
-    });
+            ("red", typeof(Some.Nested.Namespace.ColorULong).GetField("Red")!),
+            ("green", typeof(Some.Nested.Namespace.ColorULong).GetField("Green")!),
+            ("blue", typeof(Some.Nested.Namespace.ColorULong).GetField("Blue")!)
+        }
+    );
 }

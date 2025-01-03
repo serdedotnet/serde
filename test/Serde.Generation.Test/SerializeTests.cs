@@ -511,6 +511,65 @@ partial class C<T>
             return VerifySerialize(src);
         }
 
+        [Fact]
+        public Task AbstractDU()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+abstract partial class Base { }
+""";
+            return GeneratorTestUtils.VerifyDiagnostics(src);
+        }
+
+        [Fact]
+        public Task AbstractRecordPublicCtor()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+abstract partial record Base { }
+""";
+            return GeneratorTestUtils.VerifyDiagnostics(src);
+        }
+
+        [Fact]
+        public Task EmptyDU()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+abstract partial record Base
+{
+    private Base() { }
+}
+""";
+            return VerifySerialize(src);
+        }
+
+        [Fact]
+        public Task BasicDU()
+        {
+            var src = """
+using Serde;
+
+namespace Some.Nested.Namespace;
+
+[GenerateSerialize]
+abstract partial record Base
+{
+    private Base() { }
+
+    public record A(int X) : Base { }
+    public record B(string Y) : Base { }
+}
+""";
+            return VerifySerialize(src);
+        }
+
         private static Task VerifySerialize(
             string src,
             [CallerMemberName] string? callerName = null)

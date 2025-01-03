@@ -33,7 +33,7 @@ namespace Serde.Json
             internal static readonly ISerdeInfo ObjectInfo = SerdeInfo.MakeDictionary(nameof(Object));
             internal static readonly ISerdeInfo ArrayInfo = SerdeInfo.MakeEnumerable(nameof(Array));
 
-            public IEnumerable<ISerdeInfo> CaseInfos { get; } = [
+            public ImmutableArray<ISerdeInfo> CaseInfos { get; } = [
                 SerdeInfo.MakePrimitive(nameof(Number)),
                 SerdeInfo.MakePrimitive(nameof(Bool)),
                 SerdeInfo.MakePrimitive(nameof(String)),

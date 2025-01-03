@@ -1,8 +1,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
-using VerifyXunit;
 using Xunit;
 using static Serde.Test.GeneratorTestUtils;
 
@@ -214,6 +212,106 @@ partial class C
 }
 """;
             return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task AbstractClass()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+abstract partial class Base { }
+""";
+            return GeneratorTestUtils.VerifyDiagnostics(src);
+        }
+
+        [Fact]
+        public Task AbstractRecordPublicCtor()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+abstract partial record Base { }
+""";
+            return GeneratorTestUtils.VerifyDiagnostics(src);
+        }
+
+        [Fact]
+        public Task EmptyDU()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+abstract partial record Base
+{
+    private Base() { }
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task BasicDU()
+        {
+            var src = """
+using Serde;
+
+namespace Some.Nested.Namespace;
+
+[GenerateDeserialize]
+abstract partial record Base
+{
+    private Base() { }
+
+    public record A(int X) : Base { }
+    public record B(string Y) : Base { }
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task BasicDUGenerateSerde()
+        {
+            var src = """
+using Serde;
+
+namespace Some.Nested.Namespace;
+
+[GenerateSerde]
+abstract partial record Base
+{
+    private Base() { }
+
+    public record A(int X) : Base { }
+    public record B(string Y) : Base { }
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task BasicDUGenerateSerializeAndDeserialize()
+        {
+            var src = """
+using Serde;
+
+namespace Some.Nested.Namespace;
+
+[GenerateSerialize]
+[GenerateDeserialize]
+abstract partial record Base
+{
+    private Base() { }
+
+    public record A(int X) : Base { }
+    public record B(string Y) : Base { }
+}
+""";
+            return VerifyMultiFile(src);
         }
 
         private static Task VerifyDeserialize(

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Serde;
 
@@ -12,7 +13,7 @@ internal sealed class GeneratorExecutionContext
 {
     private bool _frozen = false;
     private readonly List<Diagnostic> _diagnostics = new();
-    private readonly SortedSet<(string FileName, string Content)> _sources = new();
+    private readonly SortedSet<(string FileName, SourceBuilder Content)> _sources = new();
 
     public Compilation Compilation { get; }
 
@@ -34,7 +35,7 @@ internal sealed class GeneratorExecutionContext
         _diagnostics.Add(diagnostic);
     }
 
-    internal void AddSource(string fileName, string content)
+    internal void AddSource(string fileName, SourceBuilder content)
     {
         if (_frozen)
             throw new InvalidOperationException("Cannot add sources after GetSources() has been called.");

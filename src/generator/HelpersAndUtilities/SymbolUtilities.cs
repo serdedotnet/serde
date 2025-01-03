@@ -1,6 +1,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -50,6 +52,21 @@ namespace Serde
                 members.Add(new DataMemberSymbol(m, typeOptions, memberOptions));
             }
             return members;
+        }
+
+        internal static ImmutableArray<INamedTypeSymbol> GetDUTypeMembers(INamedTypeSymbol receiverType)
+        {
+            Debug.Assert(receiverType.IsAbstract);
+
+            var builder = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+            foreach (var t in receiverType.GetTypeMembers())
+            {
+                if (t.BaseType?.Equals(receiverType, SymbolEqualityComparer.Default) == true)
+                {
+                    builder.Add(t);
+                }
+            }
+            return builder.ToImmutable();
         }
 
         public static TypeSyntax ToFqnSyntax(this ITypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
@@ -142,7 +159,11 @@ namespace Serde
                 {
                     foreach ((string name, TypedConstant argument) in attr.NamedArguments)
                     {
-                        var value = argument.Value!;
+                        var value = argument.Value;
+                        if (value is null)
+                        {
+                            continue;
+                        }
                         options = (name, argument) switch {
                             (nameof(TypeOptions.MemberFormat),
                                 {
@@ -155,6 +176,11 @@ namespace Serde
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
                             ) => options with { DenyUnknownMembers = (bool)value },
+                            (nameof(TypeOptions.Rename),
+                                {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_String
+                                }) => options with { Rename = (string)value },
                             _ => options
                         };
                     }

@@ -7,6 +7,7 @@ partial struct S2 : Serde.ISerdeInfoProvider
         "S2",
         typeof(S2).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-("E", global::Serde.SerdeInfoProvider.GetInfo<ColorEnumProxy>(), typeof(S2).GetField("E")!)
-    });
+            ("E", global::Serde.SerdeInfoProvider.GetInfo<ColorEnumProxy>(), typeof(S2).GetField("E")!)
+        }
+    );
 }

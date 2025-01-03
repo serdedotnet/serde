@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Serde;
 
@@ -14,11 +15,11 @@ namespace Serde;
 public readonly record struct GenerationOutput
 {
     public ImmutableArray<Diagnostic> Diagnostics { get;}
-    public ImmutableSortedSet<(string FileName, string Content)> Sources { get; }
+    public ImmutableSortedSet<(string FileName, SourceBuilder Content)> Sources { get; }
 
     public GenerationOutput(
         IEnumerable<Diagnostic> diagnostics,
-        IEnumerable<(string fileName, string content)> sources)
+        IEnumerable<(string fileName, SourceBuilder content)> sources)
     {
         var diagSet = new HashSet<Diagnostic>();
         var diagBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
@@ -29,7 +30,7 @@ public readonly record struct GenerationOutput
                 diagBuilder.Add(diag);
             }
         }
-        var outputBuilder = ImmutableSortedSet.CreateBuilder<(string, string)>(SerdeInfoImplComparer.Instance);
+        var outputBuilder = ImmutableSortedSet.CreateBuilder<(string, SourceBuilder)>(SerdeInfoImplComparer.Instance);
         foreach (var source in sources)
         {
             outputBuilder.Add(source);
@@ -62,12 +63,12 @@ public readonly record struct GenerationOutput
     /// Generally compares the source and content of SerdeInfo implementations. For ISerdeInfoProvider
     /// implementations, in particular, we only care about the source name.
     /// </summary>
-    private sealed class SerdeInfoImplComparer : IComparer<(string SrcName, string Content)>
+    private sealed class SerdeInfoImplComparer : IComparer<(string SrcName, SourceBuilder Content)>
     {
         private SerdeInfoImplComparer() { }
         public static readonly SerdeInfoImplComparer Instance = new SerdeInfoImplComparer();
 
-        public int Compare((string SrcName, string Content) x, (string SrcName, string Content) y)
+        public int Compare((string SrcName, SourceBuilder Content) x, (string SrcName, SourceBuilder Content) y)
         {
             if (x.SrcName.EndsWith(".ISerdeInfoProvider") && y.SrcName.EndsWith(".ISerdeInfoProvider"))
             {
