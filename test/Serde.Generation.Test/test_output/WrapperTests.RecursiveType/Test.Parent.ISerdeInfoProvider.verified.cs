@@ -1,6 +1,7 @@
 ﻿//HintName: Test.Parent.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Test;
 
 partial record Parent : Serde.ISerdeInfoProvider

@@ -281,23 +281,28 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         };
 
         var typeKind = typeDeclContext.Kind;
-        MemberDeclarationSyntax newType;
-        var newTypes = new List<MemberDeclarationSyntax>();
+        var newType = new SourceBuilder("""
+
+            #nullable enable
+
+            using System;
+            using Serde;
+
+            """
+        );
+
         if (typeKind == SyntaxKind.EnumDeclaration)
         {
             var proxyName = Proxies.GetProxyName(typeName);
-            newType = ClassDeclaration(
-                attributeLists: default,
-                modifiers: TokenList(Token(SyntaxKind.SealedKeyword), Token(SyntaxKind.PartialKeyword)),
-                keyword: Token(SyntaxKind.ClassKeyword),
-                identifier: Identifier(proxyName),
-                typeParameterList: default,
-                baseList: baseList,
-                constraintClauses: default,
-                openBraceToken: Token(SyntaxKind.OpenBraceToken),
-                members: List(implMembers),
-                closeBraceToken: Token(SyntaxKind.CloseBraceToken),
-                semicolonToken: default);
+            var siblingType = typeDeclContext.MakeSiblingType(new SourceBuilder(
+                $$"""
+                sealed partial class {{proxyName}} {{baseList}}
+                {
+                    {{implMembers}}
+                }
+                """
+            ));
+            newType.Append(siblingType);
             typeName = proxyName;
         }
         else
@@ -305,55 +310,31 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             var suffix = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
             var proxyName = typeName + suffix + "Proxy";
 
-            implMembers.Add(ParseMemberDeclaration($$"""
-                public static readonly {{proxyName}} Instance = new();
-                """)!
+            implMembers.AppendLine(
+                $"public static readonly {proxyName} Instance = new();"
             );
-            implMembers.Add(ParseMemberDeclaration($$"""
+            implMembers.AppendLine(
+                $$"""
                 private {{proxyName}}() { }
-                """)!
+                """
             );
 
             var interfaceName = usage.GetProxyInterfaceName();
-            MemberDeclarationSyntax proxyType = ClassDeclaration(
-                attributeLists: default,
-                modifiers: TokenList([ Token(SyntaxKind.SealedKeyword) ]),
-                keyword: Token(SyntaxKind.ClassKeyword),
-                identifier: Identifier(proxyName),
-                typeParameterList: default,
-                baseList: baseList,
-                constraintClauses: default,
-                openBraceToken: Token(SyntaxKind.OpenBraceToken),
-                members: List(implMembers),
-                closeBraceToken: Token(SyntaxKind.CloseBraceToken),
-                semicolonToken: default);
+            var proxyType = new SourceBuilder($$"""
+            sealed partial class {{proxyName}} {{baseList}}
+            {
+                {{implMembers}}
+            }
+            """);
 
-            var member = ParseMemberDeclaration($$"""
+            var members = new SourceBuilder($$"""
             static {{interfaceName}}<{{receiverType.ToDisplayString()}}> {{interfaceName}}Provider<{{receiverType.ToDisplayString()}}>.{{suffix}}Instance
                 => {{proxyName}}.Instance;
-            """)!;
-            newType = TypeDeclaration(
-                typeKind,
-                attributes: default,
-                modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
-                keyword: Token(typeKind switch
-                {
-                    SyntaxKind.ClassDeclaration => SyntaxKind.ClassKeyword,
-                    SyntaxKind.StructDeclaration => SyntaxKind.StructKeyword,
-                    SyntaxKind.RecordDeclaration
-                    or SyntaxKind.RecordStructDeclaration => SyntaxKind.RecordKeyword,
-                    _ => throw ExceptionUtilities.Unreachable
-                }),
-                identifier: Identifier(typeName),
-                typeParameterList: typeDeclContext.TypeParameterList,
-                baseList: BaseList(SeparatedList(new BaseTypeSyntax[] {
-                    SimpleBaseType(ParseTypeName($"Serde.{interfaceName}Provider<{receiverType.ToDisplayString()}>"))
-                })),
-                constraintClauses: default,
-                openBraceToken: Token(SyntaxKind.OpenBraceToken),
-                members: List([ member, proxyType ]),
-                closeBraceToken: Token(SyntaxKind.CloseBraceToken),
-                semicolonToken: default);
+
+            {{proxyType}}
+            """);
+            var providerString = $"Serde.{interfaceName}Provider<{receiverType.ToDisplayString()}>";
+            typeDeclContext.AppendPartialDecl(newType, providerString, members);
         }
         string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
             .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
@@ -361,24 +342,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
 
         var srcName = fullTypeName + "." + usage.GetProxyInterfaceName();
 
-        newType = typeDeclContext.WrapNewType(newType);
-
-        newTypes.Insert(0, newType);
-
-        var tree = CompilationUnit(
-            externs: default,
-            usings: List(new[] { UsingDirective(IdentifierName("System")), UsingDirective(IdentifierName("Serde")) }),
-            attributeLists: default,
-            members: List(newTypes));
-        tree = tree.NormalizeWhitespace(eol: Utilities.NewLine);
-
-        var builder = new SourceBuilder($"""
-
-        #nullable enable
-        {tree.ToFullString()}
-        """);
-
-        context.AddSource(srcName, builder);
+        context.AddSource(srcName, newType);
     }
 
     internal static (string FileName, SourceBuilder Decl) MakePartialDecl(
@@ -405,7 +369,7 @@ partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Ser
 
         var srcName = fullTypeName + "." + fileNameSuffix;
 
-        newType = typeDeclContext.MakeNestedType(newType);
+        newType = typeDeclContext.MakeSiblingType(newType);
         newType = new($"""
 
         #nullable enable

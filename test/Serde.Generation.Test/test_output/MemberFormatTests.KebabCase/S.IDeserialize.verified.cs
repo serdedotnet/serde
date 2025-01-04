@@ -1,20 +1,23 @@
 ﻿//HintName: S.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
 partial struct S : Serde.IDeserializeProvider<S>
 {
-    static IDeserialize<S> IDeserializeProvider<S>.DeserializeInstance => SDeserializeProxy.Instance;
+    static IDeserialize<S> IDeserializeProvider<S>.DeserializeInstance
+        => SDeserializeProxy.Instance;
 
-    sealed class SDeserializeProxy : Serde.IDeserialize<S>
+    sealed partial class SDeserializeProxy :Serde.IDeserialize<S>
     {
         S Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
         {
-            int _l_one = default !;
-            int _l_twoword = default !;
+            int _l_one = default!;
+            int _l_twoword = default!;
+
             byte _r_assignedValid = 0;
+
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
@@ -37,23 +40,19 @@ partial struct S : Serde.IDeserializeProvider<S>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-
             if ((_r_assignedValid & 0b11) != 0b11)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new S()
-            {
+            var newType = new S() {
                 One = _l_one,
                 TwoWord = _l_twoword,
             };
+
             return newType;
         }
-
         public static readonly SDeserializeProxy Instance = new();
-        private SDeserializeProxy()
-        {
-        }
+        private SDeserializeProxy() { }
+
     }
 }

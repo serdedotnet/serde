@@ -16,7 +16,7 @@ namespace Serde
 {
     internal class DeserializeImplGen
     {
-        internal static (List<MemberDeclarationSyntax>, BaseListSyntax) GenDeserialize(
+        internal static (SourceBuilder, string BaseList) GenDeserialize(
             TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
@@ -27,19 +27,12 @@ namespace Serde
 
             if (receiverType.IsAbstract)
             {
-                var memberDecl = ParseMemberDeclaration(GenUnionDeserializeMethod((INamedTypeSymbol)receiverType))!;
-                List<BaseTypeSyntax> unionBase = [
-                    // `Serde.IDeserialize<'typeName'>
-                    SimpleBaseType(QualifiedName(IdentifierName("Serde"), GenericName(
-                        Identifier("IDeserialize"),
-                        TypeArgumentList(SeparatedList(new[] { typeSyntax }))
-                    ))),
-                ];
-                return ([ memberDecl ], BaseList(SeparatedList(unionBase)));
+                var memberDecl = GenUnionDeserializeMethod((INamedTypeSymbol)receiverType);
+                return (memberDecl, $": global::Serde.IDeserialize<{typeFqn}>");
             }
 
             // Generate members for IDeserialize.Deserialize implementation
-            var members = new List<MemberDeclarationSyntax>();
+            var members = new SourceBuilder();
             List<BaseTypeSyntax> bases = [
                 // `Serde.IDeserialize<'typeName'>
                 SimpleBaseType(QualifiedName(IdentifierName("Serde"), GenericName(
@@ -53,21 +46,20 @@ namespace Serde
                 bases.Add(SimpleBaseType(ParseTypeName($"Serde.IDeserializeProvider<{typeFqn}>")));
 
                 var deserialize = GenerateEnumDeserializeMethod(receiverType, typeSyntax);
-                members.Add(deserialize);
+                members.AppendLine(deserialize);
 
-                var deserializeInstance = ParseMemberDeclaration($"""
+                members.AppendLine($"""
                 static IDeserialize<{typeFqn}> IDeserializeProvider<{typeFqn}>.DeserializeInstance
                     => {typeFqn}Proxy.Instance;
-                """)!;
-                members.Add(deserializeInstance);
+                """);
             }
             else
             {
                 var method = GenerateCustomDeserializeMethod(typeDeclContext, context, receiverType, typeSyntax, inProgress);
-                members.Add(method);
+                members.AppendLine(method);
             }
             var baseList = BaseList(SeparatedList(bases));
-            return (members, baseList);
+            return (members, baseList.ToFullString());
         }
 
         /// <summary>
@@ -92,7 +84,7 @@ namespace Serde
         /// }
         /// </code>
         /// </summary>
-        private static string GenUnionDeserializeMethod(INamedTypeSymbol type)
+        private static SourceBuilder GenUnionDeserializeMethod(INamedTypeSymbol type)
         {
             Debug.Assert(type.IsAbstract);
 
@@ -112,7 +104,7 @@ namespace Serde
                 membersBuilder.AppendLine($"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>({i}),");
             }
 
-            var src = $$"""
+            var src = new SourceBuilder($$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}>();
@@ -132,7 +124,7 @@ namespace Serde
     }
     return _l_result;
 }
-""";
+""");
             return src;
         }
 
@@ -158,7 +150,7 @@ namespace Serde
         /// }
         /// </code>
         /// </summary>
-        private static MethodDeclarationSyntax GenerateEnumDeserializeMethod(
+        private static SourceBuilder GenerateEnumDeserializeMethod(
             ITypeSymbol type,
             TypeSyntax typeSyntax)
         {
@@ -173,7 +165,7 @@ namespace Serde
                 <= 64 => "ulong",
                 _ => throw new InvalidOperationException("Too many members in type")
             };
-            var src = $$"""
+            var src = new SourceBuilder($$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Proxy>();
@@ -189,8 +181,8 @@ namespace Serde
         _ => throw new InvalidOperationException($"Unexpected index: {index}")
     };
 }
-""";
-            return (MethodDeclarationSyntax)ParseMemberDeclaration(src)!;
+""");
+            return src;
         }
 
         /// <summary>
@@ -214,7 +206,7 @@ namespace Serde
         /// }
         /// </code>
         /// </summary>
-        private static MethodDeclarationSyntax GenerateCustomDeserializeMethod(
+        private static SourceBuilder GenerateCustomDeserializeMethod(
             TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol type,
@@ -233,7 +225,7 @@ namespace Serde
                 _ => throw new InvalidOperationException("Too many members in type")
             };
             var (cases, locals, requiredMask) = InitCasesAndLocals();
-            string typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
+            var typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
 
             const string typeInfoLocalName = "_l_serdeInfo";
             const string indexLocalName = "_l_index_";
@@ -243,7 +235,7 @@ namespace Serde
                 ? $"var {IndexErrorName}"
                 : "_";
 
-            var methodText = $$"""
+            var methodText = new SourceBuilder($$"""
 {{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
@@ -256,18 +248,18 @@ namespace Serde
     {
         switch ({{indexLocalName}})
         {
-{{cases}}
+            {{cases}}
         }
     }
     {{typeCreationExpr}}
     return newType;
 }
-""";
-            return (MethodDeclarationSyntax)ParseMemberDeclaration(methodText)!;
+""");
+            return methodText;
 
             (string Cases, string Locals, string AssignedMask) InitCasesAndLocals()
             {
-                var casesBuilder = new StringBuilder();
+                var casesBuilder = new SourceBuilder();
                 var localsBuilder = new StringBuilder();
                 long assignedMaskValue = 0;
                 var skippedIndices = new List<int>();
@@ -336,14 +328,18 @@ namespace Serde
                     case {i}:
                     """);
                 }
-                casesBuilder.AppendLine($"""
+                casesBuilder.AppendLine(
+                    $"""
                     case Serde.IDeserializeType.IndexNotFound:
                         {unknownMemberBehavior}
-                """);
-                casesBuilder.AppendLine($"""
+                    """
+                );
+                casesBuilder.Append(
+                    $"""
                     default:
                         throw new InvalidOperationException("Unexpected index: " + {indexLocalName});
-                    """);
+                    """
+                );
                 return (casesBuilder.ToString(),
                         localsBuilder.ToString(),
                         "0b" + Convert.ToString(assignedMaskValue, 2));
@@ -380,7 +376,7 @@ namespace Serde
         /// each member in the initializer. If there is no parameterlss constructor, there
         /// must be a primary constructor.
         /// </summary>
-        private static string GenerateTypeCreation(
+        private static SourceBuilder GenerateTypeCreation(
             GeneratorExecutionContext context,
             string typeName,
             ITypeSymbol type,
@@ -412,11 +408,10 @@ namespace Serde
             if (parameterlessCtor is null && primaryCtor is null)
             {
                 context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_MissingPrimaryCtor, type.Locations[0]));
-                return $"var newType = new {typeName}();";
+                return new SourceBuilder($"var newType = new {typeName}();");
             }
 
             var assignmentMembers = new List<DataMemberSymbol>(members);
-            var assignments = new StringBuilder();
             var parameters = new StringBuilder();
             if (primaryCtor is not null)
             {
@@ -432,24 +427,28 @@ namespace Serde
                 }
             }
 
+            var typeCreation = new SourceBuilder(
+                $$"""
+                if (({{AssignedVarName}} & {{assignedMask}}) != {{assignedMask}})
+                {
+                    throw Serde.DeserializeException.UnassignedMember();
+                }
+                var newType = new {{typeName}}({{parameters}}) {
+
+                """
+            );
+            typeCreation.Indent();
             foreach (var m in assignmentMembers)
             {
                 if (m.SkipDeserialize)
                 {
                     continue;
                 }
-                assignments.AppendLine($"{m.Name} = {GetLocalName(m)},");
+                typeCreation.AppendLine($"{m.Name} = {GetLocalName(m)},");
             }
-            var mask = new string('1', members.Count);
-            return $$"""
-    if (({{AssignedVarName}} & {{assignedMask}}) != {{assignedMask}})
-    {
-        throw Serde.DeserializeException.UnassignedMember();
-    }
-    var newType = new {{typeName}}({{parameters}}) {
-        {{assignments}}
-    };
-""";
+            typeCreation.Dedent();
+            typeCreation.AppendLine("};");
+            return typeCreation;
         }
 
         private static string GetLocalName(DataMemberSymbol m) => "_l_" + m.Name.ToLower();

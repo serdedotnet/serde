@@ -1,21 +1,24 @@
 ﻿//HintName: Rgb.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
 partial struct Rgb : Serde.IDeserializeProvider<Rgb>
 {
-    static IDeserialize<Rgb> IDeserializeProvider<Rgb>.DeserializeInstance => RgbDeserializeProxy.Instance;
+    static IDeserialize<Rgb> IDeserializeProvider<Rgb>.DeserializeInstance
+        => RgbDeserializeProxy.Instance;
 
-    sealed class RgbDeserializeProxy : Serde.IDeserialize<Rgb>
+    sealed partial class RgbDeserializeProxy :Serde.IDeserialize<Rgb>
     {
         Rgb Serde.IDeserialize<Rgb>.Deserialize(IDeserializer deserializer)
         {
-            byte _l_red = default !;
-            byte _l_green = default !;
-            byte _l_blue = default !;
+            byte _l_red = default!;
+            byte _l_green = default!;
+            byte _l_blue = default!;
+
             byte _r_assignedValid = 0;
+
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Rgb>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
@@ -42,24 +45,20 @@ partial struct Rgb : Serde.IDeserializeProvider<Rgb>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-
             if ((_r_assignedValid & 0b111) != 0b111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new Rgb()
-            {
+            var newType = new Rgb() {
                 Red = _l_red,
                 Green = _l_green,
                 Blue = _l_blue,
             };
+
             return newType;
         }
-
         public static readonly RgbDeserializeProxy Instance = new();
-        private RgbDeserializeProxy()
-        {
-        }
+        private RgbDeserializeProxy() { }
+
     }
 }

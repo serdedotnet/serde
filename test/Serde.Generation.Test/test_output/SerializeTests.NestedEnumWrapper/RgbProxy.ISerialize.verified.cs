@@ -1,12 +1,12 @@
 ﻿//HintName: RgbProxy.ISerialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
-sealed partial class RgbProxy : Serde.ISerialize<Rgb>, Serde.ISerializeProvider<Rgb>
+sealed partial class RgbProxy :Serde.ISerialize<Rgb>,Serde.ISerializeProvider<Rgb>
 {
-    void ISerialize<Rgb>.Serialize(Rgb value, ISerializer serializer)
+    void global::Serde.ISerialize<Rgb>.Serialize(Rgb value, global::Serde.ISerializer serializer)
     {
         var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<RgbProxy>();
         var index = value switch
@@ -17,7 +17,9 @@ sealed partial class RgbProxy : Serde.ISerialize<Rgb>, Serde.ISerializeProvider<
             var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'Rgb'"),
         };
         serializer.SerializeEnumValue(_l_serdeInfo, index, (int)value, global::Serde.Int32Proxy.Instance);
-    }
 
-    static ISerialize<Rgb> ISerializeProvider<Rgb>.SerializeInstance => RgbProxy.Instance;
+    }
+    static ISerialize<Rgb> ISerializeProvider<Rgb>.SerializeInstance
+        => RgbProxy.Instance;
+
 }

@@ -3,7 +3,5 @@
 sealed partial class ColorByteProxy
 {
     public static readonly ColorByteProxy Instance = new();
-    private ColorByteProxy()
-    {
-    }
+    private ColorByteProxy() { }
 }

@@ -1,6 +1,7 @@
 ﻿//HintName: Some.Nested.Namespace.Base.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Some.Nested.Namespace;
 
 partial record Base : Serde.ISerdeInfoProvider

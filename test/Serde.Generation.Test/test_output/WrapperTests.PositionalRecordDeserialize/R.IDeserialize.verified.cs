@@ -1,20 +1,23 @@
 ﻿//HintName: R.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
 partial record R : Serde.IDeserializeProvider<R>
 {
-    static IDeserialize<R> IDeserializeProvider<R>.DeserializeInstance => RDeserializeProxy.Instance;
+    static IDeserialize<R> IDeserializeProvider<R>.DeserializeInstance
+        => RDeserializeProxy.Instance;
 
-    sealed class RDeserializeProxy : Serde.IDeserialize<R>
+    sealed partial class RDeserializeProxy :Serde.IDeserialize<R>
     {
         R Serde.IDeserialize<R>.Deserialize(IDeserializer deserializer)
         {
-            int _l_a = default !;
-            string _l_b = default !;
+            int _l_a = default!;
+            string _l_b = default!;
+
             byte _r_assignedValid = 0;
+
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<R>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
@@ -37,21 +40,17 @@ partial record R : Serde.IDeserializeProvider<R>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-
             if ((_r_assignedValid & 0b11) != 0b11)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new R(_l_a, _l_b)
-            {
+            var newType = new R(_l_a, _l_b) {
             };
+
             return newType;
         }
-
         public static readonly RDeserializeProxy Instance = new();
-        private RDeserializeProxy()
-        {
-        }
+        private RDeserializeProxy() { }
+
     }
 }

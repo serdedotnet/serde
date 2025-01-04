@@ -1,12 +1,10 @@
 ﻿//HintName: Test.ChannelProxy.cs
 
-namespace Test
+
+namespace Test;
+
+sealed partial class ChannelProxy
 {
-    sealed partial class ChannelProxy
-    {
-        public static readonly ChannelProxy Instance = new();
-        private ChannelProxy()
-        {
-        }
-    }
+    public static readonly ChannelProxy Instance = new();
+    private ChannelProxy() { }
 }

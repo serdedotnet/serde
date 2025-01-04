@@ -1,10 +1,10 @@
 ﻿//HintName: ColorIntProxy.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
-sealed partial class ColorIntProxy : Serde.IDeserialize<ColorInt>, Serde.IDeserializeProvider<ColorInt>
+sealed partial class ColorIntProxy :Serde.IDeserialize<ColorInt>,Serde.IDeserializeProvider<ColorInt>
 {
     ColorInt IDeserialize<ColorInt>.Deserialize(IDeserializer deserializer)
     {
@@ -15,14 +15,14 @@ sealed partial class ColorIntProxy : Serde.IDeserialize<ColorInt>, Serde.IDeseri
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
         }
-
-        return index switch
-        {
+        return index switch {
             0 => ColorInt.Red,
             1 => ColorInt.Green,
             2 => ColorInt.Blue,
-            _ => throw new InvalidOperationException($"Unexpected index: {index}")};
+            _ => throw new InvalidOperationException($"Unexpected index: {index}")
+        };
     }
+    static IDeserialize<ColorInt> IDeserializeProvider<ColorInt>.DeserializeInstance
+        => ColorIntProxy.Instance;
 
-    static IDeserialize<ColorInt> IDeserializeProvider<ColorInt>.DeserializeInstance => ColorIntProxy.Instance;
 }
