@@ -1,5 +1,6 @@
 
 #nullable enable
+
 namespace Serde.Test;
 
 partial class JsonSerializerTests

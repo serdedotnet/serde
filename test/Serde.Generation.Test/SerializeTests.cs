@@ -567,7 +567,7 @@ abstract partial record Base
     public record B(string Y) : Base { }
 }
 """;
-            return VerifySerialize(src);
+            return VerifyMultiFile(src);
         }
 
         private static Task VerifySerialize(

@@ -1,6 +1,7 @@
 ﻿//HintName: Test.ChannelProxy.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Test;
 
 partial class ChannelProxy : Serde.ISerdeInfoProvider

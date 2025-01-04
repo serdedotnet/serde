@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.Test.AllInOne.ColorEnumProxy.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Serde.Test;
 
 partial record AllInOne

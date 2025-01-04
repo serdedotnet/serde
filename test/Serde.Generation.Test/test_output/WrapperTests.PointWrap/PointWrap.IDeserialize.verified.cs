@@ -1,20 +1,23 @@
 ﻿//HintName: PointWrap.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
 partial struct PointWrap : Serde.IDeserializeProvider<Point>
 {
-    static IDeserialize<Point> IDeserializeProvider<Point>.DeserializeInstance => PointWrapDeserializeProxy.Instance;
+    static IDeserialize<Point> IDeserializeProvider<Point>.DeserializeInstance
+        => PointWrapDeserializeProxy.Instance;
 
-    sealed class PointWrapDeserializeProxy : Serde.IDeserialize<Point>
+    sealed partial class PointWrapDeserializeProxy :Serde.IDeserialize<Point>
     {
         Point Serde.IDeserialize<Point>.Deserialize(IDeserializer deserializer)
         {
-            int _l_x = default !;
-            int _l_y = default !;
+            int _l_x = default!;
+            int _l_y = default!;
+
             byte _r_assignedValid = 0;
+
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<PointWrap>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
@@ -37,23 +40,19 @@ partial struct PointWrap : Serde.IDeserializeProvider<Point>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-
             if ((_r_assignedValid & 0b11) != 0b11)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new Point()
-            {
+            var newType = new Point() {
                 X = _l_x,
                 Y = _l_y,
             };
+
             return newType;
         }
-
         public static readonly PointWrapDeserializeProxy Instance = new();
-        private PointWrapDeserializeProxy()
-        {
-        }
+        private PointWrapDeserializeProxy() { }
+
     }
 }

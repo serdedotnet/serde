@@ -1,22 +1,25 @@
 ﻿//HintName: C.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
 partial class C : Serde.IDeserializeProvider<C>
 {
-    static IDeserialize<C> IDeserializeProvider<C>.DeserializeInstance => CDeserializeProxy.Instance;
+    static IDeserialize<C> IDeserializeProvider<C>.DeserializeInstance
+        => CDeserializeProxy.Instance;
 
-    sealed class CDeserializeProxy : Serde.IDeserialize<C>
+    sealed partial class CDeserializeProxy :Serde.IDeserialize<C>
     {
         C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
-            ColorInt _l_colorint = default !;
-            ColorByte _l_colorbyte = default !;
-            ColorLong _l_colorlong = default !;
-            ColorULong _l_colorulong = default !;
+            ColorInt _l_colorint = default!;
+            ColorByte _l_colorbyte = default!;
+            ColorLong _l_colorlong = default!;
+            ColorULong _l_colorulong = default!;
+
             byte _r_assignedValid = 0;
+
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<C>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
@@ -47,25 +50,21 @@ partial class C : Serde.IDeserializeProvider<C>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-
             if ((_r_assignedValid & 0b1111) != 0b1111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new C()
-            {
+            var newType = new C() {
                 ColorInt = _l_colorint,
                 ColorByte = _l_colorbyte,
                 ColorLong = _l_colorlong,
                 ColorULong = _l_colorulong,
             };
+
             return newType;
         }
-
         public static readonly CDeserializeProxy Instance = new();
-        private CDeserializeProxy()
-        {
-        }
+        private CDeserializeProxy() { }
+
     }
 }

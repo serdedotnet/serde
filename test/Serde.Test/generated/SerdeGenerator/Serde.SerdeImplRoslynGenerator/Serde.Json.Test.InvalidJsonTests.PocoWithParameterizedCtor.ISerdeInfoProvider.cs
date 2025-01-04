@@ -1,5 +1,6 @@
 
 #nullable enable
+
 namespace Serde.Json.Test;
 
 partial class InvalidJsonTests

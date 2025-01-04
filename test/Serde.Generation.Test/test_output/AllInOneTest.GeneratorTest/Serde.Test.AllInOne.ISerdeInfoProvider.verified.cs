@@ -1,6 +1,7 @@
 ﻿//HintName: Serde.Test.AllInOne.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Serde.Test;
 
 partial record AllInOne : Serde.ISerdeInfoProvider

@@ -1,19 +1,22 @@
 ﻿//HintName: S.IDeserialize.cs
 
 #nullable enable
+
 using System;
 using Serde;
-
 partial struct S : Serde.IDeserializeProvider<S>
 {
-    static IDeserialize<S> IDeserializeProvider<S>.DeserializeInstance => SDeserializeProxy.Instance;
+    static IDeserialize<S> IDeserializeProvider<S>.DeserializeInstance
+        => SDeserializeProxy.Instance;
 
-    sealed class SDeserializeProxy : Serde.IDeserialize<S>
+    sealed partial class SDeserializeProxy :Serde.IDeserialize<S>
     {
         S Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
         {
-            System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS> _l_opts = default !;
+            System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS> _l_opts = default!;
+
             byte _r_assignedValid = 0;
+
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
@@ -32,22 +35,18 @@ partial struct S : Serde.IDeserializeProvider<S>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-
             if ((_r_assignedValid & 0b1) != 0b1)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-
-            var newType = new S()
-            {
+            var newType = new S() {
                 Opts = _l_opts,
             };
+
             return newType;
         }
-
         public static readonly SDeserializeProxy Instance = new();
-        private SDeserializeProxy()
-        {
-        }
+        private SDeserializeProxy() { }
+
     }
 }

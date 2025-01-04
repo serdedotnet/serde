@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Serde;
 
-public sealed class SourceBuilder : IComparable<SourceBuilder>
+public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<SourceBuilder>
 {
     public static readonly Encoding UTF8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
@@ -20,7 +20,7 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>
 
     public SourceBuilder(SourceBuilderStringHandler s)
     {
-        _currentIndentWhitespace = s._currentIndentWhitespace;
+        _currentIndentWhitespace = "";
         _stringBuilder = s._stringBuilder;
     }
 
@@ -77,8 +77,60 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>
         [InterpolatedStringHandlerArgument("")]
         SourceBuilderStringHandler s)
     {
-        _currentIndentWhitespace = s._currentIndentWhitespace;
-        // No need to copy the StringBuilder as it was passed in by reference
+        // No work needed, the handler has already added the text to the string builder
+    }
+
+    public void Append(string s)
+    {
+        _stringBuilder.Append(_currentIndentWhitespace);
+        Append(_stringBuilder, _currentIndentWhitespace, s);
+    }
+
+    public void Append(SourceBuilder srcBuilder)
+    {
+        Append(srcBuilder.ToString());
+    }
+
+    private static void Append(
+        StringBuilder builder,
+        string currentIndentWhitespace,
+        string str)
+    {
+        int start = 0;
+        int nl;
+        while (start < str.Length)
+        {
+            nl = str.IndexOf('\n', start);
+            if (nl == -1)
+            {
+                nl = str.Length;
+            }
+            // Skip blank lines
+            while (nl < str.Length && (str[nl] == '\n' || str[nl] == '\r'))
+            {
+                nl++;
+            }
+            if (start > 0)
+            {
+                builder.Append(currentIndentWhitespace);
+            }
+            builder.Append(str, start, nl - start);
+            start = nl;
+        }
+    }
+
+    public void AppendLine(
+        [InterpolatedStringHandlerArgument("")]
+        SourceBuilderStringHandler s)
+    {
+        Append(s);
+        _stringBuilder.AppendLine();
+    }
+
+    public void AppendLine(string s)
+    {
+        Append(s);
+        _stringBuilder.AppendLine();
     }
 
     public int CompareTo(SourceBuilder other)
@@ -99,15 +151,39 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>
         return 0;
     }
 
+    internal void Indent()
+    {
+        _currentIndentWhitespace += "    ";
+    }
+
+    internal void Dedent()
+    {
+        _currentIndentWhitespace = _currentIndentWhitespace[..^4];
+    }
+
+    public bool Equals(SourceBuilder other)
+    {
+        return _stringBuilder.Equals(other._stringBuilder);
+    }
+
+    internal void AppendLine(SourceBuilder deserialize)
+    {
+        Append(deserialize);
+        _stringBuilder.AppendLine();
+    }
+
     [InterpolatedStringHandler]
     public ref struct SourceBuilderStringHandler
     {
         internal readonly StringBuilder _stringBuilder;
-        internal string _currentIndentWhitespace;
+        private readonly string _originalIndentWhitespace;
+        private string _currentIndentWhitespace;
+        private bool _isFirst = true;
 
         public SourceBuilderStringHandler(int literalLength, int formattedCount)
         {
             _stringBuilder = new StringBuilder(literalLength);
+            _originalIndentWhitespace = "";
             _currentIndentWhitespace = "";
         }
 
@@ -117,12 +193,18 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>
             SourceBuilder sourceBuilder)
         {
             _stringBuilder = sourceBuilder._stringBuilder;
+            _originalIndentWhitespace = sourceBuilder._currentIndentWhitespace;
             _currentIndentWhitespace = sourceBuilder._currentIndentWhitespace;
         }
 
         public void AppendLiteral(string s)
         {
-            _stringBuilder.Append(s);
+            if (_isFirst)
+            {
+                _stringBuilder.Append(_currentIndentWhitespace);
+                _isFirst = false;
+            }
+            SourceBuilder.Append(_stringBuilder, _currentIndentWhitespace, s);
 
             int last = s.LastIndexOf('\n');
             if (last == -1)
@@ -139,11 +221,16 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>
                 }
             }
 
-            _currentIndentWhitespace = remaining.ToString();
+            _currentIndentWhitespace += remaining.ToString();
         }
 
         public void AppendFormatted<T>(T value)
         {
+            if (_isFirst)
+            {
+                _stringBuilder.Append(_currentIndentWhitespace);
+                _isFirst = false;
+            }
             var str = value?.ToString();
             if (str is null)
             {
@@ -151,27 +238,8 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>
                 return;
             }
 
-            int start = 0;
-            int nl;
-            while (start < str.Length)
-            {
-                nl = str.IndexOf('\n', start);
-                if (nl == -1)
-                {
-                    nl = str.Length;
-                }
-                // Skip blank lines
-                while (nl < str.Length && (str[nl] == '\n' || str[nl] == '\r'))
-                {
-                    nl++;
-                }
-                if (start > 0)
-                {
-                    _stringBuilder.Append(_currentIndentWhitespace);
-                }
-                _stringBuilder.Append(str, start, nl - start);
-                start = nl;
-            }
+            SourceBuilder.Append(_stringBuilder, _currentIndentWhitespace, str);
+            _currentIndentWhitespace = _originalIndentWhitespace;
         }
     }
 

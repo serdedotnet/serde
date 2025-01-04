@@ -41,28 +41,21 @@ partial class Proxies
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var typeName = typeDeclContext.Name;
         var proxyName = GetProxyName(typeName);
-        var newType = SyntaxFactory.ParseMemberDeclaration($$"""
+        var newType = new SourceBuilder($$"""
 sealed partial class {{proxyName}}
 {
     public static readonly {{proxyName}} Instance = new();
     private {{proxyName}}() { }
 }
 """)!;
-        newType = typeDeclContext.WrapNewType(newType);
+        newType = typeDeclContext.MakeSiblingType(newType);
         string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
             .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
             .Concat(new[] { proxyName }));
 
-        var tree = CompilationUnit(
-            externs: default,
-            usings: default,
-            attributeLists: default,
-            members: List<MemberDeclarationSyntax>(new[] { newType }));
-        tree = tree.NormalizeWhitespace(eol: Utilities.NewLine);
-
         var src = new SourceBuilder($"""
 
-        {tree.ToFullString()}
+        {newType}
         """);
 
         context.AddSource(fullWrapperName, src);

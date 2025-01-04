@@ -85,7 +85,7 @@ namespace Serde
             }
         }
 
-        public SourceBuilder MakeNestedType(SourceBuilder newType)
+        public SourceBuilder MakeSiblingType(SourceBuilder newType)
         {
             // If the original type was in a namespace or type, put this decl in the same one
             for (int i = ParentTypeInfo.Count - 1; i >= 0; i--)
@@ -101,14 +101,57 @@ partial {{TypeKindToString(kind)}} {{name}}
 
             if (NamespaceNames.Count > 0)
             {
-                newType = new SourceBuilder($"""
-                namespace {string.Join(".", NamespaceNames)};
+                newType = new SourceBuilder(
+                    $"""
 
-                {newType}
-                """);
+                    namespace {string.Join(".", NamespaceNames)};
+
+                    {newType}
+                    """
+                );
             }
 
             return newType;
+        }
+
+        public void AppendPartialDecl(SourceBuilder builder, string baseList, SourceBuilder members)
+        {
+            if (NamespaceNames.Count > 0)
+            {
+                builder.AppendLine(
+                    $$"""
+
+                    namespace {{string.Join(".", NamespaceNames)}};
+
+                    """
+                );
+            }
+
+            foreach (var (name, kind) in ParentTypeInfo)
+            {
+                builder.AppendLine(
+                    $$"""
+                    partial {{TypeKindToString(kind)}} {{name}}
+                    {
+                    """
+                );
+                builder.Indent();
+            }
+
+            builder.AppendLine(
+                $$"""
+                partial {{TypeKindToString(Kind)}} {{Name}}{{TypeParameterList}} : {{baseList}}
+                {
+                    {{members}}
+                }
+                """
+            );
+
+            for (int i = 0; i < ParentTypeInfo.Count; i++)
+            {
+                builder.Dedent();
+                builder.AppendLine("}");
+            }
         }
 
         public static string TypeKindToString(SyntaxKind kind) => kind switch
@@ -120,27 +163,5 @@ partial {{TypeKindToString(kind)}} {{name}}
             SyntaxKind.InterfaceDeclaration => "interface",
             _ => throw new ArgumentException("Unsupported type kind: " + kind),
         };
-
-        public MemberDeclarationSyntax WrapNewType(MemberDeclarationSyntax newType)
-        {
-            // If the original type was in a namespace or type, put this decl in the same one
-            for (int i = ParentTypeInfo.Count - 1; i >= 0; i--)
-            {
-                var (name, kind) = ParentTypeInfo[i];
-                newType = TypeDeclaration(kind, Identifier(name))
-                    .WithModifiers(TokenList(Token(SyntaxKind.PartialKeyword)))
-                    .WithMembers(List(new[] { newType }));
-            }
-            for (int i = NamespaceNames.Count - 1; i >= 0; i--)
-            {
-                newType = NamespaceDeclaration(
-                    IdentifierName(NamespaceNames[i]),
-                    externs: default,
-                    usings: default,
-                    members: List(new[] { newType }));
-            }
-
-            return newType;
-        }
     }
 }

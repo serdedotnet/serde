@@ -1,6 +1,7 @@
 ﻿//HintName: Some.Nested.Namespace.C.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Some.Nested.Namespace;
 
 partial class C : Serde.ISerdeInfoProvider

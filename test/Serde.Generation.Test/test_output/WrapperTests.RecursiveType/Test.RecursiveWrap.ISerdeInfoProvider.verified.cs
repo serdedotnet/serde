@@ -1,6 +1,7 @@
 ﻿//HintName: Test.RecursiveWrap.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Test;
 
 partial class RecursiveWrap : Serde.ISerdeInfoProvider

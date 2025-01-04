@@ -1,6 +1,7 @@
 ﻿//HintName: Test.ChannelList.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Test;
 
 partial record struct ChannelList : Serde.ISerdeInfoProvider

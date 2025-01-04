@@ -13,7 +13,7 @@ namespace Serde;
 
 public partial class SerializeImplGen
 {
-    internal static (List<MemberDeclarationSyntax>, BaseListSyntax) GenSerialize(
+    internal static (SourceBuilder, string BaseList) GenSerialize(
         TypeDeclContext typeDeclContext,
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
@@ -21,13 +21,11 @@ public partial class SerializeImplGen
     {
         if (receiverType.IsAbstract)
         {
-            return ([ ParseMemberDeclaration(GenUnionSerializeMethod((INamedTypeSymbol)receiverType))! ],
-                BaseList(SeparatedList((List<BaseTypeSyntax>)([
-                    SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverType.ToDisplayString()}>")),
-            ]))));
+            return ( new(GenUnionSerializeMethod((INamedTypeSymbol)receiverType)),
+                     $": Serde.ISerialize<{receiverType.ToDisplayString()}>");
         }
 
-        var statements = new List<StatementSyntax>();
+        var statements = new SourceBuilder();
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
 
         if (receiverType.TypeKind == TypeKind.Enum)
@@ -45,18 +43,20 @@ public partial class SerializeImplGen
             var enumType = (INamedTypeSymbol)receiverType;
             var typeSyntax = enumType.ToFqnSyntax();
             var underlying = enumType.EnumUnderlyingType!;
-            statements.Add(ParseStatement($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Proxy>();"));
-            statements.Add(ParseStatement($$"""
-            var index = value switch
-            {
-                {{string.Join("," + Utilities.NewLine, fieldsAndProps
-                    .Select((m, i) => $"{typeSyntax}.{m.Name} => {i}")) }},
-                var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
-            };
-            """));
+            statements.AppendLine($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Proxy>();");
+            statements.AppendLine($$"""
+                var index = value switch
+                {
+                    {{string.Join("," + Utilities.NewLine, fieldsAndProps
+                        .Select((m, i) => $"{typeSyntax}.{m.Name} => {i}")) }},
+                    var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
+                };
+                """
+            );
             var wrapper = Proxies.TryGetPrimitiveProxy(underlying, SerdeUsage.Serialize).NotNull().Proxy;
-            statements.Add(ParseStatement(
-                $"serializer.SerializeEnumValue(_l_serdeInfo, index, ({underlying.ToFqnSyntax()})value, {wrapper.ToFullString()}.Instance);"));
+            statements.AppendLine(
+                $"serializer.SerializeEnumValue(_l_serdeInfo, index, ({underlying.ToFqnSyntax()})value, {wrapper.ToFullString()}.Instance);"
+            );
         }
         else
         {
@@ -67,10 +67,10 @@ public partial class SerializeImplGen
             // type.End();
 
             // `var _l_serdeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
-            statements.Add(ParseStatement($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}{typeDeclContext.TypeParameterList}>();"));
+            statements.AppendLine($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}{typeDeclContext.TypeParameterList}>();");
 
             // `var type = serializer.SerializeType(_l_serdeInfo);`
-            statements.Add(ParseStatement("var type = serializer.SerializeType(_l_serdeInfo);"));
+            statements.AppendLine("var type = serializer.SerializeType(_l_serdeInfo);");
 
             for (int i = 0; i < fieldsAndProps.Count; i++)
             {
@@ -90,15 +90,12 @@ public partial class SerializeImplGen
                 else
                 {
                     var memberExpr = MakeMemberAccessExpr(m, IdentifierName("value"));
-                    statements.Add(MakeSerializeFieldStmt(m, i, memberExpr, typeAndWrapper, IdentifierName("value")));
+                    statements.AppendLine(MakeSerializeFieldStmt(m, i, memberExpr, typeAndWrapper, IdentifierName("value")).ToFullString());
                 }
             }
 
             // `type.End();`
-            statements.Add(ExpressionStatement(InvocationExpression(
-                QualifiedName(IdentifierName("type"), IdentifierName("End")),
-                ArgumentList()
-            )));
+            statements.Append("type.End();");
         }
 
         var receiverSyntax = ((INamedTypeSymbol)receiverType).ToFqnSyntax();
@@ -108,37 +105,25 @@ public partial class SerializeImplGen
 static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}>.SerdeInfo => {receiverSyntax}SerdeInfo.Instance;
 """;
         // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
-        List<MemberDeclarationSyntax> members = [
-            MethodDeclaration(
-                attributeLists: default,
-                modifiers: default,
-                PredefinedType(Token(SyntaxKind.VoidKeyword)),
-                explicitInterfaceSpecifier: ExplicitInterfaceSpecifier(
-                    GenericName(
-                        Identifier("ISerialize"),
-                        TypeArgumentList(SeparatedList(new TypeSyntax[] { receiverSyntax })))),
-                identifier: Identifier("Serialize"),
-                typeParameterList: null,
-                parameterList: ParameterList(SeparatedList(new[] {
-                    Parameter(receiverSyntax, "value"),
-                    Parameter("ISerializer", "serializer")
-                })),
-                constraintClauses: default,
-                body: Block(statements),
-                expressionBody: null)
-        ];
+        var members = new SourceBuilder($$"""
+        void global::Serde.ISerialize<{{receiverSyntax}}>.Serialize({{receiverSyntax}} value, global::Serde.ISerializer serializer)
+        {
+            {{statements}}
+        }
+
+        """);
         List<BaseTypeSyntax> bases = [
             SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverString}>")),
         ];
         if (receiverType.TypeKind == TypeKind.Enum)
         {
             bases.Add(SimpleBaseType(ParseTypeName($"Serde.ISerializeProvider<{receiverType.ToDisplayString()}>")));
-            members.Add(ParseMemberDeclaration($$"""
+            members.AppendLine($$"""
             static ISerialize<{{receiverString}}> ISerializeProvider<{{receiverString}}>.SerializeInstance
                 => {{receiverString}}Proxy.Instance;
-            """)!);
+            """);
         }
-        return (members, BaseList(SeparatedList(bases)));
+        return (members, BaseList(SeparatedList(bases)).ToFullString());
 
         // Make a statement like `type.SerializeField<valueType, SerializeType>("member.Name", value)`
         static ExpressionStatementSyntax MakeSerializeFieldStmt(

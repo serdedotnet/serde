@@ -157,7 +157,7 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
             (typeName, declKeywords) = typeKind == SyntaxKind.EnumDeclaration
                 ? (Proxies.GetProxyName(typeName), "class")
                 : (typeName, TypeDeclContext.TypeKindToString(typeKind));
-            var nestedType = originalCtx.MakeNestedType(new SourceBuilder($$"""
+            var nestedType = originalCtx.MakeSiblingType(new SourceBuilder($$"""
 partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}} : Serde.ISerdeInfoProvider
 {
     private sealed partial class {{proxyName}} {}

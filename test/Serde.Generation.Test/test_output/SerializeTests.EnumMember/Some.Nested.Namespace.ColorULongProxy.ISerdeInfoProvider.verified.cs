@@ -1,6 +1,7 @@
 ﻿//HintName: Some.Nested.Namespace.ColorULongProxy.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Some.Nested.Namespace;
 
 partial class ColorULongProxy : Serde.ISerdeInfoProvider

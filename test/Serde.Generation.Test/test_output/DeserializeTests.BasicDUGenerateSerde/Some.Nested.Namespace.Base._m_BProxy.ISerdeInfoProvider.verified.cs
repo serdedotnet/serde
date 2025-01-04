@@ -1,6 +1,7 @@
 ﻿//HintName: Some.Nested.Namespace.Base._m_BProxy.ISerdeInfoProvider.cs
 
 #nullable enable
+
 namespace Some.Nested.Namespace;
 
 partial record Base
