@@ -10,6 +10,7 @@ namespace Serde.Test;
 public sealed partial class SerdeInfoTests
 {
 #pragma warning disable SerdeExperimentalFieldInfo // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
     [GenerateDeserialize]
     public partial record EmptyRecord;
 
@@ -70,5 +71,17 @@ public sealed partial class SerdeInfoTests
         attr = Assert.Single(bInfo.Attributes, a => a.AttributeType == typeof(DefaultValueAttribute));
         Assert.Equal("B", attr.ConstructorArguments[0].Value);
     }
+
+    [Fact]
+    public void NullableInfo()
+    {
+        var info = SerdeInfoProvider.GetInfo<NullableRefProxy.Serialize<string, StringProxy>>();
+        Assert.Equal(InfoKind.Nullable, info.Kind);
+        Assert.Equal("string?", info.Name);
+        Assert.Equal(1, info.FieldCount);
+        Assert.Equal(0, info.TryGetIndex("Value"u8));
+        Assert.Equal(SerdeInfoProvider.GetInfo<StringProxy>(), info.GetFieldInfo(0));
+    }
+
 #pragma warning restore SerdeExperimentalFieldInfo // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
