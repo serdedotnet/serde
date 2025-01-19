@@ -63,6 +63,7 @@ public interface ISerdeInfo
 public enum InfoKind
 {
     Primitive,
+    Nullable,
     CustomType,
     Enumerable,
     Dictionary,
@@ -72,10 +73,6 @@ public enum InfoKind
     /// cref="ISerdeInfo.Kind"/> must also implement <see cref="IUnionSerdeInfo"/>.
     /// </summary>
     Union,
-    /// <summary>
-    /// Only used for skipping a value during deserialization.
-    /// </summary>
-    Skip
 }
 
 /// <summary>
@@ -121,6 +118,8 @@ public static class SerdeInfo
 
     public static ISerdeInfo MakePrimitive(string typeName) => new PrimitiveInfo(typeName);
 
+    public static ISerdeInfo MakeNullable(ISerdeInfo underlying) => new NullableSerdeInfo(underlying);
+
     public static ISerdeInfo MakeEnumerable(
         string typeName)
         => new CollectionInfo(typeName, InfoKind.Enumerable);
@@ -155,6 +154,38 @@ public static class SerdeInfo
     }
 
 }
+
+/// <summary>
+/// Represents a nullable type (struct or class). In Serde the nullable type wrappers are unified
+/// into a single wrapper. They each have a single field named "Value" which is the wrapped type and
+/// their type name is the wrapped type name followed by '?'.
+/// </summary>
+file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
+{
+    public string Name { get; } = UnderlyingInfo.Name + "?";
+
+    public InfoKind Kind => InfoKind.Nullable;
+    public int FieldCount => 1;
+
+    public IList<CustomAttributeData> Attributes => [];
+
+    public Utf8Span GetFieldName(int index)
+        => index == 0 ? "Value"u8 : throw GetOOR(index);
+
+    public string GetFieldStringName(int index)
+        => index == 0 ? "Value" : throw GetOOR(index);
+
+    public IList<CustomAttributeData> GetFieldAttributes(int index)
+        => index == 0 ? [] : throw GetOOR(index);
+
+    public int TryGetIndex(Utf8Span fieldName) => "Value"u8.SequenceEqual(fieldName) ? 0 : IDeserializeType.IndexNotFound;
+
+    public ISerdeInfo GetFieldInfo(int index) => index == 0 ? UnderlyingInfo : throw GetOOR(index);
+
+    private ArgumentOutOfRangeException GetOOR(int index)
+        => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has only one field.");
+}
+
 
 file interface INoFieldsInfo : ISerdeInfo
 {

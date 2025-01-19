@@ -271,6 +271,7 @@ public sealed class DecimalProxy
         return deserializer.ReadDecimal();
     }
 }
+
 public sealed class StringProxy
     : ISerialize<string>, IDeserialize<string>,
       ISerializeProvider<string>, IDeserializeProvider<string>
@@ -294,42 +295,14 @@ public sealed class StringProxy
 }
 
 /// <summary>
-/// Represents a nullable type (struct or class). In Serde the nullable type wrappers are unified
-/// into a single wrapper. They each have a single field named "Value" which is the wrapped type and
-/// their type name is the wrapped type name followed by '?'.
+/// We use a separate class to store the nullable info instance to provide reference equality
+/// between the serialize and deserialize <see cref="ISerdeInfoProvider" /> implementations.
 /// </summary>
-file sealed record NullableSerdeInfo<TInfoProvider> : ISerdeInfo
-    where TInfoProvider : ISerdeInfoProvider
+file static class NullableInfoCache<TProvider>
+    where TProvider : ISerdeInfoProvider
 {
-    public static readonly ISerdeInfo Instance = new NullableSerdeInfo<TInfoProvider>();
-    private NullableSerdeInfo() { }
-
-    public string Name { get; } = TInfoProvider.SerdeInfo.Name + "?";
-    public ISerdeInfo ProxyInfo { get; } = TInfoProvider.SerdeInfo;
-
-
-    public InfoKind Kind => InfoKind.CustomType;
-    public int FieldCount => 1;
-
-    public IList<CustomAttributeData> Attributes => [];
-
-    public Utf8Span GetFieldName(int index)
-        => index == 0 ? "Value"u8 : throw GetOOR(index);
-
-    public string GetFieldStringName(int index)
-        => index == 0 ? "Value" : throw GetOOR(index);
-
-    public IList<CustomAttributeData> GetFieldAttributes(int index)
-        => index == 0 ? [] : throw GetOOR(index);
-
-    public int TryGetIndex(Utf8Span fieldName) => fieldName == "Value"u8 ? 0 : IDeserializeType.IndexNotFound;
-
-    public ISerdeInfo GetFieldInfo(int index) => index == 0 ? ProxyInfo : throw GetOOR(index);
-
-    private ArgumentOutOfRangeException GetOOR(int index)
-        => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has only one field.");
+    public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeNullable(TProvider.SerdeInfo);
 }
-
 
 public static class NullableProxy
 {
@@ -339,7 +312,7 @@ public static class NullableProxy
     {
         public static Serialize<T, TProvider> Instance { get; } = new();
         static ISerialize<T?> ISerializeProvider<T?>.SerializeInstance => Instance;
-        public static ISerdeInfo SerdeInfo => NullableSerdeInfo<TProvider>.Instance;
+        public static ISerdeInfo SerdeInfo => NullableInfoCache<TProvider>.Instance;
         private Serialize() : base(TProvider.SerializeInstance) { }
     }
 
@@ -368,7 +341,7 @@ public static class NullableProxy
     {
         public static Deserialize<T, TProvider> Instance { get; } = new();
         static IDeserialize<T?> IDeserializeProvider<T?>.DeserializeInstance => Instance;
-        public static ISerdeInfo SerdeInfo => NullableSerdeInfo<TProvider>.Instance;
+        public static ISerdeInfo SerdeInfo => NullableInfoCache<TProvider>.Instance;
         private Deserialize() : base(TProvider.DeserializeInstance) { }
     }
 
@@ -401,7 +374,7 @@ public static class NullableRefProxy
     {
         public static Serialize<T, TProvider> Instance { get; } = new();
         static ISerialize<T?> ISerializeProvider<T?>.SerializeInstance => Instance;
-        public static ISerdeInfo SerdeInfo => NullableSerdeInfo<TProvider>.Instance;
+        public static ISerdeInfo SerdeInfo => NullableInfoCache<TProvider>.Instance;
 
         private Serialize() : base(TProvider.SerializeInstance) { }
     }
@@ -430,7 +403,7 @@ public static class NullableRefProxy
     {
         public static Deserialize<T, TProvider> Instance { get; } = new();
         static IDeserialize<T?> IDeserializeProvider<T?>.DeserializeInstance => Instance;
-        public static ISerdeInfo SerdeInfo => NullableSerdeInfo<TProvider>.Instance;
+        public static ISerdeInfo SerdeInfo => NullableInfoCache<TProvider>.Instance;
 
         private Deserialize() : base(TProvider.DeserializeInstance) { }
     }
