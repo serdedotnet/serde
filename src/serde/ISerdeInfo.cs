@@ -128,6 +128,10 @@ public static class SerdeInfo
         string typeName)
         => new CollectionInfo(typeName, InfoKind.Dictionary);
 
+    /// <summary>
+    /// Make an ISerdeInfo that represents a union. Each case is represented as a field, meaning
+    /// that each index corresponds to a case.
+    /// </summary>
     public static IUnionSerdeInfo MakeUnion(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
@@ -348,14 +352,9 @@ file sealed class UnionSerdeInfo(
     public int FieldCount => caseInfos.Length;
 
     public IList<CustomAttributeData> GetFieldAttributes(int index)
-    {
-        throw new NotImplementedException();
-    }
+        => caseInfos[index].Attributes;
 
-    public ISerdeInfo GetFieldInfo(int index)
-    {
-        throw new NotImplementedException();
-    }
+    public ISerdeInfo GetFieldInfo(int index) => caseInfos[index];
 
     /// <summary>
     /// The field name for a union is the name of the case.
