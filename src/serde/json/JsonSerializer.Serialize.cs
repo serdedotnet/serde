@@ -11,6 +11,7 @@ namespace Serde.Json
     {
         private readonly Utf8JsonWriter _writer;
         private readonly KeySerializer _keySerializer;
+        private readonly EnumSerializer _enumSerializer;
 
         // Keeps a stack of whether or not we're writing a dictionary key
         private enum DictState
@@ -25,56 +26,81 @@ namespace Serde.Json
         {
             _writer = writer;
             _keySerializer = new KeySerializer(this);
+            _enumSerializer = new EnumSerializer(this);
         }
     }
 
     // Implementations of ISerializer
     partial class JsonSerializer : ISerializer
     {
-        void ISerializer.SerializeBool(bool b) => _writer.WriteBooleanValue(b);
+        public void WriteBool(bool b) => _writer.WriteBooleanValue(b);
 
-        void ISerializer.SerializeChar(char c) => SerializeString(c.ToString());
+        public void WriteChar(char c) => WriteString(c.ToString());
 
-        void ISerializer.SerializeByte(byte b) => _writer.WriteNumberValue(b);
+        public void WriteByte(byte b) => _writer.WriteNumberValue(b);
 
-        void ISerializer.SerializeU16(ushort u16) => _writer.WriteNumberValue(u16);
+        public void WriteU16(ushort u16) => _writer.WriteNumberValue(u16);
 
-        void ISerializer.SerializeU32(uint u32) => _writer.WriteNumberValue(u32);
+        public void WriteU32(uint u32) => _writer.WriteNumberValue(u32);
 
-        void ISerializer.SerializeU64(ulong u64) => _writer.WriteNumberValue(u64);
+        public void WriteU64(ulong u64) => _writer.WriteNumberValue(u64);
 
-        void ISerializer.SerializeSByte(sbyte b) => _writer.WriteNumberValue(b);
+        public void WriteSByte(sbyte b) => _writer.WriteNumberValue(b);
 
-        void ISerializer.SerializeI16(short i16) => _writer.WriteNumberValue(i16);
+        public void WriteI16(short i16) => _writer.WriteNumberValue(i16);
 
-        void ISerializer.SerializeI32(int i32) => _writer.WriteNumberValue(i32);
+        public void WriteI32(int i32) => _writer.WriteNumberValue(i32);
 
-        void ISerializer.SerializeI64(long i64) => _writer.WriteNumberValue(i64);
+        public void WriteI64(long i64) => _writer.WriteNumberValue(i64);
 
-        void ISerializer.SerializeFloat(float f) => _writer.WriteNumberValue(f);
+        public void WriteFloat(float f) => _writer.WriteNumberValue(f);
 
-        void ISerializer.SerializeDouble(double d) => _writer.WriteNumberValue(d);
+        public void WriteDouble(double d) => _writer.WriteNumberValue(d);
 
-        void ISerializer.SerializeDecimal(decimal d) => _writer.WriteNumberValue(d);
+        public void WriteDecimal(decimal d) => _writer.WriteNumberValue(d);
 
-        private void SerializeString(string s) => _writer.WriteStringValue(s);
+        public void WriteString(string s) => _writer.WriteStringValue(s);
 
-        void ISerializer.SerializeString(string s) => SerializeString(s);
-        void ISerializer.SerializeNull() => _writer.WriteNullValue();
+        public void WriteNull() => _writer.WriteNullValue();
 
-        void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize)
+        ISerializeType ISerializer.WriteType(ISerdeInfo typeInfo)
         {
-            var valueName = typeInfo.GetFieldName(index);
-            _writer.WriteStringValue(valueName);
-        }
-
-        ISerializeType ISerializer.SerializeType(ISerdeInfo typeInfo)
-        {
+            if (typeInfo.Kind == InfoKind.Enum)
+            {
+                return _enumSerializer;
+            }
             _writer.WriteStartObject();
             return this;
         }
 
-        ISerializeCollection ISerializer.SerializeCollection(ISerdeInfo typeInfo, int? length)
+        private sealed class EnumSerializer(JsonSerializer _parent) : ISerializeType
+        {
+            private void WriteEnumName(ISerdeInfo typeInfo, int index)
+            {
+                _parent._writer.WriteStringValue(typeInfo.GetFieldName(index));
+            }
+
+            public void End(ISerdeInfo info) { }
+            public void WriteBool(ISerdeInfo typeInfo, int index, bool b) => ThrowInvalidEnum();
+            public void WriteByte(ISerdeInfo typeInfo, int index, byte b) => WriteEnumName(typeInfo, index);
+            public void WriteChar(ISerdeInfo typeInfo, int index, char c) => ThrowInvalidEnum();
+            public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => ThrowInvalidEnum();
+            public void WriteDouble(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
+            public void WriteField<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class? => ThrowInvalidEnum();
+            public void WriteFloat(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
+            public void WriteI16(ISerdeInfo typeInfo, int index, short i16) => WriteEnumName(typeInfo, index);
+            public void WriteI32(ISerdeInfo typeInfo, int index, int i32) => WriteEnumName(typeInfo, index);
+            public void WriteI64(ISerdeInfo typeInfo, int index, long i64) => WriteEnumName(typeInfo, index);
+            public void WriteNull(ISerdeInfo typeInfo, int index) => ThrowInvalidEnum();
+            public void WriteSByte(ISerdeInfo typeInfo, int index, sbyte b) => WriteEnumName(typeInfo, index);
+            public void WriteString(ISerdeInfo typeInfo, int index, string s) => ThrowInvalidEnum();
+            public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16) => WriteEnumName(typeInfo, index);
+            public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => WriteEnumName(typeInfo, index);
+            public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => WriteEnumName(typeInfo, index);
+            private void ThrowInvalidEnum() => throw new InvalidOperationException("Invalid operation for enum serialization, expected integer value.");
+        }
+
+        ISerializeCollection ISerializer.WriteCollection(ISerdeInfo typeInfo, int? length)
         {
             if (typeInfo.Kind == InfoKind.Dictionary)
             {
@@ -95,7 +121,7 @@ namespace Serde.Json
         partial class CollectionImpl(JsonSerializer serializer, bool isDict) : ISerializeCollection
         {
             private bool _isValue = false;
-            void ISerializeCollection.SerializeElement<T, U>(T value, U serialize)
+            void ISerializeCollection.WriteElement<T, U>(T value, U serialize)
             {
                 ISerializer ser = isDict && !_isValue ? serializer._keySerializer : serializer;
                 serialize.Serialize(value, ser);
@@ -123,46 +149,43 @@ namespace Serde.Json
 
         private sealed class KeySerializer(JsonSerializer _parent) : ISerializer
         {
-            public void SerializeBool(bool b) => throw new KeyNotStringException();
-            public void SerializeChar(char c) => throw new KeyNotStringException();
-            public void SerializeByte(byte b) => throw new KeyNotStringException();
-            public void SerializeU16(ushort u16) => throw new KeyNotStringException();
+            public void WriteBool(bool b) => throw new KeyNotStringException();
+            public void WriteChar(char c) => throw new KeyNotStringException();
+            public void WriteByte(byte b) => throw new KeyNotStringException();
+            public void WriteU16(ushort u16) => throw new KeyNotStringException();
 
-            public void SerializeU32(uint u32) => throw new KeyNotStringException();
+            public void WriteU32(uint u32) => throw new KeyNotStringException();
 
-            public void SerializeU64(ulong u64) => throw new KeyNotStringException();
+            public void WriteU64(ulong u64) => throw new KeyNotStringException();
 
-            public void SerializeSByte(sbyte b) => throw new KeyNotStringException();
+            public void WriteSByte(sbyte b) => throw new KeyNotStringException();
 
-            public void SerializeI16(short i16) => throw new KeyNotStringException();
+            public void WriteI16(short i16) => throw new KeyNotStringException();
 
-            public void SerializeI32(int i32) => throw new KeyNotStringException();
+            public void WriteI32(int i32) => throw new KeyNotStringException();
 
-            public void SerializeI64(long i64) => throw new KeyNotStringException();
+            public void WriteI64(long i64) => throw new KeyNotStringException();
 
-            public void SerializeFloat(float f) => throw new KeyNotStringException();
+            public void WriteFloat(float f) => throw new KeyNotStringException();
 
-            public void SerializeDouble(double d) => throw new KeyNotStringException();
+            public void WriteDouble(double d) => throw new KeyNotStringException();
 
-            public void SerializeDecimal(decimal d) => throw new KeyNotStringException();
+            public void WriteDecimal(decimal d) => throw new KeyNotStringException();
 
-            public void SerializeString(string s)
+            public void WriteString(string s)
             {
                 _parent._writer.WritePropertyName(s);
             }
 
-            void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo typeInfo, int index, T value, U serialize)
-                => throw new KeyNotStringException();
-
-            public ISerializeCollection SerializeCollection(ISerdeInfo typeInfo, int? length) => throw new KeyNotStringException();
-            public ISerializeType SerializeType(ISerdeInfo typeInfo) => throw new KeyNotStringException();
-            public void SerializeNull() => throw new KeyNotStringException();
+            public ISerializeCollection WriteCollection(ISerdeInfo typeInfo, int? length) => throw new KeyNotStringException();
+            public ISerializeType WriteType(ISerdeInfo typeInfo) => throw new KeyNotStringException();
+            public void WriteNull() => throw new KeyNotStringException();
         }
     }
 
     partial class JsonSerializer : ISerializeCollection
     {
-        void ISerializeCollection.SerializeElement<T, U>(T value, U serialize)
+        void ISerializeCollection.WriteElement<T, U>(T value, U serialize)
         {
             var currentState = _dictState[^1];
             ISerializer ser = currentState == DictState.Key ? _keySerializer : this;
@@ -194,15 +217,104 @@ namespace Serde.Json
 
     partial class JsonSerializer : ISerializeType
     {
-        void ISerializeType.SerializeField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U serialize)
+        void ISerializeType.WriteField<T>(ISerdeInfo typeInfo, int fieldIndex, T value, ISerialize<T> serialize)
         {
             _writer.WritePropertyName(typeInfo.GetFieldName(fieldIndex));
             serialize.Serialize(value, this);
         }
 
-        void ISerializeType.End()
+        void ISerializeType.End(ISerdeInfo typeInfo)
         {
             _writer.WriteEndObject();
+        }
+        void ISerializeType.WriteBool(ISerdeInfo typeInfo, int index, bool b)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteBool(b);
+        }
+
+        void ISerializeType.WriteChar(ISerdeInfo typeInfo, int index, char c)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteChar(c);
+        }
+
+        void ISerializeType.WriteByte(ISerdeInfo typeInfo, int index, byte b)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteByte(b);
+        }
+
+        void ISerializeType.WriteU16(ISerdeInfo typeInfo, int index, ushort u16)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteU16(u16);
+        }
+
+        void ISerializeType.WriteU32(ISerdeInfo typeInfo, int index, uint u32)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteU32(u32);
+        }
+
+        void ISerializeType.WriteU64(ISerdeInfo typeInfo, int index, ulong u64)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteU64(u64);
+        }
+
+        void ISerializeType.WriteSByte(ISerdeInfo typeInfo, int index, sbyte b)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteSByte(b);
+        }
+
+        void ISerializeType.WriteI16(ISerdeInfo typeInfo, int index, short i16)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteI16(i16);
+        }
+
+        void ISerializeType.WriteI32(ISerdeInfo typeInfo, int index, int i32)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteI32(i32);
+        }
+
+        void ISerializeType.WriteI64(ISerdeInfo typeInfo, int index, long i64)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteI64(i64);
+        }
+
+        void ISerializeType.WriteFloat(ISerdeInfo typeInfo, int index, float f)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteFloat(f);
+        }
+
+        void ISerializeType.WriteDouble(ISerdeInfo typeInfo, int index, double d)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteDouble(d);
+        }
+
+        void ISerializeType.WriteDecimal(ISerdeInfo typeInfo, int index, decimal d)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteDecimal(d);
+        }
+
+        void ISerializeType.WriteString(ISerdeInfo typeInfo, int index, string s)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteString(s);
+        }
+
+        void ISerializeType.WriteNull(ISerdeInfo typeInfo, int index)
+        {
+            _writer.WritePropertyName(typeInfo.GetFieldName(index));
+            WriteNull();
         }
     }
 }

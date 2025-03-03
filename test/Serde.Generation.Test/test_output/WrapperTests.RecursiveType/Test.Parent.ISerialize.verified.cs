@@ -16,10 +16,10 @@ partial record Parent : Serde.ISerializeProvider<Test.Parent>
     {
         void global::Serde.ISerialize<Test.Parent>.Serialize(Test.Parent value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Parent>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeField<Recursive,Test.RecursiveWrap>(_l_serdeInfo,0,value.R);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Parent>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.WriteField<Recursive, Test.RecursiveWrap>(_l_info, 0, value.R);
+            _l_type.End(_l_info);
         }
         public static readonly ParentSerializeProxy Instance = new();
         private ParentSerializeProxy() { }

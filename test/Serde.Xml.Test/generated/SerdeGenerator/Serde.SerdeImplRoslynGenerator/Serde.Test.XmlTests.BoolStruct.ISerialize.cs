@@ -17,10 +17,10 @@ partial class XmlTests
         {
             void global::Serde.ISerialize<Serde.Test.XmlTests.BoolStruct>.Serialize(Serde.Test.XmlTests.BoolStruct value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<BoolStruct>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<bool,global::Serde.BoolProxy>(_l_serdeInfo,0,value.BoolField);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<BoolStruct>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteBool(_l_info, 0, value.BoolField);
+                _l_type.End(_l_info);
             }
             public static readonly BoolStructSerializeProxy Instance = new();
             private BoolStructSerializeProxy() { }

@@ -13,14 +13,14 @@ partial struct S<T1, T2, T3, T4, T5> : Serde.ISerializeProvider<S<T1, T2, T3, T4
     {
         void global::Serde.ISerialize<S<T1, T2, T3, T4, T5>>.Serialize(S<T1, T2, T3, T4, T5> value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S<T1, T2, T3, T4, T5>>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeFieldIfNotNull<string?,Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(_l_serdeInfo,0,value.FS);
-            type.SerializeField<T1,T1>(_l_serdeInfo,1,value.F1);
-            type.SerializeFieldIfNotNull<T2,T2>(_l_serdeInfo,2,value.F2);
-            type.SerializeFieldIfNotNull<T3?,Serde.NullableRefProxy.Serialize<T3,T3>>(_l_serdeInfo,3,value.F3);
-            type.SerializeFieldIfNotNull<T4,T4>(_l_serdeInfo,4,value.F4);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<S<T1, T2, T3, T4, T5>>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.WriteFieldIfNotNull<string?, Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(_l_info, 0, value.FS);
+            _l_type.WriteBoxedField<T1, T1>(_l_info, 1, value.F1);
+            _l_type.WriteBoxedFieldIfNotNull<T2, T2>(_l_info, 2, value.F2);
+            _l_type.WriteFieldIfNotNull<T3?, Serde.NullableRefProxy.Serialize<T3,T3>>(_l_info, 3, value.F3);
+            _l_type.WriteFieldIfNotNull<T4, T4>(_l_info, 4, value.F4);
+            _l_type.End(_l_info);
         }
         public static readonly SSerializeProxy Instance = new();
         private SSerializeProxy() { }

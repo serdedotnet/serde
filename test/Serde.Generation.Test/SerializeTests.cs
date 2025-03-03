@@ -321,8 +321,8 @@ public sealed class SWrap : ISerialize<S>, ISerializeProvider<S>
         });
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
-        serializer.SerializeI32(value.X);
-        serializer.SerializeI32(value.Y);
+        serializer.WriteI32(value.X);
+        serializer.WriteI32(value.Y);
     }
 }
 [GenerateSerialize]
@@ -369,9 +369,9 @@ public static class SWrap
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
             var _l_serdeInfo = SerdeInfo;
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value.Field);
-            type.End();
+            var type = serializer.WriteType(_l_serdeInfo);
+            type.WriteBoxedField<T, TWrap>(_l_serdeInfo, 0, value.Field);
+            type.End(_l_serdeInfo);
         }
     }
 }
@@ -413,9 +413,9 @@ public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
     void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
     {
         var _l_serdeInfo = SerdeInfo;
-        var type = serializer.SerializeType(_l_serdeInfo);
-        type.SerializeField<T, TWrap>(_l_serdeInfo, 0, value.Field);
-        type.End();
+        var type = serializer.WriteType(_l_serdeInfo);
+        type.WriteBoxedField<T, TWrap>(_l_serdeInfo, 0, value.Field);
+        type.End(_l_serdeInfo);
     }
 }
 [GenerateSerialize]

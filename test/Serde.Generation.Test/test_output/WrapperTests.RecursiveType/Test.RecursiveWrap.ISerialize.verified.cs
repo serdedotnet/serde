@@ -16,10 +16,10 @@ partial class RecursiveWrap : Serde.ISerializeProvider<Recursive>
     {
         void global::Serde.ISerialize<Recursive>.Serialize(Recursive value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<RecursiveWrap>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeFieldIfNotNull<Recursive?,Test.RecursiveWrap>(_l_serdeInfo,0,value.Next);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<RecursiveWrap>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.WriteFieldIfNotNull<Recursive?, Test.RecursiveWrap>(_l_info, 0, value.Next);
+            _l_type.End(_l_info);
         }
         public static readonly RecursiveWrapSerializeProxy Instance = new();
         private RecursiveWrapSerializeProxy() { }

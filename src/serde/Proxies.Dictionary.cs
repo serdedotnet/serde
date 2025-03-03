@@ -31,11 +31,11 @@ public static class DictProxy
         public void Serialize(Dictionary<TKey, TValue> value, ISerializer serializer)
         {
             var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
-            var sd = serializer.SerializeCollection(typeInfo, value.Count);
+            var sd = serializer.WriteCollection(typeInfo, value.Count);
             foreach (var (k, v) in value)
             {
-                sd.SerializeElement(k, kp);
-                sd.SerializeElement(v, vp);
+                sd.WriteElement(k, kp);
+                sd.WriteElement(v, vp);
             }
             sd.End(typeInfo);
         }
@@ -114,11 +114,11 @@ public static class ImmutableDictWrap
         public void Serialize(ImmutableDictionary<TKey, TValue> value, ISerializer serializer)
         {
             var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
-            var sd = serializer.SerializeCollection(typeInfo, value.Count);
+            var sd = serializer.WriteCollection(typeInfo, value.Count);
             foreach (var (k, v) in value)
             {
-                sd.SerializeElement(k, keyProxy);
-                sd.SerializeElement(v, valueProxy);
+                sd.WriteElement(k, keyProxy);
+                sd.WriteElement(v, valueProxy);
             }
             sd.End(typeInfo);
         }

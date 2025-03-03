@@ -37,10 +37,10 @@ partial record BaseType : ISerialize<BaseType>
         switch (value)
         {
             case DerivedA derivedA:
-                serializeType.SerializeField<DerivedA, DerivedAWrap>(nameof(DerivedA), derivedA);
+                serializeType.WriteField<DerivedA, DerivedAWrap>(nameof(DerivedA), derivedA);
                 break;
             case DerivedB derivedB:
-                serializeType.SerializeField<DerivedB, DerivedBWrap>(nameof(DerivedB), derivedB);
+                serializeType.WriteField<DerivedB, DerivedBWrap>(nameof(DerivedB), derivedB);
                 break;
         }
         serializeType.End();

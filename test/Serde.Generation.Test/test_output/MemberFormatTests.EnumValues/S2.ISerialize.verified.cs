@@ -13,10 +13,10 @@ partial struct S2 : Serde.ISerializeProvider<S2>
     {
         void global::Serde.ISerialize<S2>.Serialize(S2 value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S2>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeField<ColorEnum,ColorEnumProxy>(_l_serdeInfo,0,value.E);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<S2>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.WriteBoxedField<ColorEnum, ColorEnumProxy>(_l_info, 0, value.E);
+            _l_type.End(_l_info);
         }
         public static readonly S2SerializeProxy Instance = new();
         private S2SerializeProxy() { }

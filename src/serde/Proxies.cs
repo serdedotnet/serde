@@ -21,7 +21,7 @@ public sealed class BoolProxy
 
     private const string s_typeName = "bool";
     void ISerialize<bool>.Serialize(bool value, ISerializer serializer)
-        => serializer.SerializeBool(value);
+        => serializer.WriteBool(value);
     bool IDeserialize<bool>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadBool();
 }
@@ -39,7 +39,7 @@ public sealed class CharProxy
 
     private const string s_typeName = "char";
     void ISerialize<char>.Serialize(char value, ISerializer serializer)
-        => serializer.SerializeChar(value);
+        => serializer.WriteChar(value);
     char IDeserialize<char>.Deserialize(IDeserializer deserializer)
     {
         return deserializer.ReadChar();
@@ -60,7 +60,7 @@ public sealed class ByteProxy
     private const string s_typeName = "byte";
     public void Serialize(byte value, ISerializer serializer)
     {
-        serializer.SerializeByte(value);
+        serializer.WriteByte(value);
     }
     public byte Deserialize(IDeserializer deserializer)
     {
@@ -82,7 +82,7 @@ public sealed class UInt16Proxy
     private const string s_typeName = "ushort";
     void ISerialize<ushort>.Serialize(ushort value, ISerializer serializer)
     {
-        serializer.SerializeU16(value);
+        serializer.WriteU16(value);
     }
     ushort IDeserialize<ushort>.Deserialize(IDeserializer deserializer)
     {
@@ -103,7 +103,7 @@ public sealed class UInt32Proxy
 
     private const string s_typeName = "uint";
     void ISerialize<uint>.Serialize(uint value, ISerializer serializer)
-        => serializer.SerializeU32(value);
+        => serializer.WriteU32(value);
     uint IDeserialize<uint>.Deserialize(IDeserializer deserializer)
     {
         return deserializer.ReadU32();
@@ -123,7 +123,7 @@ public sealed class UInt64Proxy
 
     private const string s_typeName = "ulong";
     void ISerialize<ulong>.Serialize(ulong value, ISerializer serializer)
-        => serializer.SerializeU64(value);
+        => serializer.WriteU64(value);
     ulong IDeserialize<ulong>.Deserialize(IDeserializer deserializer)
     {
         return deserializer.ReadU64();
@@ -143,7 +143,7 @@ public sealed class SByteProxy
 
     private const string s_typeName = "sbyte";
     void ISerialize<sbyte>.Serialize(sbyte value, ISerializer serializer)
-        => serializer.SerializeSByte(value);
+        => serializer.WriteSByte(value);
     sbyte IDeserialize<sbyte>.Deserialize(IDeserializer deserializer)
     {
         return deserializer.ReadSByte();
@@ -164,7 +164,7 @@ public sealed class Int16Proxy
     private const string s_typeName = "short";
     void ISerialize<short>.Serialize(short value, ISerializer serializer)
     {
-        serializer.SerializeI16(value);
+        serializer.WriteI16(value);
     }
     short IDeserialize<short>.Deserialize(IDeserializer deserializer)
     {
@@ -186,7 +186,7 @@ public sealed class Int32Proxy
     private const string s_typeName = "int";
     void ISerialize<int>.Serialize(int value, ISerializer serializer)
     {
-        serializer.SerializeI32(value);
+        serializer.WriteI32(value);
     }
     int IDeserialize<int>.Deserialize(IDeserializer deserializer)
     {
@@ -207,7 +207,7 @@ public sealed class Int64Proxy
 
     private const string s_typeName = "long";
     void ISerialize<long>.Serialize(long value, ISerializer serializer)
-        => serializer.SerializeI64(value);
+        => serializer.WriteI64(value);
     long IDeserialize<long>.Deserialize(IDeserializer deserializer)
     {
         return deserializer.ReadI64();
@@ -225,7 +225,7 @@ public sealed class SingleProxy : ISerialize<float>, IDeserialize<float>,
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float");
 
     public void Serialize(float value, ISerializer serializer)
-        => serializer.SerializeFloat(value);
+        => serializer.WriteFloat(value);
     public float Deserialize(IDeserializer deserializer)
         => deserializer.ReadFloat();
 }
@@ -243,7 +243,7 @@ public sealed class DoubleProxy
 
     void ISerialize<double>.Serialize(double value, ISerializer serializer)
     {
-        serializer.SerializeDouble(value);
+        serializer.WriteDouble(value);
     }
     double IDeserialize<double>.Deserialize(IDeserializer deserializer)
     {
@@ -264,7 +264,7 @@ public sealed class DecimalProxy
 
     void ISerialize<decimal>.Serialize(decimal value, ISerializer serializer)
     {
-        serializer.SerializeDecimal(value);
+        serializer.WriteDecimal(value);
     }
     decimal IDeserialize<decimal>.Deserialize(IDeserializer deserializer)
     {
@@ -286,7 +286,7 @@ public sealed class StringProxy
     private const string s_typeName = "string";
     void ISerialize<string>.Serialize(string value, ISerializer serializer)
     {
-        serializer.SerializeString(value);
+        serializer.WriteString(value);
     }
     public string Deserialize(IDeserializer deserializer)
     {
@@ -328,7 +328,7 @@ public static class NullableProxy
             }
             else
             {
-                serializer.SerializeNull();
+                serializer.WriteNull();
             }
         }
     }
@@ -388,7 +388,7 @@ public static class NullableRefProxy
         {
             if (value is null)
             {
-                serializer.SerializeNull();
+                serializer.WriteNull();
             }
             else
             {

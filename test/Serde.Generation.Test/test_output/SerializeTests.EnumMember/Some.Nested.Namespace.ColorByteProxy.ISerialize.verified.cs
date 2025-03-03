@@ -11,7 +11,8 @@ sealed partial class ColorByteProxy :Serde.ISerialize<Some.Nested.Namespace.Colo
 {
     void global::Serde.ISerialize<Some.Nested.Namespace.ColorByte>.Serialize(Some.Nested.Namespace.ColorByte value, global::Serde.ISerializer serializer)
     {
-        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorByteProxy>();
+        var _l_info = global::Serde.SerdeInfoProvider.GetInfo<ColorByteProxy>();
+        var _l_type = serializer.WriteType(_l_info);
         var index = value switch
         {
             Some.Nested.Namespace.ColorByte.Red => 0,
@@ -19,8 +20,8 @@ sealed partial class ColorByteProxy :Serde.ISerialize<Some.Nested.Namespace.Colo
             Some.Nested.Namespace.ColorByte.Blue => 2,
             var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorByte'"),
         };
-        serializer.SerializeEnumValue(_l_serdeInfo, index, (byte)value, global::Serde.ByteProxy.Instance);
-
+        _l_type.WriteByte(_l_info, index, (byte)value);
+        _l_type.End(_l_info);
     }
     static ISerialize<Some.Nested.Namespace.ColorByte> ISerializeProvider<Some.Nested.Namespace.ColorByte>.SerializeInstance
         => Some.Nested.Namespace.ColorByteProxy.Instance;

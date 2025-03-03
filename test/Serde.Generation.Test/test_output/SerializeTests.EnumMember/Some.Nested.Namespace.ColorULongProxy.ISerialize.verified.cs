@@ -11,7 +11,8 @@ sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.Col
 {
     void global::Serde.ISerialize<Some.Nested.Namespace.ColorULong>.Serialize(Some.Nested.Namespace.ColorULong value, global::Serde.ISerializer serializer)
     {
-        var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorULongProxy>();
+        var _l_info = global::Serde.SerdeInfoProvider.GetInfo<ColorULongProxy>();
+        var _l_type = serializer.WriteType(_l_info);
         var index = value switch
         {
             Some.Nested.Namespace.ColorULong.Red => 0,
@@ -19,8 +20,8 @@ sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.Col
             Some.Nested.Namespace.ColorULong.Blue => 2,
             var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorULong'"),
         };
-        serializer.SerializeEnumValue(_l_serdeInfo, index, (ulong)value, global::Serde.UInt64Proxy.Instance);
-
+        _l_type.WriteU64(_l_info, index, (ulong)value);
+        _l_type.End(_l_info);
     }
     static ISerialize<Some.Nested.Namespace.ColorULong> ISerializeProvider<Some.Nested.Namespace.ColorULong>.SerializeInstance
         => Some.Nested.Namespace.ColorULongProxy.Instance;
