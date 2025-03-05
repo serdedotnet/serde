@@ -54,33 +54,27 @@ public sealed partial class XmlSerializer
 
 public sealed partial class XmlSerializer : ISerializer
 {
-    public void SerializeBool(bool b)
+    public void WriteBool(bool b)
     {
         _writer.WriteValue(b);
     }
 
-    public void SerializeByte(byte b) => SerializeI64(b);
+    public void WriteByte(byte b) => WriteI64(b);
 
-    public void SerializeChar(char c) => SerializeString(c.ToString());
+    public void WriteChar(char c) => WriteString(c.ToString());
 
-    public void SerializeDouble(double d)
+    public void WriteDouble(double d)
     {
         _writer.WriteValue(d);
     }
 
-    void ISerializer.SerializeEnumValue<T, U>(ISerdeInfo serdeInfo, int index, T value, U serialize)
-    {
-        var name = serdeInfo.GetFieldStringName(index);
-        SerializeString(name);
-    }
+    public void WriteFloat(float f) => WriteDouble(f);
 
-    public void SerializeFloat(float f) => SerializeDouble(f);
+    public void WriteI16(short i16) => WriteI64(i16);
 
-    public void SerializeI16(short i16) => SerializeI64(i16);
+    public void WriteI32(int i32) => WriteI64(i32);
 
-    public void SerializeI32(int i32) => SerializeI64(i32);
-
-    public void SerializeI64(long i64)
+    public void WriteI64(long i64)
     {
         if (_state == State.Enumerable)
         {
@@ -93,28 +87,28 @@ public sealed partial class XmlSerializer : ISerializer
         }
     }
 
-    public void SerializeNull()
+    public void WriteNull()
     {
         // Default behavior is to skip serialization of null values
     }
 
-    public void SerializeSByte(sbyte b) => SerializeI64(b);
+    public void WriteSByte(sbyte b) => WriteI64(b);
 
-    public void SerializeString(string s)
+    public void WriteString(string s)
     {
         _writer.WriteString(s);
     }
 
-    public void SerializeU16(ushort u16) => SerializeI64(u16);
+    public void WriteU16(ushort u16) => WriteI64(u16);
 
-    public void SerializeU32(uint u32) => SerializeI64(u32);
+    public void WriteU32(uint u32) => WriteI64(u32);
 
-    public void SerializeU64(ulong u64)
+    public void WriteU64(ulong u64)
     {
         _writer.WriteValue((decimal)u64);
     }
 
-    public void SerializeDecimal(decimal d)
+    public void WriteDecimal(decimal d)
     {
         _writer.WriteValue(d);
     }
@@ -156,7 +150,7 @@ public sealed partial class XmlSerializer : ISerializer
         return formattingListener.ToString();
     }
 
-    public ISerializeCollection SerializeCollection(ISerdeInfo typeInfo, int? length)
+    public ISerializeCollection WriteCollection(ISerdeInfo typeInfo, int? length)
     {
         if (typeInfo.Kind == InfoKind.Dictionary)
         {
@@ -185,7 +179,7 @@ public sealed partial class XmlSerializer : ISerializer
             _savedState = savedState;
         }
 
-        void ISerializeCollection.SerializeElement<T, U>(T value, U serialize)
+        void ISerializeCollection.WriteElement<T, U>(T value, U serialize)
             => serialize.Serialize(value, _serializer);
 
         void ISerializeCollection.End(ISerdeInfo typeInfo)
@@ -198,8 +192,13 @@ public sealed partial class XmlSerializer : ISerializer
         }
     }
 
-    public ISerializeType SerializeType(ISerdeInfo typeInfo)
+    public ISerializeType WriteType(ISerdeInfo typeInfo)
     {
+        if (typeInfo.Kind == InfoKind.Enum)
+        {
+            return new EnumSerializer(this);
+        }
+
         var saved = _state;
         bool writeEnd;
         if (_state is State.Start or State.Enumerable)
@@ -215,6 +214,33 @@ public sealed partial class XmlSerializer : ISerializer
         return new XmlTypeSerializer(writeEnd, this, saved);
     }
 
+    private sealed class EnumSerializer(XmlSerializer _parent) : ISerializeType
+    {
+        private void WriteEnumName(ISerdeInfo typeInfo, int index)
+        {
+            _parent._writer.WriteString(typeInfo.GetFieldStringName(index));
+        }
+
+        public void End(ISerdeInfo info) { }
+        public void WriteBool(ISerdeInfo typeInfo, int index, bool b) => ThrowInvalidEnum();
+        public void WriteByte(ISerdeInfo typeInfo, int index, byte b) => WriteEnumName(typeInfo, index);
+        public void WriteChar(ISerdeInfo typeInfo, int index, char c) => ThrowInvalidEnum();
+        public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => ThrowInvalidEnum();
+        public void WriteDouble(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
+        public void WriteField<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class? => ThrowInvalidEnum();
+        public void WriteFloat(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
+        public void WriteI16(ISerdeInfo typeInfo, int index, short i16) => WriteEnumName(typeInfo, index);
+        public void WriteI32(ISerdeInfo typeInfo, int index, int i32) => WriteEnumName(typeInfo, index);
+        public void WriteI64(ISerdeInfo typeInfo, int index, long i64) => WriteEnumName(typeInfo, index);
+        public void WriteNull(ISerdeInfo typeInfo, int index) => ThrowInvalidEnum();
+        public void WriteSByte(ISerdeInfo typeInfo, int index, sbyte b) => WriteEnumName(typeInfo, index);
+        public void WriteString(ISerdeInfo typeInfo, int index, string s) => ThrowInvalidEnum();
+        public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16) => WriteEnumName(typeInfo, index);
+        public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => WriteEnumName(typeInfo, index);
+        public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => WriteEnumName(typeInfo, index);
+        private void ThrowInvalidEnum() => throw new InvalidOperationException("Invalid operation for enum serialization, expected integer value.");
+    }
+
     private sealed class XmlTypeSerializer : ISerializeType
     {
         private readonly bool _writeEnd;
@@ -228,7 +254,10 @@ public sealed partial class XmlSerializer : ISerializer
             _savedState = savedState;
         }
 
-        public void SerializeField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U impl)
+        void ISerializeType.WriteField<T>(ISerdeInfo typeInfo, int fieldIndex, T value, ISerialize<T> impl)
+            => WriteField<T, ISerialize<T>>(typeInfo, fieldIndex, value, impl);
+
+        private void WriteField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U impl)
             where U : ISerialize<T>
         {
             var name = typeInfo.GetFieldStringName(fieldIndex);
@@ -248,13 +277,74 @@ public sealed partial class XmlSerializer : ISerializer
             _parent._writer.WriteEndElement();
         }
 
-        public void End()
+        public void End(ISerdeInfo info)
         {
             if (_writeEnd)
             {
                 _parent._writer.WriteEndElement();
             }
             _parent._state = _savedState;
+        }
+
+        public void WriteBool(ISerdeInfo typeInfo, int index, bool b)
+        {
+            WriteField(typeInfo, index, b, BoolProxy.Instance);
+        }
+
+        public void WriteChar(ISerdeInfo typeInfo, int index, char c)
+            => WriteField(typeInfo, index, c, CharProxy.Instance);
+
+        public void WriteByte(ISerdeInfo typeInfo, int index, byte b)
+            => WriteField(typeInfo, index, b, ByteProxy.Instance);
+
+        public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16)
+            => WriteField(typeInfo, index, u16, UInt16Proxy.Instance);
+
+        public void WriteU32(ISerdeInfo typeInfo, int index, uint u32)
+            => WriteField(typeInfo, index, u32, UInt32Proxy.Instance);
+
+        public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64)
+            => WriteField(typeInfo, index, u64, UInt64Proxy.Instance);
+
+        public void WriteSByte(ISerdeInfo typeInfo, int index, sbyte b)
+            => WriteField(typeInfo, index, b, SByteProxy.Instance);
+
+        public void WriteI16(ISerdeInfo typeInfo, int index, short i16)
+            => WriteField(typeInfo, index, i16, Int16Proxy.Instance);
+
+        public void WriteI32(ISerdeInfo typeInfo, int index, int i32)
+            => WriteField(typeInfo, index, i32, Int32Proxy.Instance);
+
+        public void WriteI64(ISerdeInfo typeInfo, int index, long i64)
+            => WriteField(typeInfo, index, i64, Int64Proxy.Instance);
+
+        public void WriteFloat(ISerdeInfo typeInfo, int index, float f)
+            => WriteField(typeInfo, index, f, SingleProxy.Instance);
+
+        public void WriteDouble(ISerdeInfo typeInfo, int index, double d)
+            => WriteField(typeInfo, index, d, DoubleProxy.Instance);
+
+        public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d)
+            => WriteField(typeInfo, index, d, DecimalProxy.Instance);
+
+        public void WriteString(ISerdeInfo typeInfo, int index, string s)
+            => WriteField(typeInfo, index, s, StringProxy.Instance);
+
+        public void WriteNull(ISerdeInfo typeInfo, int fieldIndex)
+        {
+            var name = typeInfo.GetFieldStringName(fieldIndex);
+            foreach (var attr in typeInfo.GetFieldAttributes(fieldIndex))
+            {
+                if (attr.AttributeType == typeof(XmlAttributeAttribute))
+                {
+                    _parent._writer.WriteStartAttribute(name);
+                    _parent._writer.WriteEndAttribute();
+                    return;
+                }
+            }
+
+            _parent._writer.WriteStartElement(name);
+            _parent._writer.WriteEndElement();
         }
     }
 }

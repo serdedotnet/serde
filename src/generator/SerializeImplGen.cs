@@ -28,11 +28,21 @@ public partial class SerializeImplGen
         var statements = new SourceBuilder();
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
 
+        // The generated body of ISerialize is
+        // `var _l_info = {TypeName}SerdeTypeInfo.TypeInfo;`
+        // `var _l_type = serializer.WriteType(_l_info);
+        // type.WriteField<FieldType, Serialize>(_l_info, FieldIndex, receiver.FieldValue);
+        // type.End();
+
+        // If the type is an enum, we only want to serialize one field (the enum value), not all fields
         if (receiverType.TypeKind == TypeKind.Enum)
         {
-            // For enums, the generated body should look like
+            // `var _l_info = GetInfo<{TypeName}Proxy>();`
+            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Proxy>();");
+            // `var _l_type = serializer.WriteType(_l_info);`
+            statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
+
             // ```
-            // var typeInfo = {typeName}SerdeTypeInfo;
             // var index = value switch
             // {
             //   Enum.Case1 => 0,
@@ -41,43 +51,48 @@ public partial class SerializeImplGen
             // };
             // serializer.SerializeEnumValue("Enum", name, (Underlying)value, default(Underlying));
             var enumType = (INamedTypeSymbol)receiverType;
-            var typeSyntax = enumType.ToFqnSyntax();
             var underlying = enumType.EnumUnderlyingType!;
-            statements.AppendLine($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Proxy>();");
             statements.AppendLine($$"""
                 var index = value switch
                 {
                     {{string.Join("," + Utilities.NewLine, fieldsAndProps
-                        .Select((m, i) => $"{typeSyntax}.{m.Name} => {i}")) }},
+                        .Select((m, i) => $"{enumType.ToDisplayString()}.{m.Name} => {i}"))}},
                     var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
                 };
                 """
             );
-            var wrapper = Proxies.TryGetPrimitiveProxy(underlying, SerdeUsage.Serialize).NotNull().Proxy;
-            statements.AppendLine(
-                $"serializer.SerializeEnumValue(_l_serdeInfo, index, ({underlying.ToFqnSyntax()})value, {wrapper.ToFullString()}.Instance);"
-            );
+            var methodName = Proxies.TryGetPrimitiveName(underlying).NotNull();
+            statements.AppendLine($"_l_type.Write{methodName}(_l_info, index, ({underlying.ToDisplayString()})value);");
         }
         else
         {
-            // The generated body of ISerialize is
-            // `var _l_serdeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
-            // `var type = serializer.SerializeType(_l_serdeInfo);
-            // type.SerializeField<FieldType, Serialize>(_l_serdeInfo, FieldIndex, receiver.FieldValue);
-            // type.End();
+            // `var _l_info = {TypeName}SerdeTypeInfo.TypeInfo;`
+            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}{typeDeclContext.TypeParameterList}>();");
 
-            // `var _l_serdeInfo = {TypeName}SerdeTypeInfo.TypeInfo;`
-            statements.AppendLine($"var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}{typeDeclContext.TypeParameterList}>();");
-
-            // `var type = serializer.SerializeType(_l_serdeInfo);`
-            statements.AppendLine("var type = serializer.SerializeType(_l_serdeInfo);");
+            // `var type = serializer.WriteType(_l_info);`
+            statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
 
             for (int i = 0; i < fieldsAndProps.Count; i++)
             {
                 var m = fieldsAndProps[i];
-                // Generate statements of the form `type.SerializeField<FieldType, Serialize>("FieldName", value.FieldValue)`
+
+                TypeWithProxy typeAndProxy;
+                // Check if this member has an explicit proxy. If so, we'll use it.
+                if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress) is { } proxy)
+                {
+                    typeAndProxy = new(m.Type.ToFqnSyntax(), proxy);
+                }
+                // Check if the member type is a primitive type. If so, it has a dedicated 'Write' method
+                else if (Proxies.TryGetPrimitiveName(m.Type) is { } methodName &&
+                    m.Type.NullableAnnotation != NullableAnnotation.Annotated)
+                {
+                    statements.AppendLine($"_l_type.Write{methodName}(_l_info, {i}, value.{m.Name});");
+                    continue;
+                }
+
+                // Generate statements of the form `type.WriteField<FieldType, Serialize>("FieldName", value.FieldValue)`
                 var typeAndWrapperOpt = MakeSerializeType(m, context, inProgress);
-                if (typeAndWrapperOpt is not {} typeAndWrapper)
+                if (typeAndWrapperOpt is not { } typeAndWrapper)
                 {
                     // No built-in handling and doesn't implement ISerialize, error
                     context.ReportDiagnostic(CreateDiagnostic(
@@ -89,14 +104,20 @@ public partial class SerializeImplGen
                 }
                 else
                 {
-                    var memberExpr = MakeMemberAccessExpr(m, IdentifierName("value"));
-                    statements.AppendLine(MakeSerializeFieldStmt(m, i, memberExpr, typeAndWrapper, IdentifierName("value")).ToFullString());
+                    string methodName = m.Type.IsReferenceType
+                        ? "WriteField"
+                        : "WriteBoxedField";
+                    // Use WriteFieldIfNotNull if it's not been disabled and the field is nullable
+                    if (m.IsNullable && !m.SerializeNull)
+                    {
+                        methodName += "IfNotNull";
+                    }
+                    statements.AppendLine($"_l_type.{methodName}<{typeAndWrapper.Type}, {typeAndWrapper.Proxy}>(_l_info, {i}, value.{m.Name});");
                 }
             }
-
-            // `type.End();`
-            statements.Append("type.End();");
         }
+        // `type.End();`
+        statements.Append("_l_type.End(_l_info);");
 
         var receiverSyntax = ((INamedTypeSymbol)receiverType).ToFqnSyntax();
         var receiverString = receiverType.ToDisplayString();
@@ -124,45 +145,6 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             """);
         }
         return (members, BaseList(SeparatedList(bases)).ToFullString());
-
-        // Make a statement like `type.SerializeField<valueType, SerializeType>("member.Name", value)`
-        static ExpressionStatementSyntax MakeSerializeFieldStmt(
-            DataMemberSymbol member,
-            int index,
-            ExpressionSyntax value,
-            TypeWithProxy typeAndWrapper,
-            ExpressionSyntax receiver)
-        {
-            var arguments = new List<ExpressionSyntax>() {
-                    // _l_serdeInfo
-                    ParseExpression("_l_serdeInfo"),
-                    // Index
-                    LiteralExpression(SyntaxKind.NumericLiteralExpression, Literal(index)),
-                    // Value
-                    value,
-            };
-            var typeArgs = new List<TypeSyntax>() {
-                typeAndWrapper.Type,
-                typeAndWrapper.Proxy
-            };
-
-            string methodName;
-            if (member.IsNullable && !member.SerializeNull)
-            {
-                // Use SerializeFieldIfNotNull if it's not been disabled and the field is nullable
-                methodName = "SerializeFieldIfNotNull";
-            }
-            else
-            {
-                methodName = "SerializeField";
-            }
-
-            return ExpressionStatement(InvocationExpression(
-                // type.SerializeField
-                QualifiedName(IdentifierName("type"),
-                    GenericName(Identifier(methodName), TypeArgumentList(SeparatedList(typeArgs)))),
-                ArgumentList(SeparatedList(arguments.Select(Argument)))));
-        }
     }
 
     /// <summary>
@@ -182,19 +164,19 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             var t = caseTypes[i];
             var tString = t.ToDisplayString();
             casesBuilder.AppendLine($"case {tString} c:");
-            casesBuilder.AppendLine($"    _l_type.SerializeField<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
+            casesBuilder.AppendLine($"    _l_type.WriteField<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
             casesBuilder.AppendLine($"    break;");
         }
         string methodDecl = $$"""
         void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
         {
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{baseType.ToDisplayString()}}>();
-            var _l_type = serializer.SerializeType(_l_serdeInfo);
+            var _l_type = serializer.WriteType(_l_serdeInfo);
             switch (value)
             {
                 {{casesBuilder}}
             }
-            _l_type.End();
+            _l_type.End(_l_serdeInfo);
         }
         """;
         return methodDecl;
@@ -225,26 +207,4 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         // 3. A wrapper that implements ISerialize
         return Proxies.TryGetImplicitWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
     }
-
-    private static ParameterSyntax Parameter(string typeName, string paramName, bool byRef = false) => SyntaxFactory.Parameter(
-        attributeLists: default,
-        modifiers: default,
-        type: byRef ? SyntaxFactory.RefType(IdentifierName(typeName)) : IdentifierName(typeName),
-        Identifier(paramName),
-        default
-    );
-
-    private static ParameterSyntax Parameter(TypeSyntax typeSyntax, string paramName) => SyntaxFactory.Parameter(
-        attributeLists: default,
-        modifiers: default,
-        type: typeSyntax,
-        Identifier(paramName),
-        default
-    );
-
-    private static MemberAccessExpressionSyntax MakeMemberAccessExpr(DataMemberSymbol m, ExpressionSyntax receiverExpr)
-        => MemberAccessExpression(
-            SyntaxKind.SimpleMemberAccessExpression,
-            receiverExpr,
-            IdentifierName(m.Name));
 }

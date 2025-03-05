@@ -17,14 +17,14 @@ partial class SampleTest
         {
             void global::Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>.Serialize(Serde.Test.SampleTest.OrderedItem value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<OrderedItem>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,0,value.ItemName);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,1,value.Description);
-                type.SerializeField<decimal,global::Serde.DecimalProxy>(_l_serdeInfo,2,value.UnitPrice);
-                type.SerializeField<int,global::Serde.Int32Proxy>(_l_serdeInfo,3,value.Quantity);
-                type.SerializeField<decimal,global::Serde.DecimalProxy>(_l_serdeInfo,4,value.LineTotal);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<OrderedItem>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteString(_l_info, 0, value.ItemName);
+                _l_type.WriteString(_l_info, 1, value.Description);
+                _l_type.WriteDecimal(_l_info, 2, value.UnitPrice);
+                _l_type.WriteI32(_l_info, 3, value.Quantity);
+                _l_type.WriteDecimal(_l_info, 4, value.LineTotal);
+                _l_type.End(_l_info);
             }
             public static readonly OrderedItemSerializeProxy Instance = new();
             private OrderedItemSerializeProxy() { }

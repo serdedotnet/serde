@@ -13,9 +13,9 @@ partial struct S1 : Serde.ISerializeProvider<S1>
     {
         void global::Serde.ISerialize<S1>.Serialize(S1 value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S1>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<S1>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.End(_l_info);
         }
         public static readonly S1SerializeProxy Instance = new();
         private S1SerializeProxy() { }

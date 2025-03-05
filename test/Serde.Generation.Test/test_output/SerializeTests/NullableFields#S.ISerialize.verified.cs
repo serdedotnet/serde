@@ -13,11 +13,11 @@ partial struct S<T1, T2, TSerialize> : Serde.ISerializeProvider<S<T1, T2, TSeria
     {
         void global::Serde.ISerialize<S<T1, T2, TSerialize>>.Serialize(S<T1, T2, TSerialize> value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S<T1, T2, TSerialize>>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeFieldIfNotNull<int?,Serde.NullableProxy.Serialize<int,global::Serde.Int32Proxy>>(_l_serdeInfo,0,value.FI);
-            type.SerializeFieldIfNotNull<TSerialize?,Serde.NullableProxy.Serialize<TSerialize,TSerialize>>(_l_serdeInfo,3,value.F3);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<S<T1, T2, TSerialize>>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.WriteBoxedFieldIfNotNull<int?, Serde.NullableProxy.Serialize<int,global::Serde.Int32Proxy>>(_l_info, 0, value.FI);
+            _l_type.WriteBoxedFieldIfNotNull<TSerialize?, Serde.NullableProxy.Serialize<TSerialize,TSerialize>>(_l_info, 3, value.F3);
+            _l_type.End(_l_info);
         }
         public static readonly SSerializeProxy Instance = new();
         private SSerializeProxy() { }

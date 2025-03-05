@@ -13,11 +13,11 @@ partial struct PointWrap : Serde.ISerializeProvider<Point>
     {
         void global::Serde.ISerialize<Point>.Serialize(Point value, global::Serde.ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<PointWrap>();
-            var type = serializer.SerializeType(_l_serdeInfo);
-            type.SerializeField<int,global::Serde.Int32Proxy>(_l_serdeInfo,0,value.X);
-            type.SerializeField<int,global::Serde.Int32Proxy>(_l_serdeInfo,1,value.Y);
-            type.End();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<PointWrap>();
+            var _l_type = serializer.WriteType(_l_info);
+            _l_type.WriteI32(_l_info, 0, value.X);
+            _l_type.WriteI32(_l_info, 1, value.Y);
+            _l_type.End(_l_info);
         }
         public static readonly PointWrapSerializeProxy Instance = new();
         private PointWrapSerializeProxy() { }

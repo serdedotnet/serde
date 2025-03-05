@@ -17,14 +17,14 @@ partial class SampleTest
         {
             void global::Serde.ISerialize<Serde.Test.SampleTest.Address>.Serialize(Serde.Test.SampleTest.Address value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Address>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,0,value.Name);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,1,value.Line1);
-                type.SerializeFieldIfNotNull<string?,Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(_l_serdeInfo,2,value.City);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,3,value.State);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,4,value.Zip);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Address>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteString(_l_info, 0, value.Name);
+                _l_type.WriteString(_l_info, 1, value.Line1);
+                _l_type.WriteFieldIfNotNull<string?, Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(_l_info, 2, value.City);
+                _l_type.WriteString(_l_info, 3, value.State);
+                _l_type.WriteString(_l_info, 4, value.Zip);
+                _l_type.End(_l_info);
             }
             public static readonly AddressSerializeProxy Instance = new();
             private AddressSerializeProxy() { }

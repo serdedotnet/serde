@@ -18,10 +18,10 @@ partial record Base
         {
             void global::Serde.ISerialize<Some.Nested.Namespace.Base.B>.Serialize(Some.Nested.Namespace.Base.B value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<_m_BProxy>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,0,value.Y);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<_m_BProxy>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteString(_l_info, 0, value.Y);
+                _l_type.End(_l_info);
             }
             public static readonly _m_BProxySerializeProxy Instance = new();
             private _m_BProxySerializeProxy() { }

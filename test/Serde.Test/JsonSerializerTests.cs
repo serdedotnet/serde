@@ -120,11 +120,11 @@ namespace Serde.Test
             public void Serialize(JsonDictionaryWrapper value, ISerializer serializer)
             {
                 var typeInfo = SerdeInfo;
-                var sd = serializer.SerializeCollection(typeInfo, value._d.Count);
+                var sd = serializer.WriteCollection(typeInfo, value._d.Count);
                 foreach (var (k,v) in value._d)
                 {
-                    sd.SerializeElement(k.ToString(), StringProxy.Instance);
-                    sd.SerializeElement(v, Int32Proxy.Instance);
+                    sd.WriteElement(k.ToString(), StringProxy.Instance);
+                    sd.WriteElement(v, Int32Proxy.Instance);
                 }
                 sd.End(typeInfo);
             }
@@ -234,27 +234,27 @@ namespace Serde.Test
                 public void Serialize(BasicDUManualTag value, ISerializer serializer)
                 {
                     var _l_baseInfo = SerdeInfoProvider.GetInfo<BasicDUManualTag>();
-                    var type = serializer.SerializeType(_l_baseInfo);
+                    var type = serializer.WriteType(_l_baseInfo);
                     switch (value)
                     {
                         case BasicDUManualTag.A c:
                         {
-                            type.SerializeField(_l_baseInfo, 0, "A", StringProxy.Instance);
+                            type.WriteString(_l_baseInfo, 0, "A");
                             var caseInfo = SerdeInfoProvider.GetInfo<_m_AProxy>();
-                            type.SerializeField<int, Int32Proxy>(caseInfo, 0, c.W);
-                            type.SerializeField<int, Int32Proxy>(caseInfo, 1, c.X);
+                            type.WriteI32(caseInfo, 0, c.W);
+                            type.WriteI32(caseInfo, 1, c.X);
                             break;
                         }
                         case BasicDUManualTag.B c:
                         {
-                            type.SerializeField(_l_baseInfo, 0, "B", StringProxy.Instance);
+                            type.WriteString(_l_baseInfo, 0, "B");
                             var caseInfo = SerdeInfoProvider.GetInfo<_m_BProxy>();
-                            type.SerializeField<string, StringProxy>(caseInfo, 0, c.Y);
-                            type.SerializeField<string, StringProxy>(caseInfo, 1, c.Z);
+                            type.WriteString(caseInfo, 0, c.Y);
+                            type.WriteString(caseInfo, 1, c.Z);
                             break;
                         }
                     }
-                    type.End();
+                    type.End(_l_baseInfo);
                 }
             }
 

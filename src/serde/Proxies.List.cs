@@ -14,10 +14,10 @@ public static class EnumerableHelpers
     public static void SerializeSpan<T, U>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
         where U : ISerialize<T>
     {
-        var enumerable = serializer.SerializeCollection(typeInfo, arr.Length);
+        var enumerable = serializer.WriteCollection(typeInfo, arr.Length);
         foreach (var item in arr)
         {
-            enumerable.SerializeElement(item, serializeImpl);
+            enumerable.WriteElement(item, serializeImpl);
         }
         enumerable.End(typeInfo);
     }

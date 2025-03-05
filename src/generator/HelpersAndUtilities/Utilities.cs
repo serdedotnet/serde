@@ -38,6 +38,7 @@ namespace Serde
 #pragma warning restore RS1035
 
         public static T NotNull<T>(this T? value) where T : struct => value!.Value;
+        public static T NotNull<T>(this T? value) where T : class => value ?? throw new ArgumentNullException(nameof(value));
 
         public static string Concat(this string recv, string other)
         {

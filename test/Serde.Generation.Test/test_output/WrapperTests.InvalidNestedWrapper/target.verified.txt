@@ -5,9 +5,9 @@
       Title: ,
       Severity: Error,
       WarningLevel: 0,
-      Location: : (16,31)-(16,39),
-      MessageFormat: The proxy type 'Serde.ArrayProxy.Serialize<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>' doesn't implement the interface 'ISerializeProvider<System.Collections.Immutable.ImmutableArray<int>>'.,
-      Message: The proxy type 'Serde.ArrayProxy.Serialize<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>' doesn't implement the interface 'ISerializeProvider<System.Collections.Immutable.ImmutableArray<int>>'.,
+      Location: : (16,21)-(16,29),
+      MessageFormat: The proxy type 'Serde.ArrayProxy.Serialize<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>' doesn't implement the interface 'ISerializeProvider<System.Collections.Generic.List<int>>'.,
+      Message: The proxy type 'Serde.ArrayProxy.Serialize<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>' doesn't implement the interface 'ISerializeProvider<System.Collections.Generic.List<int>>'.,
       Category: Serde
     }
   ]

@@ -17,10 +17,10 @@ partial class GenericWrapperTests
         {
             void global::Serde.ISerialize<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.Serialize(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<CustomArrayWrapExplicitOnType>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<Serde.Test.GenericWrapperTests.CustomImArray2<int>,Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Serialize<int,global::Serde.Int32Proxy>>(_l_serdeInfo,0,value.A);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<CustomArrayWrapExplicitOnType>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteBoxedField<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Serialize<int,global::Serde.Int32Proxy>>(_l_info, 0, value.A);
+                _l_type.End(_l_info);
             }
             public static readonly CustomArrayWrapExplicitOnTypeSerializeProxy Instance = new();
             private CustomArrayWrapExplicitOnTypeSerializeProxy() { }

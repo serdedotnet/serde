@@ -61,6 +61,25 @@ sealed partial class {{proxyName}}
         context.AddSource(fullWrapperName, src);
     }
 
+    internal static string? TryGetPrimitiveName(ITypeSymbol type) => type.SpecialType switch
+    {
+        SpecialType.System_Boolean => "Bool",
+        SpecialType.System_Byte => "Byte",
+        SpecialType.System_Char => "Char",
+        SpecialType.System_Decimal => "Decimal",
+        SpecialType.System_Double => "Double",
+        SpecialType.System_Int16 => "I16",
+        SpecialType.System_Int32 => "I32",
+        SpecialType.System_Int64 => "I64",
+        SpecialType.System_SByte => "SByte",
+        SpecialType.System_Single => "Single",
+        SpecialType.System_String => "String",
+        SpecialType.System_UInt16 => "U16",
+        SpecialType.System_UInt32 => "U32",
+        SpecialType.System_UInt64 => "U64",
+        _ => null,
+    };
+
     // If the target is a core type, we can wrap it
     internal static TypeWithProxy? TryGetPrimitiveProxy(ITypeSymbol type, SerdeUsage usage)
     {

@@ -17,15 +17,15 @@ partial class SampleTest
         {
             void global::Serde.ISerialize<Serde.Test.SampleTest.PurchaseOrder>.Serialize(Serde.Test.SampleTest.PurchaseOrder value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<PurchaseOrder>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<Serde.Test.SampleTest.Address,Serde.Test.SampleTest.Address>(_l_serdeInfo,0,value.ShipTo);
-                type.SerializeField<string,global::Serde.StringProxy>(_l_serdeInfo,1,value.OrderDate);
-                type.SerializeField<Serde.Test.SampleTest.OrderedItem[],Serde.ArrayProxy.Serialize<Serde.Test.SampleTest.OrderedItem,Serde.Test.SampleTest.OrderedItem>>(_l_serdeInfo,2,value.OrderedItems);
-                type.SerializeField<decimal,global::Serde.DecimalProxy>(_l_serdeInfo,3,value.SubTotal);
-                type.SerializeField<decimal,global::Serde.DecimalProxy>(_l_serdeInfo,4,value.ShipCost);
-                type.SerializeField<decimal,global::Serde.DecimalProxy>(_l_serdeInfo,5,value.TotalCost);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<PurchaseOrder>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteField<Serde.Test.SampleTest.Address, Serde.Test.SampleTest.Address>(_l_info, 0, value.ShipTo);
+                _l_type.WriteString(_l_info, 1, value.OrderDate);
+                _l_type.WriteField<Serde.Test.SampleTest.OrderedItem[], Serde.ArrayProxy.Serialize<Serde.Test.SampleTest.OrderedItem,Serde.Test.SampleTest.OrderedItem>>(_l_info, 2, value.OrderedItems);
+                _l_type.WriteDecimal(_l_info, 3, value.SubTotal);
+                _l_type.WriteDecimal(_l_info, 4, value.ShipCost);
+                _l_type.WriteDecimal(_l_info, 5, value.TotalCost);
+                _l_type.End(_l_info);
             }
             public static readonly PurchaseOrderSerializeProxy Instance = new();
             private PurchaseOrderSerializeProxy() { }

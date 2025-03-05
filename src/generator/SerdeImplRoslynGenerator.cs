@@ -16,7 +16,7 @@ namespace Serde;
 /// <summary>
 /// Recognizes the [GenerateSerialize] attribute on a type to generate an implementation
 /// of Serde.ISerialize. The implementation generally looks like a call to SerializeType,
-/// then successive calls to SerializeField.
+/// then successive calls to WriteField.
 /// </summary>
 /// <example>
 /// For a type like,
@@ -36,9 +36,9 @@ namespace Serde;
 ///     void Serde.ISerialize.Serialize&lt;TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary&gt;TSerializer serializer)
 ///     {
 ///         var type = serializer.SerializeType("Rgb", 3);
-///         type.SerializeField("Red", new ByteWrap(Red));
-///         type.SerializeField("Green", new ByteWrap(Green));
-///         type.SerializeField("Blue", new ByteWrap(Blue));
+///         type.WriteField("Red", new ByteWrap(Red));
+///         type.WriteField("Green", new ByteWrap(Green));
+///         type.WriteField("Blue", new ByteWrap(Blue));
 ///         type.End();
 ///     }
 /// }

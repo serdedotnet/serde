@@ -24,22 +24,22 @@ namespace Serde.Json
             switch (value)
             {
                 case JsonValue.Number(double v):
-                    serializer.SerializeDouble(v);
+                    serializer.WriteDouble(v);
                     break;
                 case JsonValue.Bool(bool v):
-                    serializer.SerializeBool(v);
+                    serializer.WriteBool(v);
                     break;
                 case JsonValue.String(string v):
-                    serializer.SerializeString(v);
+                    serializer.WriteString(v);
                     break;
                 case JsonValue.Object(ImmutableDictionary<string, JsonValue> members):
                     {
                         var serdeInfo = JsonValue.UnionInfo.ObjectInfo;
-                        var dict = serializer.SerializeCollection(serdeInfo, members.Count);
+                        var dict = serializer.WriteCollection(serdeInfo, members.Count);
                         foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
                         {
-                            dict.SerializeElement(name, StringProxy.Instance);
-                            dict.SerializeElement(node, Instance);
+                            dict.WriteElement(name, StringProxy.Instance);
+                            dict.WriteElement(node, Instance);
                         }
                         dict.End(serdeInfo);
                         break;
@@ -47,16 +47,16 @@ namespace Serde.Json
                 case JsonValue.Array(ImmutableArray<JsonValue> elements):
                     {
                         var serdeInfo = JsonValue.UnionInfo.ArrayInfo;
-                        var enumerable = serializer.SerializeCollection(serdeInfo, elements.Length);
+                        var enumerable = serializer.WriteCollection(serdeInfo, elements.Length);
                         foreach (var element in elements)
                         {
-                            enumerable.SerializeElement(element, Instance);
+                            enumerable.WriteElement(element, Instance);
                         }
                         enumerable.End(serdeInfo);
                         break;
                     }
                 case JsonValue.Null n:
-                    serializer.SerializeNull();
+                    serializer.WriteNull();
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown JsonValue type: {value.GetType()}");

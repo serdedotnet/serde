@@ -15,11 +15,11 @@ partial class TestCase15
         {
             void global::Serde.ISerialize<TestCase15.Class1>.Serialize(TestCase15.Class1 value, global::Serde.ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Class1>();
-                var type = serializer.SerializeType(_l_serdeInfo);
-                type.SerializeField<int,global::Serde.Int32Proxy>(_l_serdeInfo,0,value.Field0);
-                type.SerializeField<byte,global::Serde.ByteProxy>(_l_serdeInfo,1,value.Field1);
-                type.End();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Class1>();
+                var _l_type = serializer.WriteType(_l_info);
+                _l_type.WriteI32(_l_info, 0, value.Field0);
+                _l_type.WriteByte(_l_info, 1, value.Field1);
+                _l_type.End(_l_info);
             }
             public static readonly Class1SerializeProxy Instance = new();
             private Class1SerializeProxy() { }

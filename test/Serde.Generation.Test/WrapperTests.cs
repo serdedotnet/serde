@@ -43,7 +43,7 @@ internal sealed class Proxy : ISerialize<Original>, IDeserialize<Original>,
 
     public void Serialize(Original value, ISerializer serializer)
     {
-        serializer.SerializeString(value.Name);
+        serializer.WriteString(value.Name);
     }
 }
 
@@ -91,14 +91,13 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>,
 
     public void Serialize(Original value, ISerializer serializer)
     {
-        serializer.SerializeString(value.Name);
+        serializer.WriteString(value.Name);
     }
 }
 
 [GenerateDeserialize]
 partial record Container
 {
-    // Wrong wrapper type, should have a NullableWrapper outside
     [SerdeMemberOptions(DeserializeProxy = typeof(NullableProxy.Deserialize<Original, Proxy>))]
     public Original? SdkDir { get; init; } = null;
 }
@@ -137,7 +136,7 @@ partial struct S
         {
             var src = """
 using Serde;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 
 partial class Outer
@@ -152,7 +151,7 @@ partial struct S
     [SerdeMemberOptions(
         // Wrong outer wrapper type
         SerializeProxy = typeof(ArrayProxy.Serialize<BitVector32.Section, Outer.SectionWrap>))]
-    public ImmutableArray<int> Sections;
+    public List<int> Sections;
 }
 """;
             return VerifyMultiFile(src);

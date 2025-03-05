@@ -13,12 +13,12 @@ for "builders" that serialize compound structures, like user-defined types or li
 Each of these interfaces should have default implementations for the primitive types
 which delegate to the implementation for `ISerializer`, which must be provided for any
 `ISerializer` implementation. For instance, `ISerializeType` is structured around the
-`SerializeField` method:
+`WriteField` method:
 
 ```C#
 public interface ISerializeType
 {
-    void SerializeField<T>(string name, T value) where T : ISerialize;
+    void WriteField<T>(string name, T value) where T : ISerialize;
     ...
 }
 ```
@@ -67,15 +67,15 @@ workaround would be to try to provide overloads for the `ISerializer` companion 
 ```C#
 public interface ISerializeType
 {
-    void SerializeField<T>(string name, T t) where T : ISerialize;
-    void SerializeField(string name, bool b) => SerializeField(new BoolWrap(b));
+    void WriteField<T>(string name, T t) where T : ISerialize;
+    void WriteField(string name, bool b) => WriteField(new BoolWrap(b));
     ...
 }
 ```
 
 Unfortunately, this doesn't work either. If `ISerializeType` is implemented by
 a struct, then invoking the default implementation will cause it to be boxed and
-copied. Aside from performance problems, this is incorrect if `SerializeField<T>` is
+copied. Aside from performance problems, this is incorrect if `WriteField<T>` is
 mutating, since it will mutate a copy, not the original receiver.
 
 ## No ref extension methods on unconstrained generics
@@ -91,7 +91,7 @@ public static class ISerializeExtensions
 {
     // error CS8337: The first parameter of a `ref` extension method must be a value
     // type or generic type constrained to struct
-    public static void SerializeField<T>(this ref T serializeType, string name, bool b)
+    public static void WriteField<T>(this ref T serializeType, string name, bool b)
         where T : ISerialize
 }
 ```
