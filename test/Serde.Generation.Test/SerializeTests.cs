@@ -315,9 +315,9 @@ public sealed class SWrap : ISerialize<S>, ISerializeProvider<S>
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
         typeof(S).GetCustomAttributesData(),
-        new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
-            (""x"", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(S).GetField(""X"")!),
-            (""y"", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(S).GetField(""Y"")!),
+        new (string, ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            (""x"", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(S).GetField(""X"")),
+            (""y"", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(S).GetField(""Y"")),
         });
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {

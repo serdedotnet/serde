@@ -12,7 +12,7 @@ partial class SerdeInfoTests
             static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                 "B",
                 typeof(Serde.Test.SerdeInfoTests.UnionBase.B).GetCustomAttributesData(),
-                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
+                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
 
                 }
             );

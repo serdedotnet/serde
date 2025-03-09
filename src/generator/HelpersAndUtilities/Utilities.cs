@@ -31,14 +31,36 @@ namespace Serde
         }
     }
 
+    internal static class NullableExt
+    {
+        public static T NotNull<T>(this T? value) where T : struct => value!.Value;
+        public static T NotNull<T>(this T? value) where T : class => value ?? throw new ArgumentNullException(nameof(value));
+
+        public static U? Map<T, U>(this T? value, Func<T, U?> f)
+            where T : struct
+            where U : class => value is {} v ? f(v) : null;
+
+        public static U? Map<T, U>(this T? value, Func<T, U> f)
+            where T : class
+            where U : class => value is {} v ? f(v) : null;
+
+        public static U? Map<T, U>(this T? value, Func<T, U?> f)
+            where T : class
+            where U : struct => value is {} v ? f(v) : null;
+    }
+
+    internal static class NullableExt2
+    {
+        public static U? Map<T, U>(this T? value, Func<T, U> f)
+            where T : struct
+            where U : struct => value is {} v ? f(v) : null;
+    }
+
     internal static class Utilities
     {
 #pragma warning disable RS1035
         public static readonly string NewLine = Environment.NewLine;
 #pragma warning restore RS1035
-
-        public static T NotNull<T>(this T? value) where T : struct => value!.Value;
-        public static T NotNull<T>(this T? value) where T : class => value ?? throw new ArgumentNullException(nameof(value));
 
         public static string Concat(this string recv, string other)
         {

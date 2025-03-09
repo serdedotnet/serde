@@ -1,10 +1,5 @@
 // Contains implementations of data interfaces for core types
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text.RegularExpressions;
-
 namespace Serde;
 
 public sealed class BoolProxy
@@ -68,14 +63,14 @@ public sealed class ByteProxy
     }
 }
 
-public sealed class UInt16Proxy
+public sealed class U16Proxy
     : ISerialize<ushort>, IDeserialize<ushort>,
     ISerializeProvider<ushort>, IDeserializeProvider<ushort>
 {
-    public static UInt16Proxy Instance { get; } = new();
+    public static U16Proxy Instance { get; } = new();
     static ISerialize<ushort> ISerializeProvider<ushort>.SerializeInstance => Instance;
     static IDeserialize<ushort> IDeserializeProvider<ushort>.DeserializeInstance => Instance;
-    private UInt16Proxy() { }
+    private U16Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
@@ -90,14 +85,14 @@ public sealed class UInt16Proxy
     }
 }
 
-public sealed class UInt32Proxy
+public sealed class U32Proxy
     : ISerialize<uint>, IDeserialize<uint>,
       ISerializeProvider<uint>, IDeserializeProvider<uint>
 {
-    public static UInt32Proxy Instance { get; } = new();
+    public static U32Proxy Instance { get; } = new();
     static ISerialize<uint> ISerializeProvider<uint>.SerializeInstance => Instance;
     static IDeserialize<uint> IDeserializeProvider<uint>.DeserializeInstance => Instance;
-    private UInt32Proxy() { }
+    private U32Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
@@ -110,14 +105,14 @@ public sealed class UInt32Proxy
     }
 }
 
-public sealed class UInt64Proxy
+public sealed class U64Proxy
     : ISerialize<ulong>, IDeserialize<ulong>,
     ISerializeProvider<ulong>, IDeserializeProvider<ulong>
 {
-    public static UInt64Proxy Instance { get; } = new();
+    public static U64Proxy Instance { get; } = new();
     static ISerialize<ulong> ISerializeProvider<ulong>.SerializeInstance => Instance;
     static IDeserialize<ulong> IDeserializeProvider<ulong>.DeserializeInstance => Instance;
-    private UInt64Proxy() { }
+    private U64Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
@@ -150,14 +145,14 @@ public sealed class SByteProxy
     }
 }
 
-public sealed class Int16Proxy
+public sealed class I16Proxy
     : ISerialize<short>, IDeserialize<short>,
     ISerializeProvider<short>, IDeserializeProvider<short>
 {
-    public static Int16Proxy Instance { get; } = new();
+    public static I16Proxy Instance { get; } = new();
     static ISerialize<short> ISerializeProvider<short>.SerializeInstance => Instance;
     static IDeserialize<short> IDeserializeProvider<short>.DeserializeInstance => Instance;
-    private Int16Proxy() { }
+    private I16Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
@@ -172,14 +167,14 @@ public sealed class Int16Proxy
     }
 }
 
-public sealed class Int32Proxy
+public sealed class I32Proxy
     : ISerialize<int>, IDeserialize<int>,
       ISerializeProvider<int>, IDeserializeProvider<int>
 {
-    public static Int32Proxy Instance { get; } = new();
+    public static I32Proxy Instance { get; } = new();
     static ISerialize<int> ISerializeProvider<int>.SerializeInstance => Instance;
     static IDeserialize<int> IDeserializeProvider<int>.DeserializeInstance => Instance;
-    private Int32Proxy() { }
+    private I32Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
@@ -194,14 +189,14 @@ public sealed class Int32Proxy
     }
 }
 
-public sealed class Int64Proxy
+public sealed class I64Proxy
     : ISerialize<long>, IDeserialize<long>,
     ISerializeProvider<long>, IDeserializeProvider<long>
 {
-    public static Int64Proxy Instance { get; } = new();
+    public static I64Proxy Instance { get; } = new();
     static ISerialize<long> ISerializeProvider<long>.SerializeInstance => Instance;
     static IDeserialize<long> IDeserializeProvider<long>.DeserializeInstance => Instance;
-    private Int64Proxy() { }
+    private I64Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 

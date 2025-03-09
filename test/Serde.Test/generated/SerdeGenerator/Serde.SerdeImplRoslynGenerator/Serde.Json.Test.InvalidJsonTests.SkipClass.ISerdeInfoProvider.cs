@@ -10,8 +10,8 @@ partial class InvalidJsonTests
         static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "SkipClass",
             typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                ("c", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetProperty("C")!)
+            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                ("c", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetProperty("C"))
             }
         );
     }

@@ -10,10 +10,10 @@ partial class CustomImplTests
         static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "RgbWithFieldMap",
             typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                ("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Red")!),
-                ("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Green")!),
-                ("blue", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Blue")!)
+            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                ("red", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Red")),
+                ("green", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Green")),
+                ("blue", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.CustomImplTests.RgbWithFieldMap).GetField("Blue"))
             }
         );
     }

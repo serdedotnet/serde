@@ -19,7 +19,7 @@ partial class XmlTests
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo<TypeWithArrayField>();
                 var _l_type = serializer.WriteType(_l_info);
-                _l_type.WriteField<Serde.Test.XmlTests.StructWithIntField[], Serde.ArrayProxy.Serialize<Serde.Test.XmlTests.StructWithIntField,Serde.Test.XmlTests.StructWithIntField>>(_l_info, 0, value.ArrayField);
+                _l_type.WriteField<Serde.Test.XmlTests.StructWithIntField[], Serde.ArrayProxy.Serialize<Serde.Test.XmlTests.StructWithIntField, Serde.Test.XmlTests.StructWithIntField>>(_l_info, 0, value.ArrayField);
                 _l_type.End(_l_info);
             }
             public static readonly TypeWithArrayFieldSerializeProxy Instance = new();

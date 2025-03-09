@@ -298,25 +298,25 @@ public sealed partial class XmlSerializer : ISerializer
             => WriteField(typeInfo, index, b, ByteProxy.Instance);
 
         public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16)
-            => WriteField(typeInfo, index, u16, UInt16Proxy.Instance);
+            => WriteField(typeInfo, index, u16, U16Proxy.Instance);
 
         public void WriteU32(ISerdeInfo typeInfo, int index, uint u32)
-            => WriteField(typeInfo, index, u32, UInt32Proxy.Instance);
+            => WriteField(typeInfo, index, u32, U32Proxy.Instance);
 
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64)
-            => WriteField(typeInfo, index, u64, UInt64Proxy.Instance);
+            => WriteField(typeInfo, index, u64, U64Proxy.Instance);
 
         public void WriteSByte(ISerdeInfo typeInfo, int index, sbyte b)
             => WriteField(typeInfo, index, b, SByteProxy.Instance);
 
         public void WriteI16(ISerdeInfo typeInfo, int index, short i16)
-            => WriteField(typeInfo, index, i16, Int16Proxy.Instance);
+            => WriteField(typeInfo, index, i16, I16Proxy.Instance);
 
         public void WriteI32(ISerdeInfo typeInfo, int index, int i32)
-            => WriteField(typeInfo, index, i32, Int32Proxy.Instance);
+            => WriteField(typeInfo, index, i32, I32Proxy.Instance);
 
         public void WriteI64(ISerdeInfo typeInfo, int index, long i64)
-            => WriteField(typeInfo, index, i64, Int64Proxy.Instance);
+            => WriteField(typeInfo, index, i64, I64Proxy.Instance);
 
         public void WriteFloat(ISerdeInfo typeInfo, int index, float f)
             => WriteField(typeInfo, index, f, SingleProxy.Instance);

@@ -12,8 +12,8 @@ partial class JsonDeserializeTests
             static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                 "A",
                 typeof(Serde.Test.JsonDeserializeTests.BasicDU.A).GetCustomAttributesData(),
-                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                    ("x", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Test.JsonDeserializeTests.BasicDU.A).GetProperty("X")!)
+                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                    ("x", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.JsonDeserializeTests.BasicDU.A).GetProperty("X"))
                 }
             );
         }

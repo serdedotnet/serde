@@ -272,19 +272,23 @@ namespace Serde
                     }
 
                     var m = members[fieldIndex];
-                    string wrapperName;
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
+                    string readValueCall;
                     if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
                     {
-                        wrapperName = explicitWrap.ToString();
+                        readValueCall = $"ReadValue<{memberType}, {explicitWrap}>";
                     }
                     else if (ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Deserialize))
                     {
-                        wrapperName = memberType;
+                        readValueCall = $"ReadValue<{memberType}, {memberType}>";
+                    }
+                    else if (Proxies.TryGetPrimitiveName(m.Type) is { } primitiveName)
+                    {
+                        readValueCall = $"Read{primitiveName}";
                     }
                     else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Proxy: { } wrap })
                     {
-                        wrapperName = wrap.ToString();
+                        readValueCall = $"ReadValue<{memberType}, {wrap}>";
                     }
                     else
                     {
@@ -295,11 +299,10 @@ namespace Serde
                             m.Symbol,
                             memberType,
                             "Serde.IDeserializeProvider<T>"));
-                        wrapperName = memberType;
+                        readValueCall = $"ReadValue<{memberType}, {memberType}>";
                     }
                     var localName = GetLocalName(m);
                     localsBuilder.AppendLine($"{memberType} {localName} = default!;");
-                    var readValueCall = GetReadValueCall(memberType, wrapperName);
                     casesBuilder.AppendLine($"""
                     case {fieldIndex}:
                         {localName} = typeDeserialize.{readValueCall}({indexLocalName});
@@ -343,29 +346,6 @@ namespace Serde
                 return (casesBuilder.ToString(),
                         localsBuilder.ToString(),
                         "0b" + Convert.ToString(assignedMaskValue, 2));
-
-                static string GetReadValueCall(
-                    string memberType,
-                    string wrapperName)
-                {
-                    return memberType switch {
-                        "bool" => "ReadBool",
-                        "char" => "ReadChar",
-                        "byte" => "ReadByte",
-                        "ushort" => "ReadU16",
-                        "uint" => "ReadU32",
-                        "ulong" => "ReadU64",
-                        "sbyte" => "ReadSByte",
-                        "short" => "ReadI16",
-                        "int"   => "ReadI32",
-                        "long"  => "ReadI64",
-                        "float" => "ReadFloat",
-                        "double" => "ReadDouble",
-                        "decimal" => "ReadDecimal",
-                        "string" => "ReadString",
-                        _ => $"ReadValue<{memberType}, {wrapperName}>"
-                    };
-                }
             }
         }
 

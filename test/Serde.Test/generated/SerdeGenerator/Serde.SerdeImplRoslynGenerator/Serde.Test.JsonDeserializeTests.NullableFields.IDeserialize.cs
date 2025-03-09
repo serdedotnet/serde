@@ -30,11 +30,11 @@ partial class JsonDeserializeTests
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_s = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.Deserialize<string,global::Serde.StringProxy>>(_l_index_);
+                            _l_s = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.Deserialize<string, global::Serde.StringProxy>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_dict = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictProxy.Deserialize<string,string?,global::Serde.StringProxy,Serde.NullableRefProxy.Deserialize<string,global::Serde.StringProxy>>>(_l_index_);
+                            _l_dict = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictProxy.Deserialize<string, string?, global::Serde.StringProxy, Serde.NullableRefProxy.Deserialize<string, global::Serde.StringProxy>>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

@@ -30,10 +30,10 @@ partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
             _l_type.WriteI64(_l_info, 9, value.LongField);
             _l_type.WriteString(_l_info, 10, value.StringField);
             _l_type.WriteString(_l_info, 11, value.EscapedStringField);
-            _l_type.WriteFieldIfNotNull<string?, Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(_l_info, 12, value.NullStringField);
-            _l_type.WriteField<uint[], Serde.ArrayProxy.Serialize<uint,global::Serde.UInt32Proxy>>(_l_info, 13, value.UIntArr);
-            _l_type.WriteField<int[][], Serde.ArrayProxy.Serialize<int[],Serde.ArrayProxy.Serialize<int,global::Serde.Int32Proxy>>>(_l_info, 14, value.NestedArr);
-            _l_type.WriteBoxedField<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Serialize<int,global::Serde.Int32Proxy>>(_l_info, 15, value.IntImm);
+            _l_type.WriteStringIfNotNull(_l_info, 12, value.NullStringField);
+            _l_type.WriteField<uint[], Serde.ArrayProxy.Serialize<uint, global::Serde.U32Proxy>>(_l_info, 13, value.UIntArr);
+            _l_type.WriteField<int[][], Serde.ArrayProxy.Serialize<int[], Serde.ArrayProxy.Serialize<int, global::Serde.I32Proxy>>>(_l_info, 14, value.NestedArr);
+            _l_type.WriteBoxedField<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Serialize<int, global::Serde.I32Proxy>>(_l_info, 15, value.IntImm);
             _l_type.WriteBoxedField<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_info, 16, value.Color);
             _l_type.End(_l_info);
         }

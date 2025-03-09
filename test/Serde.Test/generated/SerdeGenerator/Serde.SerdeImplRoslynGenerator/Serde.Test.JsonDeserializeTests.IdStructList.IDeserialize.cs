@@ -34,7 +34,7 @@ partial class JsonDeserializeTests
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_list = typeDeserialize.ReadValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, Serde.ListProxy.Deserialize<Serde.Test.JsonDeserializeTests.IdStruct,Serde.Test.JsonDeserializeTests.IdStruct>>(_l_index_);
+                            _l_list = typeDeserialize.ReadValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, Serde.ListProxy.Deserialize<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

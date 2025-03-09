@@ -342,7 +342,7 @@ namespace Serde.Test
             public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
                 nameof(JsonDeserializeTests.ColorEnum),
                 typeof(ColorEnum).GetCustomAttributesData(),
-                Int32Proxy.SerdeInfo,
+                I32Proxy.SerdeInfo,
                 [
                     ("red", typeof(ColorEnum).GetField("Red")!),
                     ("green", typeof(ColorEnum).GetField("Green")!),
@@ -484,8 +484,8 @@ namespace Serde.Test
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("W")!),
-                        ("x", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("X")!),
+                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")!),
+                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")!),
                     ]);
 
                 public static A Deserialize(IDeserializeType typeDeserialize)

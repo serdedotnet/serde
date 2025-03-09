@@ -184,7 +184,7 @@ public sealed partial class InvalidJsonTests
     {
         var elementTypes = new Dictionary<Type, Type>
         {
-            [typeof(int)] = typeof(Int32Proxy),
+            [typeof(int)] = typeof(I32Proxy),
             [typeof(Poco)] = typeof(Poco),
             [typeof(ClassWithInt)] = typeof(ClassWithInt),
             [typeof(ClassWithIntList)] = typeof(ClassWithIntList),
@@ -361,28 +361,28 @@ public sealed partial class InvalidJsonTests
             }
         }
 
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"""test""" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"1" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"false" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"{}" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"{""test"": 1}" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[""test""" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[""test""]" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[true]" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[{}]" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[[]]" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[{""test"": 1}]" };
-        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, Int32Proxy>), @"[[true]]" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": {}}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": {""test"": 1}}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": ""test""}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": 1}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": true}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": [""test""}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": [""test""]}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": [[]]}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": [true]}" };
-        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, Int32Proxy>>), @"{""test"": [{}]}" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"""test""" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"1" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"false" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"{}" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"{""test"": 1}" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[""test""" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[""test""]" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[true]" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[{}]" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[[]]" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[{""test"": 1}]" };
+        yield return new object[] { typeof(int[]), typeof(ArrayProxy.Deserialize<int, I32Proxy>), @"[[true]]" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": {}}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": {""test"": 1}}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": ""test""}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": 1}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": true}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": [""test""}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": [""test""]}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": [[]]}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": [true]}" };
+        yield return new object[] { typeof(Dictionary<string, int[]>), typeof(DictProxy.Deserialize<string, int[], StringProxy, ArrayProxy.Deserialize<int, I32Proxy>>), @"{""test"": [{}]}" };
         yield return new object[] { typeof(ClassWithIntArray), typeof(ClassWithIntArray), @"{""obj"": ""test""}" };
         yield return new object[] { typeof(ClassWithIntArray), typeof(ClassWithIntArray), @"{""obj"": 1}" };
         yield return new object[] { typeof(ClassWithIntArray), typeof(ClassWithIntArray), @"{""obj"": false}" };

@@ -24,7 +24,7 @@ internal static class SerdeInfoGenerator
     ///         {typeName},
     ///         typeof({typeName}).GetCustomAttributesData(),
     ///         [
-    ///             ("{{fieldName}}", SerdeInfoProvider.GetInfo&lt;{wrapperName}&gt;typeof({typeName}).GetField("{fieldName}")!),
+    ///             ("{{fieldName}}", SerdeInfoProvider.GetInfo&lt;{wrapperName}&gt;typeof({typeName}).GetField("{fieldName}")),
     ///             ...
     ///         ]);
     /// }
@@ -57,13 +57,13 @@ internal static class SerdeInfoGenerator
         {
             isEnum = true;
             makeFuncSuffix = "Enum";
-            fieldArrayType = "(string, System.Reflection.MemberInfo)[]";
+            fieldArrayType = "(string, System.Reflection.MemberInfo?)[]";
         }
         else
         {
             isEnum = false;
             makeFuncSuffix = "Custom";
-            fieldArrayType = "(string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[]";
+            fieldArrayType = "(string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[]";
         }
 
         var typeString = receiverType.ToDisplayString();
@@ -133,7 +133,7 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
             }
 
             var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
-            elements.Add($"typeof({typeString}).{getAccessor}(\"{m.Name}\")!");
+            elements.Add($"typeof({typeString}).{getAccessor}(\"{m.Name}\")");
 
             return $"""({string.Join(", ", elements)})""";
         }

@@ -19,8 +19,8 @@ namespace Serde;
 /// converted type, if the proxy doesn't proxy the original type directly.
 /// </summary>
 internal readonly record struct TypeWithProxy(
-    TypeSyntax Type,
-    TypeSyntax Proxy);
+    string Type,
+    string Proxy);
 
 partial class Proxies
 {
@@ -61,51 +61,41 @@ sealed partial class {{proxyName}}
         context.AddSource(fullWrapperName, src);
     }
 
-    internal static string? TryGetPrimitiveName(ITypeSymbol type) => type.SpecialType switch
+    internal static string? TryGetPrimitiveName(ITypeSymbol type)
     {
-        SpecialType.System_Boolean => "Bool",
-        SpecialType.System_Byte => "Byte",
-        SpecialType.System_Char => "Char",
-        SpecialType.System_Decimal => "Decimal",
-        SpecialType.System_Double => "Double",
-        SpecialType.System_Int16 => "I16",
-        SpecialType.System_Int32 => "I32",
-        SpecialType.System_Int64 => "I64",
-        SpecialType.System_SByte => "SByte",
-        SpecialType.System_Single => "Single",
-        SpecialType.System_String => "String",
-        SpecialType.System_UInt16 => "U16",
-        SpecialType.System_UInt32 => "U32",
-        SpecialType.System_UInt64 => "U64",
-        _ => null,
-    };
-
-    // If the target is a core type, we can wrap it
-    internal static TypeWithProxy? TryGetPrimitiveProxy(ITypeSymbol type, SerdeUsage usage)
-    {
+        // Nullable types are not considered primitive types
         if (type.NullableAnnotation == NullableAnnotation.Annotated)
         {
             return null;
         }
-        var name = type.SpecialType switch
+        return type.SpecialType switch
         {
-            SpecialType.System_Boolean => "BoolProxy",
-            SpecialType.System_Char => "CharProxy",
-            SpecialType.System_Byte => "ByteProxy",
-            SpecialType.System_UInt16 => "UInt16Proxy",
-            SpecialType.System_UInt32 => "UInt32Proxy",
-            SpecialType.System_UInt64 => "UInt64Proxy",
-            SpecialType.System_SByte => "SByteProxy",
-            SpecialType.System_Int16 => "Int16Proxy",
-            SpecialType.System_Int32 => "Int32Proxy",
-            SpecialType.System_Int64 => "Int64Proxy",
-            SpecialType.System_String => "StringProxy",
-            SpecialType.System_Single => "SingleProxy",
-            SpecialType.System_Double => "DoubleProxy",
-            SpecialType.System_Decimal => "DecimalProxy",
-            _ => null
+            SpecialType.System_Boolean => "Bool",
+            SpecialType.System_Byte => "Byte",
+            SpecialType.System_Char => "Char",
+            SpecialType.System_Decimal => "Decimal",
+            SpecialType.System_Double => "Double",
+            SpecialType.System_Int16 => "I16",
+            SpecialType.System_Int32 => "I32",
+            SpecialType.System_Int64 => "I64",
+            SpecialType.System_SByte => "SByte",
+            SpecialType.System_Single => "Single",
+            SpecialType.System_String => "String",
+            SpecialType.System_UInt16 => "U16",
+            SpecialType.System_UInt32 => "U32",
+            SpecialType.System_UInt64 => "U64",
+            _ => null,
         };
-        return name is null ? null : new(type.ToFqnSyntax(), ParseTypeName("global::Serde." + name));
+    }
+
+    // If the target is a core type, we can wrap it
+    internal static TypeWithProxy? TryGetPrimitiveProxy(ITypeSymbol type)
+    {
+        return TryGetPrimitiveName(type).Map<string, TypeWithProxy>(name =>
+        {
+            var proxy = GetProxyName(name);
+            return new(name, $"global::Serde.{proxy}");
+        });
     }
 
     private static TypeWithProxy? TryGetCompoundWrapper(
@@ -114,10 +104,10 @@ sealed partial class {{proxyName}}
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
-        (TypeSyntax?, TypeSyntax?)? valueTypeAndProxy = type switch
+        (string?, string?)? valueTypeAndProxy = type switch
         {
             { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } =>
-                (type.ToFqnSyntax(), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
                     $"Serde.NullableProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                     context,
@@ -129,14 +119,13 @@ sealed partial class {{proxyName}}
             // only want to use one if the type in question is actually annotated as nullable.
             // The difference comes down to type parameters. If a type parameter is constrained
             // as `class?` then it is both a reference type and nullable, but we don't want to
-            // use a wrapper for it. The reason why is that in we don't know the actual
-            // "underlying" type and couldn't dispatch to the underlying type's ISerialize
-            // implementation. Instead, for type parameters that aren't actually "annotated" as
-            // nullable (i.e., "T?") we must rely on the type parameter itself implementing
-            // ISerialize, and therefore the substitution to provide the appropriate nullable
-            // wrapper.
+            // use a wrapper for it. The reason why is that we don't know the actual "underlying"
+            // type and couldn't dispatch to the underlying type's ISerialize implementation.
+            // Instead, for type parameters that aren't actually "annotated" as nullable (i.e.,
+            // "T?") we must rely on the type parameter itself implementing ISerialize, and
+            // therefore the substitution to provide the appropriate nullable wrapper.
             { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated} =>
-                (type.ToFqnSyntax(), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
                     $"Serde.NullableRefProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                     context,
@@ -144,7 +133,7 @@ sealed partial class {{proxyName}}
                     inProgress)),
 
             IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } =>
-                (type.ToFqnSyntax(), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
                     $"Serde.ArrayProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(elemType),
                     context,
@@ -184,11 +173,11 @@ sealed partial class {{proxyName}}
             return null;
         }
 
-        var wrapperName = GetProxyName(type.ToDisplayString(s_baseNameFormat));
-        return new(type.ToFqnSyntax(), ParseTypeName(wrapperName));
+        var typeName = type.ToDisplayString(s_fqnFormat);
+        return new(typeName, GetProxyName(typeName));
     }
 
-    private static TypeSyntax? MakeProxyType(
+    private static string? MakeProxyType(
         string baseWrapperName,
         ImmutableArray<ITypeSymbol> elemTypes,
         GeneratorExecutionContext context,
@@ -197,13 +186,13 @@ sealed partial class {{proxyName}}
     {
         if (elemTypes.Length == 0)
         {
-            return IdentifierName(baseWrapperName);
+            return baseWrapperName;
         }
 
-        var typeArgs = new List<TypeSyntax>();
+        var typeArgs = new List<string>();
         foreach (var elemType in elemTypes)
         {
-            var elemTypeSyntax = ParseTypeName(elemType.ToDisplayString());
+            var elemTypeSyntax = elemType.ToDisplayString(s_fqnFormat);
             typeArgs.Add(elemTypeSyntax);
         }
 
@@ -212,9 +201,7 @@ sealed partial class {{proxyName}}
             // Check if the type directly implements the interface
             if (SerdeImplRoslynGenerator.ImplementsSerde(elemType, elemType, context, usage))
             {
-                var elemTypeSyntax = ParseTypeName(elemType.ToDisplayString());
-
-                typeArgs.Add(ParseTypeName($"{elemTypeSyntax}"));
+                typeArgs.Add(elemType.ToDisplayString(s_fqnFormat));
                 continue;
             }
 
@@ -230,8 +217,7 @@ sealed partial class {{proxyName}}
             }
         }
 
-        return GenericName(
-            Identifier(baseWrapperName), TypeArgumentList(SeparatedList(typeArgs)));
+        return $"{baseWrapperName}<{string.Join(", ", typeArgs.Select(x => x.ToString()))}>";
     }
 
     /// <summary>
@@ -252,10 +238,13 @@ sealed partial class {{proxyName}}
         {
             if (SymbolEqualityComparer.IncludeNullability.Equals(receiver, elemType))
             {
-                return new(elemType.ToFqnSyntax(), containing.ToFqnSyntax());
+                return new(
+                    elemType.ToDisplayString(s_fqnFormat),
+                    containing.ToDisplayString(s_fqnFormat)
+                );
             }
         }
-        return TryGetPrimitiveProxy(elemType, usage)
+        return TryGetPrimitiveProxy(elemType)
             ?? TryGetEnumProxy(elemType, usage)
             ?? TryGetCompoundWrapper(elemType, context, usage, inProgress);
     }
@@ -265,7 +254,16 @@ sealed partial class {{proxyName}}
         SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         SymbolDisplayGenericsOptions.None);
 
-    internal static TypeSyntax? TryGetExplicitWrapper(
+    private static readonly SymbolDisplayFormat s_fqnFormat = new(
+        SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining,
+        SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions:
+            SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+            | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
+            | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+    internal static string? TryGetExplicitWrapper(
         DataMemberSymbol member,
         GeneratorExecutionContext context,
         SerdeUsage usage,
@@ -297,7 +295,7 @@ sealed partial class {{proxyName}}
                     usage.GetProxyInterfaceName() + "Provider"));
             }
 
-            return ParseTypeName(proxyType.ToDisplayString());
+            return proxyType.ToDisplayString(s_fqnFormat);
         }
         return null;
 
@@ -387,21 +385,21 @@ sealed partial class {{proxyName}}
         return $"Serde.{typeName}.{GetSingletonImplName(usage)}";
     }
 
-    private static (TypeSyntax MemberType, string ProxyType, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperComponents(
+    private static (string MemberType, string ProxyType, ImmutableArray<ITypeSymbol> Args)? TryGetWrapperComponents(
         ITypeSymbol typeSymbol,
         GeneratorExecutionContext context,
         SerdeUsage usage)
     {
-        var typeSyntax = typeSymbol.ToFqnSyntax();
+        var typeString = typeSymbol.ToDisplayString(s_fqnFormat);
         if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
         {
             var nonNull = typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
-            return (typeSyntax, $"Serde.NullableRefProxy{GetSingletonImplName(usage)}", ImmutableArray.Create(nonNull));
+            return (typeString, $"Serde.NullableRefProxy{GetSingletonImplName(usage)}", ImmutableArray.Create(nonNull));
         }
 
         if (typeSymbol is INamedTypeSymbol named && TryGetWellKnownType(named, context) is {} wk)
         {
-            return (typeSyntax, ToProxy(wk, context.Compilation, usage), named.TypeArguments);
+            return (typeString, ToProxy(wk, context.Compilation, usage), named.TypeArguments);
         }
 
         return null;

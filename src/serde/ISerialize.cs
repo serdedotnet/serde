@@ -48,6 +48,23 @@ public static class ISerializeTypeExt
         where TProvider : ISerializeProvider<T>
         => serializeType.WriteField(typeInfo, index, value, TProvider.SerializeInstance);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void WriteStringIfNotNull(
+        this ISerializeType serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        string? value)
+    {
+        if (value is null)
+        {
+            serializeType.SkipField(typeInfo, index);
+        }
+        else
+        {
+            serializeType.WriteString(typeInfo, index, value);
+        }
+    }
+
     public static void WriteFieldIfNotNull<T>(
         this ISerializeType serializeType,
         ISerdeInfo typeInfo,

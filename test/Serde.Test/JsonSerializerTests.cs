@@ -124,7 +124,7 @@ namespace Serde.Test
                 foreach (var (k,v) in value._d)
                 {
                     sd.WriteElement(k.ToString(), StringProxy.Instance);
-                    sd.WriteElement(v, Int32Proxy.Instance);
+                    sd.WriteElement(v, I32Proxy.Instance);
                 }
                 sd.End(typeInfo);
             }
@@ -192,7 +192,7 @@ namespace Serde.Test
         public void DeserializeIntArray()
         {
             var js = "[1,2,3]";
-            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.Deserialize<int, Int32Proxy>>(js);
+            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.Deserialize<int, I32Proxy>>(js);
             Assert.Equal(new int[] { 1, 2, 3 }, arr);
         }
 
@@ -264,8 +264,8 @@ namespace Serde.Test
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("W")!),
-                        ("x", SerdeInfoProvider.GetInfo<Int32Proxy>(), typeof(A).GetProperty("X")!),
+                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")!),
+                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")!),
                     ]);
             }
 

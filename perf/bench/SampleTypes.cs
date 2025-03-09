@@ -66,7 +66,7 @@ namespace Benchmarks
             "Location",
             typeof(Location).GetCustomAttributesData(),
             [
-                ("id", Int32Proxy.SerdeInfo, typeof(Location).GetProperty("Id")!),
+                ("id", I32Proxy.SerdeInfo, typeof(Location).GetProperty("Id")!),
                 ("address1", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address1")!),
                 ("address2", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address2")!),
                 ("city", StringProxy.SerdeInfo, typeof(Location).GetProperty("City")!),

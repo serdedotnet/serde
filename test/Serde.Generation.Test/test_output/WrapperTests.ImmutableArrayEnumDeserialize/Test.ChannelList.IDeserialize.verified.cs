@@ -28,7 +28,7 @@ partial record struct ChannelList : Serde.IDeserializeProvider<Test.ChannelList>
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayProxy.Deserialize<Test.Channel,Test.ChannelProxy>>(_l_index_);
+                        _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayProxy.Deserialize<Test.Channel, Test.ChannelProxy>>(_l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.IDeserializeType.IndexNotFound:

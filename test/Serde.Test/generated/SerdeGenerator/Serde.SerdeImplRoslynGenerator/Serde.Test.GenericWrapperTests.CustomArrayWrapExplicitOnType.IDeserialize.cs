@@ -29,7 +29,7 @@ partial class GenericWrapperTests
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_a = typeDeserialize.ReadValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Deserialize<int,global::Serde.Int32Proxy>>(_l_index_);
+                            _l_a = typeDeserialize.ReadValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Deserialize<int, global::Serde.I32Proxy>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

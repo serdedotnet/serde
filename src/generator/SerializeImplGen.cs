@@ -76,23 +76,34 @@ public partial class SerializeImplGen
             {
                 var m = fieldsAndProps[i];
 
-                TypeWithProxy typeAndProxy;
-                // Check if this member has an explicit proxy. If so, we'll use it.
+                // 1. Check if this member has an explicit proxy. If so, we'll use it.
                 if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress) is { } proxy)
                 {
-                    typeAndProxy = new(m.Type.ToFqnSyntax(), proxy);
+                    statements.AppendLine(MakeWriteFieldStmt(m, m.Type.ToDisplayString(), proxy, i));
                 }
-                // Check if the member type is a primitive type. If so, it has a dedicated 'Write' method
-                else if (Proxies.TryGetPrimitiveName(m.Type) is { } methodName &&
-                    m.Type.NullableAnnotation != NullableAnnotation.Annotated)
+                // 2. Check for a direct implementation of ISerialize
+                else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Serialize))
                 {
-                    statements.AppendLine($"_l_type.Write{methodName}(_l_info, {i}, value.{m.Name});");
-                    continue;
+                    statements.AppendLine(MakeWriteFieldStmt(m, m.Type.ToDisplayString(), m.Type.ToDisplayString(), i));
                 }
-
-                // Generate statements of the form `type.WriteField<FieldType, Serialize>("FieldName", value.FieldValue)`
-                var typeAndWrapperOpt = MakeSerializeType(m, context, inProgress);
-                if (typeAndWrapperOpt is not { } typeAndWrapper)
+                // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
+                //    method. Check using the non-null form (even if it's nullable), since nullable
+                //    types aren't considered primitives
+                else if (Proxies.TryGetPrimitiveName(m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)) is { } primName)
+                {
+                    if (m.IsNullable && !m.SerializeNull)
+                    {
+                        // Use WriteFieldIfNotNull if it's not been disabled and the field is nullable
+                        primName += "IfNotNull";
+                    }
+                    statements.AppendLine($"_l_type.Write{primName}(_l_info, {i}, value.{m.Name});");
+                }
+                // 4. A wrapper that implements ISerialize
+                else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress) is { } wrapper)
+                {
+                    statements.AppendLine(MakeWriteFieldStmt(m, wrapper.Type, wrapper.Proxy, i));
+                }
+                else
                 {
                     // No built-in handling and doesn't implement ISerialize, error
                     context.ReportDiagnostic(CreateDiagnostic(
@@ -101,19 +112,22 @@ public partial class SerializeImplGen
                         m.Symbol,
                         m.Type,
                         "Serde.ISerializeProvider<T>"));
+                    continue;
                 }
-                else
+            }
+
+            static string MakeWriteFieldStmt(DataMemberSymbol m, string type, string proxy, int i)
+            {
+                // Generate statements of the form `type.WriteField<FieldType, Serialize>("FieldName", value.FieldValue)`
+                string methodName = m.Type.IsReferenceType
+                    ? "WriteField"
+                    : "WriteBoxedField";
+                // Use WriteFieldIfNotNull if it's not been disabled and the field is nullable
+                if (m.IsNullable && !m.SerializeNull)
                 {
-                    string methodName = m.Type.IsReferenceType
-                        ? "WriteField"
-                        : "WriteBoxedField";
-                    // Use WriteFieldIfNotNull if it's not been disabled and the field is nullable
-                    if (m.IsNullable && !m.SerializeNull)
-                    {
-                        methodName += "IfNotNull";
-                    }
-                    statements.AppendLine($"_l_type.{methodName}<{typeAndWrapper.Type}, {typeAndWrapper.Proxy}>(_l_info, {i}, value.{m.Name});");
+                    methodName += "IfNotNull";
                 }
+                return $"_l_type.{methodName}<{type}, {proxy}>(_l_info, {i}, value.{m.Name});";
             }
         }
         // `type.End();`
@@ -180,31 +194,5 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         }
         """;
         return methodDecl;
-    }
-
-    /// <summary>
-    /// Constructs the argument to a ISerializer.Serialize call, i.e. constructs a term which
-    /// implements ISerialize.  SerdeDn provides wrappers for primitives and common types in the
-    /// framework. If found, we generate and initialize the wrapper.
-    /// </summary>
-    private static TypeWithProxy? MakeSerializeType(
-        DataMemberSymbol member,
-        GeneratorExecutionContext context,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
-    {
-        // 1. Check for an explicit wrapper
-        if (Proxies.TryGetExplicitWrapper(member, context, SerdeUsage.Serialize, inProgress) is {} wrapper)
-        {
-            return new(member.Type.ToFqnSyntax(), wrapper);
-        }
-
-        // 2. Check for a direct implementation of ISerialize
-        if (SerdeImplRoslynGenerator.ImplementsSerde(member.Type, member.Type, context, SerdeUsage.Serialize))
-        {
-            return new(member.Type.ToFqnSyntax(), member.Type.ToFqnSyntax());
-        }
-
-        // 3. A wrapper that implements ISerialize
-        return Proxies.TryGetImplicitWrapper(member.Type, context, SerdeUsage.Serialize, inProgress);
     }
 }

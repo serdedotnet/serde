@@ -15,7 +15,7 @@ partial class C : Serde.ISerializeProvider<C>
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo<C>();
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteField<int[], Serde.ArrayProxy.Serialize<int,global::Serde.Int32Proxy>>(_l_info, 0, value.IntArr);
+            _l_type.WriteField<int[], Serde.ArrayProxy.Serialize<int, global::Serde.I32Proxy>>(_l_info, 0, value.IntArr);
             _l_type.End(_l_info);
         }
         public static readonly CSerializeProxy Instance = new();

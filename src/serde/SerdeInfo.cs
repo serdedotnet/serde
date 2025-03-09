@@ -21,16 +21,16 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
         => TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, fields);
 
     public static ISerdeInfo MakeEnum(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ISerdeInfo underlyingInfo,
-        ReadOnlySpan<(string SerializeName, MemberInfo MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields)
     {
-        var fieldsWithInfo = new (string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)[fields.Length];
+        var fieldsWithInfo = new (string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
             fieldsWithInfo[i] = (fields[i].SerializeName, underlyingInfo, fields[i].MemberInfo);
@@ -181,7 +181,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
@@ -193,7 +193,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             var fieldInfo = new PrivateFieldInfo(
                 serializeName,
                 default,
-                memberInfo.GetCustomAttributesData().ToImmutableArray(),
+                memberInfo?.GetCustomAttributesData().ToImmutableArray() ?? ImmutableArray<CustomAttributeData>.Empty,
                 serdeInfo);
             indexToInfoBuilder.Add(fieldInfo);
         }
