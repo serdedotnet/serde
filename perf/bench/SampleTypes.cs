@@ -66,15 +66,15 @@ namespace Benchmarks
             "Location",
             typeof(Location).GetCustomAttributesData(),
             [
-                ("id", I32Proxy.SerdeInfo, typeof(Location).GetProperty("Id")!),
-                ("address1", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address1")!),
-                ("address2", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address2")!),
-                ("city", StringProxy.SerdeInfo, typeof(Location).GetProperty("City")!),
-                ("state", StringProxy.SerdeInfo, typeof(Location).GetProperty("State")!),
-                ("postalCode", StringProxy.SerdeInfo, typeof(Location).GetProperty("PostalCode")!),
-                ("name", StringProxy.SerdeInfo, typeof(Location).GetProperty("Name")!),
-                ("phoneNumber", StringProxy.SerdeInfo, typeof(Location).GetProperty("PhoneNumber")!),
-                ("country", StringProxy.SerdeInfo, typeof(Location).GetProperty("Country")!)
+                ("id", I32Proxy.SerdeInfo, typeof(Location).GetProperty("Id")),
+                ("address1", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address1")),
+                ("address2", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address2")),
+                ("city", StringProxy.SerdeInfo, typeof(Location).GetProperty("City")),
+                ("state", StringProxy.SerdeInfo, typeof(Location).GetProperty("State")),
+                ("postalCode", StringProxy.SerdeInfo, typeof(Location).GetProperty("PostalCode")),
+                ("name", StringProxy.SerdeInfo, typeof(Location).GetProperty("Name")),
+                ("phoneNumber", StringProxy.SerdeInfo, typeof(Location).GetProperty("PhoneNumber")),
+                ("country", StringProxy.SerdeInfo, typeof(Location).GetProperty("Country"))
             ]);
 
         Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)

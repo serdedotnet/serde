@@ -264,8 +264,8 @@ namespace Serde.Test
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")!),
-                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")!),
+                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")),
+                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")),
                     ]);
             }
 
@@ -275,8 +275,8 @@ namespace Serde.Test
                     "B",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")!),
-                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")!),
+                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")),
+                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")),
                     ]);
             }
 

@@ -344,9 +344,9 @@ namespace Serde.Test
                 typeof(ColorEnum).GetCustomAttributesData(),
                 I32Proxy.SerdeInfo,
                 [
-                    ("red", typeof(ColorEnum).GetField("Red")!),
-                    ("green", typeof(ColorEnum).GetField("Green")!),
-                    ("blue", typeof(ColorEnum).GetField("Blue")!),
+                    ("red", typeof(ColorEnum).GetField("Red")),
+                    ("green", typeof(ColorEnum).GetField("Green")),
+                    ("blue", typeof(ColorEnum).GetField("Blue")),
                 ]
             );
 
@@ -484,8 +484,8 @@ namespace Serde.Test
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")!),
-                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")!),
+                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")),
+                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")),
                     ]);
 
                 public static A Deserialize(IDeserializeType typeDeserialize)
@@ -530,8 +530,8 @@ namespace Serde.Test
                     "B",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")!),
-                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")!),
+                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")),
+                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")),
                     ]);
                 public static B Deserialize(IDeserializeType d)
                 {

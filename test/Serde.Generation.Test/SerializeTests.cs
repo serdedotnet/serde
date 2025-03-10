@@ -356,7 +356,7 @@ public static class SWrap
             ""S"",
             typeof(S<>).GetCustomAttributesData(),
             new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
-                (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")!) });
+                (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")) });
     }
     public sealed class Serialize<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
         where TWrap : ISerializeProvider<T>
@@ -409,7 +409,7 @@ public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
         ""S"",
         typeof(S<>).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
-            (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")!) });
+            (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")) });
     void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
     {
         var _l_serdeInfo = SerdeInfo;
