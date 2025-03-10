@@ -20,11 +20,11 @@ partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteBool(_l_info, 0, value.BoolField);
             _l_type.WriteChar(_l_info, 1, value.CharField);
-            _l_type.WriteByte(_l_info, 2, value.ByteField);
+            _l_type.WriteU8(_l_info, 2, value.ByteField);
             _l_type.WriteU16(_l_info, 3, value.UShortField);
             _l_type.WriteU32(_l_info, 4, value.UIntField);
             _l_type.WriteU64(_l_info, 5, value.ULongField);
-            _l_type.WriteSByte(_l_info, 6, value.SByteField);
+            _l_type.WriteI8(_l_info, 6, value.SByteField);
             _l_type.WriteI16(_l_info, 7, value.ShortField);
             _l_type.WriteI32(_l_info, 8, value.IntField);
             _l_type.WriteI64(_l_info, 9, value.LongField);

@@ -47,9 +47,9 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         _scratch = new ScratchBuffer();
     }
 
-    public float ReadFloat() => Convert.ToSingle(ReadDouble());
+    public float ReadF32() => Convert.ToSingle(ReadF64());
 
-    public double ReadDouble()
+    public double ReadF64()
     {
         _ = ThrowIfEos(Reader.SkipWhitespace());
         _scratch.Clear();
@@ -63,7 +63,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         return Reader.GetDecimal(_scratch);
     }
 
-    public sbyte ReadSByte() => Convert.ToSByte(ReadI64());
+    public sbyte ReadI8() => Convert.ToSByte(ReadI64());
 
     public short ReadI16() => Convert.ToInt16(ReadI64());
 
@@ -114,7 +114,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         return this;
     }
 
-    public byte ReadByte() => Convert.ToByte(ReadU64());
+    public byte ReadU8() => Convert.ToByte(ReadU64());
 
     public ushort ReadU16() => Convert.ToUInt16(ReadU64());
 
@@ -173,10 +173,10 @@ partial class JsonDeserializer<TReader> : IDeserializeType
         ReadColon();
         return ReadChar();
     }
-    byte IDeserializeType.ReadByte(int index)
+    byte IDeserializeType.ReadU8(int index)
     {
         ReadColon();
-        return ReadByte();
+        return ReadU8();
     }
     ushort IDeserializeType.ReadU16(int index)
     {
@@ -193,10 +193,10 @@ partial class JsonDeserializer<TReader> : IDeserializeType
         ReadColon();
         return ReadU64();
     }
-    sbyte IDeserializeType.ReadSByte(int index)
+    sbyte IDeserializeType.ReadI8(int index)
     {
         ReadColon();
-        return ReadSByte();
+        return ReadI8();
     }
     short IDeserializeType.ReadI16(int index)
     {
@@ -213,15 +213,15 @@ partial class JsonDeserializer<TReader> : IDeserializeType
         ReadColon();
         return ReadI64();
     }
-    float IDeserializeType.ReadFloat(int index)
+    float IDeserializeType.ReadF32(int index)
     {
         ReadColon();
-        return ReadFloat();
+        return ReadF32();
     }
-    double IDeserializeType.ReadDouble(int index)
+    double IDeserializeType.ReadF64(int index)
     {
         ReadColon();
-        return ReadDouble();
+        return ReadF64();
     }
     decimal IDeserializeType.ReadDecimal(int index)
     {

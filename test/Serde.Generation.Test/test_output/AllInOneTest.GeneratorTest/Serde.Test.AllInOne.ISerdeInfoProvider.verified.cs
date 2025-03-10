@@ -12,11 +12,11 @@ partial record AllInOne : Serde.ISerdeInfoProvider
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
             ("boolField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.BoolProxy>(), typeof(Serde.Test.AllInOne).GetField("BoolField")),
             ("charField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.CharProxy>(), typeof(Serde.Test.AllInOne).GetField("CharField")),
-            ("byteField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteProxy>(), typeof(Serde.Test.AllInOne).GetField("ByteField")),
+            ("byteField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.U8Proxy>(), typeof(Serde.Test.AllInOne).GetField("ByteField")),
             ("uShortField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.U16Proxy>(), typeof(Serde.Test.AllInOne).GetField("UShortField")),
             ("uIntField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.U32Proxy>(), typeof(Serde.Test.AllInOne).GetField("UIntField")),
             ("uLongField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.U64Proxy>(), typeof(Serde.Test.AllInOne).GetField("ULongField")),
-            ("sByteField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.SByteProxy>(), typeof(Serde.Test.AllInOne).GetField("SByteField")),
+            ("sByteField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I8Proxy>(), typeof(Serde.Test.AllInOne).GetField("SByteField")),
             ("shortField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I16Proxy>(), typeof(Serde.Test.AllInOne).GetField("ShortField")),
             ("intField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.AllInOne).GetField("IntField")),
             ("longField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I64Proxy>(), typeof(Serde.Test.AllInOne).GetField("LongField")),

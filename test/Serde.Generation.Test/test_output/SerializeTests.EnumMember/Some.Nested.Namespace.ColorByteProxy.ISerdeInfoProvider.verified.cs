@@ -9,7 +9,7 @@ partial class ColorByteProxy : Serde.ISerdeInfoProvider
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "ColorByte",
         typeof(Some.Nested.Namespace.ColorByte).GetCustomAttributesData(),
-        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.ByteProxy>(),
+        global::Serde.SerdeInfoProvider.GetInfo<global::Serde.U8Proxy>(),
         new (string, System.Reflection.MemberInfo?)[] {
             ("red", typeof(Some.Nested.Namespace.ColorByte).GetField("Red")),
             ("green", typeof(Some.Nested.Namespace.ColorByte).GetField("Green")),

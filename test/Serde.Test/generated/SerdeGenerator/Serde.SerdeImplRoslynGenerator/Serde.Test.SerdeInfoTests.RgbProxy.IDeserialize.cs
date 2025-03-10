@@ -31,15 +31,15 @@ partial class SerdeInfoTests
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_r = typeDeserialize.ReadByte(_l_index_);
+                            _l_r = typeDeserialize.ReadU8(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_g = typeDeserialize.ReadByte(_l_index_);
+                            _l_g = typeDeserialize.ReadU8(_l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case 2:
-                            _l_b = typeDeserialize.ReadByte(_l_index_);
+                            _l_b = typeDeserialize.ReadU8(_l_index_);
                             _r_assignedValid |= ((byte)1) << 2;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

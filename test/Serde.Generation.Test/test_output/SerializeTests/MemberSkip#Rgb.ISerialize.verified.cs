@@ -15,8 +15,8 @@ partial struct Rgb : Serde.ISerializeProvider<Rgb>
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Rgb>();
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteByte(_l_info, 0, value.Red);
-            _l_type.WriteByte(_l_info, 1, value.Blue);
+            _l_type.WriteU8(_l_info, 0, value.Red);
+            _l_type.WriteU8(_l_info, 1, value.Blue);
             _l_type.End(_l_info);
         }
         public static readonly RgbSerializeProxy Instance = new();

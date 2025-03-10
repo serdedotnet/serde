@@ -52,7 +52,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 1;
                         break;
                     case 2:
-                        _l_bytefield = typeDeserialize.ReadByte(_l_index_);
+                        _l_bytefield = typeDeserialize.ReadU8(_l_index_);
                         _r_assignedValid |= ((uint)1) << 2;
                         break;
                     case 3:
@@ -68,7 +68,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 5;
                         break;
                     case 6:
-                        _l_sbytefield = typeDeserialize.ReadSByte(_l_index_);
+                        _l_sbytefield = typeDeserialize.ReadI8(_l_index_);
                         _r_assignedValid |= ((uint)1) << 6;
                         break;
                     case 7:

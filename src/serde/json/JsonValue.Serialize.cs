@@ -24,7 +24,7 @@ namespace Serde.Json
             switch (value)
             {
                 case JsonValue.Number(double v):
-                    serializer.WriteDouble(v);
+                    serializer.WriteF64(v);
                     break;
                 case JsonValue.Bool(bool v):
                     serializer.WriteBool(v);

@@ -41,25 +41,25 @@ public sealed class CharProxy
     }
 }
 
-public sealed class ByteProxy
+public sealed class U8Proxy
     : ISerialize<byte>, IDeserialize<byte>,
       ISerializeProvider<byte>, IDeserializeProvider<byte>
 {
-    public static ByteProxy Instance { get; } = new();
+    public static U8Proxy Instance { get; } = new();
     static ISerialize<byte> ISerializeProvider<byte>.SerializeInstance => Instance;
     static IDeserialize<byte> IDeserializeProvider<byte>.DeserializeInstance => Instance;
-    private ByteProxy() { }
+    private U8Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
     private const string s_typeName = "byte";
     public void Serialize(byte value, ISerializer serializer)
     {
-        serializer.WriteByte(value);
+        serializer.WriteU8(value);
     }
     public byte Deserialize(IDeserializer deserializer)
     {
-        return deserializer.ReadByte();
+        return deserializer.ReadU8();
     }
 }
 
@@ -125,23 +125,23 @@ public sealed class U64Proxy
     }
 }
 
-public sealed class SByteProxy
+public sealed class I8Proxy
     : ISerialize<sbyte>, IDeserialize<sbyte>,
     ISerializeProvider<sbyte>, IDeserializeProvider<sbyte>
 {
-    public static SByteProxy Instance { get; } = new();
+    public static I8Proxy Instance { get; } = new();
     static ISerialize<sbyte> ISerializeProvider<sbyte>.SerializeInstance => Instance;
     static IDeserialize<sbyte> IDeserializeProvider<sbyte>.DeserializeInstance => Instance;
-    private SByteProxy() { }
+    private I8Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
 
     private const string s_typeName = "sbyte";
     void ISerialize<sbyte>.Serialize(sbyte value, ISerializer serializer)
-        => serializer.WriteSByte(value);
+        => serializer.WriteI8(value);
     sbyte IDeserialize<sbyte>.Deserialize(IDeserializer deserializer)
     {
-        return deserializer.ReadSByte();
+        return deserializer.ReadI8();
     }
 }
 
@@ -209,40 +209,40 @@ public sealed class I64Proxy
     }
 }
 
-public sealed class SingleProxy : ISerialize<float>, IDeserialize<float>,
+public sealed class F32Proxy : ISerialize<float>, IDeserialize<float>,
     ISerializeProvider<float>, IDeserializeProvider<float>
 {
-    public static SingleProxy Instance { get; } = new();
+    public static F32Proxy Instance { get; } = new();
     static ISerialize<float> ISerializeProvider<float>.SerializeInstance => Instance;
     static IDeserialize<float> IDeserializeProvider<float>.DeserializeInstance => Instance;
-    private SingleProxy() { }
+    private F32Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float");
 
     public void Serialize(float value, ISerializer serializer)
-        => serializer.WriteFloat(value);
+        => serializer.WriteF32(value);
     public float Deserialize(IDeserializer deserializer)
-        => deserializer.ReadFloat();
+        => deserializer.ReadF32();
 }
 
-public sealed class DoubleProxy
+public sealed class F64Proxy
     : ISerialize<double>, IDeserialize<double>,
     ISerializeProvider<double>, IDeserializeProvider<double>
 {
-    public static DoubleProxy Instance { get; } = new();
+    public static F64Proxy Instance { get; } = new();
     static ISerialize<double> ISerializeProvider<double>.SerializeInstance => Instance;
     static IDeserialize<double> IDeserializeProvider<double>.DeserializeInstance => Instance;
-    private DoubleProxy() { }
+    private F64Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("double");
 
     void ISerialize<double>.Serialize(double value, ISerializer serializer)
     {
-        serializer.WriteDouble(value);
+        serializer.WriteF64(value);
     }
     double IDeserialize<double>.Deserialize(IDeserializer deserializer)
     {
-        return deserializer.ReadDouble();
+        return deserializer.ReadF64();
     }
 }
 

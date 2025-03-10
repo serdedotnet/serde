@@ -18,16 +18,16 @@ public interface ISerializeType
 {
     void WriteBool(ISerdeInfo typeInfo, int index, bool b);
     void WriteChar(ISerdeInfo typeInfo, int index, char c);
-    void WriteByte(ISerdeInfo typeInfo, int index, byte b);
+    void WriteU8(ISerdeInfo typeInfo, int index, byte b);
     void WriteU16(ISerdeInfo typeInfo, int index, ushort u16);
     void WriteU32(ISerdeInfo typeInfo, int index, uint u32);
     void WriteU64(ISerdeInfo typeInfo, int index, ulong u64);
-    void WriteSByte(ISerdeInfo typeInfo, int index, sbyte b);
+    void WriteI8(ISerdeInfo typeInfo, int index, sbyte b);
     void WriteI16(ISerdeInfo typeInfo, int index, short i16);
     void WriteI32(ISerdeInfo typeInfo, int index, int i32);
     void WriteI64(ISerdeInfo typeInfo, int index, long i64);
-    void WriteFloat(ISerdeInfo typeInfo, int index, float f);
-    void WriteDouble(ISerdeInfo typeInfo, int index, double d);
+    void WriteF32(ISerdeInfo typeInfo, int index, float f);
+    void WriteF64(ISerdeInfo typeInfo, int index, double d);
     void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);
     void WriteString(ISerdeInfo typeInfo, int index, string s);
     void WriteNull(ISerdeInfo typeInfo, int index);
@@ -143,16 +143,16 @@ public interface ISerializer
 {
     void WriteBool(bool b);
     void WriteChar(char c);
-    void WriteByte(byte b);
+    void WriteU8(byte b);
     void WriteU16(ushort u16);
     void WriteU32(uint u32);
     void WriteU64(ulong u64);
-    void WriteSByte(sbyte b);
+    void WriteI8(sbyte b);
     void WriteI16(short i16);
     void WriteI32(int i32);
     void WriteI64(long i64);
-    void WriteFloat(float f);
-    void WriteDouble(double d);
+    void WriteF32(float f);
+    void WriteF64(double d);
     void WriteDecimal(decimal d);
     void WriteString(string s);
     void WriteNull();

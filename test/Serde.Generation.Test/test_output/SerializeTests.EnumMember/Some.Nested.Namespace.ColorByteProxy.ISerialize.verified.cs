@@ -20,7 +20,7 @@ sealed partial class ColorByteProxy :Serde.ISerialize<Some.Nested.Namespace.Colo
             Some.Nested.Namespace.ColorByte.Blue => 2,
             var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum 'ColorByte'"),
         };
-        _l_type.WriteByte(_l_info, index, (byte)value);
+        _l_type.WriteU8(_l_info, index, (byte)value);
         _l_type.End(_l_info);
     }
     static ISerialize<Some.Nested.Namespace.ColorByte> ISerializeProvider<Some.Nested.Namespace.ColorByte>.SerializeInstance

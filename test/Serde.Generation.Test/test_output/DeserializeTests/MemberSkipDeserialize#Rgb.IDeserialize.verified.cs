@@ -26,11 +26,11 @@ partial struct Rgb : Serde.IDeserializeProvider<Rgb>
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_red = typeDeserialize.ReadByte(_l_index_);
+                        _l_red = typeDeserialize.ReadU8(_l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 2:
-                        _l_blue = typeDeserialize.ReadByte(_l_index_);
+                        _l_blue = typeDeserialize.ReadU8(_l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 1:
