@@ -207,9 +207,9 @@ namespace Serde.Test
                         var typeName = typeDef.TypeName(typeIndex);
 
                         // Add custom equals
-                        members.Add(SyntaxFactory.ParseMemberDeclaration(GenerateEquals(typeName, typeDef.FieldTypes))!);
+                        members.Add(SyntaxFactory.ParseMemberDeclaration(GenerateEquals(typeName, typeDef.FieldTypes)));
                         // Add custom hash code
-                        members.Add(SyntaxFactory.ParseMemberDeclaration(GenerateHashCode(typeName, typeDef.FieldTypes))!);
+                        members.Add(SyntaxFactory.ParseMemberDeclaration(GenerateHashCode(typeName, typeDef.FieldTypes)));
 
                         // Add the type
                         types.Add(TypeDeclaration(
