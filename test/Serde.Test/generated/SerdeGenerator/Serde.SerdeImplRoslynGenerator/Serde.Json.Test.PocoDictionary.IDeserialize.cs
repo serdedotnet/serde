@@ -27,7 +27,7 @@ partial class PocoDictionary : Serde.IDeserializeProvider<Serde.Json.Test.PocoDi
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_key = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string>, Serde.DictProxy.Deserialize<string,string,global::Serde.StringProxy,global::Serde.StringProxy>>(_l_index_);
+                        _l_key = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, string>, Serde.DictProxy.Deserialize<string, string, global::Serde.StringProxy, global::Serde.StringProxy>>(_l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.IDeserializeType.IndexNotFound:

@@ -6,12 +6,12 @@ partial class Address : Serde.ISerdeInfoProvider
     static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         "Address",
         typeof(Address).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-            ("name", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("Name")!),
-            ("line1", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("Line1")!),
-            ("city", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("City")!),
-            ("state", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("State")!),
-            ("zip", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("Zip")!)
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("name", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("Name")),
+            ("line1", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("Line1")),
+            ("city", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("City")),
+            ("state", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("State")),
+            ("zip", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Address).GetField("Zip"))
         }
     );
 }

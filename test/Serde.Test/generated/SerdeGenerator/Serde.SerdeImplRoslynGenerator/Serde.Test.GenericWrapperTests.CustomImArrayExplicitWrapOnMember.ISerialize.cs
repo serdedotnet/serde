@@ -19,7 +19,7 @@ partial class GenericWrapperTests
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo<CustomImArrayExplicitWrapOnMember>();
                 var _l_type = serializer.WriteType(_l_info);
-                _l_type.WriteBoxedField<Serde.Test.GenericWrapperTests.CustomImArray<int>, Serde.Test.GenericWrapperTests.CustomImArrayProxy.Serialize<int,global::Serde.Int32Proxy>>(_l_info, 0, value.A);
+                _l_type.WriteBoxedField<Serde.Test.GenericWrapperTests.CustomImArray<int>, Serde.Test.GenericWrapperTests.CustomImArrayProxy.Serialize<int, global::Serde.I32Proxy>>(_l_info, 0, value.A);
                 _l_type.End(_l_info);
             }
             public static readonly CustomImArrayExplicitWrapOnMemberSerializeProxy Instance = new();

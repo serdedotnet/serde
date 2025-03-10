@@ -37,7 +37,7 @@ namespace Serde.Json
 
         public void WriteChar(char c) => WriteString(c.ToString());
 
-        public void WriteByte(byte b) => _writer.WriteNumberValue(b);
+        public void WriteU8(byte b) => _writer.WriteNumberValue(b);
 
         public void WriteU16(ushort u16) => _writer.WriteNumberValue(u16);
 
@@ -45,7 +45,7 @@ namespace Serde.Json
 
         public void WriteU64(ulong u64) => _writer.WriteNumberValue(u64);
 
-        public void WriteSByte(sbyte b) => _writer.WriteNumberValue(b);
+        public void WriteI8(sbyte b) => _writer.WriteNumberValue(b);
 
         public void WriteI16(short i16) => _writer.WriteNumberValue(i16);
 
@@ -53,9 +53,9 @@ namespace Serde.Json
 
         public void WriteI64(long i64) => _writer.WriteNumberValue(i64);
 
-        public void WriteFloat(float f) => _writer.WriteNumberValue(f);
+        public void WriteF32(float f) => _writer.WriteNumberValue(f);
 
-        public void WriteDouble(double d) => _writer.WriteNumberValue(d);
+        public void WriteF64(double d) => _writer.WriteNumberValue(d);
 
         public void WriteDecimal(decimal d) => _writer.WriteNumberValue(d);
 
@@ -82,17 +82,17 @@ namespace Serde.Json
 
             public void End(ISerdeInfo info) { }
             public void WriteBool(ISerdeInfo typeInfo, int index, bool b) => ThrowInvalidEnum();
-            public void WriteByte(ISerdeInfo typeInfo, int index, byte b) => WriteEnumName(typeInfo, index);
+            public void WriteU8(ISerdeInfo typeInfo, int index, byte b) => WriteEnumName(typeInfo, index);
             public void WriteChar(ISerdeInfo typeInfo, int index, char c) => ThrowInvalidEnum();
             public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => ThrowInvalidEnum();
-            public void WriteDouble(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
+            public void WriteF64(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
             public void WriteField<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class? => ThrowInvalidEnum();
-            public void WriteFloat(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
+            public void WriteF32(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
             public void WriteI16(ISerdeInfo typeInfo, int index, short i16) => WriteEnumName(typeInfo, index);
             public void WriteI32(ISerdeInfo typeInfo, int index, int i32) => WriteEnumName(typeInfo, index);
             public void WriteI64(ISerdeInfo typeInfo, int index, long i64) => WriteEnumName(typeInfo, index);
             public void WriteNull(ISerdeInfo typeInfo, int index) => ThrowInvalidEnum();
-            public void WriteSByte(ISerdeInfo typeInfo, int index, sbyte b) => WriteEnumName(typeInfo, index);
+            public void WriteI8(ISerdeInfo typeInfo, int index, sbyte b) => WriteEnumName(typeInfo, index);
             public void WriteString(ISerdeInfo typeInfo, int index, string s) => ThrowInvalidEnum();
             public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16) => WriteEnumName(typeInfo, index);
             public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => WriteEnumName(typeInfo, index);
@@ -151,14 +151,14 @@ namespace Serde.Json
         {
             public void WriteBool(bool b) => throw new KeyNotStringException();
             public void WriteChar(char c) => throw new KeyNotStringException();
-            public void WriteByte(byte b) => throw new KeyNotStringException();
+            public void WriteU8(byte b) => throw new KeyNotStringException();
             public void WriteU16(ushort u16) => throw new KeyNotStringException();
 
             public void WriteU32(uint u32) => throw new KeyNotStringException();
 
             public void WriteU64(ulong u64) => throw new KeyNotStringException();
 
-            public void WriteSByte(sbyte b) => throw new KeyNotStringException();
+            public void WriteI8(sbyte b) => throw new KeyNotStringException();
 
             public void WriteI16(short i16) => throw new KeyNotStringException();
 
@@ -166,9 +166,9 @@ namespace Serde.Json
 
             public void WriteI64(long i64) => throw new KeyNotStringException();
 
-            public void WriteFloat(float f) => throw new KeyNotStringException();
+            public void WriteF32(float f) => throw new KeyNotStringException();
 
-            public void WriteDouble(double d) => throw new KeyNotStringException();
+            public void WriteF64(double d) => throw new KeyNotStringException();
 
             public void WriteDecimal(decimal d) => throw new KeyNotStringException();
 
@@ -239,10 +239,10 @@ namespace Serde.Json
             WriteChar(c);
         }
 
-        void ISerializeType.WriteByte(ISerdeInfo typeInfo, int index, byte b)
+        void ISerializeType.WriteU8(ISerdeInfo typeInfo, int index, byte b)
         {
             _writer.WritePropertyName(typeInfo.GetFieldName(index));
-            WriteByte(b);
+            WriteU8(b);
         }
 
         void ISerializeType.WriteU16(ISerdeInfo typeInfo, int index, ushort u16)
@@ -263,10 +263,10 @@ namespace Serde.Json
             WriteU64(u64);
         }
 
-        void ISerializeType.WriteSByte(ISerdeInfo typeInfo, int index, sbyte b)
+        void ISerializeType.WriteI8(ISerdeInfo typeInfo, int index, sbyte b)
         {
             _writer.WritePropertyName(typeInfo.GetFieldName(index));
-            WriteSByte(b);
+            WriteI8(b);
         }
 
         void ISerializeType.WriteI16(ISerdeInfo typeInfo, int index, short i16)
@@ -287,16 +287,16 @@ namespace Serde.Json
             WriteI64(i64);
         }
 
-        void ISerializeType.WriteFloat(ISerdeInfo typeInfo, int index, float f)
+        void ISerializeType.WriteF32(ISerdeInfo typeInfo, int index, float f)
         {
             _writer.WritePropertyName(typeInfo.GetFieldName(index));
-            WriteFloat(f);
+            WriteF32(f);
         }
 
-        void ISerializeType.WriteDouble(ISerdeInfo typeInfo, int index, double d)
+        void ISerializeType.WriteF64(ISerdeInfo typeInfo, int index, double d)
         {
             _writer.WritePropertyName(typeInfo.GetFieldName(index));
-            WriteDouble(d);
+            WriteF64(d);
         }
 
         void ISerializeType.WriteDecimal(ISerdeInfo typeInfo, int index, decimal d)

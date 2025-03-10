@@ -108,16 +108,16 @@ public interface IDeserializeType
 
     bool ReadBool(int index);
     char ReadChar(int index);
-    byte ReadByte(int index);
+    byte ReadU8(int index);
     ushort ReadU16(int index);
     uint ReadU32(int index);
     ulong ReadU64(int index);
-    sbyte ReadSByte(int index);
+    sbyte ReadI8(int index);
     short ReadI16(int index);
     int ReadI32(int index);
     long ReadI64(int index);
-    float ReadFloat(int index);
-    double ReadDouble(int index);
+    float ReadF32(int index);
+    double ReadF64(int index);
     decimal ReadDecimal(int index);
     string ReadString(int index);
 }
@@ -149,16 +149,16 @@ public interface IDeserializer : IDisposable
 
     bool ReadBool();
     char ReadChar();
-    byte ReadByte();
+    byte ReadU8();
     ushort ReadU16();
     uint ReadU32();
     ulong ReadU64();
-    sbyte ReadSByte();
+    sbyte ReadI8();
     short ReadI16();
     int ReadI32();
     long ReadI64();
-    float ReadFloat();
-    double ReadDouble();
+    float ReadF32();
+    double ReadF64();
     decimal ReadDecimal();
     string ReadString();
     IDeserializeCollection ReadCollection(ISerdeInfo typeInfo);

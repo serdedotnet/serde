@@ -29,7 +29,7 @@ partial class InvalidJsonTests
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_obj = typeDeserialize.ReadValue<System.Collections.Generic.List<int>, Serde.ListProxy.Deserialize<int,global::Serde.Int32Proxy>>(_l_index_);
+                            _l_obj = typeDeserialize.ReadValue<System.Collections.Generic.List<int>, Serde.ListProxy.Deserialize<int, global::Serde.I32Proxy>>(_l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case Serde.IDeserializeType.IndexNotFound:

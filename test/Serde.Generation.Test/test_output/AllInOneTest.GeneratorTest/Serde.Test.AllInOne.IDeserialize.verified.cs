@@ -52,7 +52,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 1;
                         break;
                     case 2:
-                        _l_bytefield = typeDeserialize.ReadByte(_l_index_);
+                        _l_bytefield = typeDeserialize.ReadU8(_l_index_);
                         _r_assignedValid |= ((uint)1) << 2;
                         break;
                     case 3:
@@ -68,7 +68,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 5;
                         break;
                     case 6:
-                        _l_sbytefield = typeDeserialize.ReadSByte(_l_index_);
+                        _l_sbytefield = typeDeserialize.ReadI8(_l_index_);
                         _r_assignedValid |= ((uint)1) << 6;
                         break;
                     case 7:
@@ -92,19 +92,19 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 11;
                         break;
                     case 12:
-                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.Deserialize<string,global::Serde.StringProxy>>(_l_index_);
+                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.Deserialize<string, global::Serde.StringProxy>>(_l_index_);
                         _r_assignedValid |= ((uint)1) << 12;
                         break;
                     case 13:
-                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayProxy.Deserialize<uint,global::Serde.UInt32Proxy>>(_l_index_);
+                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayProxy.Deserialize<uint, global::Serde.U32Proxy>>(_l_index_);
                         _r_assignedValid |= ((uint)1) << 13;
                         break;
                     case 14:
-                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayProxy.Deserialize<int[],Serde.ArrayProxy.Deserialize<int,global::Serde.Int32Proxy>>>(_l_index_);
+                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayProxy.Deserialize<int[], Serde.ArrayProxy.Deserialize<int, global::Serde.I32Proxy>>>(_l_index_);
                         _r_assignedValid |= ((uint)1) << 14;
                         break;
                     case 15:
-                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Deserialize<int,global::Serde.Int32Proxy>>(_l_index_);
+                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Deserialize<int, global::Serde.I32Proxy>>(_l_index_);
                         _r_assignedValid |= ((uint)1) << 15;
                         break;
                     case 16:

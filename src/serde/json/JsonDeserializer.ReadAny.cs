@@ -21,7 +21,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                 break;
 
             case (byte)'-' or (>= (byte)'0' and <= (byte)'9'):
-                var d = ReadDouble();
+                var d = ReadF64();
                 result = v.VisitDouble(d);
                 break;
 

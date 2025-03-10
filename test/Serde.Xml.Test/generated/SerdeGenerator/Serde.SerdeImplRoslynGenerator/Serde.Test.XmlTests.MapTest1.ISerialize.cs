@@ -19,7 +19,7 @@ partial class XmlTests
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo<MapTest1>();
                 var _l_type = serializer.WriteType(_l_info);
-                _l_type.WriteField<System.Collections.Generic.Dictionary<string, int>, Serde.DictProxy.Serialize<string,int,global::Serde.StringProxy,global::Serde.Int32Proxy>>(_l_info, 0, value.MapField);
+                _l_type.WriteField<System.Collections.Generic.Dictionary<string, int>, Serde.DictProxy.Serialize<string, int, global::Serde.StringProxy, global::Serde.I32Proxy>>(_l_info, 0, value.MapField);
                 _l_type.End(_l_info);
             }
             public static readonly MapTest1SerializeProxy Instance = new();

@@ -10,12 +10,12 @@ partial class SampleTest
         static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "Address",
             typeof(Serde.Test.SampleTest.Address).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                ("Name", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("Name")!),
-                ("Line1", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("Line1")!),
-                ("City", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Serialize<string,global::Serde.StringProxy>>(), typeof(Serde.Test.SampleTest.Address).GetField("City")!),
-                ("State", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("State")!),
-                ("Zip", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("Zip")!)
+            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                ("Name", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("Name")),
+                ("Line1", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("Line1")),
+                ("City", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Serialize<string, global::Serde.StringProxy>>(), typeof(Serde.Test.SampleTest.Address).GetField("City")),
+                ("State", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("State")),
+                ("Zip", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.SampleTest.Address).GetField("Zip"))
             }
         );
     }

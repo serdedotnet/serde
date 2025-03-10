@@ -10,8 +10,8 @@ partial class InvalidJsonTests
         static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "PocoWithParameterizedCtor",
             typeof(Serde.Json.Test.InvalidJsonTests.PocoWithParameterizedCtor).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                ("obj", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.PocoWithParameterizedCtor).GetProperty("Obj")!)
+            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                ("obj", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.PocoWithParameterizedCtor).GetProperty("Obj"))
             }
         );
     }

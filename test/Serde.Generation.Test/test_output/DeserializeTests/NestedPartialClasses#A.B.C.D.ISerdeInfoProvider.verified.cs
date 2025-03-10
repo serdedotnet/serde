@@ -12,8 +12,8 @@ partial class A
                 static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                     "D",
                     typeof(A.B.C.D).GetCustomAttributesData(),
-                    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                        ("field", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.Int32Proxy>(), typeof(A.B.C.D).GetField("Field")!)
+                    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                        ("field", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(A.B.C.D).GetField("Field"))
                     }
                 );
             }

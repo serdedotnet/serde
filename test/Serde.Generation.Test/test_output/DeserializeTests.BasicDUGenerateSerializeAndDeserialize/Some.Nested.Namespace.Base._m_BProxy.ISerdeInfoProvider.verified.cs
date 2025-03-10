@@ -11,8 +11,8 @@ partial record Base
         static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "B",
             typeof(Some.Nested.Namespace.Base.B).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo)[] {
-                ("y", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Some.Nested.Namespace.Base.B).GetProperty("Y")!)
+            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                ("y", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Some.Nested.Namespace.Base.B).GetProperty("Y"))
             }
         );
     }

@@ -18,7 +18,7 @@ partial class TestCase15
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Class1>();
                 var _l_type = serializer.WriteType(_l_info);
                 _l_type.WriteI32(_l_info, 0, value.Field0);
-                _l_type.WriteByte(_l_info, 1, value.Field1);
+                _l_type.WriteU8(_l_info, 1, value.Field1);
                 _l_type.End(_l_info);
             }
             public static readonly Class1SerializeProxy Instance = new();
