@@ -11,7 +11,7 @@ partial class XmlTests
             "NestedArrays",
             typeof(Serde.Test.XmlTests.NestedArrays).GetCustomAttributesData(),
             new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("A", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<int[][], Serde.ArrayProxy.Serialize<int[], Serde.ArrayProxy.Serialize<int, global::Serde.I32Proxy>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A"))
+                ("A", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Ser<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A"))
             }
         );
     }

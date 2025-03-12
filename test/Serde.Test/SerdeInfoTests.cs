@@ -75,7 +75,7 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void NullableInfo()
     {
-        var info = SerdeInfoProvider.GetInfo<NullableRefProxy.Serialize<string, StringProxy>>();
+        var info = SerdeInfoProvider.GetInfo<NullableRefProxy.Ser<string, StringProxy>>();
         Assert.Equal(InfoKind.Nullable, info.Kind);
         Assert.Equal("string?", info.Name);
         Assert.Equal(1, info.FieldCount);

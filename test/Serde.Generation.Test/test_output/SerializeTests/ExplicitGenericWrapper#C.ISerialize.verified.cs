@@ -7,19 +7,19 @@ using Serde;
 partial class C : Serde.ISerializeProvider<C>
 {
     static ISerialize<C> ISerializeProvider<C>.SerializeInstance
-        => CSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class CSerializeProxy :Serde.ISerialize<C>
+    sealed partial class _SerObj :Serde.ISerialize<C>
     {
         void global::Serde.ISerialize<C>.Serialize(C value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo<C>();
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteBoxedField<S<int>, SWrap.Serialize<int, global::Serde.I32Proxy>>(_l_info, 0, value.S);
+            _l_type.WriteBoxedValue<S<int>, SWrap.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.S);
             _l_type.End(_l_info);
         }
-        public static readonly CSerializeProxy Instance = new();
-        private CSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

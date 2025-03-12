@@ -21,10 +21,10 @@ partial record AllInOne : Serde.ISerdeInfoProvider
             ("longField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I64Proxy>(), typeof(Serde.Test.AllInOne).GetField("LongField")),
             ("stringField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.AllInOne).GetField("StringField")),
             ("escapedStringField", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.AllInOne).GetField("EscapedStringField")),
-            ("nullStringField", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Serialize<string, global::Serde.StringProxy>>(), typeof(Serde.Test.AllInOne).GetField("NullStringField")),
-            ("uIntArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<uint, global::Serde.U32Proxy>>(), typeof(Serde.Test.AllInOne).GetField("UIntArr")),
-            ("nestedArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Serialize<int[], Serde.ArrayProxy.Serialize<int, global::Serde.I32Proxy>>>(), typeof(Serde.Test.AllInOne).GetField("NestedArr")),
-            ("intImm", global::Serde.SerdeInfoProvider.GetInfo<Serde.ImmutableArrayProxy.Serialize<int, global::Serde.I32Proxy>>(), typeof(Serde.Test.AllInOne).GetField("IntImm")),
+            ("nullStringField", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>(), typeof(Serde.Test.AllInOne).GetField("NullStringField")),
+            ("uIntArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>(), typeof(Serde.Test.AllInOne).GetField("UIntArr")),
+            ("nestedArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>(), typeof(Serde.Test.AllInOne).GetField("NestedArr")),
+            ("intImm", global::Serde.SerdeInfoProvider.GetInfo<Serde.ImmutableArrayProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(Serde.Test.AllInOne).GetField("IntImm")),
             ("color", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.AllInOne.ColorEnumProxy>(), typeof(Serde.Test.AllInOne).GetField("Color"))
         }
     );

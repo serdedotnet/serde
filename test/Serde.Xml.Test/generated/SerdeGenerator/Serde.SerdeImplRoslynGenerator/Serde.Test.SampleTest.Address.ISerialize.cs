@@ -11,9 +11,9 @@ partial class SampleTest
     partial record Address : Serde.ISerializeProvider<Serde.Test.SampleTest.Address>
     {
         static ISerialize<Serde.Test.SampleTest.Address> ISerializeProvider<Serde.Test.SampleTest.Address>.SerializeInstance
-            => AddressSerializeProxy.Instance;
+            => _SerObj.Instance;
 
-        sealed partial class AddressSerializeProxy :Serde.ISerialize<Serde.Test.SampleTest.Address>
+        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.SampleTest.Address>
         {
             void global::Serde.ISerialize<Serde.Test.SampleTest.Address>.Serialize(Serde.Test.SampleTest.Address value, global::Serde.ISerializer serializer)
             {
@@ -26,8 +26,8 @@ partial class SampleTest
                 _l_type.WriteString(_l_info, 4, value.Zip);
                 _l_type.End(_l_info);
             }
-            public static readonly AddressSerializeProxy Instance = new();
-            private AddressSerializeProxy() { }
+            public static readonly _SerObj Instance = new();
+            private _SerObj() { }
 
         }
     }

@@ -9,9 +9,9 @@ partial class TestCase15
     partial class Class1 : Serde.ISerializeProvider<TestCase15.Class1>
     {
         static ISerialize<TestCase15.Class1> ISerializeProvider<TestCase15.Class1>.SerializeInstance
-            => Class1SerializeProxy.Instance;
+            => _SerObj.Instance;
 
-        sealed partial class Class1SerializeProxy :Serde.ISerialize<TestCase15.Class1>
+        sealed partial class _SerObj :Serde.ISerialize<TestCase15.Class1>
         {
             void global::Serde.ISerialize<TestCase15.Class1>.Serialize(TestCase15.Class1 value, global::Serde.ISerializer serializer)
             {
@@ -21,8 +21,8 @@ partial class TestCase15
                 _l_type.WriteU8(_l_info, 1, value.Field1);
                 _l_type.End(_l_info);
             }
-            public static readonly Class1SerializeProxy Instance = new();
-            private Class1SerializeProxy() { }
+            public static readonly _SerObj Instance = new();
+            private _SerObj() { }
 
         }
     }

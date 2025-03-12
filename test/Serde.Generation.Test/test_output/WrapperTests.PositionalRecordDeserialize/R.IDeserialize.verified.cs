@@ -7,9 +7,9 @@ using Serde;
 partial record R : Serde.IDeserializeProvider<R>
 {
     static IDeserialize<R> IDeserializeProvider<R>.DeserializeInstance
-        => RDeserializeProxy.Instance;
+        => _DeObj.Instance;
 
-    sealed partial class RDeserializeProxy :Serde.IDeserialize<R>
+    sealed partial class _DeObj :Serde.IDeserialize<R>
     {
         R Serde.IDeserialize<R>.Deserialize(IDeserializer deserializer)
         {
@@ -21,20 +21,20 @@ partial record R : Serde.IDeserializeProvider<R>
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<R>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
             {
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_a = typeDeserialize.ReadI32(_l_index_);
+                        _l_a = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
-                        _l_b = typeDeserialize.ReadString(_l_index_);
+                        _l_b = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
-                    case Serde.IDeserializeType.IndexNotFound:
-                        typeDeserialize.SkipValue();
+                    case Serde.ITypeDeserializer.IndexNotFound:
+                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -49,8 +49,8 @@ partial record R : Serde.IDeserializeProvider<R>
 
             return newType;
         }
-        public static readonly RDeserializeProxy Instance = new();
-        private RDeserializeProxy() { }
+        public static readonly _DeObj Instance = new();
+        private _DeObj() { }
 
     }
 }

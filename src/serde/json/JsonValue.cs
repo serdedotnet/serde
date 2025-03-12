@@ -50,7 +50,7 @@ namespace Serde.Json
 
             public string GetFieldStringName(int index) => throw GetOOR(index);
 
-            public int TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
+            public int TryGetIndex(Utf8Span fieldName) => ITypeDeserializer.IndexNotFound;
 
             private ArgumentOutOfRangeException GetOOR(int index)
             {

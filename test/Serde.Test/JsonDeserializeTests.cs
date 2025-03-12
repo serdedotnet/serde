@@ -355,7 +355,7 @@ namespace Serde.Test
                 var typeInfo = SerdeInfo;
                 var de = deserializer.ReadType(typeInfo);
                 int index;
-                if ((index = de.TryReadIndex(typeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+                if ((index = de.TryReadIndex(typeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
                 {
                     throw DeserializeException.UnknownMember(errorName!, typeInfo);
                 }
@@ -468,7 +468,7 @@ namespace Serde.Test
                     {
                         throw new DeserializeException($"Unexpected key '{errorName}', expected union tag named 'tag'.");
                     }
-                    var caseName = typeDeserialize.ReadString(0);
+                    var caseName = typeDeserialize.ReadString(_l_baseInfo, 0);
                     return caseName switch
                     {
                         nameof(A) => _m_AProxy.Deserialize(typeDeserialize),
@@ -488,27 +488,27 @@ namespace Serde.Test
                         ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")),
                     ]);
 
-                public static A Deserialize(IDeserializeType typeDeserialize)
+                public static A Deserialize(ITypeDeserializer typeDeserialize)
                 {
                     var _l_AProxy = SerdeInfoProvider.GetInfo<_m_AProxy>();
                     int _l_index;
                     int _l_w = default;
                     int _l_x = default;
                     byte _r_assignedValid = 0;
-                    while ((_l_index = typeDeserialize.TryReadIndex(_l_AProxy, out _)) != IDeserializeType.EndOfType)
+                    while ((_l_index = typeDeserialize.TryReadIndex(_l_AProxy, out _)) != ITypeDeserializer.EndOfType)
                     {
                         switch (_l_index)
                         {
                             case 0:
-                                _l_w = typeDeserialize.ReadI32(_l_index);
+                                _l_w = typeDeserialize.ReadI32(_l_AProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 1:
-                                _l_x = typeDeserialize.ReadI32(_l_index);
+                                _l_x = typeDeserialize.ReadI32(_l_AProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 1;
                                 break;
-                            case Serde.IDeserializeType.IndexNotFound:
-                                typeDeserialize.SkipValue();
+                            case Serde.ITypeDeserializer.IndexNotFound:
+                                typeDeserialize.SkipValue(_l_AProxy, _l_index);
                                 break;
                             default:
                                 throw new InvalidOperationException("Unexpected index: " + _l_index);
@@ -533,27 +533,27 @@ namespace Serde.Test
                         ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")),
                         ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")),
                     ]);
-                public static B Deserialize(IDeserializeType d)
+                public static B Deserialize(ITypeDeserializer d)
                 {
-                    var _l_AProxy = SerdeInfoProvider.GetInfo<_m_BProxy>();
+                    var _l_BProxy = SerdeInfoProvider.GetInfo<_m_BProxy>();
                     int _l_index;
                     string _l_y = default!;
                     string _l_z = default!;
                     byte _r_assignedValid = 0;
-                    while ((_l_index = d.TryReadIndex(_l_AProxy, out _)) != IDeserializeType.EndOfType)
+                    while ((_l_index = d.TryReadIndex(_l_BProxy, out _)) != ITypeDeserializer.EndOfType)
                     {
                         switch (_l_index)
                         {
                             case 0:
-                                _l_y = d.ReadString(_l_index);
+                                _l_y = d.ReadString(_l_BProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 1:
-                                _l_z = d.ReadString(_l_index);
+                                _l_z = d.ReadString(_l_BProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 1;
                                 break;
-                            case Serde.IDeserializeType.IndexNotFound:
-                                d.SkipValue();
+                            case Serde.ITypeDeserializer.IndexNotFound:
+                                d.SkipValue(_l_BProxy, _l_index);
                                 break;
                             default:
                                 throw new InvalidOperationException("Unexpected index: " + _l_index);
@@ -607,7 +607,7 @@ namespace Serde.Test
                 };
                 public int TryGetIndex(ReadOnlySpan<byte> fieldName) => fieldName.SequenceEqual(_utf8TagName)
                     ? 0
-                    : IDeserializeType.IndexNotFound;
+                    : ITypeDeserializer.IndexNotFound;
             }
         }
 

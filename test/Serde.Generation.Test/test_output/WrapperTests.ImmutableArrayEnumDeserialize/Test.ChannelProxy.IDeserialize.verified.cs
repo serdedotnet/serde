@@ -14,7 +14,7 @@ sealed partial class ChannelProxy :Serde.IDeserialize<Test.Channel>,Serde.IDeser
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Test.ChannelProxy>();
         var de = deserializer.ReadType(serdeInfo);
         int index;
-        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
         }

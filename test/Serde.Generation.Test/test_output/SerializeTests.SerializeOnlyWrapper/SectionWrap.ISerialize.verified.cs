@@ -7,9 +7,9 @@ using Serde;
 partial record struct SectionWrap : Serde.ISerializeProvider<System.Collections.Specialized.BitVector32.Section>
 {
     static ISerialize<System.Collections.Specialized.BitVector32.Section> ISerializeProvider<System.Collections.Specialized.BitVector32.Section>.SerializeInstance
-        => SectionWrapSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class SectionWrapSerializeProxy :Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
+    sealed partial class _SerObj :Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
     {
         void global::Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>.Serialize(System.Collections.Specialized.BitVector32.Section value, global::Serde.ISerializer serializer)
         {
@@ -19,8 +19,8 @@ partial record struct SectionWrap : Serde.ISerializeProvider<System.Collections.
             _l_type.WriteI16(_l_info, 1, value.Offset);
             _l_type.End(_l_info);
         }
-        public static readonly SectionWrapSerializeProxy Instance = new();
-        private SectionWrapSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

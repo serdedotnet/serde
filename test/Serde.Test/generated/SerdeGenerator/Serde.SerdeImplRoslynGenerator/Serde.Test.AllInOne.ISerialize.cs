@@ -9,9 +9,9 @@ namespace Serde.Test;
 partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
 {
     static ISerialize<Serde.Test.AllInOne> ISerializeProvider<Serde.Test.AllInOne>.SerializeInstance
-        => AllInOneSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class AllInOneSerializeProxy :Serde.ISerialize<Serde.Test.AllInOne>
+    sealed partial class _SerObj :Serde.ISerialize<Serde.Test.AllInOne>
     {
         void global::Serde.ISerialize<Serde.Test.AllInOne>.Serialize(Serde.Test.AllInOne value, global::Serde.ISerializer serializer)
         {
@@ -30,14 +30,14 @@ partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
             _l_type.WriteString(_l_info, 10, value.StringField);
             _l_type.WriteString(_l_info, 11, value.EscapedStringField);
             _l_type.WriteStringIfNotNull(_l_info, 12, value.NullStringField);
-            _l_type.WriteField<uint[], Serde.ArrayProxy.Serialize<uint, global::Serde.U32Proxy>>(_l_info, 13, value.UIntArr);
-            _l_type.WriteField<int[][], Serde.ArrayProxy.Serialize<int[], Serde.ArrayProxy.Serialize<int, global::Serde.I32Proxy>>>(_l_info, 14, value.NestedArr);
-            _l_type.WriteBoxedField<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Serialize<int, global::Serde.I32Proxy>>(_l_info, 15, value.IntImm);
-            _l_type.WriteBoxedField<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_info, 16, value.Color);
+            _l_type.WriteValue<uint[], Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>(_l_info, 13, value.UIntArr);
+            _l_type.WriteValue<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>(_l_info, 14, value.NestedArr);
+            _l_type.WriteBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 15, value.IntImm);
+            _l_type.WriteBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_info, 16, value.Color);
             _l_type.End(_l_info);
         }
-        public static readonly AllInOneSerializeProxy Instance = new();
-        private AllInOneSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

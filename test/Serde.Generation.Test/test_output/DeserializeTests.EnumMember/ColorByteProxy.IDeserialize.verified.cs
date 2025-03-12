@@ -11,7 +11,7 @@ sealed partial class ColorByteProxy :Serde.IDeserialize<ColorByte>,Serde.IDeseri
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorByteProxy>();
         var de = deserializer.ReadType(serdeInfo);
         int index;
-        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
         }

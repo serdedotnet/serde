@@ -36,10 +36,11 @@ namespace Serde.Json
                     {
                         var serdeInfo = JsonValue.UnionInfo.ObjectInfo;
                         var dict = serializer.WriteCollection(serdeInfo, members.Count);
+                        int index = 0;
                         foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
                         {
-                            dict.WriteElement(name, StringProxy.Instance);
-                            dict.WriteElement(node, Instance);
+                            dict.WriteString(serdeInfo, index++, name);
+                            dict.WriteValue(serdeInfo, index++, node, Instance);
                         }
                         dict.End(serdeInfo);
                         break;
@@ -48,9 +49,10 @@ namespace Serde.Json
                     {
                         var serdeInfo = JsonValue.UnionInfo.ArrayInfo;
                         var enumerable = serializer.WriteCollection(serdeInfo, elements.Length);
+                        int index = 0;
                         foreach (var element in elements)
                         {
-                            enumerable.WriteElement(element, Instance);
+                            enumerable.WriteValue(serdeInfo, index++, element, Instance);
                         }
                         enumerable.End(serdeInfo);
                         break;

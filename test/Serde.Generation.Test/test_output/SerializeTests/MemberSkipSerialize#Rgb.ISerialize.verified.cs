@@ -7,9 +7,9 @@ using Serde;
 partial struct Rgb : Serde.ISerializeProvider<Rgb>
 {
     static ISerialize<Rgb> ISerializeProvider<Rgb>.SerializeInstance
-        => RgbSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class RgbSerializeProxy :Serde.ISerialize<Rgb>
+    sealed partial class _SerObj :Serde.ISerialize<Rgb>
     {
         void global::Serde.ISerialize<Rgb>.Serialize(Rgb value, global::Serde.ISerializer serializer)
         {
@@ -19,8 +19,8 @@ partial struct Rgb : Serde.ISerializeProvider<Rgb>
             _l_type.WriteU8(_l_info, 1, value.Blue);
             _l_type.End(_l_info);
         }
-        public static readonly RgbSerializeProxy Instance = new();
-        private RgbSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

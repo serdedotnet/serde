@@ -11,9 +11,9 @@ partial class JsonDeserializeTests
     partial record Location : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.Location>
     {
         static IDeserialize<Serde.Test.JsonDeserializeTests.Location> IDeserializeProvider<Serde.Test.JsonDeserializeTests.Location>.DeserializeInstance
-            => LocationDeserializeProxy.Instance;
+            => _DeObj.Instance;
 
-        sealed partial class LocationDeserializeProxy :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>
+        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>
         {
             Serde.Test.JsonDeserializeTests.Location Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>.Deserialize(IDeserializer deserializer)
             {
@@ -32,48 +32,48 @@ partial class JsonDeserializeTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Location>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_id = typeDeserialize.ReadI32(_l_index_);
+                            _l_id = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 0;
                             break;
                         case 1:
-                            _l_address1 = typeDeserialize.ReadString(_l_index_);
+                            _l_address1 = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 1;
                             break;
                         case 2:
-                            _l_address2 = typeDeserialize.ReadString(_l_index_);
+                            _l_address2 = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 2;
                             break;
                         case 3:
-                            _l_city = typeDeserialize.ReadString(_l_index_);
+                            _l_city = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 3;
                             break;
                         case 4:
-                            _l_state = typeDeserialize.ReadString(_l_index_);
+                            _l_state = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 4;
                             break;
                         case 5:
-                            _l_postalcode = typeDeserialize.ReadString(_l_index_);
+                            _l_postalcode = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 5;
                             break;
                         case 6:
-                            _l_name = typeDeserialize.ReadString(_l_index_);
+                            _l_name = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 6;
                             break;
                         case 7:
-                            _l_phonenumber = typeDeserialize.ReadString(_l_index_);
+                            _l_phonenumber = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 7;
                             break;
                         case 8:
-                            _l_country = typeDeserialize.ReadString(_l_index_);
+                            _l_country = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 8;
                             break;
-                        case Serde.IDeserializeType.IndexNotFound:
-                            typeDeserialize.SkipValue();
+                        case Serde.ITypeDeserializer.IndexNotFound:
+                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -97,8 +97,8 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-            public static readonly LocationDeserializeProxy Instance = new();
-            private LocationDeserializeProxy() { }
+            public static readonly _DeObj Instance = new();
+            private _DeObj() { }
 
         }
     }

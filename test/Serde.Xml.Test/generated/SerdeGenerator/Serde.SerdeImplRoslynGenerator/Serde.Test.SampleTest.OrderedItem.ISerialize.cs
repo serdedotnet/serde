@@ -11,9 +11,9 @@ partial class SampleTest
     partial record OrderedItem : Serde.ISerializeProvider<Serde.Test.SampleTest.OrderedItem>
     {
         static ISerialize<Serde.Test.SampleTest.OrderedItem> ISerializeProvider<Serde.Test.SampleTest.OrderedItem>.SerializeInstance
-            => OrderedItemSerializeProxy.Instance;
+            => _SerObj.Instance;
 
-        sealed partial class OrderedItemSerializeProxy :Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>
+        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>
         {
             void global::Serde.ISerialize<Serde.Test.SampleTest.OrderedItem>.Serialize(Serde.Test.SampleTest.OrderedItem value, global::Serde.ISerializer serializer)
             {
@@ -26,8 +26,8 @@ partial class SampleTest
                 _l_type.WriteDecimal(_l_info, 4, value.LineTotal);
                 _l_type.End(_l_info);
             }
-            public static readonly OrderedItemSerializeProxy Instance = new();
-            private OrderedItemSerializeProxy() { }
+            public static readonly _SerObj Instance = new();
+            private _SerObj() { }
 
         }
     }

@@ -6,8 +6,8 @@
       Severity: Error,
       WarningLevel: 0,
       Location: : (35,18)-(35,19),
-      MessageFormat: Could not find nested type named 'Serialize' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
-      Message: Could not find nested type named 'Serialize' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
+      MessageFormat: Could not find nested type named 'Ser' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
+      Message: Could not find nested type named 'Ser' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
       Category: Serde
     },
     {

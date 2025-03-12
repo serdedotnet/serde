@@ -7,8 +7,8 @@ partial struct S<T1, T2, TSerialize> : Serde.ISerdeInfoProvider
         "S",
         typeof(S<,,>).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("fI", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Serialize<int, global::Serde.I32Proxy>>(), typeof(S<,,>).GetField("FI")),
-            ("f3", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Serialize<TSerialize, TSerialize>>(), typeof(S<,,>).GetField("F3"))
+            ("fI", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(S<,,>).GetField("FI")),
+            ("f3", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Ser<TSerialize, TSerialize>>(), typeof(S<,,>).GetField("F3"))
         }
     );
 }

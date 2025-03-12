@@ -11,9 +11,9 @@ partial class InvalidJsonTests
     partial class ClassWithPoco : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithPoco>
     {
         static IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithPoco> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithPoco>.DeserializeInstance
-            => ClassWithPocoDeserializeProxy.Instance;
+            => _DeObj.Instance;
 
-        sealed partial class ClassWithPocoDeserializeProxy :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithPoco>
+        sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithPoco>
         {
             Serde.Json.Test.InvalidJsonTests.ClassWithPoco Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithPoco>.Deserialize(IDeserializer deserializer)
             {
@@ -24,16 +24,16 @@ partial class InvalidJsonTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ClassWithPoco>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_obj = typeDeserialize.ReadValue<Serde.Json.Test.Poco, Serde.Json.Test.Poco>(_l_index_);
+                            _l_obj = typeDeserialize.ReadValue<Serde.Json.Test.Poco, Serde.Json.Test.Poco>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
-                        case Serde.IDeserializeType.IndexNotFound:
-                            typeDeserialize.SkipValue();
+                        case Serde.ITypeDeserializer.IndexNotFound:
+                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -49,8 +49,8 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-            public static readonly ClassWithPocoDeserializeProxy Instance = new();
-            private ClassWithPocoDeserializeProxy() { }
+            public static readonly _DeObj Instance = new();
+            private _DeObj() { }
 
         }
     }

@@ -11,9 +11,9 @@ partial class CustomImplTests
     partial record RgbWithFieldMap : Serde.ISerializeProvider<Serde.Test.CustomImplTests.RgbWithFieldMap>
     {
         static ISerialize<Serde.Test.CustomImplTests.RgbWithFieldMap> ISerializeProvider<Serde.Test.CustomImplTests.RgbWithFieldMap>.SerializeInstance
-            => RgbWithFieldMapSerializeProxy.Instance;
+            => _SerObj.Instance;
 
-        sealed partial class RgbWithFieldMapSerializeProxy :Serde.ISerialize<Serde.Test.CustomImplTests.RgbWithFieldMap>
+        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.CustomImplTests.RgbWithFieldMap>
         {
             void global::Serde.ISerialize<Serde.Test.CustomImplTests.RgbWithFieldMap>.Serialize(Serde.Test.CustomImplTests.RgbWithFieldMap value, global::Serde.ISerializer serializer)
             {
@@ -24,8 +24,8 @@ partial class CustomImplTests
                 _l_type.WriteI32(_l_info, 2, value.Blue);
                 _l_type.End(_l_info);
             }
-            public static readonly RgbWithFieldMapSerializeProxy Instance = new();
-            private RgbWithFieldMapSerializeProxy() { }
+            public static readonly _SerObj Instance = new();
+            private _SerObj() { }
 
         }
     }

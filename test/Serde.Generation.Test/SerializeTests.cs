@@ -26,8 +26,8 @@ sealed partial class OPTSWrap
 partial struct S
 {
     [SerdeMemberOptions(
-        SerializeProxy = typeof(ImmutableArrayProxy.Serialize<BIND_OPTS, OPTSWrap>),
-        DeserializeProxy = typeof(ImmutableArrayProxy.Deserialize<BIND_OPTS, OPTSWrap>))]
+        SerializeProxy = typeof(ImmutableArrayProxy.Ser<BIND_OPTS, OPTSWrap>),
+        DeserializeProxy = typeof(ImmutableArrayProxy.De<BIND_OPTS, OPTSWrap>))]
     public ImmutableArray<BIND_OPTS> Opts;
 }
 
@@ -358,19 +358,19 @@ public static class SWrap
             new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
                 (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")) });
     }
-    public sealed class Serialize<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
+    public sealed class Ser<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
         where TWrap : ISerializeProvider<T>
     {
-        public static Serialize<T, TWrap> Instance { get; } = new Serialize<T, TWrap>();
-        static ISerialize<S<T>> ISerializeProvider<S<T>>.SerializeInstance => Instance;
-        private Serialize() { }
+        static ISerialize<S<T>> ISerializeProvider<S<T>>.SerializeInstance { get; }
+            = new Ser<T, TWrap>();
+        private Ser() { }
 
         public static ISerdeInfo SerdeInfo => SWrapTypeInfo<TWrap>.TypeInfo;
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
             var _l_serdeInfo = SerdeInfo;
             var type = serializer.WriteType(_l_serdeInfo);
-            type.WriteBoxedField<T, TWrap>(_l_serdeInfo, 0, value.Field);
+            type.WriteBoxedValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
             type.End(_l_serdeInfo);
         }
     }
@@ -414,7 +414,7 @@ public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
     {
         var _l_serdeInfo = SerdeInfo;
         var type = serializer.WriteType(_l_serdeInfo);
-        type.WriteBoxedField<T, TWrap>(_l_serdeInfo, 0, value.Field);
+        type.WriteBoxedValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
         type.End(_l_serdeInfo);
     }
 }

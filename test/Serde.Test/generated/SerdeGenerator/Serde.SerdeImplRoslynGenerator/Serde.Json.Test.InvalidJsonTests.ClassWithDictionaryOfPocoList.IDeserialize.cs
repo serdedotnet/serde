@@ -11,9 +11,9 @@ partial class InvalidJsonTests
     partial class ClassWithDictionaryOfPocoList : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList>
     {
         static IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList>.DeserializeInstance
-            => ClassWithDictionaryOfPocoListDeserializeProxy.Instance;
+            => _DeObj.Instance;
 
-        sealed partial class ClassWithDictionaryOfPocoListDeserializeProxy :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList>
+        sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList>
         {
             Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPocoList>.Deserialize(IDeserializer deserializer)
             {
@@ -24,16 +24,16 @@ partial class InvalidJsonTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ClassWithDictionaryOfPocoList>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_obj = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Serde.Json.Test.Poco>>, Serde.DictProxy.Deserialize<string, System.Collections.Generic.List<Serde.Json.Test.Poco>, global::Serde.StringProxy, Serde.ListProxy.Deserialize<Serde.Json.Test.Poco, Serde.Json.Test.Poco>>>(_l_index_);
+                            _l_obj = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Serde.Json.Test.Poco>>, Serde.DictProxy.De<string, System.Collections.Generic.List<Serde.Json.Test.Poco>, global::Serde.StringProxy, Serde.ListProxy.De<Serde.Json.Test.Poco, Serde.Json.Test.Poco>>>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
-                        case Serde.IDeserializeType.IndexNotFound:
-                            typeDeserialize.SkipValue();
+                        case Serde.ITypeDeserializer.IndexNotFound:
+                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -49,8 +49,8 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-            public static readonly ClassWithDictionaryOfPocoListDeserializeProxy Instance = new();
-            private ClassWithDictionaryOfPocoListDeserializeProxy() { }
+            public static readonly _DeObj Instance = new();
+            private _DeObj() { }
 
         }
     }

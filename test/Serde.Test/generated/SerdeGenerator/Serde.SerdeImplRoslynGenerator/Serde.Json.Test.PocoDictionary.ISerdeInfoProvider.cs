@@ -9,7 +9,7 @@ partial class PocoDictionary : Serde.ISerdeInfoProvider
         "PocoDictionary",
         typeof(Serde.Json.Test.PocoDictionary).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("key", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.Deserialize<string, string, global::Serde.StringProxy, global::Serde.StringProxy>>(), typeof(Serde.Json.Test.PocoDictionary).GetProperty("key"))
+            ("key", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.De<string, string, global::Serde.StringProxy, global::Serde.StringProxy>>(), typeof(Serde.Json.Test.PocoDictionary).GetProperty("key"))
         }
     );
 }

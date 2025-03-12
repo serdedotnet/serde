@@ -9,7 +9,6 @@ using System.Text.Json;
 
 namespace Serde.Json
 {
-    internal sealed class KeyNotStringException : Exception { }
 
     public sealed partial class JsonSerializer : ISerializer
     {
@@ -51,28 +50,26 @@ namespace Serde.Json
 
         public static T Deserialize<T>(string source)
             where T : IDeserializeProvider<T>
-            => Deserialize<T, IDeserialize<T>>(source, default(T).GetDeserialize());
+            => Deserialize(source, default(T).GetDeserialize());
 
         public static List<T> DeserializeList<T>(string source)
             where T : IDeserializeProvider<T>
-            => Deserialize<List<T>, ListProxy.Deserialize<T, T>>(source, default(List<T>).GetDeserialize());
+            => Deserialize(source, default(List<T>).GetDeserialize());
 
         public static T Deserialize<T, TProvider>(string source)
             where TProvider : IDeserializeProvider<T>
-            => Deserialize<T, IDeserialize<T>>(source, TProvider.DeserializeInstance);
+            => Deserialize(source, TProvider.DeserializeInstance);
 
-        public static T Deserialize<T, D>(string source, D d)
-            where D : IDeserialize<T>
+        public static T Deserialize<T>(string source, IDeserialize<T> d)
         {
             var bytes = Encoding.UTF8.GetBytes(source);
-            return Deserialize_Unsafe<T, D>(bytes, d);
+            return Deserialize_Unsafe<T>(bytes, d);
         }
 
         /// <summary>
         /// Deserialize from an array of UTF-8 bytes.
         /// </summary>
-        public static T Deserialize<T, D>(byte[] utf8Bytes, D d)
-            where D : IDeserialize<T>
+        public static T Deserialize<T, D>(byte[] utf8Bytes, IDeserialize<T> d)
         {
             try
             {
@@ -83,14 +80,13 @@ namespace Serde.Json
             {
                 throw new ArgumentException("Array is not valid UTF-8", nameof(utf8Bytes));
             }
-            return Deserialize_Unsafe<T, D>(utf8Bytes, d);
+            return Deserialize_Unsafe(utf8Bytes, d);
         }
 
         /// <summary>
         /// Assumes the input is valid UTF-8.
         /// </summary>
-        private static T Deserialize_Unsafe<T, D>(byte[] utf8Bytes, D d)
-            where D : IDeserialize<T>
+        private static T Deserialize_Unsafe<T>(byte[] utf8Bytes, IDeserialize<T> d)
         {
 #if DEBUG
             var reader = new System.Text.Json.Utf8JsonReader(utf8Bytes);

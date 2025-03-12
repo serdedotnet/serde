@@ -16,7 +16,7 @@ namespace Serde;
 /// <summary>
 /// Recognizes the [GenerateSerialize] attribute on a type to generate an implementation
 /// of Serde.ISerialize. The implementation generally looks like a call to SerializeType,
-/// then successive calls to WriteField.
+/// then successive calls to WriteValue.
 /// </summary>
 /// <example>
 /// For a type like,
@@ -36,9 +36,9 @@ namespace Serde;
 ///     void Serde.ISerialize.Serialize&lt;TSerializer, TSerializeType, TSerializeEnumerable, TSerializeDictionary&gt;TSerializer serializer)
 ///     {
 ///         var type = serializer.SerializeType("Rgb", 3);
-///         type.WriteField("Red", new ByteWrap(Red));
-///         type.WriteField("Green", new ByteWrap(Green));
-///         type.WriteField("Blue", new ByteWrap(Blue));
+///         type.WriteValue("Red", new ByteWrap(Red));
+///         type.WriteValue("Green", new ByteWrap(Green));
+///         type.WriteValue("Blue", new ByteWrap(Blue));
 ///         type.End();
 ///     }
 /// }
@@ -307,29 +307,30 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         }
         else
         {
-            var suffix = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
-            var proxyName = typeName + suffix + "Proxy";
+            var objPrefix = usage == SerdeUsage.Serialize ? "Ser" : "De";
+            var objName = $"_{objPrefix}Obj";
 
             implMembers.AppendLine(
-                $"public static readonly {proxyName} Instance = new();"
+                $"public static readonly {objName} Instance = new();"
             );
             implMembers.AppendLine(
                 $$"""
-                private {{proxyName}}() { }
+                private {{objName}}() { }
                 """
             );
 
             var interfaceName = usage.GetProxyInterfaceName();
             var proxyType = new SourceBuilder($$"""
-            sealed partial class {{proxyName}} {{baseList}}
+            sealed partial class {{objName}} {{baseList}}
             {
                 {{implMembers}}
             }
             """);
 
+            var suffix = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
             var members = new SourceBuilder($$"""
             static {{interfaceName}}<{{receiverType.ToDisplayString()}}> {{interfaceName}}Provider<{{receiverType.ToDisplayString()}}>.{{suffix}}Instance
-                => {{proxyName}}.Instance;
+                => {{objName}}.Instance;
 
             {{proxyType}}
             """);

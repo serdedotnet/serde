@@ -7,7 +7,7 @@ partial class C : Serde.ISerdeInfoProvider
         "C",
         typeof(C).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("map", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.Serialize<string, int, global::Serde.StringProxy, global::Serde.I32Proxy>>(), typeof(C).GetField("Map"))
+            ("map", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.Ser<string, int, global::Serde.StringProxy, global::Serde.I32Proxy>>(), typeof(C).GetField("Map"))
         }
     );
 }

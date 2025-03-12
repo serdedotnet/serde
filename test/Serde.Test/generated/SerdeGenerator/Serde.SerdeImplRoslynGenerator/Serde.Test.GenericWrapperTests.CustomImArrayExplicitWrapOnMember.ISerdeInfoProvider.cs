@@ -11,7 +11,7 @@ partial class GenericWrapperTests
             "CustomImArrayExplicitWrapOnMember",
             typeof(Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember).GetCustomAttributesData(),
             new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("a", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.GenericWrapperTests.CustomImArrayProxy.Serialize<int, global::Serde.I32Proxy>>(), typeof(Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember).GetField("A"))
+                ("a", global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.GenericWrapperTests.CustomImArrayProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember).GetField("A"))
             }
         );
     }

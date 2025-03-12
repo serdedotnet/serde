@@ -7,9 +7,9 @@ using Serde;
 partial struct S : Serde.ISerializeProvider<S>
 {
     static ISerialize<S> ISerializeProvider<S>.SerializeInstance
-        => SSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class SSerializeProxy :Serde.ISerialize<S>
+    sealed partial class _SerObj :Serde.ISerialize<S>
     {
         void global::Serde.ISerialize<S>.Serialize(S value, global::Serde.ISerializer serializer)
         {
@@ -19,8 +19,8 @@ partial struct S : Serde.ISerializeProvider<S>
             _l_type.WriteI32(_l_info, 1, value.TwoWord);
             _l_type.End(_l_info);
         }
-        public static readonly SSerializeProxy Instance = new();
-        private SSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

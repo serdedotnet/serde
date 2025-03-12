@@ -11,9 +11,9 @@ partial class SerdeInfoTests
     partial record EmptyRecord : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>
     {
         static IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord> IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>.DeserializeInstance
-            => EmptyRecordDeserializeProxy.Instance;
+            => _DeObj.Instance;
 
-        sealed partial class EmptyRecordDeserializeProxy :Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>
+        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>
         {
             Serde.Test.SerdeInfoTests.EmptyRecord Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>.Deserialize(IDeserializer deserializer)
             {
@@ -23,12 +23,12 @@ partial class SerdeInfoTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<EmptyRecord>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
-                        case Serde.IDeserializeType.IndexNotFound:
-                            typeDeserialize.SkipValue();
+                        case Serde.ITypeDeserializer.IndexNotFound:
+                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -43,8 +43,8 @@ partial class SerdeInfoTests
 
                 return newType;
             }
-            public static readonly EmptyRecordDeserializeProxy Instance = new();
-            private EmptyRecordDeserializeProxy() { }
+            public static readonly _DeObj Instance = new();
+            private _DeObj() { }
 
         }
     }

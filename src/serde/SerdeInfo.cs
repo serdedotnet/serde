@@ -16,7 +16,7 @@ public static class SerdeInfo
 {
     /// <summary>
     /// Create an <see cref="ISerdeInfo"/> for a custom type. The ordering of the fields is
-    /// important: it corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
+    /// important: it corresponds to the index returned by <see cref="ITypeDeserializer.TryReadIndex" />.
     /// </summary>
     public static ISerdeInfo MakeCustom(
         string typeName,
@@ -101,7 +101,7 @@ file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
     public IList<CustomAttributeData> GetFieldAttributes(int index)
         => index == 0 ? [] : throw GetOOR(index);
 
-    public int TryGetIndex(Utf8Span fieldName) => "Value"u8.SequenceEqual(fieldName) ? 0 : IDeserializeType.IndexNotFound;
+    public int TryGetIndex(Utf8Span fieldName) => "Value"u8.SequenceEqual(fieldName) ? 0 : ITypeDeserializer.IndexNotFound;
 
     public ISerdeInfo GetFieldInfo(int index) => index == 0 ? UnderlyingInfo : throw GetOOR(index);
 
@@ -121,7 +121,7 @@ file interface INoFieldsInfo : ISerdeInfo
     IList<CustomAttributeData> ISerdeInfo.GetFieldAttributes(int index)
         => throw GetOOR(index);
 
-    int ISerdeInfo.TryGetIndex(Utf8Span fieldName) => IDeserializeType.IndexNotFound;
+    int ISerdeInfo.TryGetIndex(Utf8Span fieldName) => ITypeDeserializer.IndexNotFound;
 
     ISerdeInfo ISerdeInfo.GetFieldInfo(int index)
         => throw GetOOR(index);
@@ -175,7 +175,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
 
     /// <summary>
     /// Create a new field mapping. The ordering of the fields is important -- it
-    /// corresponds to the index returned by <see cref="IDeserializeType.TryReadIndex" />.
+    /// corresponds to the index returned by <see cref="ITypeDeserializer.TryReadIndex" />.
     /// </summary>
     public static TypeWithFieldsInfo Create(
         string typeName,
@@ -229,7 +229,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
     {
         int mapIndex = BinarySearch(_nameToIndex.AsSpan(), utf8FieldName);
 
-        return mapIndex < 0 ? IDeserializeType.IndexNotFound : _nameToIndex[mapIndex].Index;
+        return mapIndex < 0 ? ITypeDeserializer.IndexNotFound : _nameToIndex[mapIndex].Index;
     }
 
     [Experimental("SerdeExperimentalFieldInfo")]
@@ -328,6 +328,6 @@ file sealed class UnionSerdeInfo(
                 return i;
             }
         }
-        return IDeserializeType.IndexNotFound;
+        return ITypeDeserializer.IndexNotFound;
     }
 }

@@ -10,7 +10,7 @@ partial record struct ChannelList : Serde.ISerdeInfoProvider
         "ChannelList",
         typeof(Test.ChannelList).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("channels", global::Serde.SerdeInfoProvider.GetInfo<Serde.ImmutableArrayProxy.Deserialize<Test.Channel, Test.ChannelProxy>>(), typeof(Test.ChannelList).GetProperty("Channels"))
+            ("channels", global::Serde.SerdeInfoProvider.GetInfo<Serde.ImmutableArrayProxy.De<Test.Channel, Test.ChannelProxy>>(), typeof(Test.ChannelList).GetProperty("Channels"))
         }
     );
 }

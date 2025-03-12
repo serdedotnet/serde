@@ -24,7 +24,7 @@ internal sealed record CollectionSerdeInfo(
     public string GetFieldStringName(int index)
         => throw GetAOOR(index);
 
-    public int TryGetIndex(ReadOnlySpan<byte> fieldName) => IDeserializeType.IndexNotFound;
+    public int TryGetIndex(ReadOnlySpan<byte> fieldName) => ITypeDeserializer.IndexNotFound;
 
     private ArgumentOutOfRangeException GetAOOR(int index)
         => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
