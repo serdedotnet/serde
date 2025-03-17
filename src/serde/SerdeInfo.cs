@@ -45,7 +45,7 @@ public static class SerdeInfo
 
     public static ISerdeInfo MakeEnumerable(
         string typeName)
-        => new CollectionInfo(typeName, InfoKind.Enumerable);
+        => new CollectionInfo(typeName, InfoKind.List);
     public static ISerdeInfo MakeDictionary(
         string typeName)
         => new CollectionInfo(typeName, InfoKind.Dictionary);

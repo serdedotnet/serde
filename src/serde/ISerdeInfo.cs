@@ -65,7 +65,7 @@ public enum InfoKind
     Primitive,
     Nullable,
     CustomType,
-    Enumerable,
+    List,
     Dictionary,
     Enum,
     /// <summary>

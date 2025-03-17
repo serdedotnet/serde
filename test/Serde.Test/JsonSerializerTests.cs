@@ -120,7 +120,7 @@ namespace Serde.Test
             public void Serialize(JsonDictionaryWrapper value, ISerializer serializer)
             {
                 var typeInfo = SerdeInfo;
-                var sd = serializer.WriteCollection(typeInfo, value._d.Count);
+                var sd = serializer.WriteType(typeInfo);
                 int index = 0;
                 foreach (var (k,v) in value._d)
                 {

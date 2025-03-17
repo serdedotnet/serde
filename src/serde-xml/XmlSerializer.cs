@@ -150,25 +150,6 @@ public sealed partial class XmlSerializer : ISerializer
         return formattingListener.ToString();
     }
 
-    public ITypeSerializer WriteCollection(ISerdeInfo typeInfo, int? length)
-    {
-        if (typeInfo.Kind == InfoKind.Dictionary)
-        {
-            throw new NotSupportedException("Serde.XmlSerializer doesn't currently support serializing dictionaries");
-        }
-        else if (typeInfo.Kind != InfoKind.Enumerable)
-        {
-            throw new ArgumentException("typeInfo must be a collection type", nameof(typeInfo));
-        }
-        var savedState = _state;
-        if (savedState == State.Enumerable)
-        {
-            _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
-        }
-        _state = State.Enumerable;
-        return new SerializeCollectionImpl(this, savedState);
-    }
-
     sealed partial class SerializeCollectionImpl : ITypeSerializer
     {
         private readonly XmlSerializer _serializer;
@@ -272,24 +253,40 @@ public sealed partial class XmlSerializer : ISerializer
 
     public ITypeSerializer WriteType(ISerdeInfo typeInfo)
     {
-        if (typeInfo.Kind == InfoKind.Enum)
+        switch (typeInfo.Kind)
         {
-            return new EnumSerializer(this);
+            case InfoKind.Enum:
+                return new EnumSerializer(this);
+            case InfoKind.Nullable:
+            case InfoKind.CustomType:
+            {
+                var saved = _state;
+                bool writeEnd;
+                if (_state is State.Start or State.Enumerable)
+                {
+                    _writer.WriteStartElement(typeInfo.Name);
+                    writeEnd = true;
+                }
+                else
+                {
+                    writeEnd = false;
+                }
+                _state = State.Type;
+                return new XmlTypeSerializer(writeEnd, this, saved);
+            }
+            case InfoKind.List:
+            {
+                var savedState = _state;
+                if (savedState == State.Enumerable)
+                {
+                    _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
+                }
+                _state = State.Enumerable;
+                return new SerializeCollectionImpl(this, savedState);
+            }
+            default:
+                throw new NotSupportedException($"Serde.Xml doesn't currently support kind '{typeInfo.Kind}'");
         }
-
-        var saved = _state;
-        bool writeEnd;
-        if (_state is State.Start or State.Enumerable)
-        {
-            _writer.WriteStartElement(typeInfo.Name);
-            writeEnd = true;
-        }
-        else
-        {
-            writeEnd = false;
-        }
-        _state = State.Type;
-        return new XmlTypeSerializer(writeEnd, this, saved);
     }
 
     private sealed class EnumSerializer(XmlSerializer _parent) : ITypeSerializer

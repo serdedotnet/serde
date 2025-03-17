@@ -7,28 +7,6 @@ namespace Serde.Json;
 
 partial class JsonDeserializer<TReader>
 {
-    public ITypeDeserializer ReadCollection(ISerdeInfo typeInfo)
-    {
-        var kind = typeInfo.Kind;
-        if (kind is not (InfoKind.Enumerable or InfoKind.Dictionary))
-        {
-            throw new ArgumentException($"TypeKind is {typeInfo.Kind}, expected Enumerable or Dictionary");
-        }
-        switch ((ThrowIfEos(Reader.SkipWhitespace()), kind))
-        {
-            case ((byte)'[', InfoKind.Enumerable):
-            case ((byte)'{', InfoKind.Dictionary):
-                Reader.Advance();
-                break;
-            case (_, InfoKind.Enumerable):
-                throw new JsonException("Expected array start");
-            case (_, InfoKind.Dictionary):
-                throw new JsonException("Expected object start");
-        }
-
-        return new DeCollection(this);
-    }
-
     private sealed class DeCollection : ITypeDeserializer
     {
         private readonly JsonDeserializer<TReader> _deserializer;
@@ -45,7 +23,7 @@ partial class JsonDeserializer<TReader>
         {
             switch (info.Kind)
             {
-                case InfoKind.Enumerable:
+                case InfoKind.List:
                     return TryReadIndexEnumerable(out errorName);
                 case InfoKind.Dictionary:
                     return TryReadIndexDictionary(out errorName);

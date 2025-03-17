@@ -152,5 +152,4 @@ public interface ISerializer
     void WriteNull();
 
     ITypeSerializer WriteType(ISerdeInfo typeInfo);
-    ITypeSerializer WriteCollection(ISerdeInfo typeInfo, int? length);
 }

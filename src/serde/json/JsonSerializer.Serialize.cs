@@ -42,32 +42,24 @@ partial class JsonSerializer : ISerializer
 
     ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo)
     {
-        if (typeInfo.Kind == InfoKind.Enum)
+        switch (typeInfo.Kind)
         {
-            return _enumSerializer;
-        }
-        _writer.WriteStartObject();
-        return this;
-    }
-
-    ITypeSerializer ISerializer.WriteCollection(ISerdeInfo typeInfo, int? length)
-    {
-        if (typeInfo.Kind == InfoKind.Dictionary)
-        {
-            _writer.WriteStartObject();
-            return new DictImpl(this);
-        }
-        else if (typeInfo.Kind == InfoKind.Enumerable)
-        {
-            _writer.WriteStartArray();
-            return new EnumerableImpl(this);
-        }
-        else
-        {
-            throw new InvalidOperationException("SerializeCollection called on non-collection type");
+            case InfoKind.Enum:
+                return _enumSerializer;
+            case InfoKind.Dictionary:
+                _writer.WriteStartObject();
+                return new DictImpl(this);
+            case InfoKind.List:
+                _writer.WriteStartArray();
+                return new EnumerableImpl(this);
+            case InfoKind.Union:
+            case InfoKind.CustomType:
+                _writer.WriteStartObject();
+                return this;
+            default:
+                throw new InvalidOperationException("Invalid type kind for WriteType: " + typeInfo.Kind);
         }
     }
-
 
     private sealed class EnumSerializer(JsonSerializer _parent) : ITypeSerializer
     {

@@ -97,7 +97,7 @@ public sealed partial class GenericWrapperTests
     {
         private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray<int>).ToString(),
-            InfoKind.Enumerable);
+            InfoKind.List);
 
         public sealed class Ser<T, TProvider>
             : SerListBase<Ser<T, TProvider>, T, CustomImArray<T>, TProvider>,
@@ -130,7 +130,7 @@ public sealed partial class GenericWrapperTests
             {
                 var serdeInfo = s_serdeInfo;
                 ImmutableArray<T>.Builder builder;
-                var d = deserializer.ReadCollection(serdeInfo);
+                var d = deserializer.ReadType(serdeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);
@@ -159,7 +159,7 @@ public sealed partial class GenericWrapperTests
     {
         private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray2<int>).ToString(),
-            InfoKind.Enumerable);
+            InfoKind.List);
 
         public sealed class Ser<T, TProvider>
             : SerListBase<Ser<T, TProvider>, T, CustomImArray2<T>, TProvider>,
@@ -196,7 +196,7 @@ public sealed partial class GenericWrapperTests
             {
                 ImmutableArray<T>.Builder builder;
                 var typeInfo = s_serdeInfo;
-                var d = deserializer.ReadCollection(typeInfo);
+                var d = deserializer.ReadType(typeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);

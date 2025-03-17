@@ -36,7 +36,7 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
     void ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
     {
         var typeInfo = DictSerdeInfo<TK, TV>.Instance;
-        var sd = serializer.WriteCollection(typeInfo, value.Count);
+        var sd = serializer.WriteType(typeInfo);
         int index = 0;
         foreach (var (k, v) in value)
         {
@@ -88,7 +88,7 @@ public abstract class DeDictBase<
     public TDict Deserialize(IDeserializer deserializer)
     {
         var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
-        var deCollection = deserializer.ReadCollection(typeInfo);
+        var deCollection = deserializer.ReadType(typeInfo);
         var sizeOpt = deCollection.SizeOpt;
         TBuilder builder = GetBuilder(sizeOpt);
         int index;

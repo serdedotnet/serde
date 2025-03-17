@@ -15,7 +15,7 @@ public static class EnumerableHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SerializeSpan<T>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, ITypeSerialize<T> serializeImpl, ISerializer serializer)
     {
-        var enumerable = serializer.WriteCollection(typeInfo, arr.Length);
+        var enumerable = serializer.WriteType(typeInfo);
         int index = 0;
         foreach (var item in arr)
         {
@@ -77,7 +77,7 @@ public abstract class DeListBase<
     public TList Deserialize(IDeserializer deserializer)
     {
         var typeInfo = TSelf.SerdeInfo;
-        var deCollection = deserializer.ReadCollection(typeInfo);
+        var deCollection = deserializer.ReadType(typeInfo);
         if (deCollection.SizeOpt is int size)
         {
             var builder = GetFixBuilder(size);

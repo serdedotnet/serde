@@ -107,25 +107,45 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         return Reader.LexUtf8Span(_scratch);
     }
 
-    public ITypeDeserializer ReadType(ISerdeInfo fieldMap)
+    public ITypeDeserializer ReadType(ISerdeInfo info)
     {
-        // Custom types look like dictionaries, enums are inline strings
-        if (fieldMap.Kind is InfoKind.CustomType or InfoKind.Union)
+        switch (info.Kind)
         {
-            var peek = Reader.SkipWhitespace();
-            if (peek != (short)'{')
+            case InfoKind.CustomType:
+            case InfoKind.Union:
             {
-                throw new JsonException("Expected object start");
+                // Custom types look like dictionaries, enums are inline strings
+                var peek = Reader.SkipWhitespace();
+                if (peek != (short)'{')
+                {
+                    throw new JsonException("Expected object start");
+                }
+                Reader.Advance();
+                goto case InfoKind.Enum;
             }
-            Reader.Advance();
-        }
-        else if (fieldMap.Kind != InfoKind.Enum)
-        {
-            throw new ArgumentException("Expected either CustomType or Enum kind, found " + fieldMap.Kind);
-        }
+            case InfoKind.Enum:
+                _first = true;
+                return this;
+            case InfoKind.List:
+            case InfoKind.Dictionary:
+                {
+                    switch ((ThrowIfEos(Reader.SkipWhitespace()), info.Kind))
+                    {
+                        case ((byte)'[', InfoKind.List):
+                        case ((byte)'{', InfoKind.Dictionary):
+                            Reader.Advance();
+                            break;
+                        case (_, InfoKind.List):
+                            throw new JsonException("Expected array start");
+                        case (_, InfoKind.Dictionary):
+                            throw new JsonException("Expected object start");
+                    }
 
-        _first = true;
-        return this;
+                    return new DeCollection(this);
+                }
+            default:
+                throw new ArgumentException($"Expected CustomType or Enum, found {info.Kind}");
+        }
     }
 
     public byte ReadU8() => Convert.ToByte(ReadU64());

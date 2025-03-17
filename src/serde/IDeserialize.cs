@@ -63,7 +63,6 @@ public interface IDeserializer : IDisposable
     double ReadF64();
     decimal ReadDecimal();
     string ReadString();
-    ITypeDeserializer ReadCollection(ISerdeInfo typeInfo);
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
 
