@@ -7,9 +7,9 @@ using Serde;
 partial record struct OPTSWrap : Serde.ISerializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
 {
     static ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS> ISerializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.SerializeInstance
-        => OPTSWrapSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class OPTSWrapSerializeProxy :Serde.ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
+    sealed partial class _SerObj :Serde.ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
     {
         void global::Serde.ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Serialize(System.Runtime.InteropServices.ComTypes.BIND_OPTS value, global::Serde.ISerializer serializer)
         {
@@ -21,8 +21,8 @@ partial record struct OPTSWrap : Serde.ISerializeProvider<System.Runtime.Interop
             _l_type.WriteI32(_l_info, 3, value.grfMode);
             _l_type.End(_l_info);
         }
-        public static readonly OPTSWrapSerializeProxy Instance = new();
-        private OPTSWrapSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

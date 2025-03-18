@@ -11,9 +11,9 @@ partial class JsonDeserializeTests
     partial record ThrowMissingFalse : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>
     {
         static IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse> IDeserializeProvider<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>.DeserializeInstance
-            => ThrowMissingFalseDeserializeProxy.Instance;
+            => _DeObj.Instance;
 
-        sealed partial class ThrowMissingFalseDeserializeProxy :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>
+        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>
         {
             Serde.Test.JsonDeserializeTests.ThrowMissingFalse Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>.Deserialize(IDeserializer deserializer)
             {
@@ -25,20 +25,20 @@ partial class JsonDeserializeTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ThrowMissingFalse>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_present = typeDeserialize.ReadString(_l_index_);
+                            _l_present = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_missing = typeDeserialize.ReadBool(_l_index_);
+                            _l_missing = typeDeserialize.ReadBool(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
-                        case Serde.IDeserializeType.IndexNotFound:
-                            typeDeserialize.SkipValue();
+                        case Serde.ITypeDeserializer.IndexNotFound:
+                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -55,8 +55,8 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-            public static readonly ThrowMissingFalseDeserializeProxy Instance = new();
-            private ThrowMissingFalseDeserializeProxy() { }
+            public static readonly _DeObj Instance = new();
+            private _DeObj() { }
 
         }
     }

@@ -31,7 +31,7 @@ public partial class SerializeImplGen
         // The generated body of ISerialize is
         // `var _l_info = {TypeName}SerdeTypeInfo.TypeInfo;`
         // `var _l_type = serializer.WriteType(_l_info);
-        // type.WriteField<FieldType, Serialize>(_l_info, FieldIndex, receiver.FieldValue);
+        // type.WriteValue<FieldType, Serialize>(_l_info, FieldIndex, receiver.FieldValue);
         // type.End();
 
         // If the type is an enum, we only want to serialize one field (the enum value), not all fields
@@ -79,12 +79,12 @@ public partial class SerializeImplGen
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
                 if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress) is { } proxy)
                 {
-                    statements.AppendLine(MakeWriteFieldStmt(m, m.Type.ToDisplayString(), proxy, i));
+                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i));
                 }
                 // 2. Check for a direct implementation of ISerialize
                 else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Serialize))
                 {
-                    statements.AppendLine(MakeWriteFieldStmt(m, m.Type.ToDisplayString(), m.Type.ToDisplayString(), i));
+                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), m.Type.ToDisplayString(), i));
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
                 //    method. Check using the non-null form (even if it's nullable), since nullable
@@ -93,7 +93,7 @@ public partial class SerializeImplGen
                 {
                     if (m.IsNullable && !m.SerializeNull)
                     {
-                        // Use WriteFieldIfNotNull if it's not been disabled and the field is nullable
+                        // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                         primName += "IfNotNull";
                     }
                     statements.AppendLine($"_l_type.Write{primName}(_l_info, {i}, value.{m.Name});");
@@ -101,7 +101,7 @@ public partial class SerializeImplGen
                 // 4. A wrapper that implements ISerialize
                 else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress) is { } wrapper)
                 {
-                    statements.AppendLine(MakeWriteFieldStmt(m, wrapper.Type, wrapper.Proxy, i));
+                    statements.AppendLine(MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i));
                 }
                 else
                 {
@@ -116,13 +116,13 @@ public partial class SerializeImplGen
                 }
             }
 
-            static string MakeWriteFieldStmt(DataMemberSymbol m, string type, string proxy, int i)
+            static string MakeWriteValueStmt(DataMemberSymbol m, string type, string proxy, int i)
             {
-                // Generate statements of the form `type.WriteField<FieldType, Serialize>("FieldName", value.FieldValue)`
+                // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
                 string methodName = m.Type.IsReferenceType
-                    ? "WriteField"
-                    : "WriteBoxedField";
-                // Use WriteFieldIfNotNull if it's not been disabled and the field is nullable
+                    ? "WriteValue"
+                    : "WriteBoxedValue";
+                // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                 if (m.IsNullable && !m.SerializeNull)
                 {
                     methodName += "IfNotNull";
@@ -178,7 +178,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             var t = caseTypes[i];
             var tString = t.ToDisplayString();
             casesBuilder.AppendLine($"case {tString} c:");
-            casesBuilder.AppendLine($"    _l_type.WriteField<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
+            casesBuilder.AppendLine($"    _l_type.WriteValue<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
             casesBuilder.AppendLine($"    break;");
         }
         string methodDecl = $$"""

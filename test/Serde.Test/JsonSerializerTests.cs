@@ -120,11 +120,12 @@ namespace Serde.Test
             public void Serialize(JsonDictionaryWrapper value, ISerializer serializer)
             {
                 var typeInfo = SerdeInfo;
-                var sd = serializer.WriteCollection(typeInfo, value._d.Count);
+                var sd = serializer.WriteType(typeInfo);
+                int index = 0;
                 foreach (var (k,v) in value._d)
                 {
-                    sd.WriteElement(k.ToString(), StringProxy.Instance);
-                    sd.WriteElement(v, I32Proxy.Instance);
+                    sd.WriteString(typeInfo, index++, k.ToString());
+                    sd.WriteI32(typeInfo, index++, v);
                 }
                 sd.End(typeInfo);
             }
@@ -151,7 +152,7 @@ namespace Serde.Test
         public void NullableString()
         {
             string? s = null;
-            var js = Serde.Json.JsonSerializer.Serialize<string?, NullableRefProxy.Serialize<string, StringProxy>>(s);
+            var js = Serde.Json.JsonSerializer.Serialize<string?, NullableRefProxy.Ser<string, StringProxy>>(s);
             Assert.Equal("null", js);
             js = Serde.Json.JsonSerializer.Serialize<JsonValue>(JsonValue.Null.Instance);
             Assert.Equal("null", js);
@@ -192,7 +193,7 @@ namespace Serde.Test
         public void DeserializeIntArray()
         {
             var js = "[1,2,3]";
-            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.Deserialize<int, I32Proxy>>(js);
+            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.De<int, I32Proxy>>(js);
             Assert.Equal(new int[] { 1, 2, 3 }, arr);
         }
 

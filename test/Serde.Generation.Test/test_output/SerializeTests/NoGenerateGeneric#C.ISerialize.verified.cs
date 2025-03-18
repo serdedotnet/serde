@@ -7,9 +7,9 @@ using Serde;
 partial class C<T> : Serde.ISerializeProvider<C<T>>
 {
     static ISerialize<C<T>> ISerializeProvider<C<T>>.SerializeInstance
-        => CSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class CSerializeProxy :Serde.ISerialize<C<T>>
+    sealed partial class _SerObj :Serde.ISerialize<C<T>>
     {
         void global::Serde.ISerialize<C<T>>.Serialize(C<T> value, global::Serde.ISerializer serializer)
         {
@@ -17,8 +17,8 @@ partial class C<T> : Serde.ISerializeProvider<C<T>>
             var _l_type = serializer.WriteType(_l_info);
             _l_type.End(_l_info);
         }
-        public static readonly CSerializeProxy Instance = new();
-        private CSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

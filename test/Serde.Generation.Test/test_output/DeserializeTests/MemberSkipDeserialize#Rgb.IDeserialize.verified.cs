@@ -7,9 +7,9 @@ using Serde;
 partial struct Rgb : Serde.IDeserializeProvider<Rgb>
 {
     static IDeserialize<Rgb> IDeserializeProvider<Rgb>.DeserializeInstance
-        => RgbDeserializeProxy.Instance;
+        => _DeObj.Instance;
 
-    sealed partial class RgbDeserializeProxy :Serde.IDeserialize<Rgb>
+    sealed partial class _DeObj :Serde.IDeserialize<Rgb>
     {
         Rgb Serde.IDeserialize<Rgb>.Deserialize(IDeserializer deserializer)
         {
@@ -21,21 +21,21 @@ partial struct Rgb : Serde.IDeserializeProvider<Rgb>
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Rgb>();
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
             {
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_red = typeDeserialize.ReadU8(_l_index_);
+                        _l_red = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 2:
-                        _l_blue = typeDeserialize.ReadU8(_l_index_);
+                        _l_blue = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 1:
-                    case Serde.IDeserializeType.IndexNotFound:
-                        typeDeserialize.SkipValue();
+                    case Serde.ITypeDeserializer.IndexNotFound:
+                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -52,8 +52,8 @@ partial struct Rgb : Serde.IDeserializeProvider<Rgb>
 
             return newType;
         }
-        public static readonly RgbDeserializeProxy Instance = new();
-        private RgbDeserializeProxy() { }
+        public static readonly _DeObj Instance = new();
+        private _DeObj() { }
 
     }
 }

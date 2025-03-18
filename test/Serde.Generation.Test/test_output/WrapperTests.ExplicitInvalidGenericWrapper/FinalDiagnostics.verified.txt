@@ -1,13 +1,13 @@
 ﻿[
   {
-    "Id": "CS7036",
+    "Id": "CS0311",
     "Title": "",
     "Severity": "Error",
     "WarningLevel": "0",
-    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Container.IDeserialize.cs: (26,52)-(26,79)",
-    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS7036)",
-    "MessageFormat": "There is no argument given that corresponds to the required parameter '{0}' of '{1}'",
-    "Message": "There is no argument given that corresponds to the required parameter 'deserialize' of 'IDeserializeType.ReadValue<T, D>(int, D)'",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Container.IDeserialize.cs: (26,52)-(26,84)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0311)",
+    "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. There is no implicit reference conversion from '{3}' to '{1}'.",
+    "Message": "The type 'Proxy' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeDeserializerExt.ReadBoxedValue<T, TProvider>(ITypeDeserializer, ISerdeInfo, int)'. There is no implicit reference conversion from 'Proxy' to 'Serde.IDeserializeProvider<Original?>'.",
     "Category": "Compiler"
   }
 ]

@@ -13,9 +13,9 @@ partial class JsonSerializerTests
         partial class _m_AProxy : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU.A>
         {
             static ISerialize<Serde.Test.JsonSerializerTests.BasicDU.A> ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU.A>.SerializeInstance
-                => _m_AProxySerializeProxy.Instance;
+                => _SerObj.Instance;
 
-            sealed partial class _m_AProxySerializeProxy :Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU.A>
+            sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU.A>
             {
                 void global::Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU.A>.Serialize(Serde.Test.JsonSerializerTests.BasicDU.A value, global::Serde.ISerializer serializer)
                 {
@@ -24,8 +24,8 @@ partial class JsonSerializerTests
                     _l_type.WriteI32(_l_info, 0, value.X);
                     _l_type.End(_l_info);
                 }
-                public static readonly _m_AProxySerializeProxy Instance = new();
-                private _m_AProxySerializeProxy() { }
+                public static readonly _SerObj Instance = new();
+                private _SerObj() { }
 
             }
         }

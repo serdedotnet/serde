@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -11,23 +13,123 @@ namespace Serde;
 public static class EnumerableHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SerializeSpan<T, U>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, U serializeImpl, ISerializer serializer)
-        where U : ISerialize<T>
+    public static void SerializeSpan<T>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, ITypeSerialize<T> serializeImpl, ISerializer serializer)
     {
-        var enumerable = serializer.WriteCollection(typeInfo, arr.Length);
+        var enumerable = serializer.WriteType(typeInfo);
+        int index = 0;
         foreach (var item in arr)
         {
-            enumerable.WriteElement(item, serializeImpl);
+            serializeImpl.Serialize(item, enumerable, typeInfo, index++);
         }
         enumerable.End(typeInfo);
     }
 }
 
+public abstract class SerListBase<TSelf, T, TList, TProvider>
+    : ISerialize<TList>
+    where TSelf : ISerialize<TList>, ISerializeProvider<TList>, ISerdeInfoProvider, new()
+    where TProvider : ISerializeProvider<T>
+{
+    public static ISerialize<TList> SerializeInstance { get; } = new TSelf();
+
+    private readonly ITypeSerialize<T> _ser;
+    protected SerListBase()
+    {
+        var ser = TProvider.SerializeInstance;
+        _ser = ser is ITypeSerialize<T> typeSer
+            ? typeSer
+            : new TypeSerBoxed<T>(ser);
+    }
+
+    void ISerialize<TList>.Serialize(TList value, ISerializer serializer)
+        => EnumerableHelpers.SerializeSpan(SerdeInfoProvider.GetInfo<TSelf>(), GetSpan(value), _ser, serializer);
+
+    protected abstract ReadOnlySpan<T> GetSpan(TList value);
+}
+
+public abstract class DeListBase<
+    TSelf,
+    T,
+    TList,
+    TFixBuilder,
+    TVarBuilder,
+    TProvider>
+    : IDeserialize<TList>
+    where TSelf : IDeserialize<TList>, IDeserializeProvider<TList>, new()
+    where TFixBuilder : IList<T>
+    where TVarBuilder : ICollection<T>
+    where TProvider : IDeserializeProvider<T>
+{
+    public static IDeserialize<TList> DeserializeInstance { get; } = new TSelf();
+
+    private readonly ITypeDeserialize<T> _de;
+
+    protected DeListBase()
+    {
+        var de = TProvider.DeserializeInstance;
+        Debug.Assert(TProvider.SerdeInfo.Kind != InfoKind.Primitive
+            || de is ITypeDeserialize<T>, $"{typeof(T)} does not implement ITypeDeserialize");
+        _de = de is ITypeDeserialize<T> typeDe
+            ? typeDe
+            : new TypeDeBoxed<T>(de);
+    }
+
+    public TList Deserialize(IDeserializer deserializer)
+    {
+        var typeInfo = TSelf.SerdeInfo;
+        var deCollection = deserializer.ReadType(typeInfo);
+        if (deCollection.SizeOpt is int size)
+        {
+            var builder = GetFixBuilder(size);
+            for (int i = 0; i < size; i++)
+            {
+                builder[i] = _de.Deserialize(deCollection, typeInfo, i);
+            }
+            return FromFix(builder);
+        }
+        else
+        {
+            var builder = GetVarBuilder();
+            int index;
+            while ((index = deCollection.TryReadIndex(typeInfo, out _)) != ITypeDeserializer.EndOfType)
+            {
+                builder.Add(_de.Deserialize(deCollection, typeInfo, index));
+            }
+            return FromVar(builder);
+        }
+    }
+
+    protected abstract TFixBuilder GetFixBuilder(int size);
+    protected abstract TVarBuilder GetVarBuilder();
+    protected abstract TList FromFix(TFixBuilder builder);
+    protected abstract TList FromVar(TVarBuilder builder);
+}
+
+public abstract class DeListBase<
+    TSelf,
+    T,
+    TList,
+    TBuilder,
+    TProvider>
+    : DeListBase<TSelf, T, TList, TBuilder, TBuilder, TProvider>
+    where TSelf : IDeserialize<TList>, IDeserializeProvider<TList>, new()
+    where TBuilder : IList<T>
+    where TProvider : IDeserializeProvider<T>
+{
+    protected abstract TBuilder GetBuilder(int? sizeOpt);
+    protected sealed override TBuilder GetFixBuilder(int size) => GetBuilder(size);
+    protected sealed override TBuilder GetVarBuilder() => GetBuilder(null);
+
+    protected abstract TList ToList(TBuilder builder);
+    protected sealed override TList FromFix(TBuilder builder) => ToList(builder);
+    protected sealed override TList FromVar(TBuilder builder) => ToList(builder);
+}
+
 public static partial class DeserializeExtensions
 {
-    public static ListProxy.Deserialize<T, T> GetDeserialize<T>(this List<T>? _)
+    public static IDeserialize<List<T>> GetDeserialize<T>(this List<T>? _)
         where T : IDeserializeProvider<T>
-        => ListProxy.Deserialize<T, T>.Instance;
+        => ListProxy.De<T, T>.DeserializeInstance;
 }
 
 internal static class ArraySerdeTypeInfo<T>
@@ -37,63 +139,27 @@ internal static class ArraySerdeTypeInfo<T>
 
 public static class ArrayProxy
 {
-    public sealed class Serialize<T, TProvider> : SerializeInstance<T, ISerialize<T>>, ISerializeProvider<T[]>
+    public class Ser<T, TProvider>
+        : SerListBase<Ser<T, TProvider>, T, T[], TProvider>,
+          ISerializeProvider<T[]>
         where TProvider : ISerializeProvider<T>
     {
-        public static Serialize<T, TProvider> Instance { get; } = new Serialize<T, TProvider>();
-        static ISerialize<T[]> ISerializeProvider<T[]>.SerializeInstance => Instance;
         public static ISerdeInfo SerdeInfo => ArraySerdeTypeInfo<T>.SerdeInfo;
 
-        private Serialize() : base(TProvider.SerializeInstance) { }
+        protected override ReadOnlySpan<T> GetSpan(T[] value) => value.AsSpan();
     }
 
-    public class SerializeInstance<T, TProxy>(TProxy proxy) : ISerialize<T[]>
-        where TProxy : ISerialize<T>
-    {
-        public void Serialize(T[] value, ISerializer serializer)
-            => EnumerableHelpers.SerializeSpan<T, TProxy>(ArraySerdeTypeInfo<T>.SerdeInfo, value, proxy, serializer);
-    }
-
-    public sealed class Deserialize<T, TProvider> : DeserializeInstance<T, IDeserialize<T>>, IDeserializeProvider<T[]>
+    public sealed class De<T, TProvider>
+        : DeListBase<De<T, TProvider>, T, T[], T[], List<T>, TProvider>,
+          IDeserializeProvider<T[]>
         where TProvider : IDeserializeProvider<T>
     {
-        public static Deserialize<T, TProvider> Instance { get; } = new();
-        public static IDeserialize<T[]> DeserializeInstance => Instance;
-        public static ISerdeInfo SerdeInfo => ArraySerdeTypeInfo<T>.SerdeInfo;
+        public static ISerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
 
-        private Deserialize() : base(TProvider.DeserializeInstance) { }
-    }
-
-    public class DeserializeInstance<T, TProxy>(TProxy proxy) : IDeserialize<T[]>
-        where TProxy : IDeserialize<T>
-    {
-        public T[] Deserialize(IDeserializer deserializer)
-        {
-            var typeInfo = ArraySerdeTypeInfo<T>.SerdeInfo;
-            var deCollection = deserializer.ReadCollection(typeInfo);
-            if (deCollection.SizeOpt is int size)
-            {
-                var array = new T[size];
-                for (int i = 0; i < size; i++)
-                {
-                    if (!deCollection.TryReadValue<T, TProxy>(typeInfo, proxy, out var value))
-                    {
-                        throw new DeserializeException($"Expected array of size {size}, but only received {i} items");
-                    }
-                    array[i] = value;
-                }
-                return array;
-            }
-            else
-            {
-                var list = new List<T>();
-                while (deCollection.TryReadValue<T, TProxy>(typeInfo, proxy, out var value))
-                {
-                    list.Add(value);
-                }
-                return list.ToArray();
-            }
-        }
+        protected override T[] GetFixBuilder(int size) => new T[size];
+        protected override List<T> GetVarBuilder() => [];
+        protected override T[] FromFix(T[] builder) => builder;
+        protected override T[] FromVar(List<T> builder) => builder.ToArray();
     }
 }
 
@@ -104,59 +170,33 @@ internal static class ListSerdeTypeInfo<T>
 
 public static class ListProxy
 {
-    public sealed class Serialize<T, TProvider> : SerializeImpl<T, ISerialize<T>>, ISerializeProvider<List<T>>
+    public sealed class Ser<T, TProvider>
+        : SerListBase<Ser<T, TProvider>, T, List<T>, TProvider>,
+          ISerializeProvider<List<T>>
         where TProvider : ISerializeProvider<T>
     {
-        public static Serialize<T, TProvider> Instance { get; } = new Serialize<T, TProvider>();
-        public static ISerialize<List<T>> SerializeInstance => Instance;
         public static ISerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
 
-        private Serialize() : base(TProvider.SerializeInstance) { }
+        protected override ReadOnlySpan<T> GetSpan(List<T> value) => CollectionsMarshal.AsSpan(value);
     }
 
-    public class SerializeImpl<T, TProxy>(TProxy proxy) : ISerialize<List<T>>
-        where TProxy : ISerialize<T>
-    {
-        public void Serialize(List<T> value, ISerializer serializer)
-            => EnumerableHelpers.SerializeSpan<T, TProxy>(ListSerdeTypeInfo<T>.TypeInfo, CollectionsMarshal.AsSpan(value), proxy, serializer);
-    }
-
-    public sealed class Deserialize<T, TProvider> : DeserializeInstance<T, IDeserialize<T>>, IDeserializeProvider<List<T>>
+    public sealed class De<T, TProvider>
+        : DeListBase<De<T, TProvider>, T, List<T>, List<T>, TProvider>,
+          IDeserialize<List<T>>, IDeserializeProvider<List<T>>
         where TProvider : IDeserializeProvider<T>
     {
-        public static Deserialize<T, TProvider> Instance { get; } = new();
-        static IDeserialize<List<T>> IDeserializeProvider<List<T>>.DeserializeInstance => Instance;
         public static ISerdeInfo SerdeInfo => ListSerdeTypeInfo<T>.TypeInfo;
-        private Deserialize() : base(TProvider.DeserializeInstance) { }
-    }
 
-    public class DeserializeInstance<T, TProxy>(TProxy proxy) : IDeserialize<List<T>>
-        where TProxy : IDeserialize<T>
-    {
-        public List<T> Deserialize(IDeserializer deserializer)
+        protected override List<T> GetBuilder(int? sizeOpt)
         {
-            List<T> list;
-            var typeInfo = ListSerdeTypeInfo<T>.TypeInfo;
-            var deCollection = deserializer.ReadCollection(typeInfo);
-            if (deCollection.SizeOpt is int size)
+            if (sizeOpt is int size)
             {
-                list = new List<T>(size);
+                return new List<T>(size);
             }
-            else
-            {
-                size = -1; // Set initial size to unknown
-                list = new List<T>();
-            }
-            while (deCollection.TryReadValue<T, TProxy>(typeInfo, proxy, out T? next))
-            {
-                list.Add(next);
-            }
-            if (size >= 0 && list.Count != size)
-            {
-                throw new DeserializeException($"Expected enumerable of size {size}, but only received {list.Count} items");
-            }
-            return list;
+            return new List<T>();
         }
+
+        protected override List<T> ToList(List<T> builder) => builder;
     }
 }
 
@@ -167,58 +207,26 @@ internal static class ImmutableArraySerdeTypeInfo<T>
 
 public static class ImmutableArrayProxy
 {
-    public sealed class Serialize<T, TProvider> : SerializeInstance<T, ISerialize<T>>, ISerializeProvider<ImmutableArray<T>>
+    public sealed class Ser<T, TProvider>
+        : SerListBase<Ser<T, TProvider>, T, ImmutableArray<T>, TProvider>,
+          ISerializeProvider<ImmutableArray<T>>
         where TProvider : ISerializeProvider<T>
     {
-        public static Serialize<T, TProvider> Instance { get; } = new();
-        static ISerialize<ImmutableArray<T>> ISerializeProvider<ImmutableArray<T>>.SerializeInstance => Instance;
         public static ISerdeInfo SerdeInfo => ImmutableArraySerdeTypeInfo<T>.SerdeInfo;
-        private Serialize() : base(TProvider.SerializeInstance) { }
+
+        protected override ReadOnlySpan<T> GetSpan(ImmutableArray<T> value) => value.AsSpan();
     }
 
-    public class SerializeInstance<T, TProxy>(TProxy proxy) : ISerialize<ImmutableArray<T>>
-        where TProxy : ISerialize<T>
-    {
-        public void Serialize(ImmutableArray<T> value, ISerializer serializer)
-            => EnumerableHelpers.SerializeSpan<T, TProxy>(ImmutableArraySerdeTypeInfo<T>.SerdeInfo, value.AsSpan(), proxy, serializer);
-    }
-
-    public sealed class Deserialize<T, TProvider> : DeserializeInstance<T, IDeserialize<T>>, IDeserializeProvider<ImmutableArray<T>>
+    public sealed class De<T, TProvider>
+        : DeListBase<De<T, TProvider>, T, ImmutableArray<T>, ImmutableArray<T>.Builder, TProvider>,
+          IDeserializeProvider<ImmutableArray<T>>
         where TProvider : IDeserializeProvider<T>
     {
-        public static Deserialize<T, TProvider> Instance { get; } = new Deserialize<T, TProvider>();
-        static IDeserialize<ImmutableArray<T>> IDeserializeProvider<ImmutableArray<T>>.DeserializeInstance => Instance;
         public static ISerdeInfo SerdeInfo => ImmutableArraySerdeTypeInfo<T>.SerdeInfo;
-        private Deserialize() : base(TProvider.DeserializeInstance) { }
-    }
 
-    public class DeserializeInstance<T, TProxy>(TProxy proxy) : IDeserialize<ImmutableArray<T>>
-        where TProxy : IDeserialize<T>
-    {
-        public ImmutableArray<T> Deserialize(IDeserializer deserializer)
-        {
-            ImmutableArray<T>.Builder builder;
-            var typeInfo = ImmutableArraySerdeTypeInfo<T>.SerdeInfo;
-            var d = deserializer.ReadCollection(typeInfo);
-            if (d.SizeOpt is int size)
-            {
-                builder = ImmutableArray.CreateBuilder<T>(size);
-            }
-            else
-            {
-                size = -1; // Set initial size to unknown
-                builder = ImmutableArray.CreateBuilder<T>();
-            }
-
-            while (d.TryReadValue<T, TProxy>(typeInfo, proxy, out T? next))
-            {
-                builder.Add(next);
-            }
-            if (size >= 0 && builder.Count != size)
-            {
-                throw new DeserializeException($"Expected {size} items, found {builder.Count}");
-            }
-            return builder.ToImmutable();
-        }
+        protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt) => sizeOpt is int size
+            ? ImmutableArray.CreateBuilder<T>(size)
+            : ImmutableArray.CreateBuilder<T>();
+        protected override ImmutableArray<T> ToList(ImmutableArray<T>.Builder builder) => builder.ToImmutable();
     }
 }

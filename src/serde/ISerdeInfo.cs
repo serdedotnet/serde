@@ -50,7 +50,7 @@ public interface ISerdeInfo
 
     /// <summary>
     /// Search the fields for one with the given name and return its index. Returns
-    /// <see cref="IDeserializeType.IndexNotFound"/> if not found.
+    /// <see cref="ITypeDeserializer.IndexNotFound"/> if not found.
     /// </summary>
     int TryGetIndex(Utf8Span fieldName);
 
@@ -65,7 +65,7 @@ public enum InfoKind
     Primitive,
     Nullable,
     CustomType,
-    Enumerable,
+    List,
     Dictionary,
     Enum,
     /// <summary>

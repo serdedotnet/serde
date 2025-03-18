@@ -98,7 +98,7 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>,
 [GenerateDeserialize]
 partial record Container
 {
-    [SerdeMemberOptions(DeserializeProxy = typeof(NullableProxy.Deserialize<Original, Proxy>))]
+    [SerdeMemberOptions(DeserializeProxy = typeof(NullableProxy.De<Original, Proxy>))]
     public Original? SdkDir { get; init; } = null;
 }
 """;
@@ -124,7 +124,7 @@ partial class Outer
 partial struct S
 {
     [SerdeMemberOptions(
-        SerializeProxy = typeof(ImmutableArrayProxy.Serialize<BitVector32.Section, Outer.SectionWrap>))]
+        SerializeProxy = typeof(ImmutableArrayProxy.Ser<BitVector32.Section, Outer.SectionWrap>))]
     public ImmutableArray<BitVector32.Section> Sections;
 }
 """;
@@ -150,7 +150,7 @@ partial struct S
 {
     [SerdeMemberOptions(
         // Wrong outer wrapper type
-        SerializeProxy = typeof(ArrayProxy.Serialize<BitVector32.Section, Outer.SectionWrap>))]
+        SerializeProxy = typeof(ArrayProxy.Ser<BitVector32.Section, Outer.SectionWrap>))]
     public List<int> Sections;
 }
 """;

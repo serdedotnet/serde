@@ -9,9 +9,9 @@ namespace Serde.Test;
 partial struct MaxSizeType : Serde.ISerializeProvider<Serde.Test.MaxSizeType>
 {
     static ISerialize<Serde.Test.MaxSizeType> ISerializeProvider<Serde.Test.MaxSizeType>.SerializeInstance
-        => MaxSizeTypeSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class MaxSizeTypeSerializeProxy :Serde.ISerialize<Serde.Test.MaxSizeType>
+    sealed partial class _SerObj :Serde.ISerialize<Serde.Test.MaxSizeType>
     {
         void global::Serde.ISerialize<Serde.Test.MaxSizeType>.Serialize(Serde.Test.MaxSizeType value, global::Serde.ISerializer serializer)
         {
@@ -83,8 +83,8 @@ partial struct MaxSizeType : Serde.ISerializeProvider<Serde.Test.MaxSizeType>
             _l_type.WriteU8(_l_info, 63, value.Field64);
             _l_type.End(_l_info);
         }
-        public static readonly MaxSizeTypeSerializeProxy Instance = new();
-        private MaxSizeTypeSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

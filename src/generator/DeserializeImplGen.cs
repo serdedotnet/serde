@@ -71,7 +71,7 @@ namespace Serde
         ///   var serdeInfo = SerdeInfoProvider.GetInfo{T}();
         ///   var de = deserializer.ReadType(serdeInfo);
         ///   int index;
-        ///   if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        ///   if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
         ///   {
         ///    throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
         ///   }
@@ -101,24 +101,24 @@ namespace Serde
             for (int i = 0; i < members.Length; i++)
             {
                 var m = members[i];
-                membersBuilder.AppendLine($"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>({i}),");
+                membersBuilder.AppendLine($"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>(_l_serdeInfo, {i}),");
             }
 
             var src = new SourceBuilder($$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
-    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}>();
-    var de = deserializer.ReadType(serdeInfo);
+    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}>();
+    var de = deserializer.ReadType(_l_serdeInfo);
     int index;
-    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+    if ((index = de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
     {
-        throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
+        throw Serde.DeserializeException.UnknownMember(errorName!, _l_serdeInfo);
     }
     {{typeFqn}} _l_result = index switch {
         {{membersBuilder}}
         _ => throw new InvalidOperationException($"Unexpected index: {index}")
     };
-    if ((index = de.TryReadIndex(serdeInfo, out _)) != IDeserializeType.EndOfType)
+    if ((index = de.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
     {
         throw Serde.DeserializeException.ExpectedEndOfType(index);
     }
@@ -137,7 +137,7 @@ namespace Serde
         ///    var serdeInfo = SerdeInfoProvider.GetInfo{T}();
         ///    var de = deserializer.ReadType(serdeInfo);
         ///    int index;
-        ///    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+        ///    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
         ///    {
         ///      throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
         ///    }
@@ -171,7 +171,7 @@ namespace Serde
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Proxy>();
     var de = deserializer.ReadType(serdeInfo);
     int index;
-    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
     {
         throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
     }
@@ -197,7 +197,7 @@ namespace Serde
         ///     var serdeInfo = {typeName}SerdeInfo.Instance;
         ///     var typDeserializer = deserializer.DeserializeType(serdeInfo);
         ///     int index;
-        ///     while ((index = typeDeserialize.TryReadIndex(serdeInfo)) != IDeserializeType.EndOfType)
+        ///     while ((index = typeDeserialize.TryReadIndex(serdeInfo)) != ITypeDeserializer.EndOfType)
         ///     {
         ///         switch (index)
         ///         {
@@ -244,7 +244,7 @@ namespace Serde
     var {{typeInfoLocalName}} = global::Serde.SerdeInfoProvider.GetInfo<{{typeDeclContext.Name}}>();
     var typeDeserialize = deserializer.ReadType({{typeInfoLocalName}});
     int {{indexLocalName}};
-    while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out {{errorNameOrDiscard}})) != IDeserializeType.EndOfType)
+    while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out {{errorNameOrDiscard}})) != ITypeDeserializer.EndOfType)
     {
         switch ({{indexLocalName}})
         {
@@ -273,14 +273,17 @@ namespace Serde
 
                     var m = members[fieldIndex];
                     var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
+                    string readMethodName = m.Type.IsReferenceType
+                        ? "ReadValue"
+                        : "ReadBoxedValue";
                     string readValueCall;
                     if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
                     {
-                        readValueCall = $"ReadValue<{memberType}, {explicitWrap}>";
+                        readValueCall = $"{readMethodName}<{memberType}, {explicitWrap}>";
                     }
                     else if (ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Deserialize))
                     {
-                        readValueCall = $"ReadValue<{memberType}, {memberType}>";
+                        readValueCall = $"{readMethodName}<{memberType}, {memberType}>";
                     }
                     else if (Proxies.TryGetPrimitiveName(m.Type) is { } primitiveName)
                     {
@@ -288,7 +291,7 @@ namespace Serde
                     }
                     else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Proxy: { } wrap })
                     {
-                        readValueCall = $"ReadValue<{memberType}, {wrap}>";
+                        readValueCall = $"{readMethodName}<{memberType}, {wrap}>";
                     }
                     else
                     {
@@ -305,7 +308,7 @@ namespace Serde
                     localsBuilder.AppendLine($"{memberType} {localName} = default!;");
                     casesBuilder.AppendLine($"""
                     case {fieldIndex}:
-                        {localName} = typeDeserialize.{readValueCall}({indexLocalName});
+                        {localName} = typeDeserialize.{readValueCall}(_l_serdeInfo, {indexLocalName});
                         {AssignedVarName} |= (({assignedVarType})1) << {fieldIndex};
                         break;
                     """);
@@ -321,8 +324,8 @@ namespace Serde
                     ? $"""
                     throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
                     """
-                    : """
-                    typeDeserialize.SkipValue();
+                    : $"""
+                    typeDeserialize.SkipValue(_l_serdeInfo, {indexLocalName});
                     break;
                     """;
                 foreach (var i in skippedIndices)
@@ -333,7 +336,7 @@ namespace Serde
                 }
                 casesBuilder.AppendLine(
                     $"""
-                    case Serde.IDeserializeType.IndexNotFound:
+                    case Serde.ITypeDeserializer.IndexNotFound:
                         {unknownMemberBehavior}
                     """
                 );

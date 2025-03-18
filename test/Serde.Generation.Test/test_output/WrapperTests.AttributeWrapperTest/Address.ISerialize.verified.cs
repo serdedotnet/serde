@@ -7,9 +7,9 @@ using Serde;
 partial class Address : Serde.ISerializeProvider<Address>
 {
     static ISerialize<Address> ISerializeProvider<Address>.SerializeInstance
-        => AddressSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class AddressSerializeProxy :Serde.ISerialize<Address>
+    sealed partial class _SerObj :Serde.ISerialize<Address>
     {
         void global::Serde.ISerialize<Address>.Serialize(Address value, global::Serde.ISerializer serializer)
         {
@@ -22,8 +22,8 @@ partial class Address : Serde.ISerializeProvider<Address>
             _l_type.WriteString(_l_info, 4, value.Zip);
             _l_type.End(_l_info);
         }
-        public static readonly AddressSerializeProxy Instance = new();
-        private AddressSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

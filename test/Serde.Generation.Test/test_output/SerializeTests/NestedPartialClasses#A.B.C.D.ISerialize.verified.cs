@@ -13,9 +13,9 @@ partial class A
             partial class D : Serde.ISerializeProvider<A.B.C.D>
             {
                 static ISerialize<A.B.C.D> ISerializeProvider<A.B.C.D>.SerializeInstance
-                    => DSerializeProxy.Instance;
+                    => _SerObj.Instance;
 
-                sealed partial class DSerializeProxy :Serde.ISerialize<A.B.C.D>
+                sealed partial class _SerObj :Serde.ISerialize<A.B.C.D>
                 {
                     void global::Serde.ISerialize<A.B.C.D>.Serialize(A.B.C.D value, global::Serde.ISerializer serializer)
                     {
@@ -24,8 +24,8 @@ partial class A
                         _l_type.WriteI32(_l_info, 0, value.Field);
                         _l_type.End(_l_info);
                     }
-                    public static readonly DSerializeProxy Instance = new();
-                    private DSerializeProxy() { }
+                    public static readonly _SerObj Instance = new();
+                    private _SerObj() { }
 
                 }
             }

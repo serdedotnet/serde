@@ -12,7 +12,7 @@ partial class JsonDeserializeTests
             typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetCustomAttributesData(),
             new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
                 ("present", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Present")),
-                ("missing", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.Deserialize<string, global::Serde.StringProxy>>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Missing"))
+                ("missing", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Missing"))
             }
         );
     }

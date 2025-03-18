@@ -11,9 +11,9 @@ partial class JsonSerializerTests
     partial struct Color : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.Color>
     {
         static ISerialize<Serde.Test.JsonSerializerTests.Color> ISerializeProvider<Serde.Test.JsonSerializerTests.Color>.SerializeInstance
-            => ColorSerializeProxy.Instance;
+            => _SerObj.Instance;
 
-        sealed partial class ColorSerializeProxy :Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>
+        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>
         {
             void global::Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>.Serialize(Serde.Test.JsonSerializerTests.Color value, global::Serde.ISerializer serializer)
             {
@@ -24,8 +24,8 @@ partial class JsonSerializerTests
                 _l_type.WriteI32(_l_info, 2, value.Blue);
                 _l_type.End(_l_info);
             }
-            public static readonly ColorSerializeProxy Instance = new();
-            private ColorSerializeProxy() { }
+            public static readonly _SerObj Instance = new();
+            private _SerObj() { }
 
         }
     }

@@ -150,26 +150,7 @@ public sealed partial class XmlSerializer : ISerializer
         return formattingListener.ToString();
     }
 
-    public ISerializeCollection WriteCollection(ISerdeInfo typeInfo, int? length)
-    {
-        if (typeInfo.Kind == InfoKind.Dictionary)
-        {
-            throw new NotSupportedException("Serde.XmlSerializer doesn't currently support serializing dictionaries");
-        }
-        else if (typeInfo.Kind != InfoKind.Enumerable)
-        {
-            throw new ArgumentException("typeInfo must be a collection type", nameof(typeInfo));
-        }
-        var savedState = _state;
-        if (savedState == State.Enumerable)
-        {
-            _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
-        }
-        _state = State.Enumerable;
-        return new SerializeCollectionImpl(this, savedState);
-    }
-
-    sealed partial class SerializeCollectionImpl : ISerializeCollection
+    sealed partial class SerializeCollectionImpl : ITypeSerializer
     {
         private readonly XmlSerializer _serializer;
         private readonly State _savedState;
@@ -179,10 +160,7 @@ public sealed partial class XmlSerializer : ISerializer
             _savedState = savedState;
         }
 
-        void ISerializeCollection.WriteElement<T, U>(T value, U serialize)
-            => serialize.Serialize(value, _serializer);
-
-        void ISerializeCollection.End(ISerdeInfo typeInfo)
+        void ITypeSerializer.End(ISerdeInfo typeInfo)
         {
             if (_savedState == State.Enumerable)
             {
@@ -190,31 +168,128 @@ public sealed partial class XmlSerializer : ISerializer
             }
             _serializer._state = State.Enumerable;
         }
+
+        public void WriteBool(ISerdeInfo typeInfo, int index, bool b)
+        {
+            _serializer.WriteBool(b);
+        }
+
+        public void WriteChar(ISerdeInfo typeInfo, int index, char c)
+        {
+            _serializer.WriteChar(c);
+        }
+
+        public void WriteU8(ISerdeInfo typeInfo, int index, byte b)
+        {
+            _serializer.WriteU8(b);
+        }
+
+        public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16)
+        {
+            _serializer.WriteU16(u16);
+        }
+
+        public void WriteU32(ISerdeInfo typeInfo, int index, uint u32)
+        {
+            _serializer.WriteU32(u32);
+        }
+
+        public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64)
+        {
+            _serializer.WriteU64(u64);
+        }
+
+        public void WriteI8(ISerdeInfo typeInfo, int index, sbyte b)
+        {
+            _serializer.WriteI8(b);
+        }
+
+        public void WriteI16(ISerdeInfo typeInfo, int index, short i16)
+        {
+            _serializer.WriteI16(i16);
+        }
+
+        public void WriteI32(ISerdeInfo typeInfo, int index, int i32)
+        {
+            _serializer.WriteI32(i32);
+        }
+
+        public void WriteI64(ISerdeInfo typeInfo, int index, long i64)
+        {
+            _serializer.WriteI64(i64);
+        }
+
+        public void WriteF32(ISerdeInfo typeInfo, int index, float f)
+        {
+            _serializer.WriteF32(f);
+        }
+
+        public void WriteF64(ISerdeInfo typeInfo, int index, double d)
+        {
+            _serializer.WriteF64(d);
+        }
+
+        public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d)
+        {
+            _serializer.WriteDecimal(d);
+        }
+
+        public void WriteString(ISerdeInfo typeInfo, int index, string s)
+        {
+            _serializer.WriteString(s);
+        }
+
+        public void WriteNull(ISerdeInfo typeInfo, int index)
+        {
+            _serializer.WriteNull();
+        }
+
+        public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
+            where T : class?
+        {
+            serialize.Serialize(value, _serializer);
+        }
     }
 
-    public ISerializeType WriteType(ISerdeInfo typeInfo)
+    public ITypeSerializer WriteType(ISerdeInfo typeInfo)
     {
-        if (typeInfo.Kind == InfoKind.Enum)
+        switch (typeInfo.Kind)
         {
-            return new EnumSerializer(this);
+            case InfoKind.Enum:
+                return new EnumSerializer(this);
+            case InfoKind.Nullable:
+            case InfoKind.CustomType:
+            {
+                var saved = _state;
+                bool writeEnd;
+                if (_state is State.Start or State.Enumerable)
+                {
+                    _writer.WriteStartElement(typeInfo.Name);
+                    writeEnd = true;
+                }
+                else
+                {
+                    writeEnd = false;
+                }
+                _state = State.Type;
+                return new XmlTypeSerializer(writeEnd, this, saved);
+            }
+            case InfoKind.List:
+            {
+                var savedState = _state;
+                if (savedState == State.Enumerable)
+                {
+                    _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
+                }
+                _state = State.Enumerable;
+                return new SerializeCollectionImpl(this, savedState);
+            }
+            default:
+                throw new NotSupportedException($"Serde.Xml doesn't currently support kind '{typeInfo.Kind}'");
         }
-
-        var saved = _state;
-        bool writeEnd;
-        if (_state is State.Start or State.Enumerable)
-        {
-            _writer.WriteStartElement(typeInfo.Name);
-            writeEnd = true;
-        }
-        else
-        {
-            writeEnd = false;
-        }
-        _state = State.Type;
-        return new XmlTypeSerializer(writeEnd, this, saved);
     }
 
-    private sealed class EnumSerializer(XmlSerializer _parent) : ISerializeType
+    private sealed class EnumSerializer(XmlSerializer _parent) : ITypeSerializer
     {
         private void WriteEnumName(ISerdeInfo typeInfo, int index)
         {
@@ -227,7 +302,7 @@ public sealed partial class XmlSerializer : ISerializer
         public void WriteChar(ISerdeInfo typeInfo, int index, char c) => ThrowInvalidEnum();
         public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => ThrowInvalidEnum();
         public void WriteF64(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
-        public void WriteField<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class? => ThrowInvalidEnum();
+        public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class? => ThrowInvalidEnum();
         public void WriteF32(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
         public void WriteI16(ISerdeInfo typeInfo, int index, short i16) => WriteEnumName(typeInfo, index);
         public void WriteI32(ISerdeInfo typeInfo, int index, int i32) => WriteEnumName(typeInfo, index);
@@ -241,7 +316,7 @@ public sealed partial class XmlSerializer : ISerializer
         private void ThrowInvalidEnum() => throw new InvalidOperationException("Invalid operation for enum serialization, expected integer value.");
     }
 
-    private sealed class XmlTypeSerializer : ISerializeType
+    private sealed class XmlTypeSerializer : ITypeSerializer
     {
         private readonly bool _writeEnd;
         private readonly XmlSerializer _parent;
@@ -254,7 +329,7 @@ public sealed partial class XmlSerializer : ISerializer
             _savedState = savedState;
         }
 
-        void ISerializeType.WriteField<T>(ISerdeInfo typeInfo, int fieldIndex, T value, ISerialize<T> impl)
+        void ITypeSerializer.WriteValue<T>(ISerdeInfo typeInfo, int fieldIndex, T value, ISerialize<T> impl)
             => WriteField<T, ISerialize<T>>(typeInfo, fieldIndex, value, impl);
 
         private void WriteField<T, U>(ISerdeInfo typeInfo, int fieldIndex, T value, U impl)

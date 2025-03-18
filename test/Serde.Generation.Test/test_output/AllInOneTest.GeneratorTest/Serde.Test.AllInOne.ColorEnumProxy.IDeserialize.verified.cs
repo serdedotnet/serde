@@ -16,7 +16,7 @@ partial record AllInOne
             var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.AllInOne.ColorEnumProxy>();
             var de = deserializer.ReadType(serdeInfo);
             int index;
-            if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == IDeserializeType.IndexNotFound)
+            if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
             {
                 throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
             }

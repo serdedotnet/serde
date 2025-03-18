@@ -155,8 +155,8 @@ sealed partial class {{proxyName}}
 
     private static string GetSingletonImplName(SerdeUsage usage) => usage switch
     {
-        SerdeUsage.Serialize => "Serialize",
-        SerdeUsage.Deserialize => "Deserialize",
+        SerdeUsage.Serialize => "Ser",
+        SerdeUsage.Deserialize => "De",
         _ => throw ExceptionUtilities.Unreachable
     };
 

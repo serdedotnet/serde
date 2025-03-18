@@ -11,9 +11,9 @@ partial class SerdeInfoTests
     partial record RgbProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>
     {
         static IDeserialize<Serde.Test.SerdeInfoTests.Rgb> IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>.DeserializeInstance
-            => RgbProxyDeserializeProxy.Instance;
+            => _DeObj.Instance;
 
-        sealed partial class RgbProxyDeserializeProxy :Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>
+        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>
         {
             Serde.Test.SerdeInfoTests.Rgb Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>.Deserialize(IDeserializer deserializer)
             {
@@ -26,24 +26,24 @@ partial class SerdeInfoTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<RgbProxy>();
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_r = typeDeserialize.ReadU8(_l_index_);
+                            _l_r = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_g = typeDeserialize.ReadU8(_l_index_);
+                            _l_g = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case 2:
-                            _l_b = typeDeserialize.ReadU8(_l_index_);
+                            _l_b = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 2;
                             break;
-                        case Serde.IDeserializeType.IndexNotFound:
-                            typeDeserialize.SkipValue();
+                        case Serde.ITypeDeserializer.IndexNotFound:
+                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -61,8 +61,8 @@ partial class SerdeInfoTests
 
                 return newType;
             }
-            public static readonly RgbProxyDeserializeProxy Instance = new();
-            private RgbProxyDeserializeProxy() { }
+            public static readonly _DeObj Instance = new();
+            private _DeObj() { }
 
         }
     }

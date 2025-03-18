@@ -7,9 +7,9 @@ using Serde;
 partial struct PointWrap : Serde.ISerializeProvider<Point>
 {
     static ISerialize<Point> ISerializeProvider<Point>.SerializeInstance
-        => PointWrapSerializeProxy.Instance;
+        => _SerObj.Instance;
 
-    sealed partial class PointWrapSerializeProxy :Serde.ISerialize<Point>
+    sealed partial class _SerObj :Serde.ISerialize<Point>
     {
         void global::Serde.ISerialize<Point>.Serialize(Point value, global::Serde.ISerializer serializer)
         {
@@ -19,8 +19,8 @@ partial struct PointWrap : Serde.ISerializeProvider<Point>
             _l_type.WriteI32(_l_info, 1, value.Y);
             _l_type.End(_l_info);
         }
-        public static readonly PointWrapSerializeProxy Instance = new();
-        private PointWrapSerializeProxy() { }
+        public static readonly _SerObj Instance = new();
+        private _SerObj() { }
 
     }
 }

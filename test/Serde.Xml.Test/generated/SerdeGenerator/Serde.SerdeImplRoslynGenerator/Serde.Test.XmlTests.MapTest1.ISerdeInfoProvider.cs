@@ -11,7 +11,7 @@ partial class XmlTests
             "MapTest1",
             typeof(Serde.Test.XmlTests.MapTest1).GetCustomAttributesData(),
             new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("MapField", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.Serialize<string, int, global::Serde.StringProxy, global::Serde.I32Proxy>>(), typeof(Serde.Test.XmlTests.MapTest1).GetField("MapField"))
+                ("MapField", global::Serde.SerdeInfoProvider.GetInfo<Serde.DictProxy.Ser<string, int, global::Serde.StringProxy, global::Serde.I32Proxy>>(), typeof(Serde.Test.XmlTests.MapTest1).GetField("MapField"))
             }
         );
     }

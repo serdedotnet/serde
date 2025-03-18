@@ -23,7 +23,7 @@ readonly partial record struct OptsWrap(BIND_OPTS Value);
 [GenerateDeserialize]
 partial struct S
 {
-    [SerdeMemberOptions(DeserializeProxy = typeof(ImmutableArrayProxy.Deserialize<BIND_OPTS, OptsWrap>))]
+    [SerdeMemberOptions(DeserializeProxy = typeof(ImmutableArrayProxy.De<BIND_OPTS, OptsWrap>))]
     public ImmutableArray<BIND_OPTS> Opts;
 }
 

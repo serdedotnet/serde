@@ -75,11 +75,6 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         }
     }
 
-    public bool ReadBool()
-    {
-        return Reader.GetBoolean();
-    }
-
     public T DeserializeDictionary<T>(IDeserializeVisitor<T> v)
     {
         var peek = Reader.SkipWhitespace();

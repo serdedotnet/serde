@@ -14,7 +14,7 @@ public interface ISerializeProvider<T> : ISerdeInfoProvider
     abstract static ISerialize<T> SerializeInstance { get; }
 }
 
-public interface ISerializeType
+public interface ITypeSerializer
 {
     void WriteBool(ISerdeInfo typeInfo, int index, bool b);
     void WriteChar(ISerdeInfo typeInfo, int index, char c);
@@ -31,33 +31,33 @@ public interface ISerializeType
     void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);
     void WriteString(ISerdeInfo typeInfo, int index, string s);
     void WriteNull(ISerdeInfo typeInfo, int index);
-    void WriteField<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
+    void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
         where T : class?;
-    void SkipField(ISerdeInfo typeInfo, int index) { }
+    void SkipValue(ISerdeInfo typeInfo, int index) { }
     void End(ISerdeInfo info);
 }
 
 public static class ISerializeTypeExt
 {
-    public static void WriteField<T, TProvider>(
-        this ISerializeType serializeType,
+    public static void WriteValue<T, TProvider>(
+        this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         T value)
         where T : class
         where TProvider : ISerializeProvider<T>
-        => serializeType.WriteField(typeInfo, index, value, TProvider.SerializeInstance);
+        => serializeType.WriteValue(typeInfo, index, value, TProvider.SerializeInstance);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteStringIfNotNull(
-        this ISerializeType serializeType,
+        this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         string? value)
     {
         if (value is null)
         {
-            serializeType.SkipField(typeInfo, index);
+            serializeType.SkipValue(typeInfo, index);
         }
         else
         {
@@ -65,8 +65,8 @@ public static class ISerializeTypeExt
         }
     }
 
-    public static void WriteFieldIfNotNull<T>(
-        this ISerializeType serializeType,
+    public static void WriteValueIfNotNull<T>(
+        this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         T value,
@@ -75,22 +75,22 @@ public static class ISerializeTypeExt
     {
         if (value is null)
         {
-            serializeType.SkipField(typeInfo, index);
+            serializeType.SkipValue(typeInfo, index);
         }
         else
         {
-            serializeType.WriteField(typeInfo, index, value, proxy);
+            serializeType.WriteValue(typeInfo, index, value, proxy);
         }
     }
 
-    public static void WriteFieldIfNotNull<T, TProvider>(
-        this ISerializeType serializeType,
+    public static void WriteValueIfNotNull<T, TProvider>(
+        this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         T value)
         where T : class?
         where TProvider : ISerializeProvider<T>
-        => serializeType.WriteFieldIfNotNull(typeInfo, index, value, TProvider.SerializeInstance);
+        => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.SerializeInstance);
 
     private sealed class BoxProxy<T, TProvider> : ISerialize<object?>
         where TProvider : ISerializeProvider<T>
@@ -104,19 +104,19 @@ public static class ISerializeTypeExt
         }
     }
 
-    public static void WriteBoxedField<T, TProvider>(
-        this ISerializeType serializeType,
+    public static void WriteBoxedValue<T, TProvider>(
+        this ITypeSerializer serializeType,
         ISerdeInfo serdeInfo,
         int index,
         T value)
         where TProvider : ISerializeProvider<T>
     {
         var proxy = BoxProxy<T, TProvider>.Instance;
-        serializeType.WriteField(serdeInfo, index, value, proxy);
+        serializeType.WriteValue(serdeInfo, index, value, proxy);
     }
 
-    public static void WriteBoxedFieldIfNotNull<T, TProvider>(
-        this ISerializeType serializeType,
+    public static void WriteBoxedValueIfNotNull<T, TProvider>(
+        this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         T value)
@@ -124,19 +124,13 @@ public static class ISerializeTypeExt
     {
         if (value is null)
         {
-            serializeType.SkipField(typeInfo, index);
+            serializeType.SkipValue(typeInfo, index);
         }
         else
         {
-            serializeType.WriteBoxedField<T, TProvider>(typeInfo, index, value);
+            serializeType.WriteBoxedValue<T, TProvider>(typeInfo, index, value);
         }
     }
-}
-
-public interface ISerializeCollection
-{
-    void WriteElement<T, U>(T value, U serialize) where U : ISerialize<T>;
-    void End(ISerdeInfo typeInfo);
 }
 
 public interface ISerializer
@@ -157,6 +151,5 @@ public interface ISerializer
     void WriteString(string s);
     void WriteNull();
 
-    ISerializeType WriteType(ISerdeInfo typeInfo);
-    ISerializeCollection WriteCollection(ISerdeInfo typeInfo, int? length);
+    ITypeSerializer WriteType(ISerdeInfo typeInfo);
 }

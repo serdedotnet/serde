@@ -13,9 +13,9 @@ partial class SerdeInfoTests
         partial class _m_AProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase.A>
         {
             static IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A> IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase.A>.DeserializeInstance
-                => _m_AProxyDeserializeProxy.Instance;
+                => _DeObj.Instance;
 
-            sealed partial class _m_AProxyDeserializeProxy :Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>
+            sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>
             {
                 Serde.Test.SerdeInfoTests.UnionBase.A Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>.Deserialize(IDeserializer deserializer)
                 {
@@ -25,12 +25,12 @@ partial class SerdeInfoTests
                     var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<_m_AProxy>();
                     var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                     int _l_index_;
-                    while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != IDeserializeType.EndOfType)
+                    while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                     {
                         switch (_l_index_)
                         {
-                            case Serde.IDeserializeType.IndexNotFound:
-                                typeDeserialize.SkipValue();
+                            case Serde.ITypeDeserializer.IndexNotFound:
+                                typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                                 break;
                             default:
                                 throw new InvalidOperationException("Unexpected index: " + _l_index_);
@@ -45,8 +45,8 @@ partial class SerdeInfoTests
 
                     return newType;
                 }
-                public static readonly _m_AProxyDeserializeProxy Instance = new();
-                private _m_AProxyDeserializeProxy() { }
+                public static readonly _DeObj Instance = new();
+                private _DeObj() { }
 
             }
         }

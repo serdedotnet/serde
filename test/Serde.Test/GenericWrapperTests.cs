@@ -95,39 +95,42 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArrayProxy
     {
-        private static readonly ISerdeInfo s_typeInfo = new CollectionSerdeInfo(
+        private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray<int>).ToString(),
-            InfoKind.Enumerable);
+            InfoKind.List);
 
-        public sealed class Serialize<T, TProvider> : ISerialize<CustomImArray<T>>, ISerializeProvider<CustomImArray<T>>
+        public sealed class Ser<T, TProvider>
+            : SerListBase<Ser<T, TProvider>, T, CustomImArray<T>, TProvider>,
+              ISerializeProvider<CustomImArray<T>>
             where TProvider : ISerializeProvider<T>
         {
-            public static Serialize<T, TProvider> Instance { get; } = new();
-            static ISerialize<CustomImArray<T>> ISerializeProvider<CustomImArray<T>>.SerializeInstance => Instance;
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo => s_typeInfo;
+            public static ISerdeInfo SerdeInfo => s_serdeInfo;
 
-            private readonly ISerialize<T> _proxy = TProvider.SerializeInstance;
-
-            private Serialize() { }
-            void ISerialize<CustomImArray<T>>.Serialize(CustomImArray<T> value, ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan(s_typeInfo, value.Backing.AsSpan(), _proxy, serializer);
+            protected override ReadOnlySpan<T> GetSpan(CustomImArray<T> value) => value.Backing.AsSpan();
         }
 
-        public sealed class Deserialize<T, TProvider> : IDeserialize<CustomImArray<T>>, IDeserializeProvider<CustomImArray<T>>
+        public sealed class De<T, TProvider> : IDeserialize<CustomImArray<T>>, IDeserializeProvider<CustomImArray<T>>
             where TProvider : IDeserializeProvider<T>
         {
-            public static Deserialize<T, TProvider> Instance { get; } = new();
+            public static De<T, TProvider> Instance { get; } = new();
             static IDeserialize<CustomImArray<T>> IDeserializeProvider<CustomImArray<T>>.DeserializeInstance => Instance;
-            public static ISerdeInfo SerdeInfo => s_typeInfo;
+            public static ISerdeInfo SerdeInfo => s_serdeInfo;
 
-            private readonly IDeserialize<T> _proxy = TProvider.DeserializeInstance;
-            private Deserialize() {}
+            private readonly ITypeDeserialize<T> _proxy;
+
+            private De()
+            {
+                var de = TProvider.DeserializeInstance;
+                _proxy = de is ITypeDeserialize<T> typeDe
+                    ? typeDe
+                    : new TypeDeBoxed<T>(de);
+            }
 
             CustomImArray<T> IDeserialize<CustomImArray<T>>.Deserialize(IDeserializer deserializer)
             {
-                var serdeInfo = s_typeInfo;
+                var serdeInfo = s_serdeInfo;
                 ImmutableArray<T>.Builder builder;
-                var d = deserializer.ReadCollection(serdeInfo);
+                var d = deserializer.ReadType(serdeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);
@@ -138,9 +141,10 @@ public sealed partial class GenericWrapperTests
                     builder = ImmutableArray.CreateBuilder<T>();
                 }
 
-                while (d.TryReadValue<T, IDeserialize<T>>(serdeInfo, _proxy, out T? next))
+                int index;
+                while ((index = d.TryReadIndex(serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
-                    builder.Add(next);
+                    builder.Add(_proxy.Deserialize(d, serdeInfo, index));
                 }
                 if (size >= 0 && builder.Count != size)
                 {
@@ -155,44 +159,44 @@ public sealed partial class GenericWrapperTests
     {
         private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
             typeof(CustomImArray2<int>).ToString(),
-            InfoKind.Enumerable);
+            InfoKind.List);
 
-        public sealed class Serialize<T, TProvider> : SerializeInstance<T, ISerialize<T>>, ISerializeProvider<CustomImArray2<T>>
+        public sealed class Ser<T, TProvider>
+            : SerListBase<Ser<T, TProvider>, T, CustomImArray2<T>, TProvider>,
+              ISerializeProvider<CustomImArray2<T>>
+            where T : notnull
             where TProvider : ISerializeProvider<T>
         {
-            public static Serialize<T, TProvider> Instance { get; } = new();
-            static ISerialize<CustomImArray2<T>> ISerializeProvider<CustomImArray2<T>>.SerializeInstance => Instance;
             static ISerdeInfo ISerdeInfoProvider.SerdeInfo => s_serdeInfo;
 
-
-            private Serialize() : base(TProvider.SerializeInstance) { }
+            protected override ReadOnlySpan<T> GetSpan(CustomImArray2<T> value)
+            {
+                return value.Backing.AsSpan();
+            }
         }
 
-        public class SerializeInstance<T, TProxy>(TProxy proxy) : ISerialize<CustomImArray2<T>>
-            where TProxy : ISerialize<T>
-        {
-            void ISerialize<CustomImArray2<T>>.Serialize(CustomImArray2<T> value, ISerializer serializer)
-                => EnumerableHelpers.SerializeSpan(s_serdeInfo, value.Backing.AsSpan(), proxy, serializer);
-        }
-
-        public sealed class Deserialize<T, TProvider> : DeserializeInstance<T, IDeserialize<T>>, IDeserializeProvider<CustomImArray2<T>>
+        public sealed class De<T, TProvider> : IDeserialize<CustomImArray2<T>>, IDeserializeProvider<CustomImArray2<T>>
             where TProvider : IDeserializeProvider<T>
         {
-            public static Deserialize<T, TProvider> Instance { get; } = new();
+            public static De<T, TProvider> Instance { get; } = new();
             static IDeserialize<CustomImArray2<T>> IDeserializeProvider<CustomImArray2<T>>.DeserializeInstance => Instance;
             static ISerdeInfo ISerdeInfoProvider.SerdeInfo => s_serdeInfo;
 
-            private Deserialize() : base(TProvider.DeserializeInstance) { }
-        }
+            private readonly ITypeDeserialize<T> _de;
 
-        public class DeserializeInstance<T, TProxy>(TProxy proxy) : IDeserialize<CustomImArray2<T>>
-            where TProxy : IDeserialize<T>
-        {
+            private De()
+            {
+                var de = TProvider.DeserializeInstance;
+                _de = de is ITypeDeserialize<T> typeDe
+                    ? typeDe
+                    : new TypeDeBoxed<T>(de);
+            }
+
             public CustomImArray2<T> Deserialize(IDeserializer deserializer)
             {
                 ImmutableArray<T>.Builder builder;
                 var typeInfo = s_serdeInfo;
-                var d = deserializer.ReadCollection(typeInfo);
+                var d = deserializer.ReadType(typeInfo);
                 if (d.SizeOpt is int size)
                 {
                     builder = ImmutableArray.CreateBuilder<T>(size);
@@ -203,9 +207,10 @@ public sealed partial class GenericWrapperTests
                     builder = ImmutableArray.CreateBuilder<T>();
                 }
 
-                while (d.TryReadValue<T, TProxy>(typeInfo, proxy, out T? next))
+                int index;
+                while ((index = d.TryReadIndex(typeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
-                    builder.Add(next);
+                    builder.Add(_de.Deserialize(d, typeInfo, index));
                 }
                 if (size >= 0 && builder.Count != size)
                 {
