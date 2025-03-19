@@ -61,7 +61,7 @@ public sealed partial class InvalidJsonTests
     private static void AssertInvalid(string json)
     {
         var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json));
-        var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.Deserialize<JsonValue>(json));
+        var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.DeserializeJsonValue(json));
     }
 
     private static void AssertInvalid<T>(string json) where T : IDeserializeProvider<T>
