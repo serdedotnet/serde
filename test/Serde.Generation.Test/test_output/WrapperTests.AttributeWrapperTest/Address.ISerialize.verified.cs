@@ -6,14 +6,16 @@ using System;
 using Serde;
 partial class Address : Serde.ISerializeProvider<Address>
 {
-    static ISerialize<Address> ISerializeProvider<Address>.SerializeInstance
+    static ISerialize<Address> ISerializeProvider<Address>.Instance
         => _SerObj.Instance;
 
     sealed partial class _SerObj :Serde.ISerialize<Address>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Address.s_serdeInfo;
+
         void global::Serde.ISerialize<Address>.Serialize(Address value, global::Serde.ISerializer serializer)
         {
-            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Address>();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteString(_l_info, 0, value.Name);
             _l_type.WriteString(_l_info, 1, value.Line1);

@@ -10,18 +10,20 @@ partial class GenericWrapperTests
 {
     partial record struct CustomImArrayExplicitWrapOnMember : Serde.IDeserializeProvider<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>
     {
-        static IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember> IDeserializeProvider<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.DeserializeInstance
+        static IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember> IDeserializeProvider<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember.s_serdeInfo;
+
             Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.Deserialize(IDeserializer deserializer)
             {
                 Serde.Test.GenericWrapperTests.CustomImArray<int> _l_a = default!;
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<CustomImArrayExplicitWrapOnMember>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

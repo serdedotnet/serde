@@ -9,14 +9,16 @@ namespace Serde.Test;
 
 partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
 {
-    static ISerialize<Serde.Test.AllInOne> ISerializeProvider<Serde.Test.AllInOne>.SerializeInstance
+    static ISerialize<Serde.Test.AllInOne> ISerializeProvider<Serde.Test.AllInOne>.Instance
         => _SerObj.Instance;
 
     sealed partial class _SerObj :Serde.ISerialize<Serde.Test.AllInOne>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
+
         void global::Serde.ISerialize<Serde.Test.AllInOne>.Serialize(Serde.Test.AllInOne value, global::Serde.ISerializer serializer)
         {
-            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<AllInOne>();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteBool(_l_info, 0, value.BoolField);
             _l_type.WriteChar(_l_info, 1, value.CharField);

@@ -11,18 +11,20 @@ partial record Base
 {
     partial class _m_BProxy : Serde.IDeserializeProvider<Some.Nested.Namespace.Base.B>
     {
-        static IDeserialize<Some.Nested.Namespace.Base.B> IDeserializeProvider<Some.Nested.Namespace.Base.B>.DeserializeInstance
+        static IDeserialize<Some.Nested.Namespace.Base.B> IDeserializeProvider<Some.Nested.Namespace.Base.B>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Some.Nested.Namespace.Base.B>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base._m_BProxy.s_serdeInfo;
+
             Some.Nested.Namespace.Base.B Serde.IDeserialize<Some.Nested.Namespace.Base.B>.Deserialize(IDeserializer deserializer)
             {
                 string _l_y = default!;
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<_m_BProxy>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

@@ -4,13 +4,13 @@
 
 namespace Test;
 
-partial record Parent : Serde.ISerdeInfoProvider
+partial record Parent
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Parent",
-        typeof(Test.Parent).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("r", global::Serde.SerdeInfoProvider.GetInfo<Test.RecursiveWrap>(), typeof(Test.Parent).GetProperty("R"))
-        }
+    typeof(Test.Parent).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("r", global::Serde.SerdeInfoProvider.GetSerializeInfo<Recursive, Test.RecursiveWrap>(), typeof(Test.Parent).GetProperty("R"))
+    }
     );
 }

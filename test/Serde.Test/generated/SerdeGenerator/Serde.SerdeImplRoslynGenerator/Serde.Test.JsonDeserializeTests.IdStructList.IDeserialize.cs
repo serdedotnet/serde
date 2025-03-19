@@ -10,11 +10,13 @@ partial class JsonDeserializeTests
 {
     partial record struct IdStructList : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.IdStructList>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList> IDeserializeProvider<Serde.Test.JsonDeserializeTests.IdStructList>.DeserializeInstance
+        static IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList> IDeserializeProvider<Serde.Test.JsonDeserializeTests.IdStructList>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.IdStructList.s_serdeInfo;
+
             Serde.Test.JsonDeserializeTests.IdStructList Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>.Deserialize(IDeserializer deserializer)
             {
                 int _l_count = default!;
@@ -22,7 +24,7 @@ partial class JsonDeserializeTests
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<IdStructList>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

@@ -29,7 +29,7 @@ public partial class SerializeImplGen
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
 
         // The generated body of ISerialize is
-        // `var _l_info = {TypeName}SerdeTypeInfo.TypeInfo;`
+        // `var _l_info = GetInfo(this);
         // `var _l_type = serializer.WriteType(_l_info);
         // type.WriteValue<FieldType, Serialize>(_l_info, FieldIndex, receiver.FieldValue);
         // type.End();
@@ -37,8 +37,8 @@ public partial class SerializeImplGen
         // If the type is an enum, we only want to serialize one field (the enum value), not all fields
         if (receiverType.TypeKind == TypeKind.Enum)
         {
-            // `var _l_info = GetInfo<{TypeName}Proxy>();`
-            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}Proxy>();");
+            // `var _l_info = GetInfo(this);`
+            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
             // `var _l_type = serializer.WriteType(_l_info);`
             statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
 
@@ -66,8 +66,8 @@ public partial class SerializeImplGen
         }
         else
         {
-            // `var _l_info = {TypeName}SerdeTypeInfo.TypeInfo;`
-            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo<{typeDeclContext.Name}{typeDeclContext.TypeParameterList}>();");
+            // `var _l_info = GetInfo(this);`
+            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
 
             // `var type = serializer.WriteType(_l_info);`
             statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
@@ -154,7 +154,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         {
             bases.Add(SimpleBaseType(ParseTypeName($"Serde.ISerializeProvider<{receiverType.ToDisplayString()}>")));
             members.AppendLine($$"""
-            static ISerialize<{{receiverString}}> ISerializeProvider<{{receiverString}}>.SerializeInstance
+            static ISerialize<{{receiverString}}> ISerializeProvider<{{receiverString}}>.Instance
                 => {{receiverString}}Proxy.Instance;
             """);
         }
@@ -184,7 +184,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         string methodDecl = $$"""
         void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{baseType.ToDisplayString()}}>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_serdeInfo);
             switch (value)
             {

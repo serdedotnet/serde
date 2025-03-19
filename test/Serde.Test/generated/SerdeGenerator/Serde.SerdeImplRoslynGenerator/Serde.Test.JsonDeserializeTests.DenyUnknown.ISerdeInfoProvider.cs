@@ -5,15 +5,15 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record struct DenyUnknown : Serde.ISerdeInfoProvider
+    partial record struct DenyUnknown
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "DenyUnknown",
-            typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("present", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Present")),
-                ("missing", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Missing"))
-            }
+        typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("present", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Present")),
+            ("missing", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(), typeof(Serde.Test.JsonDeserializeTests.DenyUnknown).GetProperty("Missing"))
+        }
         );
     }
 }

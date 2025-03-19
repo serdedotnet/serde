@@ -8,7 +8,7 @@ sealed partial class ColorULongProxy :Serde.IDeserialize<ColorULong>,Serde.IDese
 {
     ColorULong IDeserialize<ColorULong>.Deserialize(IDeserializer deserializer)
     {
-        var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ColorULongProxy>();
+        var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);
         int index;
         if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -22,7 +22,7 @@ sealed partial class ColorULongProxy :Serde.IDeserialize<ColorULong>,Serde.IDese
             _ => throw new InvalidOperationException($"Unexpected index: {index}")
         };
     }
-    static IDeserialize<ColorULong> IDeserializeProvider<ColorULong>.DeserializeInstance
+    static IDeserialize<ColorULong> IDeserializeProvider<ColorULong>.Instance
         => ColorULongProxy.Instance;
 
 }

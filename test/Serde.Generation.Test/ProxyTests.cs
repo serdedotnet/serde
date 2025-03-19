@@ -29,11 +29,10 @@ internal sealed class Proxy : ISerialize<Original>, IDeserialize<Original>,
     ISerializeProvider<Original>, IDeserializeProvider<Original>
 {
     public static Proxy Instance { get; } = new Proxy();
-    static ISerialize<Original> ISerializeProvider<Original>.SerializeInstance => Instance;
-    static IDeserialize<Original> IDeserializeProvider<Original>.DeserializeInstance => Instance;
-    private Proxy() { }
+    static ISerialize<Original> ISerializeProvider<Original>.Instance => Instance;
+    static IDeserialize<Original> IDeserializeProvider<Original>.Instance => Instance;
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Original));
+    public ISerdeInfo SerdeInfo { get; } = StringProxy.SerdeInfo;
 
     public Original Deserialize(IDeserializer deserializer)
     {
@@ -77,11 +76,11 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>,
     ISerializeProvider<Original>, IDeserializeProvider<Original>
 {
     public static Proxy Instance { get; } = new Proxy();
-    static ISerialize<Original> ISerializeProvider<Original>.SerializeInstance => Instance;
-    static IDeserialize<Original> IDeserializeProvider<Original>.DeserializeInstance => Instance;
+    static ISerialize<Original> ISerializeProvider<Original>.Instance => Instance;
+    static IDeserialize<Original> IDeserializeProvider<Original>.Instance => Instance;
     private Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(nameof(Original));
+    public ISerdeInfo SerdeInfo { get; } = StringProxy.SerdeInfo;
 
     public Original Deserialize(IDeserializer deserializer)
     {

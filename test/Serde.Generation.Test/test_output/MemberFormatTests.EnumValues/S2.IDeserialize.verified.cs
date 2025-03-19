@@ -6,18 +6,20 @@ using System;
 using Serde;
 partial struct S2 : Serde.IDeserializeProvider<S2>
 {
-    static IDeserialize<S2> IDeserializeProvider<S2>.DeserializeInstance
+    static IDeserialize<S2> IDeserializeProvider<S2>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<S2>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => S2.s_serdeInfo;
+
         S2 Serde.IDeserialize<S2>.Deserialize(IDeserializer deserializer)
         {
             ColorEnum _l_e = default!;
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<S2>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

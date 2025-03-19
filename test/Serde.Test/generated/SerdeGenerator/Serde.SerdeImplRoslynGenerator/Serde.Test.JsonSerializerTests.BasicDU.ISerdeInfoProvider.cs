@@ -5,14 +5,14 @@ namespace Serde.Test;
 
 partial class JsonSerializerTests
 {
-    partial record BasicDU : Serde.ISerdeInfoProvider
+    partial record BasicDU
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
+        private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
             "BasicDU",
             typeof(Serde.Test.JsonSerializerTests.BasicDU).GetCustomAttributesData(),
             System.Collections.Immutable.ImmutableArray.Create<global::Serde.ISerdeInfo>(
-                        global::Serde.SerdeInfoProvider.GetInfo<_m_AProxy>(),
-                        global::Serde.SerdeInfoProvider.GetInfo<_m_BProxy>()
+                global::Serde.SerdeInfoProvider.GetSerializeInfo<Serde.Test.JsonSerializerTests.BasicDU.A, _m_AProxy>(),
+                global::Serde.SerdeInfoProvider.GetSerializeInfo<Serde.Test.JsonSerializerTests.BasicDU.B, _m_BProxy>()
             )
         );
 

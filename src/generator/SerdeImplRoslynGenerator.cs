@@ -271,6 +271,11 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         var typeName = typeDeclContext.Name;
+        string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
+            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
+            .Concat(new[] { typeName }));
+
+        var fullTypeString = fullTypeName + (typeDeclContext.TypeParameterList?.ToString() ?? "");
 
         // Generate statements for the implementation
         var (implMembers, baseList) = usage switch
@@ -303,7 +308,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                 """
             ));
             newType.Append(siblingType);
-            typeName = proxyName;
+            fullTypeName = Proxies.GetProxyName(fullTypeName);
         }
         else
         {
@@ -323,13 +328,14 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             var proxyType = new SourceBuilder($$"""
             sealed partial class {{objName}} {{baseList}}
             {
+                global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => {{fullTypeString}}.s_serdeInfo;
+
                 {{implMembers}}
             }
             """);
 
-            var suffix = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
             var members = new SourceBuilder($$"""
-            static {{interfaceName}}<{{receiverType.ToDisplayString()}}> {{interfaceName}}Provider<{{receiverType.ToDisplayString()}}>.{{suffix}}Instance
+            static {{interfaceName}}<{{receiverType.ToDisplayString()}}> {{interfaceName}}Provider<{{receiverType.ToDisplayString()}}>.Instance
                 => {{objName}}.Instance;
 
             {{proxyType}}
@@ -337,9 +343,6 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             var providerString = $"Serde.{interfaceName}Provider<{receiverType.ToDisplayString()}>";
             typeDeclContext.AppendPartialDecl(newType, providerString, members);
         }
-        string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
-            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
-            .Concat(new[] { typeName }));
 
         var srcName = fullTypeName + "." + usage.GetProxyInterfaceName();
 
@@ -348,7 +351,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
 
     internal static (string FileName, SourceBuilder Decl) MakePartialDecl(
         TypeDeclContext typeDeclContext,
-        BaseListSyntax? baseList,
+        string? baseList,
         SourceBuilder implMembers,
         string fileNameSuffix)
     {
@@ -358,8 +361,9 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         (typeName, declKeywords) = typeKind == SyntaxKind.EnumDeclaration
             ? (Proxies.GetProxyName(typeName), "class")
             : (typeName, TypeDeclContext.TypeKindToString(typeKind));
+        baseList ??= "";
         var newType = new SourceBuilder($$"""
-partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}} : Serde.ISerdeInfoProvider
+partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}}{{baseList}}
 {
     {{implMembers}}
 }

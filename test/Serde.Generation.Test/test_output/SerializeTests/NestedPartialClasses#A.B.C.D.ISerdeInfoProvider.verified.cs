@@ -7,14 +7,14 @@ partial class A
     {
         partial class C
         {
-            partial class D : Serde.ISerdeInfoProvider
+            partial class D
             {
-                static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+                private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                     "D",
-                    typeof(A.B.C.D).GetCustomAttributesData(),
-                    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                        ("field", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(A.B.C.D).GetField("Field"))
-                    }
+                typeof(A.B.C.D).GetCustomAttributesData(),
+                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                    ("field", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(A.B.C.D).GetField("Field"))
+                }
                 );
             }
         }

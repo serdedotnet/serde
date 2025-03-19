@@ -103,32 +103,40 @@ namespace Serde.Test
 ]");
         }
 
-        private struct JsonDictionaryWrapper : ISerialize<JsonDictionaryWrapper>, ISerializeProvider<JsonDictionaryWrapper>
+        private partial class JsonDictionaryWrapper(Dictionary<int, int> d) : IReadOnlyDictionary<int, int>
         {
-            public static JsonDictionaryWrapper Instance { get; } = new();
-            static ISerialize<JsonDictionaryWrapper> ISerializeProvider<JsonDictionaryWrapper>.SerializeInstance => Instance;
-
-            public static ISerdeInfo SerdeInfo { get; } = new CollectionSerdeInfo(
-                typeof(Dictionary<int, int>).ToString(),
-                InfoKind.Dictionary);
-
-            private readonly Dictionary<int, int> _d;
-            public JsonDictionaryWrapper(Dictionary<int, int> d)
+            public Dictionary<int, int> _d = d;
+            public int Count => _d.Count;
+            public IEnumerable<int> Keys => _d.Keys;
+            public IEnumerable<int> Values => _d.Values;
+            public bool ContainsKey(int key) => _d.ContainsKey(key);
+            public bool TryGetValue(int key, out int value) => _d.TryGetValue(key, out value);
+            public IEnumerator<KeyValuePair<int, int>> GetEnumerator() => _d.GetEnumerator();
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+            public int this[int key] => _d[key];
+        }
+        partial class JsonDictionaryWrapper : ISerializeProvider<JsonDictionaryWrapper>
+        {
+            private sealed class ToStringProxy : ISerializeProvider<int>, ISerialize<int>
             {
-                _d = d;
+                public static ISerialize<int> Instance { get; } = new ToStringProxy();
+
+                public ISerdeInfo SerdeInfo => StringProxy.SerdeInfo;
+
+                public void Serialize(int value, ISerializer serializer) => serializer.WriteString(value.ToString());
             }
-            public void Serialize(JsonDictionaryWrapper value, ISerializer serializer)
-            {
-                var typeInfo = SerdeInfo;
-                var sd = serializer.WriteType(typeInfo);
-                int index = 0;
-                foreach (var (k,v) in value._d)
-                {
-                    sd.WriteString(typeInfo, index++, k.ToString());
-                    sd.WriteI32(typeInfo, index++, v);
-                }
-                sd.End(typeInfo);
-            }
+
+            static ISerialize<JsonDictionaryWrapper> ISerializeProvider<JsonDictionaryWrapper>.Instance { get; }
+                = new Proxy();
+
+            private sealed class Proxy()
+                : SerDictBase<Proxy, int, int, JsonDictionaryWrapper, ToStringProxy, I32Proxy>(
+                    new CollectionSerdeInfo(
+                        typeof(Dictionary<int, int>).ToString(),
+                        InfoKind.Dictionary
+                    )
+                )
+            { }
         }
 
         [Fact]
@@ -219,29 +227,33 @@ namespace Serde.Test
             """, Serde.Json.JsonSerializer.Serialize<BasicDU>(b));
         }
 
-        abstract partial record BasicDUManualTag : ISerdeInfoProvider, ISerializeProvider<BasicDUManualTag>
+        abstract partial record BasicDUManualTag : ISerializeProvider<BasicDUManualTag>
         {
             private BasicDUManualTag() { }
 
             public record A(int W, int X) : BasicDUManualTag { }
             public record B(string Y, string Z) : BasicDUManualTag { }
 
-            static ISerialize<BasicDUManualTag> ISerializeProvider<BasicDUManualTag>.SerializeInstance => _SerializeObject.Instance;
+            static ISerialize<BasicDUManualTag> ISerializeProvider<BasicDUManualTag>.Instance => _SerializeObject.Instance;
+            private static ISerdeInfo SerdeInfo => BaseSerdeInfo.Instance;
+
 
             private sealed class _SerializeObject : ISerialize<BasicDUManualTag>
             {
                 public static readonly _SerializeObject Instance = new();
 
+                public ISerdeInfo SerdeInfo => BasicDUManualTag.SerdeInfo;
+
                 public void Serialize(BasicDUManualTag value, ISerializer serializer)
                 {
-                    var _l_baseInfo = SerdeInfoProvider.GetInfo<BasicDUManualTag>();
+                    var _l_baseInfo = this.SerdeInfo;
                     var type = serializer.WriteType(_l_baseInfo);
                     switch (value)
                     {
                         case BasicDUManualTag.A c:
                         {
                             type.WriteString(_l_baseInfo, 0, "A");
-                            var caseInfo = SerdeInfoProvider.GetInfo<_m_AProxy>();
+                            var caseInfo = SerdeInfoProvider.GetInfo(_m_AProxy.Instance);
                             type.WriteI32(caseInfo, 0, c.W);
                             type.WriteI32(caseInfo, 1, c.X);
                             break;
@@ -249,7 +261,7 @@ namespace Serde.Test
                         case BasicDUManualTag.B c:
                         {
                             type.WriteString(_l_baseInfo, 0, "B");
-                            var caseInfo = SerdeInfoProvider.GetInfo<_m_BProxy>();
+                            var caseInfo = SerdeInfoProvider.GetInfo(_m_BProxy.Instance);
                             type.WriteString(caseInfo, 0, c.Y);
                             type.WriteString(caseInfo, 1, c.Z);
                             break;
@@ -261,27 +273,27 @@ namespace Serde.Test
 
             private sealed class _m_AProxy : ISerdeInfoProvider
             {
-                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                public static readonly _m_AProxy Instance = new();
+                ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")),
-                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")),
+                        ("w", I32Proxy.SerdeInfo, typeof(A).GetProperty("W")),
+                        ("x", I32Proxy.SerdeInfo, typeof(A).GetProperty("X")),
                     ]);
             }
 
             private sealed class _m_BProxy : ISerdeInfoProvider
             {
-                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                public static readonly _m_BProxy Instance = new();
+                ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                     "B",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")),
-                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")),
+                        ("y", StringProxy.SerdeInfo, typeof(B).GetProperty("Y")),
+                        ("z", StringProxy.SerdeInfo, typeof(B).GetProperty("Z")),
                     ]);
             }
-
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo => BaseSerdeInfo.Instance;
 
             private sealed class BaseSerdeInfo : IUnionSerdeInfo
             {

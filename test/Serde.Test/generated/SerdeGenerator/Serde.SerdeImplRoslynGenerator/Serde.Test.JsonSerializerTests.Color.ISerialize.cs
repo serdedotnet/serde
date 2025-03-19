@@ -10,14 +10,16 @@ partial class JsonSerializerTests
 {
     partial struct Color : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.Color>
     {
-        static ISerialize<Serde.Test.JsonSerializerTests.Color> ISerializeProvider<Serde.Test.JsonSerializerTests.Color>.SerializeInstance
+        static ISerialize<Serde.Test.JsonSerializerTests.Color> ISerializeProvider<Serde.Test.JsonSerializerTests.Color>.Instance
             => _SerObj.Instance;
 
         sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.Color.s_serdeInfo;
+
             void global::Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>.Serialize(Serde.Test.JsonSerializerTests.Color value, global::Serde.ISerializer serializer)
             {
-                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Color>();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var _l_type = serializer.WriteType(_l_info);
                 _l_type.WriteI32(_l_info, 0, value.Red);
                 _l_type.WriteI32(_l_info, 1, value.Green);

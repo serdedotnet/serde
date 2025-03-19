@@ -6,14 +6,16 @@ using System;
 using Serde;
 partial record struct OPTSWrap : Serde.ISerializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
 {
-    static ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS> ISerializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.SerializeInstance
+    static ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS> ISerializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Instance
         => _SerObj.Instance;
 
     sealed partial class _SerObj :Serde.ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => OPTSWrap.s_serdeInfo;
+
         void global::Serde.ISerialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Serialize(System.Runtime.InteropServices.ComTypes.BIND_OPTS value, global::Serde.ISerializer serializer)
         {
-            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<OPTSWrap>();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteI32(_l_info, 0, value.cbStruct);
             _l_type.WriteI32(_l_info, 1, value.dwTickCountDeadline);

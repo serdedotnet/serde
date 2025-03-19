@@ -6,11 +6,13 @@ using System;
 using Serde;
 partial struct Rgb : Serde.IDeserializeProvider<Rgb>
 {
-    static IDeserialize<Rgb> IDeserializeProvider<Rgb>.DeserializeInstance
+    static IDeserialize<Rgb> IDeserializeProvider<Rgb>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<Rgb>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Rgb.s_serdeInfo;
+
         Rgb Serde.IDeserialize<Rgb>.Deserialize(IDeserializer deserializer)
         {
             byte _l_red = default!;
@@ -19,7 +21,7 @@ partial struct Rgb : Serde.IDeserializeProvider<Rgb>
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Rgb>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

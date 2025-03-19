@@ -49,7 +49,7 @@ namespace Serde
                 members.AppendLine(deserialize);
 
                 members.AppendLine($"""
-                static IDeserialize<{typeFqn}> IDeserializeProvider<{typeFqn}>.DeserializeInstance
+                static IDeserialize<{typeFqn}> IDeserializeProvider<{typeFqn}>.Instance
                     => {typeFqn}Proxy.Instance;
                 """);
             }
@@ -68,7 +68,7 @@ namespace Serde
         /// <code>
         /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
         /// {
-        ///   var serdeInfo = SerdeInfoProvider.GetInfo{T}();
+        ///   var serdeInfo = GetInfo(this);
         ///   var de = deserializer.ReadType(serdeInfo);
         ///   int index;
         ///   if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -107,7 +107,7 @@ namespace Serde
             var src = new SourceBuilder($$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
-    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}>();
+    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(_l_serdeInfo);
     int index;
     if ((index = de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -134,7 +134,7 @@ namespace Serde
         /// <code>
         /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
         /// {
-        ///    var serdeInfo = SerdeInfoProvider.GetInfo{T}();
+        ///    var serdeInfo = GetInfo(this);
         ///    var de = deserializer.ReadType(serdeInfo);
         ///    int index;
         ///    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -168,7 +168,7 @@ namespace Serde
             var src = new SourceBuilder($$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
-    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<{{typeFqn}}Proxy>();
+    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(serdeInfo);
     int index;
     if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -241,7 +241,7 @@ namespace Serde
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;
 
-    var {{typeInfoLocalName}} = global::Serde.SerdeInfoProvider.GetInfo<{{typeDeclContext.Name}}>();
+    var {{typeInfoLocalName}} = global::Serde.SerdeInfoProvider.GetInfo(this);
     var typeDeserialize = deserializer.ReadType({{typeInfoLocalName}});
     int {{indexLocalName}};
     while (({{indexLocalName}} = typeDeserialize.TryReadIndex({{typeInfoLocalName}}, out {{errorNameOrDiscard}})) != ITypeDeserializer.EndOfType)

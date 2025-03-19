@@ -8,14 +8,16 @@ namespace Serde.Test;
 
 partial struct MaxSizeType : Serde.ISerializeProvider<Serde.Test.MaxSizeType>
 {
-    static ISerialize<Serde.Test.MaxSizeType> ISerializeProvider<Serde.Test.MaxSizeType>.SerializeInstance
+    static ISerialize<Serde.Test.MaxSizeType> ISerializeProvider<Serde.Test.MaxSizeType>.Instance
         => _SerObj.Instance;
 
     sealed partial class _SerObj :Serde.ISerialize<Serde.Test.MaxSizeType>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.MaxSizeType.s_serdeInfo;
+
         void global::Serde.ISerialize<Serde.Test.MaxSizeType>.Serialize(Serde.Test.MaxSizeType value, global::Serde.ISerializer serializer)
         {
-            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<MaxSizeType>();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteU8(_l_info, 0, value.Field1);
             _l_type.WriteU8(_l_info, 1, value.Field2);

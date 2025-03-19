@@ -7,14 +7,14 @@ partial class JsonSerializerTests
 {
     partial record BasicDU
     {
-        partial class _m_BProxy : Serde.ISerdeInfoProvider
+        partial class _m_BProxy
         {
-            static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+            private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                 "B",
-                typeof(Serde.Test.JsonSerializerTests.BasicDU.B).GetCustomAttributesData(),
-                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                    ("y", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Serde.Test.JsonSerializerTests.BasicDU.B).GetProperty("Y"))
-                }
+            typeof(Serde.Test.JsonSerializerTests.BasicDU.B).GetCustomAttributesData(),
+            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+                ("y", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Serde.Test.JsonSerializerTests.BasicDU.B).GetProperty("Y"))
+            }
             );
         }
     }

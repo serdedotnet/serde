@@ -6,18 +6,20 @@ using System;
 using Serde;
 partial record Container : Serde.IDeserializeProvider<Container>
 {
-    static IDeserialize<Container> IDeserializeProvider<Container>.DeserializeInstance
+    static IDeserialize<Container> IDeserializeProvider<Container>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<Container>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Container.s_serdeInfo;
+
         Container Serde.IDeserialize<Container>.Deserialize(IDeserializer deserializer)
         {
             Original? _l_sdkdir = default!;
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Container>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

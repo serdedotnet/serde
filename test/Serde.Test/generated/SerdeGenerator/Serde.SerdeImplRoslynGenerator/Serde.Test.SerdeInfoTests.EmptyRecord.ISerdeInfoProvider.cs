@@ -5,14 +5,14 @@ namespace Serde.Test;
 
 partial class SerdeInfoTests
 {
-    partial record EmptyRecord : Serde.ISerdeInfoProvider
+    partial record EmptyRecord
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "EmptyRecord",
-            typeof(Serde.Test.SerdeInfoTests.EmptyRecord).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        typeof(Serde.Test.SerdeInfoTests.EmptyRecord).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
 
-            }
+        }
         );
     }
 }

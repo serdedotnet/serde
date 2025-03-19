@@ -17,8 +17,8 @@ namespace Benchmarks
         private JsonSerializerOptions _options = null!;
         private string value = null!;
 
-        private readonly IDeserialize<T> _proxy = T.DeserializeInstance;
-        private readonly IDeserialize<T> _manualProxy = U.DeserializeInstance;
+        private readonly IDeserialize<T> _proxy = T.Instance;
+        private readonly IDeserialize<T> _manualProxy = U.Instance;
 
         [GlobalSetup]
         public void Setup()

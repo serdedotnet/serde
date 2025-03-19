@@ -21,12 +21,13 @@ public sealed partial class CustomImplTests
                 ("blue", I32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Blue"))
             ]);
 
-        static IDeserialize<RgbWithFieldMap> IDeserializeProvider<RgbWithFieldMap>.DeserializeInstance { get; }
+        static IDeserialize<RgbWithFieldMap> IDeserializeProvider<RgbWithFieldMap>.Instance { get; }
             = new RgbWithFieldMapDeserialize();
     }
 
     private sealed class RgbWithFieldMapDeserialize : IDeserialize<RgbWithFieldMap>
     {
+        ISerdeInfo ISerdeInfoProvider.SerdeInfo => RgbWithFieldMap.SerdeInfo;
         RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
             var fieldMap = RgbWithFieldMap.SerdeInfo;

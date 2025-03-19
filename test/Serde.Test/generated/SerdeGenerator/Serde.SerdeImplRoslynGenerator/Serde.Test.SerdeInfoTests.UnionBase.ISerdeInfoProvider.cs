@@ -5,14 +5,14 @@ namespace Serde.Test;
 
 partial class SerdeInfoTests
 {
-    partial record UnionBase : Serde.ISerdeInfoProvider
+    partial record UnionBase
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
+        private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
             "UnionBase",
             typeof(Serde.Test.SerdeInfoTests.UnionBase).GetCustomAttributesData(),
             System.Collections.Immutable.ImmutableArray.Create<global::Serde.ISerdeInfo>(
-                        global::Serde.SerdeInfoProvider.GetInfo<_m_AProxy>(),
-                        global::Serde.SerdeInfoProvider.GetInfo<_m_BProxy>()
+                global::Serde.SerdeInfoProvider.GetDeserializeInfo<Serde.Test.SerdeInfoTests.UnionBase.A, _m_AProxy>(),
+                global::Serde.SerdeInfoProvider.GetDeserializeInfo<Serde.Test.SerdeInfoTests.UnionBase.B, _m_BProxy>()
             )
         );
 

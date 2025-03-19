@@ -10,14 +10,16 @@ partial class JsonSerializerTests
 {
     partial record BasicDU : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU>
     {
-        static ISerialize<Serde.Test.JsonSerializerTests.BasicDU> ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU>.SerializeInstance
+        static ISerialize<Serde.Test.JsonSerializerTests.BasicDU> ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU>.Instance
             => _SerObj.Instance;
 
         sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.BasicDU.s_serdeInfo;
+
             void ISerialize<Serde.Test.JsonSerializerTests.BasicDU>.Serialize(Serde.Test.JsonSerializerTests.BasicDU value, ISerializer serializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.JsonSerializerTests.BasicDU>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var _l_type = serializer.WriteType(_l_serdeInfo);
                 switch (value)
                 {

@@ -6,11 +6,13 @@ using System;
 using Serde;
 partial record struct Wrap : Serde.IDeserializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
 {
-    static IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS> IDeserializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.DeserializeInstance
+    static IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS> IDeserializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Wrap.s_serdeInfo;
+
         System.Runtime.InteropServices.ComTypes.BIND_OPTS Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
         {
             int _l_cbstruct = default!;
@@ -20,7 +22,7 @@ partial record struct Wrap : Serde.IDeserializeProvider<System.Runtime.InteropSe
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Wrap>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

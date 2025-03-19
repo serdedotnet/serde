@@ -6,18 +6,20 @@ using System;
 using Serde;
 partial class C : Serde.IDeserializeProvider<C>
 {
-    static IDeserialize<C> IDeserializeProvider<C>.DeserializeInstance
+    static IDeserialize<C> IDeserializeProvider<C>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<C>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
+
         C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
             int _l_a = default!;
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<C>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

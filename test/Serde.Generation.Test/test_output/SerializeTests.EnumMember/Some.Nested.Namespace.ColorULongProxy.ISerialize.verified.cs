@@ -11,7 +11,7 @@ sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.Col
 {
     void global::Serde.ISerialize<Some.Nested.Namespace.ColorULong>.Serialize(Some.Nested.Namespace.ColorULong value, global::Serde.ISerializer serializer)
     {
-        var _l_info = global::Serde.SerdeInfoProvider.GetInfo<ColorULongProxy>();
+        var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
         var _l_type = serializer.WriteType(_l_info);
         var index = value switch
         {
@@ -23,7 +23,7 @@ sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.Col
         _l_type.WriteU64(_l_info, index, (ulong)value);
         _l_type.End(_l_info);
     }
-    static ISerialize<Some.Nested.Namespace.ColorULong> ISerializeProvider<Some.Nested.Namespace.ColorULong>.SerializeInstance
+    static ISerialize<Some.Nested.Namespace.ColorULong> ISerializeProvider<Some.Nested.Namespace.ColorULong>.Instance
         => Some.Nested.Namespace.ColorULongProxy.Instance;
 
 }

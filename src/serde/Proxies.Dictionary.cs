@@ -9,28 +9,29 @@ namespace Serde;
 public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
     : ISerialize<TDict>, ISerializeProvider<TDict>
     where TK : notnull
-    where TSelf : ISerialize<TDict>, ISerdeInfoProvider, new()
+    where TSelf : ISerialize<TDict>, new()
     where TDict : IReadOnlyDictionary<TK, TV>
     where TKProvider : ISerializeProvider<TK>
     where TVProvider : ISerializeProvider<TV>
 {
     public static TSelf Instance { get; } = new();
-    static ISerialize<TDict> ISerializeProvider<TDict>.SerializeInstance => Instance;
-    static ISerdeInfo ISerdeInfoProvider.SerdeInfo => TSelf.SerdeInfo;
+    static ISerialize<TDict> ISerializeProvider<TDict>.Instance => Instance;
+    public ISerdeInfo SerdeInfo { get; }
 
     private readonly ITypeSerialize<TK> _keySer;
     private readonly ITypeSerialize<TV> _valueSer;
 
-    protected SerDictBase()
+    protected SerDictBase(ISerdeInfo serdeInfo)
     {
-        var ks = TKProvider.SerializeInstance;
+        var ks = TKProvider.Instance;
         _keySer = ks is ITypeSerialize<TK> ktSer
             ? ktSer
             : new TypeSerBoxed<TK>(ks);
-        var vs = TVProvider.SerializeInstance;
+        var vs = TVProvider.Instance;
         _valueSer = vs is ITypeSerialize<TV> kvSer
             ? kvSer
             : new TypeSerBoxed<TV>(vs);
+        SerdeInfo = serdeInfo;
     }
 
     void ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
@@ -63,19 +64,19 @@ public abstract class DeDictBase<
     where TKProvider : IDeserializeProvider<TKey>
     where TVProvider : IDeserializeProvider<TValue>
 {
-    public static IDeserialize<TDict> DeserializeInstance { get; } = new TSelf();
-    public static ISerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
+    public static IDeserialize<TDict> Instance { get; } = new TSelf();
+    public ISerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
 
     private readonly ITypeDeserialize<TKey> _keyDe;
     private readonly ITypeDeserialize<TValue> _valueDe;
 
     protected DeDictBase()
     {
-        var keyDe = TKProvider.DeserializeInstance;
-        var valueDe = TVProvider.DeserializeInstance;
-        Debug.Assert(TKProvider.SerdeInfo.Kind != InfoKind.Primitive
+        var keyDe = TKProvider.Instance;
+        var valueDe = TVProvider.Instance;
+        Debug.Assert(keyDe.SerdeInfo.Kind != InfoKind.Primitive
             || keyDe is ITypeDeserialize<TKey>, $"{typeof(TKey)} does not implement ITypeDeserialize");
-        Debug.Assert(TVProvider.SerdeInfo.Kind != InfoKind.Primitive
+        Debug.Assert(valueDe.SerdeInfo.Kind != InfoKind.Primitive
             || valueDe is ITypeDeserialize<TValue>, $"{typeof(TValue)} does not implement ITypeDeserialize");
         _keyDe = keyDe is ITypeDeserialize<TKey> keyTypeDe
             ? keyTypeDe
@@ -132,7 +133,7 @@ internal static class DictSerdeInfo<TKey, TValue> where TKey : notnull
 
 public static class DictProxy
 {
-    public sealed class Ser<TKey, TValue, TKeyProvider, TValueProvider>
+    public sealed class Ser<TKey, TValue, TKeyProvider, TValueProvider>()
         : SerDictBase<
             Ser<TKey, TValue, TKeyProvider, TValueProvider>,
             TKey,
@@ -140,14 +141,12 @@ public static class DictProxy
             Dictionary<TKey, TValue>,
             TKeyProvider,
             TValueProvider
-          >,
+          >(DictSerdeInfo<TKey, TValue>.Instance),
           ISerializeProvider<Dictionary<TKey, TValue>>
         where TKey : notnull
         where TKeyProvider : ISerializeProvider<TKey>
         where TValueProvider : ISerializeProvider<TValue>
-    {
-        public static ISerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
-    }
+    { }
 
     public sealed class De<TKey, TValue, TKProvider, TVProvider>
         : DeDictBase<

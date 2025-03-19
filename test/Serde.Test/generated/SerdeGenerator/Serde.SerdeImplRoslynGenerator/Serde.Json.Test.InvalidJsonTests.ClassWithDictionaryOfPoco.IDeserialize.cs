@@ -10,18 +10,20 @@ partial class InvalidJsonTests
 {
     partial class ClassWithDictionaryOfPoco : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>
     {
-        static IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>.DeserializeInstance
+        static IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco.s_serdeInfo;
+
             Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>.Deserialize(IDeserializer deserializer)
             {
                 System.Collections.Generic.Dictionary<string, Serde.Json.Test.Poco> _l_obj = default!;
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ClassWithDictionaryOfPoco>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

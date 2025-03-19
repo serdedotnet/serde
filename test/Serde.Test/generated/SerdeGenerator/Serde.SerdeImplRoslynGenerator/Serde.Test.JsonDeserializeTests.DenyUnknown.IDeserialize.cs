@@ -10,11 +10,13 @@ partial class JsonDeserializeTests
 {
     partial record struct DenyUnknown : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.DenyUnknown>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown> IDeserializeProvider<Serde.Test.JsonDeserializeTests.DenyUnknown>.DeserializeInstance
+        static IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown> IDeserializeProvider<Serde.Test.JsonDeserializeTests.DenyUnknown>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.DenyUnknown.s_serdeInfo;
+
             Serde.Test.JsonDeserializeTests.DenyUnknown Serde.IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown>.Deserialize(IDeserializer deserializer)
             {
                 string _l_present = default!;
@@ -22,7 +24,7 @@ partial class JsonDeserializeTests
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<DenyUnknown>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out var _l_errorName)) != ITypeDeserializer.EndOfType)

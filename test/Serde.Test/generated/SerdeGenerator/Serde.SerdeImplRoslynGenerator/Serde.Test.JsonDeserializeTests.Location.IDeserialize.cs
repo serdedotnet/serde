@@ -10,11 +10,13 @@ partial class JsonDeserializeTests
 {
     partial record Location : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.Location>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.Location> IDeserializeProvider<Serde.Test.JsonDeserializeTests.Location>.DeserializeInstance
+        static IDeserialize<Serde.Test.JsonDeserializeTests.Location> IDeserializeProvider<Serde.Test.JsonDeserializeTests.Location>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.Location.s_serdeInfo;
+
             Serde.Test.JsonDeserializeTests.Location Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>.Deserialize(IDeserializer deserializer)
             {
                 int _l_id = default!;
@@ -29,7 +31,7 @@ partial class JsonDeserializeTests
 
                 ushort _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Location>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

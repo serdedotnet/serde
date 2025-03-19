@@ -10,11 +10,13 @@ partial class SerdeInfoTests
 {
     partial record RgbProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>
     {
-        static IDeserialize<Serde.Test.SerdeInfoTests.Rgb> IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>.DeserializeInstance
+        static IDeserialize<Serde.Test.SerdeInfoTests.Rgb> IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.RgbProxy.s_serdeInfo;
+
             Serde.Test.SerdeInfoTests.Rgb Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>.Deserialize(IDeserializer deserializer)
             {
                 byte _l_r = default!;
@@ -23,7 +25,7 @@ partial class SerdeInfoTests
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<RgbProxy>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

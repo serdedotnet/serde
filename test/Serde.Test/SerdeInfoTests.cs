@@ -17,7 +17,7 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void TestEmptyRecord()
     {
-        var info = SerdeInfoProvider.GetInfo<EmptyRecord>();
+        var info = SerdeInfoProvider.GetDeserializeInfo<EmptyRecord>();
         Assert.Equal(nameof(EmptyRecord), info.Name);
         Assert.Equal(0, info.FieldCount);
     }
@@ -33,7 +33,7 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void TestProxy()
     {
-        var info = SerdeInfoProvider.GetInfo<RgbProxy>();
+        var info = SerdeInfoProvider.GetDeserializeInfo<Rgb, RgbProxy>();
         Assert.Equal(nameof(Rgb), info.Name);
         Assert.Equal(3, info.FieldCount);
     }
@@ -53,7 +53,7 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void TestUnionInfo()
     {
-        var info = SerdeInfoProvider.GetInfo<UnionBase>();
+        var info = SerdeInfoProvider.GetDeserializeInfo<UnionBase>();
         Assert.Equal(nameof(UnionBase), info.Name);
         Assert.Equal(2, info.FieldCount);
         Assert.Equal(0, info.TryGetIndex("A"u8));
@@ -75,12 +75,12 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void NullableInfo()
     {
-        var info = SerdeInfoProvider.GetInfo<NullableRefProxy.Ser<string, StringProxy>>();
+        var info = SerdeInfoProvider.GetSerializeInfo<string?, NullableRefProxy.Ser<string, StringProxy>>();
         Assert.Equal(InfoKind.Nullable, info.Kind);
         Assert.Equal("string?", info.Name);
         Assert.Equal(1, info.FieldCount);
         Assert.Equal(0, info.TryGetIndex("Value"u8));
-        Assert.Equal(SerdeInfoProvider.GetInfo<StringProxy>(), info.GetFieldInfo(0));
+        Assert.Equal(SerdeInfoProvider.GetDeserializeInfo<string, StringProxy>(), info.GetFieldInfo(0));
     }
 
 #pragma warning restore SerdeExperimentalFieldInfo // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

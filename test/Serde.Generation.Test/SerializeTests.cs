@@ -309,15 +309,15 @@ public struct S
 public sealed class SWrap : ISerialize<S>, ISerializeProvider<S>
 {
     public static SWrap Instance { get; } = new();
-    static ISerialize<S> ISerializeProvider<S>.SerializeInstance => Instance;
+    static ISerialize<S> ISerializeProvider<S>.Instance => Instance;
     private SWrap() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
         typeof(S).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            (""x"", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(S).GetField(""X"")),
-            (""y"", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(S).GetField(""Y"")),
+            (""x"", I32Proxy.SerdeInfo, typeof(S).GetField(""X"")),
+            (""y"", I32Proxy.SerdeInfo, typeof(S).GetField(""Y"")),
         });
     void ISerialize<S>.Serialize(S value, ISerializer serializer)
     {
@@ -350,25 +350,22 @@ public struct S<T>
 }
 public static class SWrap
 {
-    internal static class SWrapTypeInfo<T> where T : ISerdeInfoProvider
-    {
-        public static readonly ISerdeInfo TypeInfo = Serde.SerdeInfo.MakeCustom(
-            ""S"",
-            typeof(S<>).GetCustomAttributesData(),
-            new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
-                (""s"", Serde.SerdeInfoProvider.GetInfo<T>(), typeof(S<>).GetField(""Field"")) });
-    }
     public sealed class Ser<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
         where TWrap : ISerializeProvider<T>
     {
-        static ISerialize<S<T>> ISerializeProvider<S<T>>.SerializeInstance { get; }
+        static ISerialize<S<T>> ISerializeProvider<S<T>>.Instance { get; }
             = new Ser<T, TWrap>();
         private Ser() { }
 
-        public static ISerdeInfo SerdeInfo => SWrapTypeInfo<TWrap>.TypeInfo;
+        public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+            ""S"",
+            typeof(S<>).GetCustomAttributesData(),
+            new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
+                (""s"", Serde.SerdeInfoProvider.GetSerializeInfo<T, TWrap>(), typeof(S<>).GetField(""Field"")) });
+
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
         {
-            var _l_serdeInfo = SerdeInfo;
+            var _l_serdeInfo = SerdeInfoProvider.GetInfo(this);
             var type = serializer.WriteType(_l_serdeInfo);
             type.WriteBoxedValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
             type.End(_l_serdeInfo);
@@ -402,14 +399,15 @@ public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
     where TWrap : ISerializeProvider<T>
 {
     public static SWrap<T, TWrap> Instance { get; } = new();
-    static ISerialize<S<T>> ISerializeProvider<S<T>>.SerializeInstance => Instance;
+    static ISerialize<S<T>> ISerializeProvider<S<T>>.Instance => Instance;
     private SWrap() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
         typeof(S<>).GetCustomAttributesData(),
         new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
-            (""s"", SerdeInfoProvider.GetInfo<TWrap>(), typeof(S<>).GetField(""Field"")) });
+            (""s"", SerdeInfoProvider.GetSerializeInfo<T, TWrap>(), typeof(S<>).GetField(""Field"")) });
+
     void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
     {
         var _l_serdeInfo = SerdeInfo;

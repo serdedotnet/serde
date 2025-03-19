@@ -4,14 +4,14 @@
 
 namespace Some.Nested.Namespace;
 
-partial record Base : Serde.ISerdeInfoProvider
+partial record Base
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
+    private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
         "Base",
         typeof(Some.Nested.Namespace.Base).GetCustomAttributesData(),
         System.Collections.Immutable.ImmutableArray.Create<global::Serde.ISerdeInfo>(
-                    global::Serde.SerdeInfoProvider.GetInfo<_m_AProxy>(),
-                    global::Serde.SerdeInfoProvider.GetInfo<_m_BProxy>()
+            global::Serde.SerdeInfoProvider.GetDeserializeInfo<Some.Nested.Namespace.Base.A, _m_AProxy>(),
+            global::Serde.SerdeInfoProvider.GetDeserializeInfo<Some.Nested.Namespace.Base.B, _m_BProxy>()
         )
     );
 

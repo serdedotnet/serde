@@ -90,7 +90,8 @@ internal static class SerdeInfoGenerator
                 // This should never happen. Produce a bogus string
                 underlyingInfo = "<underlying info not found, this is a bug>";
             }
-            makeArgs.Add($"global::Serde.SerdeInfoProvider.GetInfo<{underlyingInfo}>()");
+            string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
+            makeArgs.Add($"global::Serde.SerdeInfoProvider.Get{name}Info<{receiverType.EnumUnderlyingType}, {underlyingInfo}>()");
         }
 
         makeArgs.Add(new SourceBuilder($$"""
@@ -101,15 +102,21 @@ new {{fieldArrayType}} {
 
         var argsString = string.Join("," + Utilities.NewLine, makeArgs);
 
-        var body = new SourceBuilder($$"""
-static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
+        var body = new SourceBuilder(
+            isEnum ? $$"""
+global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
+    {{argsString}}
+);
+"""
+            : $$"""
+private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
     {{argsString}}
 );
 """);
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
             typeDeclContext,
-            baseList: null,
+            baseList: isEnum ? " : global::Serde.ISerdeInfoProvider" : null,
             body,
             "ISerdeInfoProvider");
 
@@ -129,7 +136,8 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
                     // or deserialization generator
                     return null;
                 }
-                elements.Add($"global::Serde.SerdeInfoProvider.GetInfo<{wrapperName}>()");
+                string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
+                elements.Add($"global::Serde.SerdeInfoProvider.Get{name}Info<{m.Type.ToDisplayString()}, {wrapperName}>()");
             }
 
             var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
@@ -158,7 +166,7 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
                 ? (Proxies.GetProxyName(typeName), "class")
                 : (typeName, TypeDeclContext.TypeKindToString(typeKind));
             var nestedType = originalCtx.MakeSiblingType(new SourceBuilder($$"""
-partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}} : Serde.ISerdeInfoProvider
+partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}}
 {
     private sealed partial class {{proxyName}} {}
 }
@@ -169,7 +177,7 @@ partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}} : Serde.I
         }
 
         var bodies = new SourceBuilder($$"""
-static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
+private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
     "{{SerdeImplRoslynGenerator.GetSerdeName(receiverType)}}",
     typeof({{receiverType.ToDisplayString()}}).GetCustomAttributesData(),
     System.Collections.Immutable.ImmutableArray.Create<global::Serde.ISerdeInfo>(
@@ -192,8 +200,9 @@ static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get
 
         string GetMembersInfos()
         {
+            string infoName = usage.HasFlag(SerdeUsage.Serialize) ? "Serialize" : "Deserialize";
             return string.Join("," + Utilities.NewLine,
-                typeMembers.Select(m => $"        global::Serde.SerdeInfoProvider.GetInfo<{GetUnionProxyName(m)}>()"));
+                typeMembers.Select(m => $"global::Serde.SerdeInfoProvider.Get{infoName}Info<{m.ToDisplayString()}, {GetUnionProxyName(m)}>()"));
         }
 
         string GetProxyDefs()
