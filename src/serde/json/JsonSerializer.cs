@@ -121,5 +121,14 @@ namespace Serde.Json
 #endif // DEBUG
             return result;
         }
+
+        public static JsonValue DeserializeJsonValue(string source)
+        {
+            var bytes = Encoding.UTF8.GetBytes(source);
+            using var deserializer = JsonDeserializer.FromUtf8_Unsafe(bytes);
+            var result = deserializer.ReadJsonValue();
+            deserializer.Eof();
+            return result;
+        }
     }
 }

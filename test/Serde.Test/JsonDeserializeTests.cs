@@ -18,7 +18,7 @@ namespace Serde.Test
         public void DeserializeEnumerable()
         {
             var src = @"[ 1, 2 ]";
-            var result = JsonSerializer.Deserialize<JsonValue>(src);
+            var result = JsonSerializer.DeserializeJsonValue(src);
             Assert.Equal(new Array(new JsonValue[] {
                 new Number(1),
                 new Number(2)
@@ -34,7 +34,7 @@ namespace Serde.Test
                 [ ""def"", 3 ],
                 []
             ]";
-            var result = JsonSerializer.Deserialize<JsonValue>(src);
+            var result = JsonSerializer.DeserializeJsonValue(src);
             Assert.Equal(new Array(new JsonValue[] {
                 new Array(new JsonValue[] { 1, "abc" }),
                 new Array(new JsonValue[] { 2 }),
@@ -47,7 +47,7 @@ namespace Serde.Test
         public void DeserializeObject()
         {
             var src = @"{ ""field1"": ""abc"", ""field2"": 123 }";
-            var result = JsonSerializer.Deserialize<JsonValue>(src);
+            var result = JsonSerializer.DeserializeJsonValue(src);
             Assert.Equal(new JsonValue.Object(new (string, JsonValue)[] {
                 ("field1", "abc"),
                 ("field2", 123)
@@ -58,7 +58,7 @@ namespace Serde.Test
         public void DeserializeInt()
         {
             var src = "123";
-            var result = JsonSerializer.Deserialize<JsonValue>(src);
+            var result = JsonSerializer.DeserializeJsonValue(src);
             Assert.Equal(new JsonValue.Number(123), result);
         }
 
@@ -66,18 +66,30 @@ namespace Serde.Test
         public void BadValueAtEnd()
         {
             var src = "123 456";
-            Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<JsonValue>(src));
+            Assert.Throws<JsonException>(() => JsonSerializer.DeserializeJsonValue(src));
+        }
+
+        [Fact]
+        public void SingleElementObj()
+        {
+            var src = """
+            { "field1": 123 }
+            """;
+            var result = JsonSerializer.DeserializeJsonValue(src);
+            Assert.Equal(new JsonValue.Object([
+                ("field1", 123)
+            ]), result);
         }
 
         [Fact]
         public void DeserializeBool()
         {
             var src = "true";
-            var result = JsonSerializer.Deserialize<JsonValue>(src);
+            var result = JsonSerializer.DeserializeJsonValue(src);
             Assert.Equal(new JsonValue.Bool(true), result);
 
             src = "false";
-            result = JsonSerializer.Deserialize<JsonValue>(src);
+            result = JsonSerializer.DeserializeJsonValue(src);
             Assert.Equal(new JsonValue.Bool(false), result);
         }
 

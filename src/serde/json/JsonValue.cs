@@ -4,10 +4,12 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using StaticCs;
 
 namespace Serde.Json
 {
     // definition
+    [Closed]
     public abstract partial record JsonValue
     {
         public sealed partial record Number(double Value) : JsonValue;

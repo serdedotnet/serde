@@ -16,7 +16,7 @@ namespace Serde.Test
             foreach (var item in items)
             {
                 var serdeStr = JsonSerializer.Serialize(item);
-                var de = JsonSerializer.Deserialize<JsonValue>(serdeStr);
+                var de = JsonSerializer.DeserializeJsonValue(serdeStr);
                 Assert.Equal(item, de);
             }
         }

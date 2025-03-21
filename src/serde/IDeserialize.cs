@@ -37,16 +37,6 @@ public static partial class DeserializeExtensions
 
 public interface IDeserializer : IDisposable
 {
-    /// <summary>
-    /// Read a value of any type, as decided by the input. This method can be used when the
-    /// expected type may vary at runtime, such as when reading a union type.
-    /// </summary>
-    /// <remarks>
-    /// Note that `T` is constrained to `class` to avoid GVM size explosion with AOT.
-    /// </remarks>
-    T ReadAny<T>(IDeserializeVisitor<T> v)
-        where T : class;
-
     T? ReadNullableRef<T>(IDeserialize<T> deserialize) where T : class;
 
     bool ReadBool();
@@ -136,48 +126,3 @@ public static class ITypeDeserializerExt
         return (T)deserializeType.ReadValue(info, index, BoxProxy<T, TProvider>.Instance)!;
     }
 }
-
-public interface IDeserializeVisitor<T>
-{
-    string ExpectedTypeName { get; }
-    T VisitBool(bool b) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitChar(char c) => VisitString(c.ToString());
-    T VisitByte(byte b) => VisitU64(b);
-    T VisitU16(ushort u16) => VisitU64(u16);
-    T VisitU32(uint u32) => VisitU64(u32);
-    T VisitU64(ulong u64) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitSByte(sbyte b) => VisitI64(b);
-    T VisitI16(short i16) => VisitI64(i16);
-    T VisitI32(int i32) => VisitI64(i32);
-    T VisitI64(long i64) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitFloat(float f) => VisitDouble(f);
-    T VisitDouble(double d) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitDecimal(decimal d) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitString(string s) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitUtf8Span(ReadOnlySpan<byte> s) => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitEnumerable<D>(ref D d) where D : IDeserializeEnumerable
-        => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitDictionary<D>(ref D d) where D : IDeserializeDictionary
-        => throw new DeserializeException("Expected type " + ExpectedTypeName);
-    T VisitNull() => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
-    T VisitNotNull(IDeserializer d) => throw new InvalidOperationException("Expected type " + ExpectedTypeName);
-}
-
-public interface IDeserializeEnumerable
-{
-    bool TryGetNext<T, TProxy>(TProxy deserialize, [MaybeNullWhen(false)] out T next)
-        where TProxy : IDeserialize<T>;
-    int? SizeOpt { get; }
-}
-
-public interface IDeserializeDictionary
-{
-    bool TryGetNextKey<K, D>(D deserialize, [MaybeNullWhen(false)] out K next)
-        where D : IDeserialize<K>;
-    V GetNextValue<V, D>(D deserialize) where D : IDeserialize<V>;
-    bool TryGetNextEntry<K, V, DK, DV>(DK dk, DV dv, [MaybeNullWhen(false)] out (K, V) next)
-        where DK : IDeserialize<K>
-        where DV : IDeserialize<V>;
-    int? SizeOpt { get; }
-}
-
