@@ -5,14 +5,14 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial struct ExtraMembers : Serde.ISerdeInfoProvider
+    partial struct ExtraMembers
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "ExtraMembers",
-            typeof(Serde.Test.JsonDeserializeTests.ExtraMembers).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("b", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.JsonDeserializeTests.ExtraMembers).GetField("b"))
-            }
+        typeof(Serde.Test.JsonDeserializeTests.ExtraMembers).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("b", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>(), typeof(Serde.Test.JsonDeserializeTests.ExtraMembers).GetField("b"))
+        }
         );
     }
 }

@@ -10,11 +10,13 @@ partial class JsonDeserializeTests
 {
     partial record struct ThrowMissing : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.ThrowMissing>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing> IDeserializeProvider<Serde.Test.JsonDeserializeTests.ThrowMissing>.DeserializeInstance
+        static IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing> IDeserializeProvider<Serde.Test.JsonDeserializeTests.ThrowMissing>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.ThrowMissing.s_serdeInfo;
+
             Serde.Test.JsonDeserializeTests.ThrowMissing Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing>.Deserialize(IDeserializer deserializer)
             {
                 string _l_present = default!;
@@ -22,7 +24,7 @@ partial class JsonDeserializeTests
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<ThrowMissing>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

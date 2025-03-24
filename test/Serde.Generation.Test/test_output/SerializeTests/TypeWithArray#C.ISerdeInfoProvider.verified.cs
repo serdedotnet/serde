@@ -1,13 +1,13 @@
 ﻿//HintName: C.ISerdeInfoProvider.cs
 
 #nullable enable
-partial class C : Serde.ISerdeInfoProvider
+partial class C
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "C",
-        typeof(C).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("intArr", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(C).GetField("IntArr"))
-        }
+    typeof(C).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("intArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(C).GetField("IntArr"))
+    }
     );
 }

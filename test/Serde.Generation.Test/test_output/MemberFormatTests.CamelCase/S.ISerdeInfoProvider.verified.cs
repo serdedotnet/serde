@@ -1,14 +1,14 @@
 ﻿//HintName: S.ISerdeInfoProvider.cs
 
 #nullable enable
-partial struct S : Serde.ISerdeInfoProvider
+partial struct S
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "S",
-        typeof(S).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("one", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(S).GetProperty("One")),
-            ("twoWord", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(S).GetProperty("TwoWord"))
-        }
+    typeof(S).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("one", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(S).GetProperty("One")),
+        ("twoWord", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(S).GetProperty("TwoWord"))
+    }
     );
 }

@@ -11,7 +11,7 @@ sealed partial class ChannelProxy :Serde.IDeserialize<Test.Channel>,Serde.IDeser
 {
     Test.Channel IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
     {
-        var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Test.ChannelProxy>();
+        var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);
         int index;
         if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -25,7 +25,7 @@ sealed partial class ChannelProxy :Serde.IDeserialize<Test.Channel>,Serde.IDeser
             _ => throw new InvalidOperationException($"Unexpected index: {index}")
         };
     }
-    static IDeserialize<Test.Channel> IDeserializeProvider<Test.Channel>.DeserializeInstance
+    static IDeserialize<Test.Channel> IDeserializeProvider<Test.Channel>.Instance
         => Test.ChannelProxy.Instance;
 
 }

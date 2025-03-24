@@ -9,11 +9,13 @@ namespace Serde.Test;
 
 partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
 {
-    static IDeserialize<Serde.Test.AllInOne> IDeserializeProvider<Serde.Test.AllInOne>.DeserializeInstance
+    static IDeserialize<Serde.Test.AllInOne> IDeserializeProvider<Serde.Test.AllInOne>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.AllInOne>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
+
         Serde.Test.AllInOne Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize(IDeserializer deserializer)
         {
             bool _l_boolfield = default!;
@@ -36,7 +38,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
 
             uint _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<AllInOne>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

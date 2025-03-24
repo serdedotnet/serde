@@ -10,17 +10,19 @@ partial class SerdeInfoTests
 {
     partial record EmptyRecord : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>
     {
-        static IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord> IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>.DeserializeInstance
+        static IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord> IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.EmptyRecord.s_serdeInfo;
+
             Serde.Test.SerdeInfoTests.EmptyRecord Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>.Deserialize(IDeserializer deserializer)
             {
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<EmptyRecord>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

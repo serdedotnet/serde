@@ -1,20 +1,7 @@
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Serde;
-
-public interface IDeserializeProvider<T> : ISerdeInfoProvider
-{
-    abstract static IDeserialize<T> DeserializeInstance { get; }
-}
-
-public static class DeserializeProvider
-{
-    public static IDeserialize<T> GetDeserialize<T, TProvider>()
-        where TProvider : IDeserializeProvider<T>
-        => TProvider.DeserializeInstance;
-}
 
 /// <summary>
 /// The driving interface for deserializing a given type. This interface separates deserialization
@@ -23,16 +10,28 @@ public static class DeserializeProvider
 /// be based on this interface. However, types which implement their own deserialization logic
 /// should also implement <see cref="IDeserializeProvider{T}"/>.
 /// </summary>
-public interface IDeserialize<T>
+public interface IDeserialize<T> : ISerdeInfoProvider
 {
     T Deserialize(IDeserializer deserializer);
+}
+
+public interface IDeserializeProvider<T>
+{
+    abstract static IDeserialize<T> Instance { get; }
+}
+
+public static class DeserializeProvider
+{
+    public static IDeserialize<T> GetDeserialize<T, TProvider>()
+        where TProvider : IDeserializeProvider<T>
+        => TProvider.Instance;
 }
 
 public static partial class DeserializeExtensions
 {
     public static IDeserialize<T> GetDeserialize<T>(this T? _)
         where T : IDeserializeProvider<T>
-        => T.DeserializeInstance;
+        => T.Instance;
 }
 
 public interface IDeserializer : IDisposable
@@ -102,7 +101,7 @@ public static class ITypeDeserializerExt
         where T : class?
         where TProvider : IDeserializeProvider<T>
     {
-        return deserializeType.ReadValue(info, index, TProvider.DeserializeInstance);
+        return deserializeType.ReadValue(info, index, TProvider.Instance);
     }
 
     private sealed class BoxProxy<T, TProvider> : IDeserialize<object?>
@@ -110,9 +109,11 @@ public static class ITypeDeserializerExt
     {
         public static readonly BoxProxy<T, TProvider> Instance = new BoxProxy<T, TProvider>();
 
-        private readonly IDeserialize<T> _deserialize = TProvider.DeserializeInstance;
+        private readonly IDeserialize<T> _deserialize = TProvider.Instance;
+        public ISerdeInfo SerdeInfo => _deserialize.SerdeInfo;
 
         public BoxProxy() { }
+
 
         public object? Deserialize(IDeserializer deserializer)
         {

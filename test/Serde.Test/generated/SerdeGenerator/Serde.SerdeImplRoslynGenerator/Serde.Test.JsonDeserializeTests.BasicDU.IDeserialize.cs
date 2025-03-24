@@ -10,14 +10,16 @@ partial class JsonDeserializeTests
 {
     partial record BasicDU : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU> IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU>.DeserializeInstance
+        static IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU> IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj : global::Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU.s_serdeInfo;
+
             Serde.Test.JsonDeserializeTests.BasicDU IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>.Deserialize(IDeserializer deserializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.JsonDeserializeTests.BasicDU>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var de = deserializer.ReadType(_l_serdeInfo);
                 int index;
                 if ((index = de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)

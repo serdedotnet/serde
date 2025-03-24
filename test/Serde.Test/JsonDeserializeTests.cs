@@ -348,10 +348,10 @@ namespace Serde.Test
         private sealed class ColorEnumWrap : IDeserialize<ColorEnum>, IDeserializeProvider<ColorEnum>
         {
             public static ColorEnumWrap Instance { get; } = new();
-            static IDeserialize<ColorEnum> IDeserializeProvider<ColorEnum>.DeserializeInstance => Instance;
+            static IDeserialize<ColorEnum> IDeserializeProvider<ColorEnum>.Instance => Instance;
             private ColorEnumWrap() { }
 
-            public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
+            public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
                 nameof(JsonDeserializeTests.ColorEnum),
                 typeof(ColorEnum).GetCustomAttributesData(),
                 I32Proxy.SerdeInfo,
@@ -459,22 +459,24 @@ namespace Serde.Test
             Assert.Equal(b, Serde.Json.JsonSerializer.Deserialize<BasicDU>(bJson));
         }
 
-        private abstract partial record BasicDUManualTag : ISerdeInfoProvider, IDeserializeProvider<BasicDUManualTag>
+        private abstract partial record BasicDUManualTag : IDeserializeProvider<BasicDUManualTag>
         {
             private BasicDUManualTag() { }
 
             public record A(int W, int X) : BasicDUManualTag { }
             public record B(string Y, string Z) : BasicDUManualTag { }
 
-            static IDeserialize<BasicDUManualTag> IDeserializeProvider<BasicDUManualTag>.DeserializeInstance => _DeserializeObject.Instance;
+            static IDeserialize<BasicDUManualTag> IDeserializeProvider<BasicDUManualTag>.Instance => _DeserializeObject.Instance;
 
             private sealed class _DeserializeObject : IDeserialize<BasicDUManualTag>
             {
                 public static readonly _DeserializeObject Instance = new();
 
+                public ISerdeInfo SerdeInfo => BasicDUManualTag.SerdeInfo;
+
                 public BasicDUManualTag Deserialize(IDeserializer deserializer)
                 {
-                    var _l_baseInfo = SerdeInfoProvider.GetInfo<BasicDUManualTag>();
+                    var _l_baseInfo = BasicDUManualTag.SerdeInfo;
                     var typeDeserialize = deserializer.ReadType(_l_baseInfo);
                     if (typeDeserialize.TryReadIndex(_l_baseInfo, out var errorName) != 0)
                     {
@@ -483,8 +485,8 @@ namespace Serde.Test
                     var caseName = typeDeserialize.ReadString(_l_baseInfo, 0);
                     return caseName switch
                     {
-                        nameof(A) => _m_AProxy.Deserialize(typeDeserialize),
-                        nameof(B) => _m_BProxy.Deserialize(typeDeserialize),
+                        nameof(A) => _m_AProxy.Instance.Deserialize(typeDeserialize),
+                        nameof(B) => _m_BProxy.Instance.Deserialize(typeDeserialize),
                         _ => throw new DeserializeException($"Unknown union tag '{caseName}'."),
                     };
                 }
@@ -492,17 +494,19 @@ namespace Serde.Test
 
             private sealed class _m_AProxy : ISerdeInfoProvider
             {
-                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                public static readonly _m_AProxy Instance = new();
+
+                public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("W")),
-                        ("x", SerdeInfoProvider.GetInfo<I32Proxy>(), typeof(A).GetProperty("X")),
+                        ("w", I32Proxy.SerdeInfo, typeof(A).GetProperty("W")),
+                        ("x", I32Proxy.SerdeInfo, typeof(A).GetProperty("X")),
                     ]);
 
-                public static A Deserialize(ITypeDeserializer typeDeserialize)
+                public A Deserialize(ITypeDeserializer typeDeserialize)
                 {
-                    var _l_AProxy = SerdeInfoProvider.GetInfo<_m_AProxy>();
+                    var _l_AProxy = this.SerdeInfo;
                     int _l_index;
                     int _l_w = default;
                     int _l_x = default;
@@ -538,16 +542,17 @@ namespace Serde.Test
 
             private sealed class _m_BProxy : ISerdeInfoProvider
             {
-                static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = SerdeInfo.MakeCustom(
+                public static readonly _m_BProxy Instance = new();
+                public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
                     "B",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("y", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Y")),
-                        ("z", SerdeInfoProvider.GetInfo<StringProxy>(), typeof(B).GetProperty("Z")),
+                        ("y", StringProxy.SerdeInfo, typeof(B).GetProperty("Y")),
+                        ("z", StringProxy.SerdeInfo, typeof(B).GetProperty("Z")),
                     ]);
-                public static B Deserialize(ITypeDeserializer d)
+                public B Deserialize(ITypeDeserializer d)
                 {
-                    var _l_BProxy = SerdeInfoProvider.GetInfo<_m_BProxy>();
+                    var _l_BProxy = this.SerdeInfo;
                     int _l_index;
                     string _l_y = default!;
                     string _l_z = default!;
@@ -581,12 +586,12 @@ namespace Serde.Test
                 }
             }
 
-            static ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = new BaseSerdeInfo(
+            private static ISerdeInfo SerdeInfo { get; } = new BaseSerdeInfo(
                 nameof(BasicDUManualTag),
                 "tag",
                 [
-                    SerdeInfoProvider.GetInfo<_m_AProxy>(),
-                    SerdeInfoProvider.GetInfo<_m_BProxy>(),
+                    _m_AProxy.Instance.SerdeInfo,
+                    _m_BProxy.Instance.SerdeInfo,
                 ]
             );
 

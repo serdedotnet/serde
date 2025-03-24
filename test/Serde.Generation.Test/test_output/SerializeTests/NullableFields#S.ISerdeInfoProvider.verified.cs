@@ -1,14 +1,14 @@
 ﻿//HintName: S.ISerdeInfoProvider.cs
 
 #nullable enable
-partial struct S<T1, T2, TSerialize> : Serde.ISerdeInfoProvider
+partial struct S<T1, T2, TSerialize>
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "S",
-        typeof(S<,,>).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("fI", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(S<,,>).GetField("FI")),
-            ("f3", global::Serde.SerdeInfoProvider.GetInfo<Serde.NullableProxy.Ser<TSerialize, TSerialize>>(), typeof(S<,,>).GetField("F3"))
-        }
+    typeof(S<,,>).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("fI", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(S<,,>).GetField("FI")),
+        ("f3", global::Serde.SerdeInfoProvider.GetSerializeInfo<TSerialize?, Serde.NullableProxy.Ser<TSerialize, TSerialize>>(), typeof(S<,,>).GetField("F3"))
+    }
     );
 }

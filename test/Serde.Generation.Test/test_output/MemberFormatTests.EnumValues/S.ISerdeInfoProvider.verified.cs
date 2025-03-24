@@ -1,13 +1,13 @@
 ﻿//HintName: S.ISerdeInfoProvider.cs
 
 #nullable enable
-partial struct S : Serde.ISerdeInfoProvider
+partial struct S
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "S",
-        typeof(S).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("e", global::Serde.SerdeInfoProvider.GetInfo<ColorEnumProxy>(), typeof(S).GetField("E"))
-        }
+    typeof(S).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("e", global::Serde.SerdeInfoProvider.GetSerializeInfo<ColorEnum, ColorEnumProxy>(), typeof(S).GetField("E"))
+    }
     );
 }

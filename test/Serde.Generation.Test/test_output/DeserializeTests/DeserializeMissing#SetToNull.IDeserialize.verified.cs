@@ -6,11 +6,13 @@ using System;
 using Serde;
 partial record struct SetToNull : Serde.IDeserializeProvider<SetToNull>
 {
-    static IDeserialize<SetToNull> IDeserializeProvider<SetToNull>.DeserializeInstance
+    static IDeserialize<SetToNull> IDeserializeProvider<SetToNull>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<SetToNull>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => SetToNull.s_serdeInfo;
+
         SetToNull Serde.IDeserialize<SetToNull>.Deserialize(IDeserializer deserializer)
         {
             string _l_present = default!;
@@ -19,7 +21,7 @@ partial record struct SetToNull : Serde.IDeserializeProvider<SetToNull>
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<SetToNull>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

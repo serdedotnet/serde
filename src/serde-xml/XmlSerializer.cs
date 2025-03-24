@@ -28,7 +28,7 @@ public sealed partial class XmlSerializer
         {
             var serializer = new XmlSerializer(writer);
             writer.WriteProcessingInstruction("xml", $"version=\"1.0\" encoding=\"{stringWriter.Encoding.WebName}\"");
-            T.SerializeInstance.Serialize(s, serializer);
+            T.Instance.Serialize(s, serializer);
         }
         return stringWriter.ToString();
     }

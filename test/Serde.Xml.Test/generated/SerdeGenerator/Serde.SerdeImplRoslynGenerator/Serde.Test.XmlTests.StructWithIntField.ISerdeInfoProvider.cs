@@ -5,14 +5,14 @@ namespace Serde.Test;
 
 partial class XmlTests
 {
-    partial record StructWithIntField : Serde.ISerdeInfoProvider
+    partial record StructWithIntField
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "StructWithIntField",
-            typeof(Serde.Test.XmlTests.StructWithIntField).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("X", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Test.XmlTests.StructWithIntField).GetProperty("X"))
-            }
+        typeof(Serde.Test.XmlTests.StructWithIntField).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("X", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(Serde.Test.XmlTests.StructWithIntField).GetProperty("X"))
+        }
         );
     }
 }

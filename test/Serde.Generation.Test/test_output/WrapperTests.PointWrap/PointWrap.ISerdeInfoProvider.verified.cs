@@ -1,14 +1,14 @@
 ﻿//HintName: PointWrap.ISerdeInfoProvider.cs
 
 #nullable enable
-partial struct PointWrap : Serde.ISerdeInfoProvider
+partial struct PointWrap
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Point",
-        typeof(Point).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("x", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Point).GetField("X")),
-            ("y", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Point).GetField("Y"))
-        }
+    typeof(Point).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("x", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(Point).GetField("X")),
+        ("y", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(Point).GetField("Y"))
+    }
     );
 }

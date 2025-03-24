@@ -24,7 +24,7 @@ namespace Serde.Json
                 SkipValidation = true
             });
             var serializer = new JsonSerializer(writer);
-            T.SerializeInstance.Serialize(provider, serializer);
+            T.Instance.Serialize(provider, serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }
@@ -46,7 +46,7 @@ namespace Serde.Json
 
         public static string Serialize<T, TProvider>(T s)
             where TProvider : ISerialize<T>, ISerializeProvider<T>
-            => Serialize(s, TProvider.SerializeInstance);
+            => Serialize(s, TProvider.Instance);
 
         public static T Deserialize<T>(string source)
             where T : IDeserializeProvider<T>
@@ -58,7 +58,7 @@ namespace Serde.Json
 
         public static T Deserialize<T, TProvider>(string source)
             where TProvider : IDeserializeProvider<T>
-            => Deserialize(source, TProvider.DeserializeInstance);
+            => Deserialize(source, TProvider.Instance);
 
         public static T Deserialize<T>(string source, IDeserialize<T> d)
         {

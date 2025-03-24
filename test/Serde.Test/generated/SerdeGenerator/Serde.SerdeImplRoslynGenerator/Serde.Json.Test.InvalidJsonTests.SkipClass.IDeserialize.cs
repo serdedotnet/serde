@@ -10,18 +10,20 @@ partial class InvalidJsonTests
 {
     partial class SkipClass : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.SkipClass>
     {
-        static IDeserialize<Serde.Json.Test.InvalidJsonTests.SkipClass> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.SkipClass>.DeserializeInstance
+        static IDeserialize<Serde.Json.Test.InvalidJsonTests.SkipClass> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.SkipClass>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.SkipClass>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.SkipClass.s_serdeInfo;
+
             Serde.Json.Test.InvalidJsonTests.SkipClass Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.SkipClass>.Deserialize(IDeserializer deserializer)
             {
                 int _l_c = default!;
 
                 byte _r_assignedValid = 0;
 
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<SkipClass>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
                 while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

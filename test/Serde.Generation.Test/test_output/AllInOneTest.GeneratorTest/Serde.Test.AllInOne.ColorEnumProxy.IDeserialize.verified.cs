@@ -13,7 +13,7 @@ partial record AllInOne
     {
         Serde.Test.AllInOne.ColorEnum IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize(IDeserializer deserializer)
         {
-            var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.AllInOne.ColorEnumProxy>();
+            var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var de = deserializer.ReadType(serdeInfo);
             int index;
             if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
@@ -27,7 +27,7 @@ partial record AllInOne
                 _ => throw new InvalidOperationException($"Unexpected index: {index}")
             };
         }
-        static IDeserialize<Serde.Test.AllInOne.ColorEnum> IDeserializeProvider<Serde.Test.AllInOne.ColorEnum>.DeserializeInstance
+        static IDeserialize<Serde.Test.AllInOne.ColorEnum> IDeserializeProvider<Serde.Test.AllInOne.ColorEnum>.Instance
             => Serde.Test.AllInOne.ColorEnumProxy.Instance;
 
     }

@@ -10,14 +10,16 @@ partial class SampleTest
 {
     partial record Address : Serde.ISerializeProvider<Serde.Test.SampleTest.Address>
     {
-        static ISerialize<Serde.Test.SampleTest.Address> ISerializeProvider<Serde.Test.SampleTest.Address>.SerializeInstance
+        static ISerialize<Serde.Test.SampleTest.Address> ISerializeProvider<Serde.Test.SampleTest.Address>.Instance
             => _SerObj.Instance;
 
         sealed partial class _SerObj :Serde.ISerialize<Serde.Test.SampleTest.Address>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SampleTest.Address.s_serdeInfo;
+
             void global::Serde.ISerialize<Serde.Test.SampleTest.Address>.Serialize(Serde.Test.SampleTest.Address value, global::Serde.ISerializer serializer)
             {
-                var _l_info = global::Serde.SerdeInfoProvider.GetInfo<Address>();
+                var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var _l_type = serializer.WriteType(_l_info);
                 _l_type.WriteString(_l_info, 0, value.Name);
                 _l_type.WriteString(_l_info, 1, value.Line1);

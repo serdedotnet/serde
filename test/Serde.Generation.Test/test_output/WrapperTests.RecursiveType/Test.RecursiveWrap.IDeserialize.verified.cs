@@ -9,18 +9,20 @@ namespace Test;
 
 partial class RecursiveWrap : Serde.IDeserializeProvider<Recursive>
 {
-    static IDeserialize<Recursive> IDeserializeProvider<Recursive>.DeserializeInstance
+    static IDeserialize<Recursive> IDeserializeProvider<Recursive>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<Recursive>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Test.RecursiveWrap.s_serdeInfo;
+
         Recursive Serde.IDeserialize<Recursive>.Deserialize(IDeserializer deserializer)
         {
             Recursive? _l_next = default!;
 
             byte _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<RecursiveWrap>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

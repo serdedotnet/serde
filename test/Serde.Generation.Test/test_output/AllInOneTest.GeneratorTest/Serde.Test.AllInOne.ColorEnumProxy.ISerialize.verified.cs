@@ -13,7 +13,7 @@ partial record AllInOne
     {
         void global::Serde.ISerialize<Serde.Test.AllInOne.ColorEnum>.Serialize(Serde.Test.AllInOne.ColorEnum value, global::Serde.ISerializer serializer)
         {
-            var _l_info = global::Serde.SerdeInfoProvider.GetInfo<ColorEnumProxy>();
+            var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
             var index = value switch
             {
@@ -25,7 +25,7 @@ partial record AllInOne
             _l_type.WriteI32(_l_info, index, (int)value);
             _l_type.End(_l_info);
         }
-        static ISerialize<Serde.Test.AllInOne.ColorEnum> ISerializeProvider<Serde.Test.AllInOne.ColorEnum>.SerializeInstance
+        static ISerialize<Serde.Test.AllInOne.ColorEnum> ISerializeProvider<Serde.Test.AllInOne.ColorEnum>.Instance
             => Serde.Test.AllInOne.ColorEnumProxy.Instance;
 
     }

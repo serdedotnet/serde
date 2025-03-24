@@ -10,14 +10,16 @@ partial class SerdeInfoTests
 {
     partial record UnionBase : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase>
     {
-        static IDeserialize<Serde.Test.SerdeInfoTests.UnionBase> IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase>.DeserializeInstance
+        static IDeserialize<Serde.Test.SerdeInfoTests.UnionBase> IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase>.Instance
             => _DeObj.Instance;
 
         sealed partial class _DeObj : global::Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase>
         {
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase.s_serdeInfo;
+
             Serde.Test.SerdeInfoTests.UnionBase IDeserialize<Serde.Test.SerdeInfoTests.UnionBase>.Deserialize(IDeserializer deserializer)
             {
-                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Serde.Test.SerdeInfoTests.UnionBase>();
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var de = deserializer.ReadType(_l_serdeInfo);
                 int index;
                 if ((index = de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)

@@ -4,13 +4,13 @@
 
 namespace Test;
 
-partial class RecursiveWrap : Serde.ISerdeInfoProvider
+partial class RecursiveWrap
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Recursive",
-        typeof(Recursive).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("next", global::Serde.SerdeInfoProvider.GetInfo<Test.RecursiveWrap>(), typeof(Recursive).GetProperty("Next"))
-        }
+    typeof(Recursive).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("next", global::Serde.SerdeInfoProvider.GetSerializeInfo<Recursive?, Test.RecursiveWrap>(), typeof(Recursive).GetProperty("Next"))
+    }
     );
 }

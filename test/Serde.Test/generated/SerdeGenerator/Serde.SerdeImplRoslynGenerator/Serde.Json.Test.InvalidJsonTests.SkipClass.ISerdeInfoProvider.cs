@@ -5,14 +5,14 @@ namespace Serde.Json.Test;
 
 partial class InvalidJsonTests
 {
-    partial class SkipClass : Serde.ISerdeInfoProvider
+    partial class SkipClass
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "SkipClass",
-            typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("c", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetProperty("C"))
-            }
+        typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("c", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>(), typeof(Serde.Json.Test.InvalidJsonTests.SkipClass).GetProperty("C"))
+        }
         );
     }
 }

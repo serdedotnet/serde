@@ -11,7 +11,7 @@ sealed partial class ColorByteProxy :Serde.ISerialize<Some.Nested.Namespace.Colo
 {
     void global::Serde.ISerialize<Some.Nested.Namespace.ColorByte>.Serialize(Some.Nested.Namespace.ColorByte value, global::Serde.ISerializer serializer)
     {
-        var _l_info = global::Serde.SerdeInfoProvider.GetInfo<ColorByteProxy>();
+        var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
         var _l_type = serializer.WriteType(_l_info);
         var index = value switch
         {
@@ -23,7 +23,7 @@ sealed partial class ColorByteProxy :Serde.ISerialize<Some.Nested.Namespace.Colo
         _l_type.WriteU8(_l_info, index, (byte)value);
         _l_type.End(_l_info);
     }
-    static ISerialize<Some.Nested.Namespace.ColorByte> ISerializeProvider<Some.Nested.Namespace.ColorByte>.SerializeInstance
+    static ISerialize<Some.Nested.Namespace.ColorByte> ISerializeProvider<Some.Nested.Namespace.ColorByte>.Instance
         => Some.Nested.Namespace.ColorByteProxy.Instance;
 
 }

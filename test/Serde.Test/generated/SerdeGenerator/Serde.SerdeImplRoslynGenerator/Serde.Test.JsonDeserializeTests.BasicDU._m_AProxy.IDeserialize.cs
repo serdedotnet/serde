@@ -12,18 +12,20 @@ partial class JsonDeserializeTests
     {
         partial class _m_AProxy : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU.A>
         {
-            static IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.A> IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU.A>.DeserializeInstance
+            static IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.A> IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU.A>.Instance
                 => _DeObj.Instance;
 
             sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.A>
             {
+                global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU._m_AProxy.s_serdeInfo;
+
                 Serde.Test.JsonDeserializeTests.BasicDU.A Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.A>.Deserialize(IDeserializer deserializer)
                 {
                     int _l_x = default!;
 
                     byte _r_assignedValid = 0;
 
-                    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<_m_AProxy>();
+                    var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                     var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                     int _l_index_;
                     while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

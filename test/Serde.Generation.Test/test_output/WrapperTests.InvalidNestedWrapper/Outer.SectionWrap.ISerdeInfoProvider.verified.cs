@@ -3,15 +3,15 @@
 #nullable enable
 partial class Outer
 {
-    partial class SectionWrap : Serde.ISerdeInfoProvider
+    partial class SectionWrap
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "Section",
-            typeof(System.Collections.Specialized.BitVector32.Section).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("mask", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I16Proxy>(), typeof(System.Collections.Specialized.BitVector32.Section).GetProperty("Mask")),
-                ("offset", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.I16Proxy>(), typeof(System.Collections.Specialized.BitVector32.Section).GetProperty("Offset"))
-            }
+        typeof(System.Collections.Specialized.BitVector32.Section).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("mask", global::Serde.SerdeInfoProvider.GetSerializeInfo<short, global::Serde.I16Proxy>(), typeof(System.Collections.Specialized.BitVector32.Section).GetProperty("Mask")),
+            ("offset", global::Serde.SerdeInfoProvider.GetSerializeInfo<short, global::Serde.I16Proxy>(), typeof(System.Collections.Specialized.BitVector32.Section).GetProperty("Offset"))
+        }
         );
     }
 }

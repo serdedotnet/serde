@@ -6,14 +6,14 @@ namespace Some.Nested.Namespace;
 
 partial record Base
 {
-    partial class _m_BProxy : Serde.ISerdeInfoProvider
+    partial class _m_BProxy
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "B",
-            typeof(Some.Nested.Namespace.Base.B).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("y", global::Serde.SerdeInfoProvider.GetInfo<global::Serde.StringProxy>(), typeof(Some.Nested.Namespace.Base.B).GetProperty("Y"))
-            }
+        typeof(Some.Nested.Namespace.Base.B).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("y", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>(), typeof(Some.Nested.Namespace.Base.B).GetProperty("Y"))
+        }
         );
     }
 }

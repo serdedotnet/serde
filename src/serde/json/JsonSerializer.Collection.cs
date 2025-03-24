@@ -92,7 +92,7 @@ partial class JsonSerializer
 
     private sealed class KeySerializer(JsonSerializer _parent) : ISerializer
     {
-        internal sealed class KeyNotStringException : Exception { }
+        internal sealed class KeyNotStringException() : Exception("JSON allows only strings in this location, expected a string.") { }
         public void WriteBool(bool b) => throw new KeyNotStringException();
         public void WriteChar(char c) => throw new KeyNotStringException();
         public void WriteU8(byte b) => throw new KeyNotStringException();

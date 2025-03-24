@@ -8,7 +8,7 @@ sealed partial class ColorEnumProxy :Serde.ISerialize<ColorEnum>,Serde.ISerializ
 {
     void global::Serde.ISerialize<ColorEnum>.Serialize(ColorEnum value, global::Serde.ISerializer serializer)
     {
-        var _l_info = global::Serde.SerdeInfoProvider.GetInfo<ColorEnumProxy>();
+        var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
         var _l_type = serializer.WriteType(_l_info);
         var index = value switch
         {
@@ -20,7 +20,7 @@ sealed partial class ColorEnumProxy :Serde.ISerialize<ColorEnum>,Serde.ISerializ
         _l_type.WriteI32(_l_info, index, (int)value);
         _l_type.End(_l_info);
     }
-    static ISerialize<ColorEnum> ISerializeProvider<ColorEnum>.SerializeInstance
+    static ISerialize<ColorEnum> ISerializeProvider<ColorEnum>.Instance
         => ColorEnumProxy.Instance;
 
 }

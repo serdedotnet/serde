@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace Serde;
 
-public interface ISerialize<T>
+public interface ISerialize<T> : ISerdeInfoProvider
 {
     void Serialize(T value, ISerializer serializer);
 }
 
-public interface ISerializeProvider<T> : ISerdeInfoProvider
+public interface ISerializeProvider<T>
 {
-    abstract static ISerialize<T> SerializeInstance { get; }
+    abstract static ISerialize<T> Instance { get; }
 }
 
 public interface ITypeSerializer
@@ -46,7 +46,7 @@ public static class ISerializeTypeExt
         T value)
         where T : class
         where TProvider : ISerializeProvider<T>
-        => serializeType.WriteValue(typeInfo, index, value, TProvider.SerializeInstance);
+        => serializeType.WriteValue(typeInfo, index, value, TProvider.Instance);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteStringIfNotNull(
@@ -90,14 +90,17 @@ public static class ISerializeTypeExt
         T value)
         where T : class?
         where TProvider : ISerializeProvider<T>
-        => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.SerializeInstance);
+        => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 
     private sealed class BoxProxy<T, TProvider> : ISerialize<object?>
         where TProvider : ISerializeProvider<T>
     {
-        public static readonly BoxProxy<T, TProvider> Instance = new(TProvider.SerializeInstance);
+        public static readonly BoxProxy<T, TProvider> Instance = new(TProvider.Instance);
         private readonly ISerialize<T> _proxy;
         private BoxProxy(ISerialize<T> proxy) { _proxy = proxy; }
+
+        public ISerdeInfo SerdeInfo => _proxy.SerdeInfo;
+
         void ISerialize<object?>.Serialize(object? value, ISerializer serializer)
         {
             _proxy.Serialize((T)value!, serializer);

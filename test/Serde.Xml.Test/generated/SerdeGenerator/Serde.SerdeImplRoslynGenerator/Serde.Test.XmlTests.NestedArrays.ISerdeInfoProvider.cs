@@ -5,14 +5,14 @@ namespace Serde.Test;
 
 partial class XmlTests
 {
-    partial class NestedArrays : Serde.ISerdeInfoProvider
+    partial class NestedArrays
     {
-        static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "NestedArrays",
-            typeof(Serde.Test.XmlTests.NestedArrays).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("A", global::Serde.SerdeInfoProvider.GetInfo<Serde.ArrayProxy.Ser<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A"))
-            }
+        typeof(Serde.Test.XmlTests.NestedArrays).GetCustomAttributesData(),
+        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+            ("A", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[][][], Serde.ArrayProxy.Ser<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>>(), typeof(Serde.Test.XmlTests.NestedArrays).GetField("A"))
+        }
         );
     }
 }

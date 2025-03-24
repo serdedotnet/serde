@@ -59,10 +59,10 @@ namespace Benchmarks
     public partial record LocationWrap : IDeserialize<Location>, IDeserializeProvider<Location>
     {
         public static LocationWrap Instance { get; } = new();
-        static IDeserialize<Location> IDeserializeProvider<Location>.DeserializeInstance => Instance;
+        static IDeserialize<Location> IDeserializeProvider<Location>.Instance => Instance;
         private LocationWrap() { }
 
-        public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+        public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             "Location",
             typeof(Location).GetCustomAttributesData(),
             [

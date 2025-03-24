@@ -4,13 +4,13 @@
 
 namespace Test;
 
-partial record struct ChannelList : Serde.ISerdeInfoProvider
+partial record struct ChannelList
 {
-    static global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
+    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "ChannelList",
-        typeof(Test.ChannelList).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("channels", global::Serde.SerdeInfoProvider.GetInfo<Serde.ImmutableArrayProxy.De<Test.Channel, Test.ChannelProxy>>(), typeof(Test.ChannelList).GetProperty("Channels"))
-        }
+    typeof(Test.ChannelList).GetCustomAttributesData(),
+    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
+        ("channels", global::Serde.SerdeInfoProvider.GetDeserializeInfo<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayProxy.De<Test.Channel, Test.ChannelProxy>>(), typeof(Test.ChannelList).GetProperty("Channels"))
+    }
     );
 }

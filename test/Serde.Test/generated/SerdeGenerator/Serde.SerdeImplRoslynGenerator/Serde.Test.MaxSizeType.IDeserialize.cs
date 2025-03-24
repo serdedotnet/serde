@@ -8,11 +8,13 @@ namespace Serde.Test;
 
 partial struct MaxSizeType : Serde.IDeserializeProvider<Serde.Test.MaxSizeType>
 {
-    static IDeserialize<Serde.Test.MaxSizeType> IDeserializeProvider<Serde.Test.MaxSizeType>.DeserializeInstance
+    static IDeserialize<Serde.Test.MaxSizeType> IDeserializeProvider<Serde.Test.MaxSizeType>.Instance
         => _DeObj.Instance;
 
     sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.MaxSizeType>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.MaxSizeType.s_serdeInfo;
+
         Serde.Test.MaxSizeType Serde.IDeserialize<Serde.Test.MaxSizeType>.Deserialize(IDeserializer deserializer)
         {
             byte _l_field1 = default!;
@@ -82,7 +84,7 @@ partial struct MaxSizeType : Serde.IDeserializeProvider<Serde.Test.MaxSizeType>
 
             ulong _r_assignedValid = 0;
 
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<MaxSizeType>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
             while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)

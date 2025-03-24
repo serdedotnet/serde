@@ -9,14 +9,16 @@ namespace Some.Nested.Namespace;
 
 partial record Base : Serde.ISerializeProvider<Some.Nested.Namespace.Base>
 {
-    static ISerialize<Some.Nested.Namespace.Base> ISerializeProvider<Some.Nested.Namespace.Base>.SerializeInstance
+    static ISerialize<Some.Nested.Namespace.Base> ISerializeProvider<Some.Nested.Namespace.Base>.Instance
         => _SerObj.Instance;
 
     sealed partial class _SerObj : Serde.ISerialize<Some.Nested.Namespace.Base>
     {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base.s_serdeInfo;
+
         void ISerialize<Some.Nested.Namespace.Base>.Serialize(Some.Nested.Namespace.Base value, ISerializer serializer)
         {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo<Some.Nested.Namespace.Base>();
+            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_serdeInfo);
             switch (value)
             {
