@@ -84,7 +84,8 @@ partial class JsonSerializer
             serializer.WriteNull();
         }
 
-        public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class?
+        public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
+            where T : class?
         {
             serialize.Serialize(value, serializer);
         }

@@ -1,16 +1,17 @@
 // Contains implementations of data interfaces for core types
 
+using System.Diagnostics;
+
 namespace Serde;
 
-public sealed class BoolProxy
-    : ISerialize<bool>, IDeserialize<bool>,
-      ISerializeProvider<bool>, IDeserializeProvider<bool>,
-      ITypeSerialize<bool>, ITypeDeserialize<bool>
+internal interface ISerdePrimitive<TSelf, T>
+    : ISerde<T>, ISerdeProvider<TSelf, TSelf, T>, ITypeSerialize<T>, ITypeDeserialize<T>
+    where TSelf : ISerdePrimitive<TSelf, T>
+{ }
+
+public sealed class BoolProxy : ISerdePrimitive<BoolProxy, bool>
 {
     public static BoolProxy Instance { get; } = new();
-    static ISerialize<bool> ISerializeProvider<bool>.Instance => Instance;
-    static IDeserialize<bool> IDeserializeProvider<bool>.Instance => Instance;
-
     private BoolProxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -20,22 +21,15 @@ public sealed class BoolProxy
         => serializer.WriteBool(value);
     bool IDeserialize<bool>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadBool();
-
     void ITypeSerialize<bool>.Serialize(bool value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteBool(info, index, value);
-
     bool ITypeDeserialize<bool>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadBool(info, index);
 }
 
-public sealed class CharProxy
-    : ISerialize<char>, IDeserialize<char>,
-    ISerializeProvider<char>, IDeserializeProvider<char>,
-    ITypeSerialize<char>, ITypeDeserialize<char>
+public sealed class CharProxy : ISerdePrimitive<CharProxy, char>
 {
     public static CharProxy Instance { get; } = new();
-    static ISerialize<char> ISerializeProvider<char>.Instance => Instance;
-    static IDeserialize<char> IDeserializeProvider<char>.Instance => Instance;
     private CharProxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -53,14 +47,9 @@ public sealed class CharProxy
         => deserializer.ReadChar(info, index);
 }
 
-public sealed class U8Proxy
-    : ISerialize<byte>, IDeserialize<byte>,
-      ISerializeProvider<byte>, IDeserializeProvider<byte>,
-    ITypeSerialize<byte>, ITypeDeserialize<byte>
+public sealed class U8Proxy : ISerdePrimitive<U8Proxy, byte>
 {
     public static U8Proxy Instance { get; } = new();
-    static ISerialize<byte> ISerializeProvider<byte>.Instance => Instance;
-    static IDeserialize<byte> IDeserializeProvider<byte>.Instance => Instance;
     private U8Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -78,14 +67,9 @@ public sealed class U8Proxy
         => deserializer.ReadU8(info, index);
 }
 
-public sealed class U16Proxy
-    : ISerialize<ushort>, IDeserialize<ushort>,
-    ISerializeProvider<ushort>, IDeserializeProvider<ushort>,
-    ITypeSerialize<ushort>, ITypeDeserialize<ushort>
+public sealed class U16Proxy : ISerdePrimitive<U16Proxy, ushort>
 {
     public static U16Proxy Instance { get; } = new();
-    static ISerialize<ushort> ISerializeProvider<ushort>.Instance => Instance;
-    static IDeserialize<ushort> IDeserializeProvider<ushort>.Instance => Instance;
     private U16Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -103,14 +87,9 @@ public sealed class U16Proxy
         => serializer.WriteU16(info, index, value);
 }
 
-public sealed class U32Proxy
-    : ISerialize<uint>, IDeserialize<uint>,
-      ISerializeProvider<uint>, IDeserializeProvider<uint>,
-      ITypeSerialize<uint>, ITypeDeserialize<uint>
+public sealed class U32Proxy : ISerdePrimitive<U32Proxy, uint>
 {
     public static U32Proxy Instance { get; } = new();
-    static ISerialize<uint> ISerializeProvider<uint>.Instance => Instance;
-    static IDeserialize<uint> IDeserializeProvider<uint>.Instance => Instance;
     private U32Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -128,14 +107,9 @@ public sealed class U32Proxy
         => serializer.WriteU32(info, index, value);
 }
 
-public sealed class U64Proxy
-    : ISerialize<ulong>, IDeserialize<ulong>,
-    ISerializeProvider<ulong>, IDeserializeProvider<ulong>,
-    ITypeSerialize<ulong>, ITypeDeserialize<ulong>
+public sealed class U64Proxy : ISerdePrimitive<U64Proxy, ulong>
 {
     public static U64Proxy Instance { get; } = new();
-    static ISerialize<ulong> ISerializeProvider<ulong>.Instance => Instance;
-    static IDeserialize<ulong> IDeserializeProvider<ulong>.Instance => Instance;
     private U64Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -153,14 +127,9 @@ public sealed class U64Proxy
         => deserializer.ReadU64(info, index);
 }
 
-public sealed class I8Proxy
-    : ISerialize<sbyte>, IDeserialize<sbyte>,
-    ISerializeProvider<sbyte>, IDeserializeProvider<sbyte>,
-    ITypeSerialize<sbyte>, ITypeDeserialize<sbyte>
+public sealed class I8Proxy : ISerdePrimitive<I8Proxy, sbyte>
 {
     public static I8Proxy Instance { get; } = new();
-    static ISerialize<sbyte> ISerializeProvider<sbyte>.Instance => Instance;
-    static IDeserialize<sbyte> IDeserializeProvider<sbyte>.Instance => Instance;
     private I8Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -178,14 +147,9 @@ public sealed class I8Proxy
         => deserializer.ReadI8(info, index);
 }
 
-public sealed class I16Proxy
-    : ISerialize<short>, IDeserialize<short>,
-    ISerializeProvider<short>, IDeserializeProvider<short>,
-    ITypeSerialize<short>, ITypeDeserialize<short>
+public sealed class I16Proxy : ISerdePrimitive<I16Proxy, short>
 {
     public static I16Proxy Instance { get; } = new();
-    static ISerialize<short> ISerializeProvider<short>.Instance => Instance;
-    static IDeserialize<short> IDeserializeProvider<short>.Instance => Instance;
     private I16Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -203,14 +167,9 @@ public sealed class I16Proxy
         => deserializer.ReadI16(info, index);
 }
 
-public sealed class I32Proxy
-    : ISerialize<int>, IDeserialize<int>,
-      ISerializeProvider<int>, IDeserializeProvider<int>,
-      ITypeSerialize<int>, ITypeDeserialize<int>
+public sealed class I32Proxy : ISerdePrimitive<I32Proxy, int>
 {
     public static I32Proxy Instance { get; } = new();
-    static ISerialize<int> ISerializeProvider<int>.Instance => Instance;
-    static IDeserialize<int> IDeserializeProvider<int>.Instance => Instance;
     private I32Proxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -229,14 +188,9 @@ public sealed class I32Proxy
         => deserializer.ReadI32(info, index);
 }
 
-public sealed class I64Proxy
-    : ISerialize<long>, IDeserialize<long>,
-    ISerializeProvider<long>, IDeserializeProvider<long>,
-    ITypeSerialize<long>, ITypeDeserialize<long>
+public sealed class I64Proxy : ISerdePrimitive<I64Proxy, long>
 {
     public static I64Proxy Instance { get; } = new();
-    static ISerialize<long> ISerializeProvider<long>.Instance => Instance;
-    static IDeserialize<long> IDeserializeProvider<long>.Instance => Instance;
     private I64Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -254,13 +208,9 @@ public sealed class I64Proxy
         => deserializer.ReadI64(info, index);
 }
 
-public sealed class F32Proxy : ISerialize<float>, IDeserialize<float>,
-    ISerializeProvider<float>, IDeserializeProvider<float>,
-    ITypeSerialize<float>, ITypeDeserialize<float>
+public sealed class F32Proxy : ISerdePrimitive<F32Proxy, float>
 {
     public static F32Proxy Instance { get; } = new();
-    static ISerialize<float> ISerializeProvider<float>.Instance => Instance;
-    static IDeserialize<float> IDeserializeProvider<float>.Instance => Instance;
     private F32Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float");
@@ -277,14 +227,9 @@ public sealed class F32Proxy : ISerialize<float>, IDeserialize<float>,
         => deserializer.ReadF32(info, index);
 }
 
-public sealed class F64Proxy
-    : ISerialize<double>, IDeserialize<double>,
-    ISerializeProvider<double>, IDeserializeProvider<double>,
-    ITypeSerialize<double>, ITypeDeserialize<double>
+public sealed class F64Proxy : ISerdePrimitive<F64Proxy, double>
 {
     public static F64Proxy Instance { get; } = new();
-    static ISerialize<double> ISerializeProvider<double>.Instance => Instance;
-    static IDeserialize<double> IDeserializeProvider<double>.Instance => Instance;
     private F64Proxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("double");
@@ -301,14 +246,9 @@ public sealed class F64Proxy
         => deserializer.ReadF64(info, index);
 }
 
-public sealed class DecimalProxy
-    : ISerialize<decimal>, IDeserialize<decimal>,
-      ISerializeProvider<decimal>, IDeserializeProvider<decimal>,
-      ITypeSerialize<decimal>, ITypeDeserialize<decimal>
+public sealed class DecimalProxy : ISerdePrimitive<DecimalProxy, decimal>
 {
     public static DecimalProxy Instance { get; } = new();
-    static ISerialize<decimal> ISerializeProvider<decimal>.Instance => Instance;
-    static IDeserialize<decimal> IDeserializeProvider<decimal>.Instance => Instance;
     private DecimalProxy() { }
 
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("decimal");
@@ -325,14 +265,9 @@ public sealed class DecimalProxy
         => serializer.WriteDecimal(info, index, value);
 }
 
-public sealed class StringProxy
-    : ISerialize<string>, IDeserialize<string>,
-      ISerializeProvider<string>, IDeserializeProvider<string>,
-      ITypeDeserialize<string>, ITypeSerialize<string>
+public sealed class StringProxy : ISerdePrimitive<StringProxy, string>
 {
     public static StringProxy Instance { get; } = new();
-    static ISerialize<string> ISerializeProvider<string>.Instance => Instance;
-    static IDeserialize<string> IDeserializeProvider<string>.Instance => Instance;
     private StringProxy() { }
 
     public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
@@ -350,6 +285,44 @@ public sealed class StringProxy
     void ITypeSerialize<string>.Serialize(string value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteString(info, index, value);
 }
+
+internal static class BoxProxy
+{
+    public sealed class Ser<T, TProvider> : ISerialize<object?>, ITypeSerialize<T>
+        where TProvider : ISerializeProvider<T>
+    {
+        private readonly ISerialize<T> _underlying = TProvider.Instance;
+
+        public static readonly Ser<T, TProvider> Instance = new();
+
+        private Ser() {}
+        public ISerdeInfo SerdeInfo => _underlying.SerdeInfo;
+
+        public void Serialize(object? value, ISerializer serializer)
+        {
+            _underlying.Serialize((T)value!, serializer);
+        }
+        public void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        {
+            serializer.WriteValue(info, index, value, this);
+        }
+    }
+
+    public sealed class De<T, TProvider> : IDeserialize<object?>, ITypeDeserialize<T>
+        where TProvider : IDeserializeProvider<T>
+    {
+        private IDeserialize<T> _underlying = TProvider.Instance;
+
+        public static readonly De<T, TProvider> Instance = new();
+        private De() {}
+
+        public ISerdeInfo SerdeInfo => _underlying.SerdeInfo;
+        public object? Deserialize(IDeserializer deserializer) => _underlying.Deserialize(deserializer);
+        public T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+            => (T)deserializer.ReadValue(info, index, this)!;
+    }
+}
+
 
 public static class NullableProxy
 {
@@ -383,22 +356,11 @@ public static class NullableProxy
         public static De<T, TProvider> Instance { get; } = new();
         static IDeserialize<T?> IDeserializeProvider<T?>.Instance => Instance;
         public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeNullable(TProvider.Instance.SerdeInfo);
-        private readonly BoxProxy _boxProxy = new(TProvider.Instance);
         private De() {}
 
         public T? Deserialize(IDeserializer deserializer)
         {
-            return (T?)deserializer.ReadNullableRef(_boxProxy);
-        }
-
-        private sealed class BoxProxy(IDeserialize<T> underlyingProxy) : IDeserialize<object>
-        {
-            public ISerdeInfo SerdeInfo => underlyingProxy.SerdeInfo;
-
-            public object Deserialize(IDeserializer deserializer)
-            {
-                return underlyingProxy.Deserialize(deserializer);
-            }
+            return (T?)deserializer.ReadNullableRef<object>(BoxProxy.De<T, TProvider>.Instance!);
         }
     }
 }
@@ -406,7 +368,7 @@ public static class NullableProxy
 public static class NullableRefProxy
 {
     public sealed class Ser<T, TProvider> : ISerialize<T?>, ISerializeProvider<T?>
-        where T : class
+        where T : class?
         where TProvider : ISerializeProvider<T>
     {
         public static Ser<T, TProvider> Instance { get; } = new();
@@ -446,60 +408,5 @@ public static class NullableRefProxy
         {
             return deserializer.ReadNullableRef(_de);
         }
-    }
-}
-
-/// <summary>
-/// This is a perf optimization. It allows primitive types (and only primitive types) to be
-/// serialized without boxing. It is only useful for serializing collections.
-/// </summary>
-public interface ITypeSerialize<T>
-{
-    void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index);
-}
-
-public sealed class TypeSerBoxed<T>(ISerialize<T> s) : ITypeSerialize<T>
-{
-    private sealed class BoxProxy(ISerialize<T> underlying) : ISerialize<object?>
-    {
-        public ISerdeInfo SerdeInfo => underlying.SerdeInfo;
-
-        public void Serialize(object? value, ISerializer serializer)
-        {
-            underlying.Serialize((T)value!, serializer);
-        }
-    }
-    private readonly BoxProxy _boxProxy = new(s);
-
-    public void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index)
-    {
-        serializer.WriteValue(info, index, value, _boxProxy);
-    }
-}
-
-/// <summary>
-/// This is a perf optimization. It allows primitive types (and only primitive types) to be
-/// deserialized without boxing. It is only useful for deserializing collections.
-/// </summary>
-public interface ITypeDeserialize<T>
-{
-    T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
-}
-
-public sealed class TypeDeBoxed<T>(IDeserialize<T> d) : ITypeDeserialize<T>
-{
-    private sealed class BoxProxy(IDeserialize<T> underlying) : IDeserialize<object?>
-    {
-        public ISerdeInfo SerdeInfo => underlying.SerdeInfo;
-        public object? Deserialize(IDeserializer deserializer)
-        {
-            return underlying.Deserialize(deserializer);
-        }
-    }
-    private readonly BoxProxy _boxProxy = new(d);
-
-    T ITypeDeserialize<T>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
-    {
-        return (T)deserializer.ReadValue(info, index, _boxProxy)!;
     }
 }

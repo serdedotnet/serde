@@ -107,47 +107,19 @@ public sealed partial class GenericWrapperTests
             protected override ReadOnlySpan<T> GetSpan(CustomImArray<T> value) => value.Backing.AsSpan();
         }
 
-        public sealed class De<T, TProvider> : IDeserialize<CustomImArray<T>>, IDeserializeProvider<CustomImArray<T>>
+        public sealed class De<T, TProvider>()
+            : DeListBase<De<T, TProvider>, T, CustomImArray<T>, ImmutableArray<T>.Builder, TProvider>(s_serdeInfo)
             where TProvider : IDeserializeProvider<T>
         {
-            public static De<T, TProvider> Instance { get; } = new();
-            static IDeserialize<CustomImArray<T>> IDeserializeProvider<CustomImArray<T>>.Instance => Instance;
-            public ISerdeInfo SerdeInfo => s_serdeInfo;
-
-            private readonly ITypeDeserialize<T> _proxy;
-
-            private De()
+            protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt)
             {
-                var de = TProvider.Instance;
-                _proxy = de is ITypeDeserialize<T> typeDe
-                    ? typeDe
-                    : new TypeDeBoxed<T>(de);
+                return sizeOpt is int size
+                    ? ImmutableArray.CreateBuilder<T>(size)
+                    : ImmutableArray.CreateBuilder<T>();
             }
 
-            CustomImArray<T> IDeserialize<CustomImArray<T>>.Deserialize(IDeserializer deserializer)
+            protected override CustomImArray<T> ToList(ImmutableArray<T>.Builder builder)
             {
-                var serdeInfo = s_serdeInfo;
-                ImmutableArray<T>.Builder builder;
-                var d = deserializer.ReadType(serdeInfo);
-                if (d.SizeOpt is int size)
-                {
-                    builder = ImmutableArray.CreateBuilder<T>(size);
-                }
-                else
-                {
-                    size = -1; // Set initial size to unknown
-                    builder = ImmutableArray.CreateBuilder<T>();
-                }
-
-                int index;
-                while ((index = d.TryReadIndex(serdeInfo, out _)) != ITypeDeserializer.EndOfType)
-                {
-                    builder.Add(_proxy.Deserialize(d, serdeInfo, index));
-                }
-                if (size >= 0 && builder.Count != size)
-                {
-                    throw DeserializeException.WrongItemCount(size, builder.Count);
-                }
                 return new CustomImArray<T>(builder.ToImmutable());
             }
         }
