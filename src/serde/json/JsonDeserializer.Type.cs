@@ -12,46 +12,37 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         {
             switch (ThrowIfEos(Reader.SkipWhitespace()))
             {
+                case (byte)'"':
+                    break;
                 default:
                     throw new JsonException("Expected enum name as string");
-                case (byte)'"':
-                    goto ReadIndexAsString;
-            };
+            }
         }
         else
         {
-            while (true)
+            var peek = Reader.SkipWhitespace();
+            if (peek == (byte)'}')
             {
-                var peek = Reader.SkipWhitespace();
-                if (peek == (short)',')
+                errorName = null;
+                Reader.Advance();
+                return ITypeDeserializer.EndOfType;
+            }
+            if (!_first)
+            {
+                if (peek != (byte)',')
                 {
-                    if (_first)
-                    {
-                        throw new JsonException("Unexpected comma before first element");
-                    }
-
-                    Reader.Advance();
-                    peek = Reader.SkipWhitespace();
+                    throw new JsonException($"Expected '}}' or ',', found: '{(char)peek}'");
                 }
-
-                switch (ThrowIfEos(peek))
-                {
-                    case (byte)'}':
-                        errorName = null;
-                        Reader.Advance();
-                        _first = false;
-                        return ITypeDeserializer.EndOfType;
-
-                    case (byte)'"':
-                        goto ReadIndexAsString;
-
-                    case var x:
-                        throw new JsonException($"Expected property name, got: '{(char)x}'");
-                }
+                Reader.Advance();
+                peek = Reader.SkipWhitespace();
+            }
+            if (peek != (byte)'"')
+            {
+                throw new JsonException($"Expected property name, got: '{(char)peek}'");
             }
         }
 
-    ReadIndexAsString:
+        // Read a string
         Reader.Advance();
         _scratch.Clear();
         var span = Reader.LexUtf8Span(_scratch);

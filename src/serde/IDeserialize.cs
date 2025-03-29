@@ -122,19 +122,19 @@ public interface ITypeDeserialize<T>
 
 public static class TypeDeserialize
 {
+    /// <summary>
+    /// Checks if the <typeparamref name="TProvider"/> produces a type that implements <see
+    /// cref="ITypeSerialize{T}" />. If it does, it returns that type. Otherwise, it returns a <see
+    /// cref="BoxProxy.De{T, TProvider}"/>.
+    /// </summary>
     public static ITypeDeserialize<T> GetOrBox<T, TProvider>()
         where TProvider : IDeserializeProvider<T>
     {
         var d = TProvider.Instance;
-        if (d is ITypeDeserialize<T> typeDe)
+        return d switch
         {
-            return typeDe;
-        }
-        else
-        {
-            System.Diagnostics.Debug.Assert(d.SerdeInfo.Kind != InfoKind.Primitive,
-                "All primitive types should implement ITypeDeserialize<T>");
-            return BoxProxy.De<T, TProvider>.Instance;
-        }
+            ITypeDeserialize<T> typeDe => typeDe,
+            _ => BoxProxy.De<T, TProvider>.Instance
+        };
     }
 }

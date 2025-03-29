@@ -58,6 +58,26 @@ public sealed partial class InvalidJsonTests
         AssertInvalid("{, \"a\": 1}");
     }
 
+    [Fact]
+    public void ForgetComma()
+    {
+        AssertInvalid("[ 1 2]");
+        AssertInvalid("""
+        { "a": 1 "b": 2 }
+        """);
+        AssertInvalid<List<int>, ListProxy.De<int, I32Proxy>>("[ 1 2]");
+        AssertInvalid<NoComma>("""
+        { "a": 1 "b": 2 }
+        """);
+    }
+
+    [GenerateDeserialize]
+    private partial record NoComma
+    {
+        public int A { get; set; }
+        public int B { get; set; }
+    }
+
     private static void AssertInvalid(string json)
     {
         var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json));
@@ -68,6 +88,12 @@ public sealed partial class InvalidJsonTests
     {
         var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<T>(json));
         var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.Deserialize<T>(json));
+    }
+
+    private static void AssertInvalid<T, TProvider>(string json) where TProvider : IDeserializeProvider<T>
+    {
+        var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<T>(json));
+        var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.Deserialize<T, TProvider>(json));
     }
 
     [Theory]

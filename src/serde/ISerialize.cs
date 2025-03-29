@@ -29,16 +29,11 @@ public static class TypeSerialize
         where TProvider : ISerializeProvider<T>
     {
         var ser = TProvider.Instance;
-        if (ser is ITypeSerialize<T> typeSer)
+        return ser switch
         {
-            return typeSer;
-        }
-        else
-        {
-            Debug.Assert(ser.SerdeInfo.Kind != InfoKind.Primitive,
-                "All primitive types should implement ITypeSerialize<T>");
-            return BoxProxy.Ser<T, TProvider>.Instance;
-        }
+            ITypeSerialize<T> typeSer => typeSer,
+            _ => BoxProxy.Ser<T, TProvider>.Instance
+        };
     }
 }
 
@@ -110,9 +105,9 @@ public static class ISerializeTypeExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T? value,
+        T value,
         ISerialize<T> proxy)
-        where T : class
+        where T : class?
     {
         if (value is null)
         {
@@ -128,8 +123,8 @@ public static class ISerializeTypeExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T? value)
-        where T : class
+        T value)
+        where T : class?
         where TProvider : ISerializeProvider<T>
         => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 

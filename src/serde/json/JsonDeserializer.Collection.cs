@@ -34,86 +34,58 @@ partial class JsonDeserializer<TReader>
 
         private int TryReadIndexEnumerable(out string? errorName)
         {
+            var first = _index == 0;
             var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
-            if (peek == (short)',')
+            if (peek == (byte)']')
             {
-                if (_index == 0)
+                errorName = null;
+                _deserializer.Reader.Advance();
+                return ITypeDeserializer.EndOfType;
+            }
+            if (!first)
+            {
+                if (peek != (byte)',')
                 {
-                    throw new JsonException("Unexpected comma before first element");
+                    throw new JsonException($"Expected ']' or ',', found: '{(char)peek}'");
                 }
                 _deserializer.Reader.Advance();
-                peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
             }
-
-            switch (peek)
-            {
-                case (byte)']':
-                    _deserializer.Reader.Advance();
-                    errorName = null;
-                    return ITypeDeserializer.EndOfType;
-
-                case (byte)'}':
-                case (byte)':':
-                    throw new JsonException($"Unexpected character {peek} in array");
-
-                default:
-                    errorName = null;
-                    return _index++;
-            }
+            errorName = null;
+            return _index;
         }
 
         private int TryReadIndexDictionary(out string? errorName)
         {
-            bool first = _index == 0;
+            var first = _index == 0;
             bool afterKey = _index % 2 == 1;
             var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
-            if (peek == (short)',')
+            if (afterKey)
             {
-                if (first)
+                if (peek != (byte)':')
                 {
-                    throw new JsonException("Unexpected comma before first element");
-                }
-                if (afterKey)
-                {
-                    throw new JsonException("Unexpected comma after key");
+                    throw new JsonException("Expected ':' after key");
                 }
                 _deserializer.Reader.Advance();
-                peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
             }
-
-            if (afterKey && peek != (short)':')
+            else
             {
-                throw new JsonException("Expected ':' after key");
-            }
-
-            if (peek == (short)':')
-            {
-                if (first || !afterKey)
+                if (peek == (byte)'}')
                 {
-                    throw new JsonException("Unexpected ':' before key");
+                    errorName = null;
+                    _deserializer.Reader.Advance();
+                    return ITypeDeserializer.EndOfType;
                 }
-                _deserializer.Reader.Advance();
-                peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
-            }
-
-            switch (peek)
-            {
-                case (byte)']':
-                    throw new JsonException($"Unexpected '{peek}' in dictionary");
-
-                case (byte)'}':
-                    if (afterKey)
+                if (!first)
+                {
+                    if (peek != (byte)',')
                     {
-                        throw new JsonException("Expected object value, found '}'");
+                        throw new JsonException("Expected ',' or '}'");
                     }
                     _deserializer.Reader.Advance();
-                    errorName = null;
-                    return ITypeDeserializer.EndOfType;
-
-                default:
-                    errorName = null;
-                    return _index;
+                }
             }
+            errorName = null;
+            return _index;
         }
 
         public T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d) where T : class?

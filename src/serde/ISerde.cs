@@ -6,6 +6,15 @@ namespace Serde;
 /// See <see cref="ISerialize{T}"/> and <see cref="IDeserialize{T}"/> for details.
 /// </summary>
 public interface ISerde<T> : ISerialize<T>, IDeserialize<T> { }
+public interface ISerdeProvider<T> : ISerializeProvider<T>, IDeserializeProvider<T> { }
+
+public interface ISerdeProvider<TSelf, T> : ISerializeProvider<T>, IDeserializeProvider<T>
+    where TSelf : ISerdeProvider<TSelf, T>, ISerde<T>
+{
+    public new abstract static TSelf Instance { get; }
+    static ISerialize<T> ISerializeProvider<T>.Instance => TSelf.Instance;
+    static IDeserialize<T> IDeserializeProvider<T>.Instance => TSelf.Instance;
+}
 
 /// <summary>
 /// Convenience interface for implementing both serialization and deserialization providers.
