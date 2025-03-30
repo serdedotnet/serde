@@ -104,26 +104,37 @@ public static class ITypeDeserializerExt
         return deserializeType.ReadValue(info, index, TProvider.Instance);
     }
 
-    private sealed class BoxProxy<T, TProvider> : IDeserialize<object?>
-        where TProvider : IDeserializeProvider<T>
-    {
-        public static readonly BoxProxy<T, TProvider> Instance = new BoxProxy<T, TProvider>();
-
-        private readonly IDeserialize<T> _deserialize = TProvider.Instance;
-        public ISerdeInfo SerdeInfo => _deserialize.SerdeInfo;
-
-        public BoxProxy() { }
-
-
-        public object? Deserialize(IDeserializer deserializer)
-        {
-            return _deserialize.Deserialize(deserializer);
-        }
-    }
-
     public static T ReadBoxedValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
         where TProvider : IDeserializeProvider<T>
     {
-        return (T)deserializeType.ReadValue(info, index, BoxProxy<T, TProvider>.Instance)!;
+        return (T)deserializeType.ReadValue(info, index, BoxProxy.De<T, TProvider>.Instance)!;
+    }
+}
+
+/// <summary>
+/// This is a perf optimization. It allows primitive types (and only primitive types) to be
+/// deserialized without boxing. It is only useful for deserializing collections.
+/// </summary>
+public interface ITypeDeserialize<T>
+{
+    T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
+}
+
+public static class TypeDeserialize
+{
+    public static ITypeDeserialize<T> GetOrBox<T, TProvider>()
+        where TProvider : IDeserializeProvider<T>
+    {
+        var d = TProvider.Instance;
+        if (d is ITypeDeserialize<T> typeDe)
+        {
+            return typeDe;
+        }
+        else
+        {
+            System.Diagnostics.Debug.Assert(d.SerdeInfo.Kind != InfoKind.Primitive,
+                "All primitive types should implement ITypeDeserialize<T>");
+            return BoxProxy.De<T, TProvider>.Instance;
+        }
     }
 }

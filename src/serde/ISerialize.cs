@@ -9,9 +9,50 @@ public interface ISerialize<T> : ISerdeInfoProvider
     void Serialize(T value, ISerializer serializer);
 }
 
+/// <summary>
+/// This is a perf optimization. It allows primitive types (and only primitive types) to be
+/// serialized without boxing. It is only useful for serializing collections.
+/// </summary>
+public interface ITypeSerialize<T>
+{
+    void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index);
+}
+
+public static class TypeSerialize
+{
+    /// <summary>
+    /// Checks if the <typeparamref name="TProvider"/> produces a type that implements <see
+    /// cref="ITypeSerialize{T}" />. If it does, it returns that type. Otherwise, it returns a <see
+    /// cref="BoxProxy.Ser{T, TProvider}"/>.
+    /// </summary>
+    public static ITypeSerialize<T> GetOrBox<T, TProvider>()
+        where TProvider : ISerializeProvider<T>
+    {
+        var ser = TProvider.Instance;
+        if (ser is ITypeSerialize<T> typeSer)
+        {
+            return typeSer;
+        }
+        else
+        {
+            Debug.Assert(ser.SerdeInfo.Kind != InfoKind.Primitive,
+                "All primitive types should implement ITypeSerialize<T>");
+            return BoxProxy.Ser<T, TProvider>.Instance;
+        }
+    }
+}
+
+
 public interface ISerializeProvider<T>
 {
     abstract static ISerialize<T> Instance { get; }
+}
+
+public static class SerializeProvider
+{
+    public static ISerialize<T> GetSerialize<T, TProvider>()
+        where TProvider : ISerializeProvider<T>
+        => TProvider.Instance;
 }
 
 public interface ITypeSerializer
@@ -44,7 +85,7 @@ public static class ISerializeTypeExt
         ISerdeInfo typeInfo,
         int index,
         T value)
-        where T : class
+        where T : class?
         where TProvider : ISerializeProvider<T>
         => serializeType.WriteValue(typeInfo, index, value, TProvider.Instance);
 
@@ -69,9 +110,9 @@ public static class ISerializeTypeExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value,
+        T? value,
         ISerialize<T> proxy)
-        where T : class?
+        where T : class
     {
         if (value is null)
         {
@@ -87,25 +128,10 @@ public static class ISerializeTypeExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value)
-        where T : class?
+        T? value)
+        where T : class
         where TProvider : ISerializeProvider<T>
         => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
-
-    private sealed class BoxProxy<T, TProvider> : ISerialize<object?>
-        where TProvider : ISerializeProvider<T>
-    {
-        public static readonly BoxProxy<T, TProvider> Instance = new(TProvider.Instance);
-        private readonly ISerialize<T> _proxy;
-        private BoxProxy(ISerialize<T> proxy) { _proxy = proxy; }
-
-        public ISerdeInfo SerdeInfo => _proxy.SerdeInfo;
-
-        void ISerialize<object?>.Serialize(object? value, ISerializer serializer)
-        {
-            _proxy.Serialize((T)value!, serializer);
-        }
-    }
 
     public static void WriteBoxedValue<T, TProvider>(
         this ITypeSerializer serializeType,
@@ -114,8 +140,7 @@ public static class ISerializeTypeExt
         T value)
         where TProvider : ISerializeProvider<T>
     {
-        var proxy = BoxProxy<T, TProvider>.Instance;
-        serializeType.WriteValue(serdeInfo, index, value, proxy);
+        serializeType.WriteValue(serdeInfo, index, value, BoxProxy.Ser<T, TProvider>.Instance);
     }
 
     public static void WriteBoxedValueIfNotNull<T, TProvider>(

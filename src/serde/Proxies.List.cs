@@ -33,13 +33,9 @@ public abstract class SerListBase<TSelf, T, TList, TProvider>
     public static ISerialize<TList> Instance { get; } = new TSelf();
     public ISerdeInfo SerdeInfo { get; }
 
-    private readonly ITypeSerialize<T> _ser;
+    private readonly ITypeSerialize<T> _ser = TypeSerialize.GetOrBox<T, TProvider>();
     protected SerListBase(ISerdeInfo serdeInfo)
     {
-        var ser = TProvider.Instance;
-        _ser = ser is ITypeSerialize<T> typeSer
-            ? typeSer
-            : new TypeSerBoxed<T>(ser);
         SerdeInfo = serdeInfo;
     }
 
@@ -66,16 +62,10 @@ public abstract class DeListBase<
 
     public ISerdeInfo SerdeInfo { get; }
 
-    private readonly ITypeDeserialize<T> _de;
+    private readonly ITypeDeserialize<T> _de = TypeDeserialize.GetOrBox<T, TProvider>();
 
     protected DeListBase(ISerdeInfo serdeInfo)
     {
-        var de = TProvider.Instance;
-        Debug.Assert(de.SerdeInfo.Kind != InfoKind.Primitive
-            || de is ITypeDeserialize<T>, $"{typeof(T)} does not implement ITypeDeserialize");
-        _de = de is ITypeDeserialize<T> typeDe
-            ? typeDe
-            : new TypeDeBoxed<T>(de);
         SerdeInfo = serdeInfo;
     }
 

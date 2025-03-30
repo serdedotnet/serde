@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -23,14 +24,8 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
 
     protected SerDictBase(ISerdeInfo serdeInfo)
     {
-        var ks = TKProvider.Instance;
-        _keySer = ks is ITypeSerialize<TK> ktSer
-            ? ktSer
-            : new TypeSerBoxed<TK>(ks);
-        var vs = TVProvider.Instance;
-        _valueSer = vs is ITypeSerialize<TV> kvSer
-            ? kvSer
-            : new TypeSerBoxed<TV>(vs);
+        _keySer = TypeSerialize.GetOrBox<TK, TKProvider>();
+        _valueSer = TypeSerialize.GetOrBox<TV, TVProvider>();
         SerdeInfo = serdeInfo;
     }
 
@@ -67,24 +62,10 @@ public abstract class DeDictBase<
     public static IDeserialize<TDict> Instance { get; } = new TSelf();
     public ISerdeInfo SerdeInfo => DictSerdeInfo<TKey, TValue>.Instance;
 
-    private readonly ITypeDeserialize<TKey> _keyDe;
-    private readonly ITypeDeserialize<TValue> _valueDe;
+    private readonly ITypeDeserialize<TKey> _keyDe = TypeDeserialize.GetOrBox<TKey, TKProvider>();
+    private readonly ITypeDeserialize<TValue> _valueDe = TypeDeserialize.GetOrBox<TValue, TVProvider>();
 
-    protected DeDictBase()
-    {
-        var keyDe = TKProvider.Instance;
-        var valueDe = TVProvider.Instance;
-        Debug.Assert(keyDe.SerdeInfo.Kind != InfoKind.Primitive
-            || keyDe is ITypeDeserialize<TKey>, $"{typeof(TKey)} does not implement ITypeDeserialize");
-        Debug.Assert(valueDe.SerdeInfo.Kind != InfoKind.Primitive
-            || valueDe is ITypeDeserialize<TValue>, $"{typeof(TValue)} does not implement ITypeDeserialize");
-        _keyDe = keyDe is ITypeDeserialize<TKey> keyTypeDe
-            ? keyTypeDe
-            : new TypeDeBoxed<TKey>(keyDe);
-        _valueDe = valueDe is ITypeDeserialize<TValue> valueTypeDe
-            ? valueTypeDe
-            : new TypeDeBoxed<TValue>(valueDe);
-    }
+    protected DeDictBase() { }
 
     public TDict Deserialize(IDeserializer deserializer)
     {

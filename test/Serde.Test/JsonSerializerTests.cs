@@ -117,13 +117,18 @@ namespace Serde.Test
         }
         partial class JsonDictionaryWrapper : ISerializeProvider<JsonDictionaryWrapper>
         {
-            private sealed class ToStringProxy : ISerializeProvider<int>, ISerialize<int>
+            private sealed class ToStringProxy : ISerializeProvider<int>, ISerialize<int>, ITypeSerialize<int>
             {
                 public static ISerialize<int> Instance { get; } = new ToStringProxy();
 
                 public ISerdeInfo SerdeInfo => StringProxy.SerdeInfo;
 
                 public void Serialize(int value, ISerializer serializer) => serializer.WriteString(value.ToString());
+
+                public void Serialize(int value, ITypeSerializer serializer, ISerdeInfo info, int index)
+                {
+                    serializer.WriteString(info, index, value.ToString());
+                }
             }
 
             static ISerialize<JsonDictionaryWrapper> ISerializeProvider<JsonDictionaryWrapper>.Instance { get; }
