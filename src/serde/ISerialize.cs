@@ -45,6 +45,7 @@ public interface ISerializeProvider<T>
 
 public static class SerializeProvider
 {
+    public static ISerialize<T> GetSerialize<T>() where T : ISerializeProvider<T> => T.Instance;
     public static ISerialize<T> GetSerialize<T, TProvider>()
         where TProvider : ISerializeProvider<T>
         => TProvider.Instance;
@@ -107,6 +108,20 @@ public interface ISerializer
     /// </returns>
     ITypeSerializer WriteType(ISerdeInfo info);
 }
+
+public static class ISerializeExt
+{
+    public static void WriteValue<T, TProvider>(this ISerializer serializer, T value)
+        where TProvider : ISerializeProvider<T>
+    {
+        var ser = TProvider.Instance;
+        ser.Serialize(value, serializer);
+    }
+    public static void WriteValue<T>(this ISerializer serializer, T value)
+        where T : ISerializeProvider<T>
+        => serializer.WriteValue<T, T>(value);
+}
+
 
 /// <summary>
 /// This interface is used to serialize non-primitive types. All non-primitive types are
