@@ -35,7 +35,7 @@ namespace Serde.Json
                 case JsonValue.Object(ImmutableDictionary<string, JsonValue> members):
                     {
                         var serdeInfo = JsonValue.UnionInfo.ObjectInfo;
-                        var dict = serializer.WriteType(serdeInfo);
+                        var dict = serializer.WriteCollection(serdeInfo, members.Count);
                         int index = 0;
                         foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
                         {
@@ -48,7 +48,7 @@ namespace Serde.Json
                 case JsonValue.Array(ImmutableArray<JsonValue> elements):
                     {
                         var serdeInfo = JsonValue.UnionInfo.ArrayInfo;
-                        var enumerable = serializer.WriteType(serdeInfo);
+                        var enumerable = serializer.WriteCollection(serdeInfo, elements.Length);
                         int index = 0;
                         foreach (var element in elements)
                         {

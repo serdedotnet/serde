@@ -13,7 +13,7 @@ public static class EnumerableHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SerializeSpan<T>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, ITypeSerialize<T> serializeImpl, ISerializer serializer)
     {
-        var enumerable = serializer.WriteType(typeInfo);
+        var enumerable = serializer.WriteCollection(typeInfo, arr.Length);
         int index = 0;
         foreach (var item in arr)
         {
