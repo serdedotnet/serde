@@ -122,8 +122,8 @@ partial class JsonSerializer
             _parent._writer.WritePropertyName(s);
         }
 
-        public ITypeSerializer WriteCollection(ISerdeInfo typeInfo, int? length) => throw new KeyNotStringException();
-        public ITypeSerializer WriteType(ISerdeInfo typeInfo) => throw new KeyNotStringException();
+        ITypeSerializer ISerializer.WriteCollection(ISerdeInfo typeInfo, int? size) => throw new KeyNotStringException();
+        ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo) => throw new KeyNotStringException();
         public void WriteNull() => throw new KeyNotStringException();
     }
 

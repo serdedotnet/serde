@@ -32,7 +32,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
     private ScratchBuffer _scratch;
 
     /// <summary>
-    /// Tracks whether we are before the first element of an array or object.
+    /// Tracks whether we are before the first element of an object.
     /// </summary>
     private bool _first = false;
 
@@ -122,28 +122,46 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                     throw new JsonException("Expected object start");
                 }
                 Reader.Advance();
+                peek = Reader.SkipWhitespace();
+                if (peek == (byte)',')
+                {
+                    throw new JsonException("Unexpected ',' before first element");
+                }
+                _first = true;
                 goto case InfoKind.Enum;
             }
             case InfoKind.Enum:
-                _first = true;
                 return this;
             case InfoKind.List:
-            case InfoKind.Dictionary:
+            {
+                var peek = Reader.SkipWhitespace();
+                if (peek != (byte)'[')
                 {
-                    switch ((ThrowIfEos(Reader.SkipWhitespace()), info.Kind))
-                    {
-                        case ((byte)'[', InfoKind.List):
-                        case ((byte)'{', InfoKind.Dictionary):
-                            Reader.Advance();
-                            break;
-                        case (_, InfoKind.List):
-                            throw new JsonException("Expected array start");
-                        case (_, InfoKind.Dictionary):
-                            throw new JsonException("Expected object start");
-                    }
-
-                    return new DeCollection(this);
+                    throw new JsonException("Expected array start");
                 }
+                Reader.Advance();
+                peek = Reader.SkipWhitespace();
+                if (peek == (byte)',')
+                {
+                    throw new JsonException("Unexpected ',' before first element");
+                }
+                return new DeCollection(this);
+            }
+            case InfoKind.Dictionary:
+            {
+                var peek = Reader.SkipWhitespace();
+                if (peek != (byte)'{')
+                {
+                    throw new JsonException("Expected object start");
+                }
+                Reader.Advance();
+                peek = Reader.SkipWhitespace();
+                if (peek == (byte)',')
+                {
+                    throw new JsonException("Unexpected ',' before first element");
+                }
+                return new DeCollection(this);
+            }
             default:
                 throw new ArgumentException($"Expected CustomType or Enum, found {info.Kind}");
         }
@@ -181,6 +199,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
     public JsonValue ReadJsonValue()
     {
+        // Spec: https://www.json.org/json-en.html
         var peek = Reader.SkipWhitespace();
         switch (peek)
         {
@@ -211,19 +230,29 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                 return new JsonValue.Number(ReadF64());
             case (byte)'{':
             {
+                // Spec:
+                // object =
+                //   '{' ws '}'
+                //   '{' members '}'
+                // members =
+                //   member
+                //   member ',' members
+                // member =
+                //   ws string ws ':' element
                 Reader.Advance();
-                var builder = ImmutableDictionary.CreateBuilder<string, JsonValue>();
                 var next = Reader.SkipWhitespace();
                 if (next == (byte)',')
                 {
                     throw new JsonException("Unexpected ',' before first element");
                 }
-                while (next != (byte)'}')
+                if (next == (byte)'}')
                 {
-                    if (next == (byte)',')
-                    {
-                        Reader.Advance();
-                    }
+                    Reader.Advance();
+                    return new JsonValue.Object(ImmutableDictionary<string, JsonValue>.Empty);
+                }
+                var builder = ImmutableDictionary.CreateBuilder<string, JsonValue>();
+                while (true)
+                {
                     var key = ReadString();
                     if (Reader.SkipWhitespace() != (byte)':')
                     {
@@ -233,30 +262,60 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
                     var value = ReadJsonValue();
                     builder.Add(key, value);
                     next = Reader.SkipWhitespace();
+                    switch (next)
+                    {
+                        case (byte)',':
+                            Reader.Advance();
+                            continue;
+                        case (byte)'}':
+                            Reader.Advance();
+                            break;
+                        default:
+                            throw new JsonException($"Expected '}}' or ',', found {(char)next}");
+                    }
+                    break;
                 }
-                Reader.Advance();
                 return new JsonValue.Object(builder.ToImmutable());
             }
             case (byte)'[':
             {
+                // Spec:
+                // array =
+                //   '[' ws ']'
+                //   '[' elements ']'
+                // elements =
+                //   element
+                //   element ',' elements
                 Reader.Advance();
-                var arrayBuilder = ImmutableArray.CreateBuilder<JsonValue>();
                 var next = Reader.SkipWhitespace();
                 if (next == (byte)',')
                 {
                     throw new JsonException("Unexpected ',' before first element");
                 }
-                while (next != (byte)']')
+                if (next == (byte)']')
                 {
-                    if (next == (byte)',')
-                    {
-                        Reader.Advance();
-                    }
+                    Reader.Advance();
+                    return new JsonValue.Array(ImmutableArray<JsonValue>.Empty);
+                }
+                var arrayBuilder = ImmutableArray.CreateBuilder<JsonValue>();
+                while (true)
+                {
                     var value = ReadJsonValue();
                     arrayBuilder.Add(value);
                     next = Reader.SkipWhitespace();
+                    switch (next)
+                    {
+                        case (byte)',':
+                            Reader.Advance();
+                            continue;
+                        case (byte)']':
+                            Reader.Advance();
+                            break;
+                        default:
+                            throw new JsonException($"Expected ']' or ',', found {(char)next}");
+                    }
+                    break;
                 }
-                Reader.Advance();
                 return new JsonValue.Array(arrayBuilder.ToImmutable());
             }
         }

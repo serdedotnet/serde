@@ -32,7 +32,7 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
     void ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
     {
         var typeInfo = DictSerdeInfo<TK, TV>.Instance;
-        var sd = serializer.WriteType(typeInfo);
+        var sd = serializer.WriteCollection(typeInfo, value.Count);
         int index = 0;
         foreach (var (k, v) in value)
         {

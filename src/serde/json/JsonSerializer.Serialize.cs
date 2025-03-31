@@ -40,24 +40,33 @@ partial class JsonSerializer : ISerializer
     public void WriteString(string s) => _writer.WriteStringValue(s);
     public void WriteNull() => _writer.WriteNullValue();
 
-    ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo)
+    ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? size)
     {
-        switch (typeInfo.Kind)
+        switch (info.Kind)
         {
-            case InfoKind.Enum:
-                return _enumSerializer;
             case InfoKind.Dictionary:
                 _writer.WriteStartObject();
                 return new DictImpl(this);
             case InfoKind.List:
                 _writer.WriteStartArray();
                 return new EnumerableImpl(this);
+            default:
+                throw new ArgumentException($"TypeKind is {info.Kind}, expected Enumerable or Dictionary");
+        }
+    }
+
+    ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo)
+    {
+        switch (typeInfo.Kind)
+        {
+            case InfoKind.Enum:
+                return _enumSerializer;
             case InfoKind.Union:
             case InfoKind.CustomType:
                 _writer.WriteStartObject();
                 return this;
             default:
-                throw new InvalidOperationException("Invalid type kind for WriteType: " + typeInfo.Kind);
+                throw new ArgumentException("Invalid type kind for WriteType: " + typeInfo.Kind);
         }
     }
 

@@ -251,6 +251,26 @@ public sealed partial class XmlSerializer : ISerializer
         }
     }
 
+    public ITypeSerializer WriteCollection(ISerdeInfo typeInfo, int? size)
+    {
+        switch (typeInfo.Kind)
+        {
+            case InfoKind.List:
+            {
+                var savedState = _state;
+                if (savedState == State.Enumerable)
+                {
+                    _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
+                }
+                _state = State.Enumerable;
+                return new SerializeCollectionImpl(this, savedState);
+            }
+            case InfoKind.Dictionary:
+                throw new NotSupportedException("Serde.Xml doesn't currently support Dictionary serialization.");
+            default:
+                throw new ArgumentException($"Expected List or Dictionary, found {typeInfo.Kind}");
+        }
+    }
     public ITypeSerializer WriteType(ISerdeInfo typeInfo)
     {
         switch (typeInfo.Kind)
@@ -273,16 +293,6 @@ public sealed partial class XmlSerializer : ISerializer
                 }
                 _state = State.Type;
                 return new XmlTypeSerializer(writeEnd, this, saved);
-            }
-            case InfoKind.List:
-            {
-                var savedState = _state;
-                if (savedState == State.Enumerable)
-                {
-                    _writer.WriteStartElement(FormatTypeName(typeInfo.Name));
-                }
-                _state = State.Enumerable;
-                return new SerializeCollectionImpl(this, savedState);
             }
             default:
                 throw new NotSupportedException($"Serde.Xml doesn't currently support kind '{typeInfo.Kind}'");
