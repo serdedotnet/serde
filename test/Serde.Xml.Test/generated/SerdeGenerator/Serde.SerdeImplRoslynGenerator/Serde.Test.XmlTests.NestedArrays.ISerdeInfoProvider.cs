@@ -7,7 +7,7 @@ partial class XmlTests
 {
     partial class NestedArrays
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "NestedArrays",
         typeof(Serde.Test.XmlTests.NestedArrays).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

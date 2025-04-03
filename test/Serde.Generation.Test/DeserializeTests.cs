@@ -1,4 +1,3 @@
-
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
@@ -8,6 +7,53 @@ namespace Serde.Test
 {
     public class DeserializeTests
     {
+        [Fact]
+        public Task InlineMember()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+public partial record StringWrap(
+    [property: SerdeMemberOptions(Inline = true)]
+    string Value
+);
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task MultipleInlineMember()
+        {
+            var src = """
+using Serde;
+[GenerateDeserialize]
+partial record StringWrap(
+    [property: SerdeMemberOptions(Inline = true)]
+    string Value,
+    [property: SerdeMemberOptions(Inline = true)]
+    string Value2
+);
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task SingleInlineMemberWithOthers()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+public partial record StringWrap(
+    [property: SerdeMemberOptions(Inline = true)]
+    string InlineValue,
+    string RegularValue
+);
+""";
+            return VerifyDeserialize(src);
+        }
+
         [Fact]
         public Task NestedExplicitDeserializeWrapper()
         {

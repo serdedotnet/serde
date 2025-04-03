@@ -103,6 +103,8 @@ namespace Serde
 
         public ImmutableArray<AttributeData> Attributes => Symbol.GetAttributes();
 
+        public bool Inline => _memberOptions.Inline;
+
         /// <summary>
         /// Retrieves the name of the member after formatting options are applied.
         /// </summary>

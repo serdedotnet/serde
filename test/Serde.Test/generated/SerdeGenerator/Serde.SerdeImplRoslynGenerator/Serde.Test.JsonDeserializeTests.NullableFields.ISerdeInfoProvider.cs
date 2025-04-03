@@ -7,7 +7,7 @@ partial class JsonDeserializeTests
 {
     partial class NullableFields
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "NullableFields",
         typeof(Serde.Test.JsonDeserializeTests.NullableFields).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

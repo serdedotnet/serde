@@ -7,7 +7,7 @@ partial class JsonDeserializeTests
 {
     partial record struct ThrowMissing
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "ThrowMissing",
         typeof(Serde.Test.JsonDeserializeTests.ThrowMissing).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

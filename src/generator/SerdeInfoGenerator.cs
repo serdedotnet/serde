@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -9,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using static Serde.Diagnostics;
 
 namespace Serde;
 
@@ -48,6 +50,29 @@ internal static class SerdeInfoGenerator
         if (usage == SerdeUsage.Both)
         {
             usage = SerdeUsage.Serialize;
+        }
+
+        // Check for Inline
+        var members = SymbolUtilities.GetDataMembers(receiverType, usage);
+        var inlined = members.Where(m => m.Inline).ToList();
+        if (inlined.Count > 1)
+        {
+            context.ReportDiagnostic(CreateDiagnostic(
+                DiagId.ERR_MultipleInline,
+                typeDecl.GetLocation()
+            ));
+            return;
+        }
+        if (inlined.Count == 1)
+        {
+            GenerateInlineInfo(
+                inlined[0],
+                typeDecl,
+                context,
+                usage,
+                inProgress
+            );
+            return;
         }
 
         bool isEnum;
@@ -109,7 +134,7 @@ global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = S
 );
 """
             : $$"""
-private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
+private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
     {{argsString}}
 );
 """);
@@ -145,6 +170,31 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
 
             return $"""({string.Join(", ", elements)})""";
         }
+    }
+
+    private static void GenerateInlineInfo(
+        DataMemberSymbol m,
+        BaseTypeDeclarationSyntax typeDecl,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
+    {
+        var wrapper = GetWrapperName(m, context, usage, inProgress);
+        string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
+        var infoText = $$"""
+private static readonly global::Serde.ISerdeInfo s_serdeInfo
+    = global::Serde.SerdeInfoProvider.Get{{name}}Info<{{m.Type}}, {{wrapper}}>();
+""";
+        var typeDeclContext = new TypeDeclContext(typeDecl);
+        var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
+            typeDeclContext,
+            baseList: null,
+            new(infoText),
+            "ISerdeInfoProvider"
+        );
+
+        context.AddSource(fileName, newType);
     }
 
     private static void GenerateUnionSerdeInfo(

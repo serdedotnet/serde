@@ -6,7 +6,7 @@ namespace Test;
 
 partial record Parent
 {
-    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+    private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Parent",
     typeof(Test.Parent).GetCustomAttributesData(),
     new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

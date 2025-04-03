@@ -1,4 +1,3 @@
-
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -9,6 +8,21 @@ namespace Serde.Test
 {
     public class SerializeTests
     {
+        [Fact]
+        public Task InlineMember()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+public partial record StringWrap(
+    [property: SerdeMemberOptions(Inline = true)]
+    string Value
+);
+""";
+            return VerifySerialize(src);
+        }
+
         [Fact]
         public Task NestedExplicitSerializeWrapper()
         {
@@ -566,6 +580,39 @@ abstract partial record Base
 }
 """;
             return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task MultipleInlineMember()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+public partial record StringWrap(
+    [property: SerdeMemberOptions(Inline = true)]
+    string Value,
+    [property: SerdeMemberOptions(Inline = true)]
+    string Value2
+);
+""";
+            return VerifySerialize(src);
+        }
+
+        [Fact]
+        public Task SingleInlineMemberWithOthers()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+public partial record StringWrap(
+    [property: SerdeMemberOptions(Inline = true)]
+    string InlineValue,
+    string RegularValue
+);
+""";
+            return VerifySerialize(src);
         }
 
         private static Task VerifySerialize(

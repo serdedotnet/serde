@@ -7,7 +7,7 @@ partial class InvalidJsonTests
 {
     partial class ClassWithInt
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "ClassWithInt",
         typeof(Serde.Json.Test.InvalidJsonTests.ClassWithInt).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

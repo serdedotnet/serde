@@ -3,7 +3,7 @@
 #nullable enable
 partial struct Rgb
 {
-    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+    private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Rgb",
     typeof(Rgb).GetCustomAttributesData(),
     new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

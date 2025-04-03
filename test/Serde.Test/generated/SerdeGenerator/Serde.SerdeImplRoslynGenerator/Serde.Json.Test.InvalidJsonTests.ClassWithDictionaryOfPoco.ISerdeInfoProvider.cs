@@ -7,7 +7,7 @@ partial class InvalidJsonTests
 {
     partial class ClassWithDictionaryOfPoco
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "ClassWithDictionaryOfPoco",
         typeof(Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

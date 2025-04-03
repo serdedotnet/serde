@@ -18,6 +18,8 @@ namespace Serde
         ERR_CantFindNestedWrapper = 5,
         ERR_WrapperDoesntImplementInterface = 6,
         ERR_CantImplementAbstract = 7,
+        ERR_MultipleInline = 8,
+        ERR_InlineWithOtherMembers = 9,
     }
 
     internal static class Diagnostics
@@ -31,6 +33,8 @@ namespace Serde
             ERR_CantFindNestedWrapper => nameof(ERR_CantFindNestedWrapper),
             ERR_WrapperDoesntImplementInterface => nameof(ERR_WrapperDoesntImplementInterface),
             ERR_CantImplementAbstract => nameof(ERR_CantImplementAbstract),
+            ERR_MultipleInline => nameof(ERR_MultipleInline),
+            ERR_InlineWithOtherMembers => nameof(ERR_InlineWithOtherMembers),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)

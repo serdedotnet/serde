@@ -7,7 +7,7 @@ partial class SampleTest
 {
     partial record OrderedItem
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "OrderedItem",
         typeof(Serde.Test.SampleTest.OrderedItem).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

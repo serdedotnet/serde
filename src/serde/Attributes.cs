@@ -167,6 +167,12 @@ sealed class SerdeMemberOptions : Attribute
     /// Proxy type for the IDeserialize implementation.
     /// </summary>
     public Type? DeserializeProxy { get; init; } = null;
+
+    /// <summary>
+    /// Inline the given member into the parent type. Currently only valid when
+    /// the type contains a single member.
+    /// </summary>
+    public bool Inline { get; init; } = false;
 }
 
 /// <summary>

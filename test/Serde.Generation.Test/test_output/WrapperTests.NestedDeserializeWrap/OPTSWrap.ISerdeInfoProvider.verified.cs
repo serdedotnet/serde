@@ -3,7 +3,7 @@
 #nullable enable
 partial class OPTSWrap
 {
-    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+    private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "BIND_OPTS",
     typeof(System.Runtime.InteropServices.ComTypes.BIND_OPTS).GetCustomAttributesData(),
     new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

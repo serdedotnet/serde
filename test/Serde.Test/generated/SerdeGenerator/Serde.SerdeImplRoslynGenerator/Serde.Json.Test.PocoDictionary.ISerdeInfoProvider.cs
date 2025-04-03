@@ -5,7 +5,7 @@ namespace Serde.Json.Test;
 
 partial class PocoDictionary
 {
-    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+    private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "PocoDictionary",
     typeof(Serde.Json.Test.PocoDictionary).GetCustomAttributesData(),
     new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

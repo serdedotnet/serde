@@ -7,7 +7,7 @@ partial class InvalidJsonTests
 {
     partial record NoComma
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "NoComma",
         typeof(Serde.Json.Test.InvalidJsonTests.NoComma).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

@@ -7,7 +7,7 @@ partial class JsonDeserializeTests
 {
     partial record struct SetToNull
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "SetToNull",
         typeof(Serde.Test.JsonDeserializeTests.SetToNull).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

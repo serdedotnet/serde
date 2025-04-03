@@ -142,4 +142,10 @@
 - With only private constructors
 - With one or more nested records that inherit from the parent record</value>
   </data>
+  <data name="ERR_MultipleInline" xml:space="preserve">
+    <value>SerdeMemberOptions.Inline can only be appled to one member.</value>
+  </data>
+  <data name="ERR_InlineWithOtherMembers" xml:space="preserve">
+    <value>SerdeMemberOptions.Inline cannot be used when the type has multiple members.</value>
+  </data>
 </root>

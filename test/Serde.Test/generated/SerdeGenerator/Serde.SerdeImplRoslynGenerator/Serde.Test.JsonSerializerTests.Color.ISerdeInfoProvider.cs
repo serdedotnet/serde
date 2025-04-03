@@ -7,7 +7,7 @@ partial class JsonSerializerTests
 {
     partial struct Color
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "Color",
         typeof(Serde.Test.JsonSerializerTests.Color).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

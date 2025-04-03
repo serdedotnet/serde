@@ -1,0 +1,14 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_MultipleInline,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (1,0)-(7,2),
+      MessageFormat: SerdeMemberOptions.Inline can only be appled to one member.,
+      Message: SerdeMemberOptions.Inline can only be appled to one member.,
+      Category: Serde
+    }
+  ]
+}
