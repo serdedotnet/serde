@@ -1,5 +1,7 @@
 ﻿
 // Unions
+using System;
+
 Console.WriteLine("Unions sample:");
 Console.WriteLine("=========================");
 UnionSample.RunDemo();

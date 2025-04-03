@@ -15,7 +15,7 @@ namespace Serde.Json
         /// <summary>
         /// Serialize the given type to a string.
         /// </summary>
-        public static string Serialize<T>(T provider) where T : ISerializeProvider<T>
+        public static string Serialize<T>(T provider, ISerialize<T> ser)
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
             using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
@@ -24,33 +24,22 @@ namespace Serde.Json
                 SkipValidation = true
             });
             var serializer = new JsonSerializer(writer);
-            T.Instance.Serialize(provider, serializer);
-            writer.Flush();
-            return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
-        }
-
-        public static string Serialize<T, TProxy>(T s, TProxy proxy)
-            where TProxy : ISerialize<T>
-        {
-            using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
-            using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
-            {
-                Indented = false,
-                SkipValidation = true
-            });
-            var serializer = new JsonSerializer(writer);
-            proxy.Serialize(s, serializer);
+            ser.Serialize(provider, serializer);
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }
 
         public static string Serialize<T, TProvider>(T s)
-            where TProvider : ISerialize<T>, ISerializeProvider<T>
+            where TProvider : ISerializeProvider<T>
             => Serialize(s, TProvider.Instance);
+
+        public static string Serialize<T>(T s)
+            where T : ISerializeProvider<T>
+            => Serialize(s, T.Instance);
 
         public static T Deserialize<T>(string source)
             where T : IDeserializeProvider<T>
-            => Deserialize(source, default(T).GetDeserialize());
+            => Deserialize<T, T>(source);
 
         public static List<T> DeserializeList<T>(string source)
             where T : IDeserializeProvider<T>

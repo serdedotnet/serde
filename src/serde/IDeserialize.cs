@@ -22,16 +22,10 @@ public interface IDeserializeProvider<T>
 
 public static class DeserializeProvider
 {
+    public static IDeserialize<T> GetDeserialize<T>() where T : IDeserializeProvider<T> => T.Instance;
     public static IDeserialize<T> GetDeserialize<T, TProvider>()
         where TProvider : IDeserializeProvider<T>
         => TProvider.Instance;
-}
-
-public static partial class DeserializeExtensions
-{
-    public static IDeserialize<T> GetDeserialize<T>(this T? _)
-        where T : IDeserializeProvider<T>
-        => T.Instance;
 }
 
 public interface IDeserializer : IDisposable
@@ -53,6 +47,19 @@ public interface IDeserializer : IDisposable
     decimal ReadDecimal();
     string ReadString();
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
+}
+
+public static class IDeserializerExt
+{
+    public static T ReadValue<T, TProvider>(this IDeserializer deserializer)
+        where TProvider : IDeserializeProvider<T>
+    {
+        var de = DeserializeProvider.GetDeserialize<T, TProvider>();
+        return de.Deserialize(deserializer);
+    }
+    public static T ReadValue<T>(this IDeserializer deserializer)
+        where T : IDeserializeProvider<T>
+        => deserializer.ReadValue<T, T>();
 }
 
 public interface ITypeDeserializer

@@ -3,7 +3,7 @@
 namespace Serde;
 
 internal interface ISerdePrimitive<TSelf, T>
-    : ISerde<T>, ISerdeProvider<TSelf, T>, ITypeSerialize<T>, ITypeDeserialize<T>
+    : ISerde<T>, ISerdeProvider<TSelf, TSelf, T>, ITypeSerialize<T>, ITypeDeserialize<T>
     where TSelf : ISerdePrimitive<TSelf, T>
 {
     /// <summary>

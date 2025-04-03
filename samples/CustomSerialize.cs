@@ -1,5 +1,6 @@
 
 // Define a custom Color type
+using System;
 using Serde;
 using Serde.Json;
 

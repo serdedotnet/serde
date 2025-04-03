@@ -20,7 +20,7 @@ public interface ISerdeProvider<TSelf, TSerde, T> : ISerializeProvider<T>, IDese
     static IDeserialize<T> IDeserializeProvider<T>.Instance => TSelf.Instance;
 }
 
-public interface ISerdeProvider<TSelf, T> : ISerdeProvider<TSelf, TSelf, T>
+public interface ISerdeProvider<TSelf, T> : ISerdeProvider<TSelf, ISerde<T>, T>
     where TSelf : ISerdeProvider<TSelf, T>, ISerde<T>
 { }
 
