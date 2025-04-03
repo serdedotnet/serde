@@ -5,7 +5,7 @@ namespace Serde.Test;
 
 partial struct MaxSizeType
 {
-    private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+    private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "MaxSizeType",
     typeof(Serde.Test.MaxSizeType).GetCustomAttributesData(),
     new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

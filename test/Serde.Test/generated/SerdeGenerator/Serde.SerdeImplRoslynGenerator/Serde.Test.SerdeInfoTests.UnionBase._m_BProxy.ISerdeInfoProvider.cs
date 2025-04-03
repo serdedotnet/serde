@@ -9,7 +9,7 @@ partial class SerdeInfoTests
     {
         partial class _m_BProxy
         {
-            private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+            private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                 "B",
             typeof(Serde.Test.SerdeInfoTests.UnionBase.B).GetCustomAttributesData(),
             new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

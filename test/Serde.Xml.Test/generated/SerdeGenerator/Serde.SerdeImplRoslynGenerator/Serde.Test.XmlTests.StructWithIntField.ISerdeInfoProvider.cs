@@ -7,7 +7,7 @@ partial class XmlTests
 {
     partial record StructWithIntField
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "StructWithIntField",
         typeof(Serde.Test.XmlTests.StructWithIntField).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

@@ -1,0 +1,13 @@
+﻿[
+  {
+    "Id": "CS0535",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/StringWrap.ISerialize.cs: (10,36)-(10,64)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0535)",
+    "MessageFormat": "'{0}' does not implement interface member '{1}'",
+    "Message": "'StringWrap._SerObj' does not implement interface member 'ISerialize<StringWrap>.Serialize(StringWrap, ISerializer)'",
+    "Category": "Compiler"
+  }
+]

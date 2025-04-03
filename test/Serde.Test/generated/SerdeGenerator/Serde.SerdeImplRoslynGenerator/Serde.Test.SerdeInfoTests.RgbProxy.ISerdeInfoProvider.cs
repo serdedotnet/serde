@@ -7,7 +7,7 @@ partial class SerdeInfoTests
 {
     partial record RgbProxy
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "Rgb",
         typeof(Serde.Test.SerdeInfoTests.Rgb).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

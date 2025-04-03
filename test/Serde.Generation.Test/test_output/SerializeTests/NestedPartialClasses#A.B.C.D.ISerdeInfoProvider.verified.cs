@@ -9,7 +9,7 @@ partial class A
         {
             partial class D
             {
-                private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+                private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                     "D",
                 typeof(A.B.C.D).GetCustomAttributesData(),
                 new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

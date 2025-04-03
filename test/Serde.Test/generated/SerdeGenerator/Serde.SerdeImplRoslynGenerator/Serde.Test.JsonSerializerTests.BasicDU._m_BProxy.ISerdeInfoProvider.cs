@@ -9,7 +9,7 @@ partial class JsonSerializerTests
     {
         partial class _m_BProxy
         {
-            private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+            private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                 "B",
             typeof(Serde.Test.JsonSerializerTests.BasicDU.B).GetCustomAttributesData(),
             new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

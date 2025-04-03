@@ -31,6 +31,34 @@ namespace Serde
                 return (memberDecl, $": global::Serde.IDeserialize<{typeFqn}>");
             }
 
+            var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
+            var inlined = fieldsAndProps.Where(m => m.Inline).ToList();
+            if (inlined.Count > 1)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_MultipleInline,
+                    typeDeclContext.TypeDecl.GetLocation()
+                ));
+                return (new(""), $": global::Serde.IDeserialize<{typeFqn}>");
+            }
+            if (inlined.Count == 1)
+            {
+                if (fieldsAndProps.Count > 1)
+                {
+                    context.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_InlineWithOtherMembers,
+                        typeDeclContext.TypeDecl.GetLocation()
+                    ));
+                    return (new(""), $" : Serde.IDeserialize<{typeFqn}>");
+                }
+                return GenInline(
+                    inlined[0],
+                    receiverType,
+                    context,
+                    inProgress
+                );
+            }
+
             // Generate members for IDeserialize.Deserialize implementation
             var members = new SourceBuilder();
             List<BaseTypeSyntax> bases = [
@@ -126,6 +154,36 @@ namespace Serde
 }
 """);
             return src;
+        }
+
+        private static (SourceBuilder Members, string BaseList) GenInline(
+            DataMemberSymbol m,
+            ITypeSymbol receiverType,
+            GeneratorExecutionContext context,
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+        )
+        {
+            var wrapper = GetProxyName(m, context, inProgress);
+            if (wrapper is null)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_DoesntImplementInterface,
+                    m.Locations[0],
+                    m.Symbol,
+                    m.Type,
+                    "Serde.IDeserializeProvider<T>"));
+            }
+            var typeName = m.Type.ToDisplayString();
+            var receiverName = receiverType.ToDisplayString();
+            var infoText = $$"""
+{{receiverName}} global::Serde.IDeserialize<{{receiverName}}>.Deserialize(global::Serde.IDeserializer deserializer)
+{
+    var deObj = global::Serde.DeserializeProvider.GetDeserialize<{{typeName}}, {{wrapper}}>();
+    return new(deObj.Deserialize(deserializer));
+}
+
+""";
+            return (new(infoText), $" : global::Serde.IDeserialize<{receiverName}>");
         }
 
         /// <summary>
@@ -432,6 +490,37 @@ namespace Serde
             typeCreation.Dedent();
             typeCreation.AppendLine("};");
             return typeCreation;
+        }
+
+        private static string? GetProxyName(
+            DataMemberSymbol m,
+            GeneratorExecutionContext context,
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+        )
+        {
+            if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
+            {
+                return explicitWrap;
+            }
+            else if (ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Deserialize))
+            {
+                return m.Type.ToDisplayString();
+            }
+            else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Proxy: { } wrap })
+            {
+                return wrap;
+            }
+            else
+            {
+                // No built-in handling and doesn't implement IDeserialize, error
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_DoesntImplementInterface,
+                    m.Locations[0],
+                    m.Symbol,
+                    m.Type,
+                    "Serde.IDeserializeProvider<T>"));
+                return null;
+            }
         }
 
         private static string GetLocalName(DataMemberSymbol m) => "_l_" + m.Name.ToLower();

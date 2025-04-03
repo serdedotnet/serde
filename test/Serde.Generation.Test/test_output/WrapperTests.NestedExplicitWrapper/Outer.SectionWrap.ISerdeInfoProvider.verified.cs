@@ -5,7 +5,7 @@ partial class Outer
 {
     partial record struct SectionWrap
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "Section",
         typeof(System.Collections.Specialized.BitVector32.Section).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {

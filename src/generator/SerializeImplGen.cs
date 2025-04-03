@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -27,6 +28,32 @@ public partial class SerializeImplGen
 
         var statements = new SourceBuilder();
         var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
+        var inlined = fieldsAndProps.Where(m => m.Inline).ToList();
+        if (inlined.Count > 1)
+        {
+            context.ReportDiagnostic(CreateDiagnostic(
+                DiagId.ERR_MultipleInline,
+                typeDeclContext.TypeDecl.GetLocation()
+            ));
+            return (new(""), $" : Serde.ISerialize<{receiverType.ToDisplayString()}>");
+        }
+        if (inlined.Count == 1)
+        {
+            if (fieldsAndProps.Count > 1)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_InlineWithOtherMembers,
+                    typeDeclContext.TypeDecl.GetLocation()
+                ));
+                return (new(""), $" : Serde.ISerialize<{receiverType.ToDisplayString()}>");
+            }
+            return GenerateInline(
+                inlined[0],
+                receiverType,
+                context,
+                inProgress
+            );
+        }
 
         // The generated body of ISerialize is
         // `var _l_info = GetInfo(this);
@@ -159,6 +186,63 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             """);
         }
         return (members, BaseList(SeparatedList(bases)).ToFullString());
+    }
+
+    private static (SourceBuilder, string) GenerateInline(
+        DataMemberSymbol m,
+        ITypeSymbol receiverType,
+        GeneratorExecutionContext context,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
+    {
+        var wrapper = GetProxyName(m, context, inProgress);
+        if (wrapper is null)
+        {
+            context.ReportDiagnostic(CreateDiagnostic(
+                DiagId.ERR_DoesntImplementInterface,
+                m.Locations[0],
+                m.Symbol,
+                m.Type,
+                "Serde.ISerializeProvider<T>"));
+        }
+        var typeName = m.Type.ToDisplayString();
+        var receiverName = receiverType.ToDisplayString();
+        var infoText = $$"""
+void global::Serde.ISerialize<{{receiverName}}>.Serialize({{receiverName}} value, global::Serde.ISerializer serializer)
+{
+    var serObj = global::Serde.SerializeProvider.GetSerialize<{{typeName}}, {{wrapper}}>();
+    serObj.Serialize(value.{{m.Name}}, serializer);
+}
+
+""";
+        return (new(infoText), $" : global::Serde.ISerialize<{receiverName}>");
+    }
+
+    private static string? GetProxyName(
+        DataMemberSymbol m,
+        GeneratorExecutionContext context,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
+    {
+        // 1. Check if this member has an explicit proxy. If so, we'll use it.
+        if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress) is { } proxy)
+        {
+            return proxy;
+        }
+        // 2. Check for a direct implementation of ISerialize
+        else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Serialize))
+        {
+            return m.Type.ToDisplayString();
+        }
+        // 3. Check if the member type has an implicit proxy
+        else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress) is { } typeWithProxy)
+        {
+            return typeWithProxy.Proxy;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /// <summary>

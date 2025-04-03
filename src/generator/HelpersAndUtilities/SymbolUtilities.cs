@@ -136,6 +136,14 @@ namespace Serde
                                 }
                             } => options with { SkipDeserialize = (bool)value },
 
+                            {
+                                Key: nameof(MemberOptions.Inline),
+                                Value: {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with { Inline = (bool)value },
+
                             _ => options
                         };
                     }

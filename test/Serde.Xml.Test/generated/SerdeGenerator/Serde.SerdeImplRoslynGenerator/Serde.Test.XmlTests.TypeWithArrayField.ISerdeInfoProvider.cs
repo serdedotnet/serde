@@ -7,7 +7,7 @@ partial class XmlTests
 {
     partial class TypeWithArrayField
     {
-        private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+        private static readonly global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "TypeWithArrayField",
         typeof(Serde.Test.XmlTests.TypeWithArrayField).GetCustomAttributesData(),
         new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
