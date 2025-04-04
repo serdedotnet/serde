@@ -1,4 +1,3 @@
-
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
@@ -8,6 +7,48 @@ namespace Serde.Test
 {
     public class DeserializeTests
     {
+        [Fact]
+        public Task Inheritance()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+partial class A
+{
+    public int X;
+}
+
+[GenerateDeserialize]
+partial class B : A
+{
+    public int Y;
+}
+
+[GenerateDeserialize]
+partial class C : B
+{
+    public int Z;
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task MemberOverrides()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+partial record A(int X);
+
+[GenerateDeserialize]
+partial record B(int X, int Y) : A(X);
+""";
+            return VerifyDeserialize(src);
+        }
+
         [Fact]
         public Task NestedExplicitDeserializeWrapper()
         {
