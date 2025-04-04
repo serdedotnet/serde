@@ -1,4 +1,3 @@
-
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -9,6 +8,70 @@ namespace Serde.Test
 {
     public class SerializeTests
     {
+        [Fact]
+        public Task Inheritance()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+partial class A
+{
+    public int X;
+}
+
+[GenerateSerialize]
+partial class B : A
+{
+    public int Y;
+}
+
+[GenerateSerialize]
+partial class C : B
+{
+    public int Z;
+}
+""";
+            return VerifySerialize(src);
+        }
+
+        [Fact]
+        public Task MemberOverrides()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+partial record A(int X);
+
+[GenerateSerialize]
+partial record B(int X, int Y) : A(X);
+""";
+            return VerifySerialize(src);
+        }
+
+        [Fact]
+        public Task HiddenMembers()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize]
+partial class A
+{
+    public int X { get; }
+}
+
+[GenerateSerialize]
+partial class B : A
+{
+    public new int X { get; }
+    public int Y { get; }
+}
+""";
+            return VerifySerialize(src);
+        }
+
         [Fact]
         public Task NestedExplicitSerializeWrapper()
         {

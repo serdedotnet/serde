@@ -23,33 +23,44 @@ namespace Serde
 
         public static List<DataMemberSymbol> GetDataMembers(ITypeSymbol type, SerdeUsage usage)
         {
-            var typeOptions = GetTypeOptions(type);
             var members = new List<DataMemberSymbol>();
-            foreach (var m in type.GetMembers())
+            var curType = type;
+            while (curType is not ({ SpecialType: SpecialType.System_Object } or null))
             {
-                if (m is not {
-                        DeclaredAccessibility: Accessibility.Public,
-                        Kind: SymbolKind.Field or SymbolKind.Property })
+                var typeOptions = GetTypeOptions(curType);
+                foreach (var m in curType.GetMembers())
                 {
-                    continue;
+                    if (m is not {
+                            DeclaredAccessibility: Accessibility.Public,
+                            Kind: SymbolKind.Field or SymbolKind.Property })
+                    {
+                        continue;
+                    }
+                    if (members.FindIndex(m2 => m2.Symbol.Name == m.Name) != -1)
+                    {
+                        // If we already have a member with the same name, the derived type is
+                        // hiding the base type member.
+                        continue;
+                    }
+                    if (m is IPropertySymbol { Parameters: { Length: > 0 } })
+                    {
+                        // Skip indexers
+                        continue;
+                    }
+                    if (curType.TypeKind != TypeKind.Enum && m.IsStatic)
+                    {
+                        continue;
+                    }
+                    var memberOptions = GetMemberOptions(m);
+                    if (memberOptions.Skip ||
+                        (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize) ||
+                        (memberOptions.SkipDeserialize && usage == SerdeUsage.Deserialize))
+                    {
+                        continue;
+                    }
+                    members.Add(new DataMemberSymbol(m, typeOptions, memberOptions));
                 }
-                if (m is IPropertySymbol { Parameters: { Length: > 0 } })
-                {
-                    // Skip indexers
-                    continue;
-                }
-                if (type.TypeKind != TypeKind.Enum && m.IsStatic)
-                {
-                    continue;
-                }
-                var memberOptions = GetMemberOptions(m);
-                if (memberOptions.Skip ||
-                    (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize) ||
-                    (memberOptions.SkipDeserialize && usage == SerdeUsage.Deserialize))
-                {
-                    continue;
-                }
-                members.Add(new DataMemberSymbol(m, typeOptions, memberOptions));
+                curType = curType.BaseType;
             }
             return members;
         }
