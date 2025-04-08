@@ -28,7 +28,7 @@ var deserialized = JsonSerializer.Deserialize<SampleClass>(output);
 // prints SampleClass { X = 3, Y = sample }
 Console.WriteLine(deserialized);
 
-[GenerateSerialize, GenerateDeserialize]
+[GenerateSerde]
 partial record SampleClass
 {
     // automatically includes public properties and fields
