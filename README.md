@@ -8,11 +8,13 @@ For an overview, see [Overview](https://serdedotnet.github.io/overview.html).
 Start by adding the `serde` NuGet package:
 
 ```bash
-dotnet add package serde --prerelease
+dotnet add package serde
 ```
 
-You can now use the `[GenerateSerialize]` and `[GenerateDeserialize]` attributes to automatically implement serialization and
-deserialization for your own types. Don't forget to mark them `partial`!
+To generate serialization/deserialization info for a type, now do the following:
+1. Mark the type partial
+2. Add the `[GenerateSerde]` attribute
+
 
 ```csharp
 using Serde;
