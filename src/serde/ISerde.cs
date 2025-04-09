@@ -26,11 +26,6 @@ public interface ISerdeProvider<TSelf, T> : ISerdeProvider<TSelf, ISerde<T>, T>
 
 /// <summary>
 /// Provider interface for retrieving the serialization and deserialization objects for a type.
-/// Assumes that the type is its own provider, which is the case for most types.
 /// </summary>
-/// <typeparam name="TSelf">
-/// The type that implements this interface.
-/// </typeparam>
-public interface ISerdeProvider<TSelf> : ISerdeProvider<TSelf, ISerde<TSelf>, TSelf>
-    where TSelf : ISerdeProvider<TSelf>
+public interface ISerdeProvider<T> : ISerializeProvider<T>, IDeserializeProvider<T>
 { }

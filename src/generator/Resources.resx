@@ -142,4 +142,7 @@
 - With only private constructors
 - With one or more nested records that inherit from the parent record</value>
   </data>
+  <data name="ERR_CantFindTypeParameter" xml:space="preserve">
+    <value>Could not find type parameter named '{0}' in the current context.</value>
+  </data>
 </root>

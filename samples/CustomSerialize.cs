@@ -10,6 +10,10 @@ partial record Color(int R, int G, int B);
 partial record Color : ISerdeProvider<Color>
 {
     public static ISerde<Color> Instance { get; } = new ColorSerdeObj();
+
+    static ISerialize<Color> ISerializeProvider<Color>.Instance => Instance;
+
+    static IDeserialize<Color> IDeserializeProvider<Color>.Instance => Instance;
 }
 
 // Create a serde object for the Color type that serializes as a hex string

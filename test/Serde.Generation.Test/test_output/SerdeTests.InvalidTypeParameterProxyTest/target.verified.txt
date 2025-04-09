@@ -1,0 +1,94 @@
+﻿{
+  Diagnostics: [
+    {
+      Id: ERR_CantFindTypeParameter,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (6,14)-(6,20),
+      MessageFormat: Could not find type parameter named 'NonExistentProxy' in the current context.,
+      Message: Could not find type parameter named 'NonExistentProxy' in the current context.,
+      Category: Serde
+    },
+    {
+      Id: ERR_CantFindTypeParameter,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (9,14)-(9,20),
+      MessageFormat: Could not find type parameter named 'NonExistentProxy' in the current context.,
+      Message: Could not find type parameter named 'NonExistentProxy' in the current context.,
+      Category: Serde
+    },
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (6,14)-(6,20),
+      MessageFormat: The member 'InvalidProxyTest<T>.Value1's return type 'T?' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T?, or specify a proxy type.,
+      Message: The member 'InvalidProxyTest<T>.Value1's return type 'T?' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T?, or specify a proxy type.,
+      Category: Serde
+    },
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (9,14)-(9,20),
+      MessageFormat: The member 'InvalidProxyTest<T>.Value2's return type 'T?' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T?, or specify a proxy type.,
+      Message: The member 'InvalidProxyTest<T>.Value2's return type 'T?' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T?, or specify a proxy type.,
+      Category: Serde
+    },
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (12,14)-(12,20),
+      MessageFormat: The member 'InvalidProxyTest<T>.Value3's return type 'T?' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T?, or specify a proxy type.,
+      Message: The member 'InvalidProxyTest<T>.Value3's return type 'T?' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T?, or specify a proxy type.,
+      Category: Serde
+    },
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (6,14)-(6,20),
+      MessageFormat: The member 'InvalidProxyTest<T>.Value1's return type 'T?' doesn't implement Serde.IDeserializeProvider<T>. Either implement 'Serde.IDeserializeProvider<T>' on T?, or specify a proxy type.,
+      Message: The member 'InvalidProxyTest<T>.Value1's return type 'T?' doesn't implement Serde.IDeserializeProvider<T>. Either implement 'Serde.IDeserializeProvider<T>' on T?, or specify a proxy type.,
+      Category: Serde
+    },
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (9,14)-(9,20),
+      MessageFormat: The member 'InvalidProxyTest<T>.Value2's return type 'T?' doesn't implement Serde.IDeserializeProvider<T>. Either implement 'Serde.IDeserializeProvider<T>' on T?, or specify a proxy type.,
+      Message: The member 'InvalidProxyTest<T>.Value2's return type 'T?' doesn't implement Serde.IDeserializeProvider<T>. Either implement 'Serde.IDeserializeProvider<T>' on T?, or specify a proxy type.,
+      Category: Serde
+    },
+    {
+      Id: ERR_CantFindTypeParameter,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (12,14)-(12,20),
+      MessageFormat: Could not find type parameter named 'NonExistentProxy' in the current context.,
+      Message: Could not find type parameter named 'NonExistentProxy' in the current context.,
+      Category: Serde
+    },
+    {
+      Id: ERR_DoesntImplementInterface,
+      Title: ,
+      Severity: Error,
+      WarningLevel: 0,
+      Location: : (12,14)-(12,20),
+      MessageFormat: The member 'InvalidProxyTest<T>.Value3's return type 'T?' doesn't implement Serde.IDeserializeProvider<T>. Either implement 'Serde.IDeserializeProvider<T>' on T?, or specify a proxy type.,
+      Message: The member 'InvalidProxyTest<T>.Value3's return type 'T?' doesn't implement Serde.IDeserializeProvider<T>. Either implement 'Serde.IDeserializeProvider<T>' on T?, or specify a proxy type.,
+      Category: Serde
+    }
+  ]
+}
