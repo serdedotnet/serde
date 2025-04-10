@@ -62,8 +62,15 @@ namespace Serde.Json
 
         private JsonValue() { }
 
+        public static implicit operator JsonValue(bool b) => new Bool(b);
         public static implicit operator JsonValue(int i) => new Number(i);
-        public static implicit operator JsonValue(string s) => new String(s);
+        public static implicit operator JsonValue(long l) => new Number(l);
+        public static implicit operator JsonValue(double d) => new Number(d);
+        public static implicit operator JsonValue(string? s) => s is null
+            ? JsonValue.Null.Instance
+            : new String(s);
+        public static implicit operator JsonValue(Dictionary<string, JsonValue> d) => new Object(d);
+        public static implicit operator JsonValue(List<JsonValue> a) => new Array(a);
 
         partial record Number
         {
