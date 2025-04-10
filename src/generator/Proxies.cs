@@ -272,7 +272,7 @@ sealed partial class {{proxyName}}
         if (TryGetExplicitProxyType(member, usage, context) is {} proxyType)
         {
             var memberType = member.Type;
-            if (proxyType.IsGenericType && proxyType.Equals(proxyType.OriginalDefinition, SymbolEqualityComparer.Default))
+            if (proxyType is INamedTypeSymbol { IsGenericType: true } && proxyType.Equals(proxyType.OriginalDefinition, SymbolEqualityComparer.Default))
             {
                 // If the wrapper type is an unconstructed generic type which we need to construct
                 // with the appropriate wrappers for the member type's type arguments.
@@ -303,7 +303,7 @@ sealed partial class {{proxyName}}
         // Looks to see if the given member or its type explicitly specifies a wrapper to use via
         // the SerdeType or Member options. If so, returns the symbol of the wrapper type.
         // </summary>
-        static INamedTypeSymbol? TryGetExplicitProxyType(DataMemberSymbol member, SerdeUsage usage, GeneratorExecutionContext context)
+        static ITypeSymbol? TryGetExplicitProxyType(DataMemberSymbol member, SerdeUsage usage, GeneratorExecutionContext context)
         {
             // Look first for a wrapper attribute on the member being serialized, and then for a
             // wrapper attribute
@@ -311,7 +311,7 @@ sealed partial class {{proxyName}}
             return GetSerdeProxyType(member.Symbol, typeToWrap, usage, context)
                 ?? GetSerdeProxyType(member.Type, typeToWrap, usage, context);
 
-            static INamedTypeSymbol? GetSerdeProxyType(ISymbol symbol, ITypeSymbol typeToWrap, SerdeUsage usage, GeneratorExecutionContext context)
+            static ITypeSymbol? GetSerdeProxyType(ISymbol symbol, ITypeSymbol typeToWrap, SerdeUsage usage, GeneratorExecutionContext context)
             {
                 foreach (var attr in symbol.GetAttributes())
                 {
@@ -360,6 +360,82 @@ sealed partial class {{proxyName}}
                                 {
                                     return wrapperType2;
                                 }
+
+                                case
+                                {
+                                    Key: nameof(SerdeMemberOptions.TypeParameterProxy),
+                                    Value.Value: string typeParamName
+                                }:
+                                {
+                                    var typeParam = FindContainingTypeParamWithName(symbol, typeParamName);
+                                    if (typeParam is not null)
+                                    {
+                                        return typeParam;
+                                    }
+                                    // If we didn't find the type parameter, report an error
+                                    context.ReportDiagnostic(CreateDiagnostic(
+                                        DiagId.ERR_CantFindTypeParameter,
+                                        symbol.Locations[0],
+                                        typeParamName));
+                                    break;
+                                }
+
+                                case
+                                {
+                                    Key: nameof(SerdeMemberOptions.SerializeTypeParameterProxy),
+                                    Value.Value: string typeParamName
+                                } when usage.HasFlag(SerdeUsage.Serialize):
+                                {
+                                    var typeParam = FindContainingTypeParamWithName(symbol, typeParamName);
+                                    if (typeParam is not null)
+                                    {
+                                        return typeParam;
+                                    }
+                                    // If we didn't find the type parameter, report an error
+                                    context.ReportDiagnostic(CreateDiagnostic(
+                                        DiagId.ERR_CantFindTypeParameter,
+                                        symbol.Locations[0],
+                                        typeParamName));
+                                    break;
+                                }
+
+                                case
+                                {
+                                    Key: nameof(SerdeMemberOptions.DeserializeTypeParameterProxy),
+                                    Value.Value: string typeParamName
+                                } when usage.HasFlag(SerdeUsage.Deserialize):
+                                {
+                                    var typeParam = FindContainingTypeParamWithName(symbol, typeParamName);
+                                    if (typeParam is not null)
+                                    {
+                                        return typeParam;
+                                    }
+                                    // If we didn't find the type parameter, report an error
+                                    context.ReportDiagnostic(CreateDiagnostic(
+                                        DiagId.ERR_CantFindTypeParameter,
+                                        symbol.Locations[0],
+                                        typeParamName));
+                                    break;
+                                }
+                            }
+
+                            // Walk up the containing types to find a type parameter with the given name.
+                            static ITypeSymbol? FindContainingTypeParamWithName(ISymbol current, string name)
+                            {
+                                var containing = current.ContainingType;
+                                while (containing is not null)
+                                {
+                                    var typeParams = containing.TypeParameters;
+                                    foreach (var t in typeParams)
+                                    {
+                                        if (t.Name == name)
+                                        {
+                                            return t;
+                                        }
+                                    }
+                                    containing = containing.ContainingType;
+                                }
+                                return null;
                             }
                         }
                     }

@@ -167,6 +167,27 @@ sealed class SerdeMemberOptions : Attribute
     /// Proxy type for the IDeserialize implementation.
     /// </summary>
     public Type? DeserializeProxy { get; init; } = null;
+
+    /// <summary>
+    /// The name of the type parameter to use for the proxy type.  This is different from <see
+    /// cref="Proxy" /> in that it is only used for type parameters, which can't appear as `typeof`
+    /// arguments to attributes in C#.
+    /// </summary>
+    public string? TypeParameterProxy { get; init; } = null;
+
+    /// <summary>
+    /// The name of the type parameter to use for the proxy type.  This is different from <see
+    /// cref="Proxy" /> in that it is only used for type parameters, which can't appear as `typeof`
+    /// arguments to attributes in C#.
+    /// </summary>
+    public string? SerializeTypeParameterProxy { get; init; } = null;
+
+    /// <summary>
+    /// The name of the type parameter to use for the proxy type.  This is different from <see
+    /// cref="Proxy" /> in that it is only used for type parameters, which can't appear as `typeof`
+    /// arguments to attributes in C#.
+    /// </summary>
+    public string? DeserializeTypeParameterProxy { get; init; } = null;
 }
 
 /// <summary>
