@@ -198,5 +198,12 @@ partial class JsonDeserializer<TReader>
             _index++;
             return v;
         }
+
+        public DateTimeOffset ReadDateTimeOffset(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadDateTimeOffset();
+            _index++;
+            return v;
+        }
     }
 }

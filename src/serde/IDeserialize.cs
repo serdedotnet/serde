@@ -46,6 +46,7 @@ public interface IDeserializer : IDisposable
     double ReadF64();
     decimal ReadDecimal();
     string ReadString();
+    DateTimeOffset ReadDateTimeOffset();
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
 
@@ -100,6 +101,7 @@ public interface ITypeDeserializer
     double ReadF64(ISerdeInfo info, int index);
     decimal ReadDecimal(ISerdeInfo info, int index);
     string ReadString(ISerdeInfo info, int index);
+    DateTimeOffset ReadDateTimeOffset(ISerdeInfo info, int index);
 }
 
 public static class ITypeDeserializerExt

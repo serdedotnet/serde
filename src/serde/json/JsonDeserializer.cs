@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Serde.IO;
@@ -182,6 +183,12 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
     }
 
     public char ReadChar() => ReadString().Single();
+
+    public DateTimeOffset ReadDateTimeOffset()
+    {
+        var s = ReadString();
+        return DateTimeOffset.Parse(s, formatProvider: null, styles: DateTimeStyles.RoundtripKind);
+    }
 
     public void Eof()
     {

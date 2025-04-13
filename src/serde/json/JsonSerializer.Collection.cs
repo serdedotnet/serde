@@ -84,6 +84,11 @@ partial class JsonSerializer
             serializer.WriteNull();
         }
 
+        public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt)
+        {
+            serializer.WriteDateTimeOffset(dt);
+        }
+
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
             where T : class?
         {
@@ -98,24 +103,16 @@ partial class JsonSerializer
         public void WriteChar(char c) => throw new KeyNotStringException();
         public void WriteU8(byte b) => throw new KeyNotStringException();
         public void WriteU16(ushort u16) => throw new KeyNotStringException();
-
         public void WriteU32(uint u32) => throw new KeyNotStringException();
-
         public void WriteU64(ulong u64) => throw new KeyNotStringException();
-
         public void WriteI8(sbyte b) => throw new KeyNotStringException();
-
         public void WriteI16(short i16) => throw new KeyNotStringException();
-
         public void WriteI32(int i32) => throw new KeyNotStringException();
-
         public void WriteI64(long i64) => throw new KeyNotStringException();
-
         public void WriteF32(float f) => throw new KeyNotStringException();
-
         public void WriteF64(double d) => throw new KeyNotStringException();
-
         public void WriteDecimal(decimal d) => throw new KeyNotStringException();
+        public void WriteDateTimeOffset(DateTimeOffset dt) => throw new KeyNotStringException();
 
         public void WriteString(string s)
         {
@@ -152,6 +149,7 @@ partial class JsonSerializer
         public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => GetSerializer(index).WriteU32(u32);
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => GetSerializer(index).WriteU64(u64);
         public void WriteU8(ISerdeInfo typeInfo, int index, byte b) => GetSerializer(index).WriteU8(b);
+        public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => GetSerializer(index).WriteDateTimeOffset(dt);
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
             where T : class?
             => serialize.Serialize(value, GetSerializer(index));

@@ -27,8 +27,8 @@ namespace Serde.Test
         public short ShortField;
         public int IntField;
         public long LongField;
-
         public string StringField = "StringValue";
+        public DateTimeOffset DateTimeOffsetField;
 
         public required string EscapedStringField;
 
@@ -64,6 +64,7 @@ namespace Serde.Test
                 IntField == other.IntField &&
                 LongField == other.LongField &&
                 StringField == other.StringField &&
+                DateTimeOffsetField == other.DateTimeOffsetField &&
                 EscapedStringField == other.EscapedStringField &&
                 NullStringField == other.NullStringField &&
                 UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
@@ -103,8 +104,9 @@ namespace Serde.Test
             ShortField = short.MaxValue,
             IntField = int.MaxValue,
             LongField = long.MaxValue,
-
             StringField = "StringValue",
+            DateTimeOffsetField = new DateTimeOffset(2040, 1, 1, 1, 1, 1, TimeSpan.Zero),
+
             EscapedStringField = "+0 11 222 333 44",
 
             UIntArr = new uint[] { 1, 2, 3 },
@@ -128,6 +130,7 @@ namespace Serde.Test
   "intField": 2147483647,
   "longField": 9223372036854775807,
   "stringField": "StringValue",
+  "dateTimeOffsetField": "2040-01-01T01:01:01\u002B00:00",
   "escapedStringField": "\u002B0 11 222 333 44",
   "uIntArr": [
     1,

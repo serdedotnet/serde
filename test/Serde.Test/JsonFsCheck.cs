@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using FsCheck;
@@ -12,6 +13,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Emit;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -20,6 +22,18 @@ namespace Serde.Test
     public class JsonFsCheck
     {
         private static readonly EmitOptions s_emitOptions = new EmitOptions();
+        private static readonly ReferenceAssemblies s_latestTfRefs =
+            new ReferenceAssemblies(
+                "net8.0",
+                new PackageIdentity("Microsoft.NETCore.App.Ref", "8.0.6"),
+                Path.Combine("ref", "net8.0"))
+            .WithNuGetConfigFilePath(Path.Combine(
+                GetDirectoryPath(),
+                "..",
+                "..",
+                "NuGet.config"));
+
+        private static string GetDirectoryPath([CallerFilePath]string path = "") => Path.GetDirectoryName(path)!;
 
         /// <summary>
         /// Types made up of built-ins should serialize with the same output
@@ -117,7 +131,7 @@ namespace Serde.Test
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
                syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
-               references: (await Config.LatestTfRefs.ResolveAsync(null, default)).Concat(refs),
+               references: (await s_latestTfRefs.ResolveAsync(null, default)).Concat(refs),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
             var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });
@@ -374,6 +388,13 @@ public static class DeepEquals
         {
             public sealed override SyntaxKind SyntaxKind => SyntaxKind.DecimalKeyword;
         }
+        public sealed record TestDateTimeOffset : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("DateTimeOffset");
+            public override ExpressionSyntax Value(int typeIndex) => ParseExpression(
+                "new DateTimeOffset(2023, 1, 1, 1, 1, 1, TimeSpan.Zero)"
+            );
+        }
         public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType
         {
             public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName(TypeName(typeIndex));
@@ -474,6 +495,7 @@ public static class DeepEquals
                     Gen.Constant<TestType>(new TestInt()),
                     Gen.Constant<TestType>(new TestDouble()),
                     Gen.Constant<TestType>(new TestDecimal()),
+                    Gen.Constant<TestType>(new TestDateTimeOffset()),
                 });
 
             public static Gen<TestType> GenType(int size)

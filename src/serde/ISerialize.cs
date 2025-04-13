@@ -89,6 +89,7 @@ public interface ISerializer
     void WriteDecimal(decimal d);
     void WriteString(string s);
     void WriteNull();
+    void WriteDateTimeOffset(DateTimeOffset dt);
 
     /// <summary>
     /// Write a collection type -- either a list or a dictionary.
@@ -171,6 +172,7 @@ public interface ITypeSerializer
     void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);
     void WriteString(ISerdeInfo typeInfo, int index, string s);
     void WriteNull(ISerdeInfo typeInfo, int index);
+    void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt);
 
     /// <summary>
     /// Write an arbitrary value with custom serialization. For reference types this method may be

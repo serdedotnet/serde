@@ -1,3 +1,4 @@
+using System;
 using static Serde.Json.ThrowHelpers;
 
 namespace Serde.Json;
@@ -137,6 +138,11 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
     {
         ReadColon();
         return this.ReadString();
+    }
+    DateTimeOffset ITypeDeserializer.ReadDateTimeOffset(ISerdeInfo info, int index)
+    {
+        ReadColon();
+        return ReadDateTimeOffset();
     }
 
     void ITypeDeserializer.SkipValue(ISerdeInfo info, int index)

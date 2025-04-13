@@ -1,5 +1,7 @@
 // Contains implementations of data interfaces for core types
 
+using System;
+
 namespace Serde;
 
 internal interface ISerdePrimitive<TSelf, T>
@@ -424,4 +426,24 @@ public static class NullableRefProxy
             return deserializer.ReadNullableRef(_de);
         }
     }
+}
+
+public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, DateTimeOffset>
+{
+    public static DateTimeOffsetProxy Instance { get; } = new();
+    private DateTimeOffsetProxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("DateTime");
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    void ISerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ISerializer serializer)
+        => serializer.WriteDateTimeOffset(value);
+    DateTimeOffset IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer)
+        => deserializer.ReadDateTimeOffset();
+
+    void ITypeSerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        => serializer.WriteDateTimeOffset(info, index, value);
+
+    DateTimeOffset ITypeDeserialize<DateTimeOffset>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        => deserializer.ReadDateTimeOffset(info, index);
 }

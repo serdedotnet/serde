@@ -29,6 +29,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
             int _l_intfield = default!;
             long _l_longfield = default!;
             string _l_stringfield = default!;
+            System.DateTimeOffset _l_datetimeoffsetfield = default!;
             string _l_escapedstringfield = default!;
             string? _l_nullstringfield = default!;
             uint[] _l_uintarr = default!;
@@ -90,28 +91,32 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 10;
                         break;
                     case 11:
-                        _l_escapedstringfield = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_datetimeoffsetfield = typeDeserialize.ReadDateTimeOffset(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 11;
                         break;
                     case 12:
-                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
+                        _l_escapedstringfield = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 12;
                         break;
                     case 13:
-                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayProxy.De<uint, global::Serde.U32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 13;
                         break;
                     case 14:
-                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayProxy.De<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>>(_l_serdeInfo, _l_index_);
+                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayProxy.De<uint, global::Serde.U32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 14;
                         break;
                     case 15:
-                        _l_intimm = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayProxy.De<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 15;
                         break;
                     case 16:
-                        _l_color = typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
+                        _l_intimm = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 16;
+                        break;
+                    case 17:
+                        _l_color = typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((uint)1) << 17;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -120,7 +125,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b11110111111111111) != 0b11110111111111111)
+            if ((_r_assignedValid & 0b111101111111111111) != 0b111101111111111111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
@@ -136,6 +141,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                 IntField = _l_intfield,
                 LongField = _l_longfield,
                 StringField = _l_stringfield,
+                DateTimeOffsetField = _l_datetimeoffsetfield,
                 EscapedStringField = _l_escapedstringfield,
                 NullStringField = _l_nullstringfield,
                 UIntArr = _l_uintarr,
