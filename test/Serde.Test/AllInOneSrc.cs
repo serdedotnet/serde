@@ -29,6 +29,7 @@ namespace Serde.Test
         public long LongField;
         public string StringField = "StringValue";
         public DateTimeOffset DateTimeOffsetField;
+        public Guid GuidField;
 
         public required string EscapedStringField;
 
@@ -66,6 +67,7 @@ namespace Serde.Test
                 StringField == other.StringField &&
                 DateTimeOffsetField == other.DateTimeOffsetField &&
                 EscapedStringField == other.EscapedStringField &&
+                GuidField.Equals(other.GuidField) &&
                 NullStringField == other.NullStringField &&
                 UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
                 NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
@@ -106,6 +108,12 @@ namespace Serde.Test
             LongField = long.MaxValue,
             StringField = "StringValue",
             DateTimeOffsetField = new DateTimeOffset(2040, 1, 1, 1, 1, 1, TimeSpan.Zero),
+            GuidField = new Guid(new byte[] {
+                0x01, 0x02, 0x03, 0x04,
+                0x05, 0x06, 0x07, 0x08,
+                0x09, 0x0A, 0x0B, 0x0C,
+                0x0D, 0x0E, 0x0F, 0x10,
+            }),
 
             EscapedStringField = "+0 11 222 333 44",
 
@@ -131,6 +139,7 @@ namespace Serde.Test
   "longField": 9223372036854775807,
   "stringField": "StringValue",
   "dateTimeOffsetField": "2040-01-01T01:01:01\u002B00:00",
+  "guidField": "04030201-0605-0807-090a-0b0c0d0e0f10",
   "escapedStringField": "\u002B0 11 222 333 44",
   "uIntArr": [
     1,

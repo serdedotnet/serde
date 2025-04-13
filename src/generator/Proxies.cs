@@ -103,11 +103,25 @@ sealed partial class {{proxyName}}
     // If the target is a core type, we can wrap it
     internal static TypeWithProxy? TryGetPrimitiveProxy(ITypeSymbol type)
     {
-        return TryGetPrimitiveName(type).Map<string, TypeWithProxy>(name =>
+        var primNameProxy = TryGetPrimitiveName(type).Map<string, TypeWithProxy>(name =>
         {
             var proxy = GetProxyName(name);
             return new(name, $"global::Serde.{proxy}");
         });
+        if (primNameProxy is not null)
+        {
+            return primNameProxy;
+        }
+        // These are types that have proxies, but not dedicated methods on ISerialize/IDeserialize
+        return type switch
+        {
+            { Name: "Guid",
+              ContainingNamespace: {
+                Name: "System",
+                ContainingNamespace: { IsGlobalNamespace: true } } }
+            => new("global::System.Guid", "global::Serde.GuidProxy"),
+            _ => null
+        };
     }
 
     private static TypeWithProxy? TryGetCompoundWrapper(

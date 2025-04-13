@@ -1,6 +1,9 @@
 // Contains implementations of data interfaces for core types
 
 using System;
+using System.Buffers;
+using System.Buffers.Text;
+using System.Text.Json;
 
 namespace Serde;
 
@@ -446,4 +449,37 @@ public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, D
 
     DateTimeOffset ITypeDeserialize<DateTimeOffset>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadDateTimeOffset(info, index);
+}
+
+public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
+{
+    public static GuidProxy Instance { get; } = new();
+    private GuidProxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("Guid");
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    void ISerialize<Guid>.Serialize(Guid value, ISerializer serializer)
+    {
+        var bytes = value.ToString();
+        serializer.WriteString(bytes);
+    }
+
+    Guid IDeserialize<Guid>.Deserialize(IDeserializer deserializer)
+    {
+        var bytes = deserializer.ReadString();
+        return Guid.Parse(bytes);
+    }
+
+    void ITypeSerialize<Guid>.Serialize(Guid value, ITypeSerializer serializer, ISerdeInfo info, int index)
+    {
+        var bytes = value.ToString();
+        serializer.WriteString(info, index, bytes);
+    }
+
+    Guid ITypeDeserialize<Guid>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    {
+        var bytes = deserializer.ReadString(info, index);
+        return Guid.Parse(bytes);
+    }
 }
