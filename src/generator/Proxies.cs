@@ -120,6 +120,11 @@ sealed partial class {{proxyName}}
                 Name: "System",
                 ContainingNamespace: { IsGlobalNamespace: true } } }
             => new("global::System.Guid", "global::Serde.GuidProxy"),
+            { Name: "DateTime",
+              ContainingNamespace: {
+                Name: "System",
+                ContainingNamespace: { IsGlobalNamespace: true } } }
+            => new("global::System.DateTime", "global::Serde.DateTimeProxy"),
             _ => null
         };
     }

@@ -483,3 +483,21 @@ public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
         return Guid.Parse(bytes);
     }
 }
+
+public sealed class DateTimeProxy : ISerdePrimitive<DateTimeProxy, DateTime>
+{
+    public static DateTimeProxy Instance { get; } = new();
+    private DateTimeProxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("DateTime");
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    void ISerialize<DateTime>.Serialize(DateTime value, ISerializer serializer)
+        => serializer.WriteDateTimeOffset(value);
+    void ITypeSerialize<DateTime>.Serialize(DateTime value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        => serializer.WriteDateTimeOffset(info, index, value);
+    DateTime IDeserialize<DateTime>.Deserialize(IDeserializer deserializer)
+        => deserializer.ReadDateTimeOffset().DateTime;
+    DateTime ITypeDeserialize<DateTime>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        => deserializer.ReadDateTimeOffset(info, index).DateTime;
+}
