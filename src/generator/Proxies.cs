@@ -68,7 +68,7 @@ sealed partial class {{proxyName}}
         {
             return null;
         }
-        return type.SpecialType switch
+        var spTypeMatch = type.SpecialType switch
         {
             SpecialType.System_Boolean => "Bool",
             SpecialType.System_Byte => "U8",
@@ -86,6 +86,18 @@ sealed partial class {{proxyName}}
             SpecialType.System_UInt64 => "U64",
             _ => null,
         };
+        if (spTypeMatch is not null)
+        {
+            return spTypeMatch;
+        }
+        if (type is { Name: "DateTimeOffset",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "DateTimeOffset";
+        }
+        return null;
     }
 
     // If the target is a core type, we can wrap it
