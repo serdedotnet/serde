@@ -29,6 +29,7 @@ namespace Serde.Test
         public long LongField;
         public string StringField = "StringValue";
         public DateTimeOffset DateTimeOffsetField;
+        public DateTime DateTimeField;
         public Guid GuidField;
 
         public required string EscapedStringField;
@@ -66,6 +67,7 @@ namespace Serde.Test
                 LongField == other.LongField &&
                 StringField == other.StringField &&
                 DateTimeOffsetField == other.DateTimeOffsetField &&
+                DateTimeField == other.DateTimeField &&
                 EscapedStringField == other.EscapedStringField &&
                 GuidField.Equals(other.GuidField) &&
                 NullStringField == other.NullStringField &&
@@ -108,6 +110,7 @@ namespace Serde.Test
             LongField = long.MaxValue,
             StringField = "StringValue",
             DateTimeOffsetField = new DateTimeOffset(2040, 1, 1, 1, 1, 1, TimeSpan.Zero),
+            DateTimeField = new DateTime(2040, 1, 1, 1, 1, 1, DateTimeKind.Utc),
             GuidField = new Guid(new byte[] {
                 0x01, 0x02, 0x03, 0x04,
                 0x05, 0x06, 0x07, 0x08,
@@ -139,6 +142,7 @@ namespace Serde.Test
   "longField": 9223372036854775807,
   "stringField": "StringValue",
   "dateTimeOffsetField": "2040-01-01T01:01:01\u002B00:00",
+  "dateTimeField": "2040-01-01T01:01:01\u002B00:00",
   "guidField": "04030201-0605-0807-090a-0b0c0d0e0f10",
   "escapedStringField": "\u002B0 11 222 333 44",
   "uIntArr": [
