@@ -423,7 +423,7 @@ public static class SWrap
         public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
             ""S"",
             typeof(S<>).GetCustomAttributesData(),
-            new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
+            new (string, ISerdeInfo, System.Reflection.MemberInfo?)[] {
                 (""s"", Serde.SerdeInfoProvider.GetSerializeInfo<T, TWrap>(), typeof(S<>).GetField(""Field"")) });
 
         void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
@@ -468,7 +468,7 @@ public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
     public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
         ""S"",
         typeof(S<>).GetCustomAttributesData(),
-        new (string, ISerdeInfo, System.Reflection.MemberInfo)[] {
+        new (string, ISerdeInfo, System.Reflection.MemberInfo?)[] {
             (""s"", SerdeInfoProvider.GetSerializeInfo<T, TWrap>(), typeof(S<>).GetField(""Field"")) });
 
     void ISerialize<S<T>>.Serialize(S<T> value, ISerializer serializer)
@@ -566,7 +566,7 @@ using Serde;
 [GenerateSerialize]
 partial class C<T>
 {
-    public T Field;
+    public required T Field;
 }
 """;
             return VerifySerialize(src);

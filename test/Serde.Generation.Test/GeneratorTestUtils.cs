@@ -70,7 +70,10 @@ namespace Serde.Test
             Compilation comp = await CreateCompilation(src, additionalRefs);
             driver = driver.RunGeneratorsAndUpdateCompilation(comp, out comp, out _);
             var verify = Verifier.Verify(driver, settings);
-            var diags = comp.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+            var diags = comp.GetDiagnostics()
+                .Where(d => d.Severity >= DiagnosticSeverity.Warning)
+                .Where(d => d.Id != "CS0649")
+                .ToList();
             if (diags.Any())
             {
                 return new[] { await verify.AppendContentAsFile(SerializeDiagnostics(diags), name: "FinalDiagnostics") };
@@ -130,7 +133,8 @@ namespace Serde.Test
                 Guid.NewGuid().ToString(),
                 new[] { CSharpSyntaxTree.ParseText(src) },
                 references: refs,
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                    .WithNullableContextOptions(NullableContextOptions.Enable));
         }
     }
 }
