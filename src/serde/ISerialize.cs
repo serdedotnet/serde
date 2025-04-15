@@ -217,9 +217,9 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value,
+        T? value,
         ISerialize<T> proxy)
-        where T : class?
+        where T : class
     {
         if (value is null)
         {
@@ -235,8 +235,8 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value)
-        where T : class?
+        T? value)
+        where T : class
         where TProvider : ISerializeProvider<T>
         => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 
