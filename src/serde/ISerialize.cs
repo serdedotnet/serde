@@ -217,9 +217,9 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value,
+        T? value,
         ISerialize<T> proxy)
-        where T : class?
+        where T : class
     {
         if (value is null)
         {
