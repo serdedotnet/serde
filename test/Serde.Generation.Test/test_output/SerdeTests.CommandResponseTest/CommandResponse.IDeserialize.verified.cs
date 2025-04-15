@@ -18,7 +18,7 @@ partial class CommandResponse<TResult, TProxy> : Serde.IDeserializeProvider<Comm
             int _l_status = default!;
             string _l_message = default!;
             System.Collections.Generic.List<ArgumentInfo>? _l_arguments = default!;
-            TResult? _l_results = default!;
+            TResult _l_results = default!;
             long _l_duration = default!;
 
             byte _r_assignedValid = 0;
@@ -43,7 +43,7 @@ partial class CommandResponse<TResult, TProxy> : Serde.IDeserializeProvider<Comm
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 3:
-                        _l_results = typeDeserialize.ReadValue<TResult?, TProxy>(_l_serdeInfo, _l_index_);
+                        _l_results = typeDeserialize.ReadValue<TResult, TProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 3;
                         break;
                     case 4:
@@ -57,7 +57,7 @@ partial class CommandResponse<TResult, TProxy> : Serde.IDeserializeProvider<Comm
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b10011) != 0b10011)
+            if ((_r_assignedValid & 0b11011) != 0b11011)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }

@@ -7,6 +7,24 @@ namespace Serde.Test;
 public class SerdeTests
 {
     [Fact]
+    public Task NestedNullable()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+public partial record SimpleRecord(int Id, string Name);
+
+[GenerateSerde]
+public partial record ComplexRecord(
+    int Id,
+    string? Description,
+    SimpleRecord? NestedRecord);
+""";
+        return VerifyMultiFile(src);
+    }
+
+    [Fact]
     public Task CommandResponseTest()
     {
         var src = """
@@ -25,7 +43,7 @@ public partial class CommandResponse<TResult, TProxy>
     public List<ArgumentInfo>? Arguments { get; set; }
 
     [SerdeMemberOptions(TypeParameterProxy = nameof(TProxy))]
-    public TResult? Results { get; set; }
+    public required TResult Results { get; set; }
 
     public long Duration { get; set; }
 }

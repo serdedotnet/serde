@@ -8,7 +8,7 @@ using static Serde.Test.GeneratorTestUtils;
 
 namespace Serde.Test
 {
-    public class WrapperTests
+    public class ProxyTests
     {
         [Fact]
         public Task ExplicitInvalidGenericWrapper()
@@ -321,16 +321,16 @@ public partial class Address
       behavior). */
    [XmlAttribute]
    [SerdeMemberOptions(ProvideAttributes = true)]
-   public string Name;
-   public string Line1;
+   public required string Name;
+   public required string Line1;
 
    /* Setting the IsNullable property to false instructs the
       XmlSerializer that the XML attribute will not appear if
       the City field is set to a null reference. */
    [XmlElementAttribute(IsNullable = false)]
-   public string City;
-   public string State;
-   public string Zip;
+   public required string City;
+   public required string State;
+   public required string Zip;
 }";
             return VerifyMultiFile(src);
         }
@@ -374,7 +374,7 @@ internal sealed partial class RecursiveWrap {}
 public partial record Parent
 {
     [SerdeMemberOptions(Proxy = typeof(RecursiveWrap))]
-    public Recursive R { get; init; }
+    public required Recursive R { get; init; }
 }
 """;
             await VerifyMultiFile(src, new[] { comp.EmitToImageReference() });
