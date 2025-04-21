@@ -90,6 +90,7 @@ public interface ISerializer
     void WriteString(string s);
     void WriteNull();
     void WriteDateTimeOffset(DateTimeOffset dt);
+    void WriteBytes(ReadOnlyMemory<byte> bytes);
 
     /// <summary>
     /// Write a collection type -- either a list or a dictionary.
@@ -173,6 +174,7 @@ public interface ITypeSerializer
     void WriteString(ISerdeInfo typeInfo, int index, string s);
     void WriteNull(ISerdeInfo typeInfo, int index);
     void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt);
+    void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes);
 
     /// <summary>
     /// Write an arbitrary value with custom serialization. For reference types this method may be

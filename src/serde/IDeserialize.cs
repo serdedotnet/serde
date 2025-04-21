@@ -1,5 +1,6 @@
 
 using System;
+using System.Buffers;
 
 namespace Serde;
 
@@ -47,6 +48,7 @@ public interface IDeserializer : IDisposable
     decimal ReadDecimal();
     string ReadString();
     DateTimeOffset ReadDateTimeOffset();
+    void ReadBytes(IBufferWriter<byte> writer);
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
 
@@ -102,6 +104,7 @@ public interface ITypeDeserializer
     decimal ReadDecimal(ISerdeInfo info, int index);
     string ReadString(ISerdeInfo info, int index);
     DateTimeOffset ReadDateTimeOffset(ISerdeInfo info, int index);
+    void ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
 }
 
 public static class ITypeDeserializerExt

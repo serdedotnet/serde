@@ -125,6 +125,8 @@ sealed partial class {{proxyName}}
                 Name: "System",
                 ContainingNamespace: { IsGlobalNamespace: true } } }
             => new("global::System.DateTime", "global::Serde.DateTimeProxy"),
+            IArrayTypeSymbol { ElementType: { SpecialType: SpecialType.System_Byte } }
+            => new("global::System.Byte[]", "global::Serde.ByteArrayProxy"),
             _ => null
         };
     }

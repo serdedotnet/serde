@@ -38,8 +38,9 @@ partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
             _l_type.WriteStringIfNotNull(_l_info, 15, value.NullStringField);
             _l_type.WriteValue<uint[], Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>(_l_info, 16, value.UIntArr);
             _l_type.WriteValue<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>(_l_info, 17, value.NestedArr);
-            _l_type.WriteBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 18, value.IntImm);
-            _l_type.WriteBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_info, 19, value.Color);
+            _l_type.WriteValue<global::System.Byte[], global::Serde.ByteArrayProxy>(_l_info, 18, value.ByteArr);
+            _l_type.WriteBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 19, value.IntImm);
+            _l_type.WriteBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_info, 20, value.Color);
             _l_type.End(_l_info);
         }
         public static readonly _SerObj Instance = new();

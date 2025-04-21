@@ -27,6 +27,7 @@ partial record AllInOne
         ("nullStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>(), typeof(Serde.Test.AllInOne).GetField("NullStringField")),
         ("uIntArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<uint[], Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>(), typeof(Serde.Test.AllInOne).GetField("UIntArr")),
         ("nestedArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>(), typeof(Serde.Test.AllInOne).GetField("NestedArr")),
+        ("byteArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte[], global::Serde.ByteArrayProxy>(), typeof(Serde.Test.AllInOne).GetField("ByteArr")),
         ("intImm", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(Serde.Test.AllInOne).GetField("IntImm")),
         ("color", global::Serde.SerdeInfoProvider.GetSerializeInfo<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(), typeof(Serde.Test.AllInOne).GetField("Color"))
     }

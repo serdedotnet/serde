@@ -490,6 +490,7 @@ public static class DeepEquals
         public static class TestTypeGenerators
         {
             public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf(new[] {
+                    Gen.Constant<TestType>(new TestByte()),
                     Gen.Constant<TestType>(new TestChar()),
                     Gen.Constant<TestType>(new TestBool()),
                     Gen.Constant<TestType>(new TestInt()),
