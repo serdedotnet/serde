@@ -39,7 +39,7 @@ public static class SerdeInfo
         return TypeWithFieldsInfo.Create(typeName, InfoKind.Enum, typeAttributes, fieldsWithInfo);
     }
 
-    public static ISerdeInfo MakePrimitive(string typeName) => new PrimitiveInfo(typeName);
+    public static ISerdeInfo MakePrimitive(string name, PrimitiveKind kind) => new PrimitiveInfo(name, kind);
 
     public static ISerdeInfo MakeNullable(ISerdeInfo underlying) => new NullableSerdeInfo(underlying);
 
@@ -60,7 +60,7 @@ public static class SerdeInfo
         ImmutableArray<ISerdeInfo> caseInfos)
         => new UnionSerdeInfo(typeName, typeAttributes, caseInfos);
 
-    private sealed record PrimitiveInfo(string Name) : INoFieldsInfo
+    private sealed record PrimitiveInfo(string Name, PrimitiveKind PrimitiveKind) : INoFieldsInfo
     {
         public InfoKind Kind => InfoKind.Primitive;
 

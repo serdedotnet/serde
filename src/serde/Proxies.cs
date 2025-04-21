@@ -22,7 +22,7 @@ public sealed class BoolProxy : ISerdePrimitive<BoolProxy, bool>
     public static BoolProxy Instance { get; } = new();
     private BoolProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.Bool);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "bool";
@@ -41,7 +41,7 @@ public sealed class CharProxy : ISerdePrimitive<CharProxy, char>
     public static CharProxy Instance { get; } = new();
     private CharProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.Char);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "char";
@@ -62,7 +62,7 @@ public sealed class U8Proxy : ISerdePrimitive<U8Proxy, byte>
     public static U8Proxy Instance { get; } = new();
     private U8Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.U8);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "byte";
@@ -83,7 +83,7 @@ public sealed class U16Proxy : ISerdePrimitive<U16Proxy, ushort>
     public static U16Proxy Instance { get; } = new();
     private U16Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.U16);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "ushort";
@@ -104,7 +104,7 @@ public sealed class U32Proxy : ISerdePrimitive<U32Proxy, uint>
     public static U32Proxy Instance { get; } = new();
     private U32Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.U32);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "uint";
@@ -125,7 +125,7 @@ public sealed class U64Proxy : ISerdePrimitive<U64Proxy, ulong>
     public static U64Proxy Instance { get; } = new();
     private U64Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.U64);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "ulong";
@@ -146,7 +146,7 @@ public sealed class I8Proxy : ISerdePrimitive<I8Proxy, sbyte>
     public static I8Proxy Instance { get; } = new();
     private I8Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.I8);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "sbyte";
@@ -167,7 +167,7 @@ public sealed class I16Proxy : ISerdePrimitive<I16Proxy, short>
     public static I16Proxy Instance { get; } = new();
     private I16Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.I16);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "short";
@@ -188,7 +188,7 @@ public sealed class I32Proxy : ISerdePrimitive<I32Proxy, int>
     public static I32Proxy Instance { get; } = new();
     private I32Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.I32);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "int";
@@ -209,7 +209,7 @@ public sealed class I64Proxy : ISerdePrimitive<I64Proxy, long>
     public static I64Proxy Instance { get; } = new();
     private I64Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.I64);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "long";
@@ -230,7 +230,7 @@ public sealed class F32Proxy : ISerdePrimitive<F32Proxy, float>
     public static F32Proxy Instance { get; } = new();
     private F32Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float");
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("float", PrimitiveKind.F32);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     public void Serialize(float value, ISerializer serializer)
@@ -250,7 +250,7 @@ public sealed class F64Proxy : ISerdePrimitive<F64Proxy, double>
     public static F64Proxy Instance { get; } = new();
     private F64Proxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("double");
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("double", PrimitiveKind.F64);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<double>.Serialize(double value, ISerializer serializer)
@@ -270,7 +270,7 @@ public sealed class DecimalProxy : ISerdePrimitive<DecimalProxy, decimal>
     public static DecimalProxy Instance { get; } = new();
     private DecimalProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("decimal");
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("decimal", PrimitiveKind.Decimal);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<decimal>.Serialize(decimal value, ISerializer serializer)
@@ -290,7 +290,7 @@ public sealed class StringProxy : ISerdePrimitive<StringProxy, string>
     public static StringProxy Instance { get; } = new();
     private StringProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName);
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.String);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     private const string s_typeName = "string";
@@ -436,7 +436,8 @@ public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, D
     public static DateTimeOffsetProxy Instance { get; } = new();
     private DateTimeOffsetProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("DateTime");
+    public static ISerdeInfo SerdeInfo { get; }
+        = Serde.SerdeInfo.MakePrimitive("System.DateTimeOffset", PrimitiveKind.DateTimeOffset);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ISerializer serializer)
@@ -456,7 +457,8 @@ public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
     public static GuidProxy Instance { get; } = new();
     private GuidProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("Guid");
+    public static ISerdeInfo SerdeInfo { get; }
+        = Serde.SerdeInfo.MakePrimitive("System.Guid", PrimitiveKind.String);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<Guid>.Serialize(Guid value, ISerializer serializer)
@@ -489,7 +491,8 @@ public sealed class DateTimeProxy : ISerdePrimitive<DateTimeProxy, DateTime>
     public static DateTimeProxy Instance { get; } = new();
     private DateTimeProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("DateTime");
+    public static ISerdeInfo SerdeInfo { get; }
+        = Serde.SerdeInfo.MakePrimitive("System.DateTime", PrimitiveKind.DateTimeOffset);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<DateTime>.Serialize(DateTime value, ISerializer serializer)
@@ -580,7 +583,7 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
     public static ByteArrayProxy Instance { get; } = new();
     private ByteArrayProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnumerable("byte[]");
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("byte[]", PrimitiveKind.Bytes);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<byte[]>.Serialize(byte[] value, ISerializer serializer)

@@ -36,12 +36,12 @@ namespace Serde.Json
             internal static readonly ISerdeInfo ArrayInfo = SerdeInfo.MakeEnumerable(nameof(Array));
 
             public ImmutableArray<ISerdeInfo> CaseInfos { get; } = [
-                SerdeInfo.MakePrimitive(nameof(Number)),
-                SerdeInfo.MakePrimitive(nameof(Bool)),
-                SerdeInfo.MakePrimitive(nameof(String)),
+                SerdeInfo.MakePrimitive(nameof(Number), PrimitiveKind.F64),
+                SerdeInfo.MakePrimitive(nameof(Bool), PrimitiveKind.Bool),
+                SerdeInfo.MakePrimitive(nameof(String), PrimitiveKind.String),
                 ObjectInfo,
                 ArrayInfo,
-                SerdeInfo.MakePrimitive(nameof(Null)),
+                SerdeInfo.MakePrimitive(nameof(Null), PrimitiveKind.Null),
             ];
 
             public IList<CustomAttributeData> GetFieldAttributes(int index) => throw GetOOR(index);

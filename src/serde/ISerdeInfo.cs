@@ -75,6 +75,27 @@ public enum InfoKind
     Union,
 }
 
+public enum PrimitiveKind
+{
+    Null,
+    Bool,
+    Char,
+    U8,
+    U16,
+    U32,
+    U64,
+    I8,
+    I16,
+    I32,
+    I64,
+    F32,
+    F64,
+    Decimal,
+    String,
+    DateTimeOffset,
+    Bytes,
+}
+
 /// <summary>
 /// Provides info for a "closed union" of types that can be serialized or deserialized.
 /// </summary>
