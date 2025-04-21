@@ -38,6 +38,7 @@ namespace Serde.Test
 
         public uint[] UIntArr = null!;
         public int[][] NestedArr = null!;
+        public byte[] ByteArr = null!;
 
         public ImmutableArray<int> IntImm;
 
@@ -74,6 +75,7 @@ namespace Serde.Test
                 UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
                 NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
                     new Comparer()) &&
+                ByteArr.AsSpan().SequenceEqual(other.ByteArr.AsSpan()) &&
                 IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan()) &&
                 Color == other.Color;
         }
@@ -122,6 +124,7 @@ namespace Serde.Test
 
             UIntArr = new uint[] { 1, 2, 3 },
             NestedArr = new[] { new[] { 1 }, new[] { 2 } },
+            ByteArr = new byte[] { 1, 2, 3 },
 
             IntImm = ImmutableArray.Create<int>(1, 2),
 
@@ -158,6 +161,7 @@ namespace Serde.Test
       2
     ]
   ],
+  "byteArr": "AQID",
   "intImm": [
     1,
     2

@@ -1,4 +1,6 @@
 using System;
+using System.Buffers;
+using System.Buffers.Text;
 using static Serde.Json.ThrowHelpers;
 
 namespace Serde.Json;
@@ -143,6 +145,11 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
     {
         ReadColon();
         return ReadDateTimeOffset();
+    }
+    void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
+    {
+        ReadColon();
+        ReadBytes(writer);
     }
 
     void ITypeDeserializer.SkipValue(ISerdeInfo info, int index)

@@ -40,6 +40,7 @@ partial class JsonSerializer : ISerializer
     public void WriteString(string s) => _writer.WriteStringValue(s);
     public void WriteNull() => _writer.WriteNullValue();
     public void WriteDateTimeOffset(DateTimeOffset dt) => _writer.WriteStringValue(dt);
+    public void WriteBytes(ReadOnlyMemory<byte> bytes) => _writer.WriteBase64StringValue(bytes.Span);
 
     ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? size)
     {
@@ -96,6 +97,7 @@ partial class JsonSerializer : ISerializer
         public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => WriteEnumName(typeInfo, index);
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => WriteEnumName(typeInfo, index);
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => ThrowInvalidEnum();
+        public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) => ThrowInvalidEnum();
         private void ThrowInvalidEnum() => throw new InvalidOperationException("Invalid operation for enum serialization, expected integer value.");
     }
 
@@ -210,5 +212,10 @@ partial class JsonSerializer : ITypeSerializer
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));
         WriteDateTimeOffset(dt);
+    }
+    void ITypeSerializer.WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        _writer.WriteBase64StringValue(bytes.Span);
     }
 }

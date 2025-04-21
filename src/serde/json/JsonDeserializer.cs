@@ -1,5 +1,7 @@
 
 using System;
+using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
@@ -327,5 +329,27 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
             }
         }
         throw new JsonException($"Unexpected token: {(char)peek}");
+    }
+
+    public void ReadBytes(IBufferWriter<byte> writer)
+    {
+        var span = ReadUtf8Span();
+        if (span.Length == 0)
+        {
+            return;
+        }
+        // This should be a base64 string, calculate needed size
+        if (span.Length % 4 != 0)
+        {
+            throw new JsonException($"Invalid base64 string length: {span.Length}");
+        }
+        var size = span.Length / 4 * 3;
+        var buffer = writer.GetSpan(size);
+        var status = Base64.DecodeFromUtf8(span, buffer, out _, out var written);
+        writer.Advance(written);
+        if (status != OperationStatus.Done)
+        {
+            throw new JsonException($"Invalid base64 string: {status}");
+        }
     }
 }

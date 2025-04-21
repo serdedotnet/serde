@@ -36,6 +36,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
             string? _l_nullstringfield = default!;
             uint[] _l_uintarr = default!;
             int[][] _l_nestedarr = default!;
+            byte[] _l_bytearr = default!;
             System.Collections.Immutable.ImmutableArray<int> _l_intimm = default!;
             Serde.Test.AllInOne.ColorEnum _l_color = default!;
 
@@ -121,12 +122,16 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 17;
                         break;
                     case 18:
-                        _l_intimm = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_bytearr = typeDeserialize.ReadValue<byte[], global::Serde.ByteArrayProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 18;
                         break;
                     case 19:
-                        _l_color = typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
+                        _l_intimm = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 19;
+                        break;
+                    case 20:
+                        _l_color = typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((uint)1) << 20;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -135,7 +140,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b11110111111111111111) != 0b11110111111111111111)
+            if ((_r_assignedValid & 0b111110111111111111111) != 0b111110111111111111111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
@@ -158,6 +163,7 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                 NullStringField = _l_nullstringfield,
                 UIntArr = _l_uintarr,
                 NestedArr = _l_nestedarr,
+                ByteArr = _l_bytearr,
                 IntImm = _l_intimm,
                 Color = _l_color,
             };
