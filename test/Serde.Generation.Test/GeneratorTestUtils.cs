@@ -73,6 +73,7 @@ namespace Serde.Test
             var diags = comp.GetDiagnostics()
                 .Where(d => d.Severity >= DiagnosticSeverity.Warning)
                 .Where(d => d.Id != "CS0649")
+                .OrderBy(d => $"{d.Location.SourceTree!.FilePath}_{d.Location.SourceSpan.Start}")
                 .ToList();
             if (diags.Any())
             {
