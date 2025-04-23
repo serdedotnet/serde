@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../serde/Serde.csproj" />
-    <ProjectReference Include="../generator/SerdeGenerator.csproj" />
+    <ProjectReference Include="../src/serde/Serde.csproj" />
+    <ProjectReference Include="../src/generator/SerdeGenerator.csproj" />
 
     <PackageReference Include="NuGetizer">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
