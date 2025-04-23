@@ -26,7 +26,7 @@ while [[ $# > 0 ]]; do
 done
 
 if [ "$pack" = true ]; then
-    for f in src/pack/*.proj; do dotnet pack -warnaserror -c Release $f $props; done
+    for f in pack/*.csproj; do dotnet pack -warnaserror -c Release $f $props; done
 else
     dotnet build -warnaserror serde-dn.sln $props
 fi
