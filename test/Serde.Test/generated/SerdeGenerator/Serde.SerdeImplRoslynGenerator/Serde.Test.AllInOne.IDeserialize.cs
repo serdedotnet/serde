@@ -93,11 +93,11 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
                         _r_assignedValid |= ((uint)1) << 10;
                         break;
                     case 11:
-                        _l_datetimeoffsetfield = typeDeserialize.ReadDateTimeOffset(_l_serdeInfo, _l_index_);
+                        _l_datetimeoffsetfield = typeDeserialize.ReadBoxedValue<System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 11;
                         break;
                     case 12:
-                        _l_datetimefield = typeDeserialize.ReadBoxedValue<System.DateTime, global::Serde.DateTimeProxy>(_l_serdeInfo, _l_index_);
+                        _l_datetimefield = typeDeserialize.ReadDateTime(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 12;
                         break;
                     case 13:

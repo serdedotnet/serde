@@ -111,7 +111,7 @@ namespace Serde.Test
             IntField = int.MaxValue,
             LongField = long.MaxValue,
             StringField = "StringValue",
-            DateTimeOffsetField = new DateTimeOffset(2040, 1, 1, 1, 1, 1, TimeSpan.Zero),
+            DateTimeOffsetField = new DateTimeOffset(2040, 1, 1, 1, 1, 1, TimeSpan.FromHours(-7)),
             DateTimeField = new DateTime(2040, 1, 1, 1, 1, 1, DateTimeKind.Utc),
             GuidField = new Guid(new byte[] {
                 0x01, 0x02, 0x03, 0x04,
@@ -144,8 +144,8 @@ namespace Serde.Test
   "intField": 2147483647,
   "longField": 9223372036854775807,
   "stringField": "StringValue",
-  "dateTimeOffsetField": "2040-01-01T01:01:01\u002B00:00",
-  "dateTimeField": "2040-01-01T01:01:01\u002B00:00",
+  "dateTimeOffsetField": "2040-01-01T01:01:01-07:00",
+  "dateTimeField": "2040-01-01T01:01:01Z",
   "guidField": "04030201-0605-0807-090a-0b0c0d0e0f10",
   "escapedStringField": "\u002B0 11 222 333 44",
   "uIntArr": [

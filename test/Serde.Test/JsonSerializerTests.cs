@@ -36,6 +36,37 @@ namespace Serde.Test
         }
 
         [Fact]
+        public void DateTime()
+        {
+            var date = new DtWrap(new(2023, 10, 1, 12, 0, 0, System.DateTimeKind.Utc));
+            var js = Serde.Json.JsonSerializer.Serialize(date);
+            Assert.Equal("""
+            {"value":"2023-10-01T12:00:00Z"}
+            """, js);
+        }
+
+        [GenerateSerialize]
+        private partial record DtWrap(System.DateTime Value);
+
+
+        [Fact]
+        public void DateTimeOffset()
+        {
+            var date = new DtoWrap(new(2023, 10, 1, 12, 0, 0, System.TimeSpan.FromHours(7)));
+            var js = Serde.Json.JsonSerializer.Serialize(date);
+            Assert.Equal("""
+            {"value":"2023-10-01T12:00:00+07:00"}
+            """, js);
+            Assert.Equal("""
+            {"value":"2023-10-01T12:00:00+07:00"}
+            """, System.Text.Json.JsonSerializer.Serialize(date, new JsonSerializerOptions()
+                { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+        }
+
+        [GenerateSerialize]
+        private partial record DtoWrap(System.DateTimeOffset Value);
+
+        [Fact]
         public void SerializeRgb()
         {
             var color = new Color { Red = 3, Green = 5, Blue = 7 };

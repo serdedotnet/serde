@@ -89,6 +89,7 @@ public interface ISerializer
     void WriteDecimal(decimal d);
     void WriteString(string s);
     void WriteNull();
+    void WriteDateTime(DateTime dt);
     void WriteDateTimeOffset(DateTimeOffset dt);
     void WriteBytes(ReadOnlyMemory<byte> bytes);
 
@@ -173,6 +174,7 @@ public interface ITypeSerializer
     void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);
     void WriteString(ISerdeInfo typeInfo, int index, string s);
     void WriteNull(ISerdeInfo typeInfo, int index);
+    void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt);
     void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt);
     void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes);
 

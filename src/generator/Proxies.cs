@@ -90,12 +90,12 @@ sealed partial class {{proxyName}}
         {
             return spTypeMatch;
         }
-        if (type is { Name: "DateTimeOffset",
+        if (type is { Name: "DateTime",
                       ContainingNamespace: {
                         Name: "System",
                         ContainingNamespace: { IsGlobalNamespace: true } } })
         {
-            return "DateTimeOffset";
+            return "DateTime";
         }
         return null;
     }
@@ -120,11 +120,11 @@ sealed partial class {{proxyName}}
                 Name: "System",
                 ContainingNamespace: { IsGlobalNamespace: true } } }
             => new("global::System.Guid", "global::Serde.GuidProxy"),
-            { Name: "DateTime",
+            { Name: "DateTimeOffset",
               ContainingNamespace: {
                 Name: "System",
                 ContainingNamespace: { IsGlobalNamespace: true } } }
-            => new("global::System.DateTime", "global::Serde.DateTimeProxy"),
+            => new("global::System.DateTimeOffset", "global::Serde.DateTimeOffsetProxy"),
             IArrayTypeSymbol { ElementType: { SpecialType: SpecialType.System_Byte } }
             => new("global::System.Byte[]", "global::Serde.ByteArrayProxy"),
             _ => null

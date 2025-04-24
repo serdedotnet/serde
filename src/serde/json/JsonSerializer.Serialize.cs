@@ -39,7 +39,18 @@ partial class JsonSerializer : ISerializer
     public void WriteDecimal(decimal d) => _writer.WriteNumberValue(d);
     public void WriteString(string s) => _writer.WriteStringValue(s);
     public void WriteNull() => _writer.WriteNullValue();
-    public void WriteDateTimeOffset(DateTimeOffset dt) => _writer.WriteStringValue(dt);
+    public void WriteDateTime(DateTime dt)
+    {
+        if (dt.Kind != DateTimeKind.Utc)
+        {
+            throw new ArgumentException("DateTime must be in UTC");
+        }
+        _writer.WriteStringValue(dt);
+    }
+    public void WriteDateTimeOffset(DateTimeOffset dt)
+    {
+        _writer.WriteStringValue(dt);
+    }
     public void WriteBytes(ReadOnlyMemory<byte> bytes) => _writer.WriteBase64StringValue(bytes.Span);
 
     ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? size)
@@ -96,6 +107,7 @@ partial class JsonSerializer : ISerializer
         public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16) => WriteEnumName(typeInfo, index);
         public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => WriteEnumName(typeInfo, index);
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => WriteEnumName(typeInfo, index);
+        public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt) => ThrowInvalidEnum();
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => ThrowInvalidEnum();
         public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) => ThrowInvalidEnum();
         private void ThrowInvalidEnum() => throw new InvalidOperationException("Invalid operation for enum serialization, expected integer value.");
@@ -208,6 +220,11 @@ partial class JsonSerializer : ITypeSerializer
         WriteNull();
     }
 
+    void ITypeSerializer.WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteDateTime(dt);
+    }
     void ITypeSerializer.WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt)
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));

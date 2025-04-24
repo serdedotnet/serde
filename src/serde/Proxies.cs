@@ -431,27 +431,6 @@ public static class NullableRefProxy
     }
 }
 
-public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, DateTimeOffset>
-{
-    public static DateTimeOffsetProxy Instance { get; } = new();
-    private DateTimeOffsetProxy() { }
-
-    public static ISerdeInfo SerdeInfo { get; }
-        = Serde.SerdeInfo.MakePrimitive("System.DateTimeOffset", PrimitiveKind.DateTimeOffset);
-    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
-
-    void ISerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ISerializer serializer)
-        => serializer.WriteDateTimeOffset(value);
-    DateTimeOffset IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer)
-        => deserializer.ReadDateTimeOffset();
-
-    void ITypeSerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ITypeSerializer serializer, ISerdeInfo info, int index)
-        => serializer.WriteDateTimeOffset(info, index, value);
-
-    DateTimeOffset ITypeDeserialize<DateTimeOffset>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
-        => deserializer.ReadDateTimeOffset(info, index);
-}
-
 public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
 {
     public static GuidProxy Instance { get; } = new();
@@ -492,18 +471,40 @@ public sealed class DateTimeProxy : ISerdePrimitive<DateTimeProxy, DateTime>
     private DateTimeProxy() { }
 
     public static ISerdeInfo SerdeInfo { get; }
-        = Serde.SerdeInfo.MakePrimitive("System.DateTime", PrimitiveKind.DateTimeOffset);
+        = Serde.SerdeInfo.MakePrimitive("System.DateTime", PrimitiveKind.DateTime);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
     void ISerialize<DateTime>.Serialize(DateTime value, ISerializer serializer)
-        => serializer.WriteDateTimeOffset(value);
+        => serializer.WriteDateTime(value);
     void ITypeSerialize<DateTime>.Serialize(DateTime value, ITypeSerializer serializer, ISerdeInfo info, int index)
-        => serializer.WriteDateTimeOffset(info, index, value);
+        => serializer.WriteDateTime(info, index, value);
     DateTime IDeserialize<DateTime>.Deserialize(IDeserializer deserializer)
-        => deserializer.ReadDateTimeOffset().DateTime;
+        => deserializer.ReadDateTime();
     DateTime ITypeDeserialize<DateTime>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
-        => deserializer.ReadDateTimeOffset(info, index).DateTime;
+        => deserializer.ReadDateTime(info, index);
 }
+
+public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, DateTimeOffset>
+{
+    public static DateTimeOffsetProxy Instance { get; } = new();
+    private DateTimeOffsetProxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; }
+        = Serde.SerdeInfo.MakePrimitive("System.DateTimeOffset", PrimitiveKind.String);
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    void ISerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ISerializer serializer)
+        => serializer.WriteDateTimeOffset(value);
+    DateTimeOffset IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer)
+        => deserializer.ReadDateTime();
+
+    void ITypeSerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        => serializer.WriteDateTimeOffset(info, index, value);
+
+    DateTimeOffset ITypeDeserialize<DateTimeOffset>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        => deserializer.ReadDateTime(info, index);
+}
+
 
 public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
 {
