@@ -80,12 +80,12 @@ Serde.Json.JsonSerializer.Serialize({localName});");
 Serde.Json.JsonSerializer.Deserialize<{typeName}>({serName});");
                 serializeStatements.Add($@"if ({localName} != {deName})
 {{
-    throw new Exception(""Expected: "" + {localName} + Environment.NewLine + ""Actual: "" + {deName});
+    throw new Exception(""De Expected: "" + {localName} + Environment.NewLine + ""Actual: "" + {deName});
 }}");
                 serializeStatements.Add($"var stj{i} = System.Text.Json.JsonSerializer.Serialize({localName}, options);");
                 serializeStatements.Add($@"if ({serName} != stj{i})
 {{
-    throw new Exception(""Expected: "" + {serName} + Environment.NewLine + ""Actual: "" + stj{i});
+    throw new Exception(""Ser Expected: "" + stj{i} + Environment.NewLine + ""Actual: "" + {serName});
 }}");
             }
 
@@ -388,11 +388,18 @@ public static class DeepEquals
         {
             public sealed override SyntaxKind SyntaxKind => SyntaxKind.DecimalKeyword;
         }
+        public sealed record TestDateTime : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("DateTime");
+            public override ExpressionSyntax Value(int typeIndex) => ParseExpression(
+                "new DateTime(2023, 1, 1, 1, 1, 1, DateTimeKind.Utc)"
+            );
+        }
         public sealed record TestDateTimeOffset : TestType
         {
             public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("DateTimeOffset");
             public override ExpressionSyntax Value(int typeIndex) => ParseExpression(
-                "new DateTimeOffset(2023, 1, 1, 1, 1, 1, TimeSpan.Zero)"
+                "new DateTimeOffset(2024, 1, 1, 1, 1, 1, TimeSpan.Zero)"
             );
         }
         public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType

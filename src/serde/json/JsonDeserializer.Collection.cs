@@ -201,9 +201,9 @@ partial class JsonDeserializer<TReader>
             return v;
         }
 
-        public DateTimeOffset ReadDateTimeOffset(ISerdeInfo info, int index)
+        public DateTime ReadDateTime(ISerdeInfo info, int index)
         {
-            var v = _deserializer.ReadDateTimeOffset();
+            var v = _deserializer.ReadDateTime();
             _index++;
             return v;
         }

@@ -141,10 +141,10 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         ReadColon();
         return this.ReadString();
     }
-    DateTimeOffset ITypeDeserializer.ReadDateTimeOffset(ISerdeInfo info, int index)
+    DateTime ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadDateTimeOffset();
+        return ReadDateTime();
     }
     void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
     {

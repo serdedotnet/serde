@@ -186,10 +186,10 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
 
     public char ReadChar() => ReadString().Single();
 
-    public DateTimeOffset ReadDateTimeOffset()
+    public DateTime ReadDateTime()
     {
         var s = ReadString();
-        return DateTimeOffset.Parse(s, formatProvider: null, styles: DateTimeStyles.RoundtripKind);
+        return DateTime.Parse(s, styles: DateTimeStyles.RoundtripKind);
     }
 
     public void Eof()

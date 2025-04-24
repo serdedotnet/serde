@@ -84,6 +84,10 @@ partial class JsonSerializer
             serializer.WriteNull();
         }
 
+        public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt)
+        {
+            serializer.WriteDateTime(dt);
+        }
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt)
         {
             serializer.WriteDateTimeOffset(dt);
@@ -116,6 +120,7 @@ partial class JsonSerializer
         public void WriteF32(float f) => throw new KeyNotStringException();
         public void WriteF64(double d) => throw new KeyNotStringException();
         public void WriteDecimal(decimal d) => throw new KeyNotStringException();
+        public void WriteDateTime(DateTime dt) => throw new KeyNotStringException();
         public void WriteDateTimeOffset(DateTimeOffset dt) => throw new KeyNotStringException();
         public void WriteBytes(ReadOnlyMemory<byte> bytes) => throw new KeyNotStringException();
 
@@ -154,6 +159,7 @@ partial class JsonSerializer
         public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => GetSerializer(index).WriteU32(u32);
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => GetSerializer(index).WriteU64(u64);
         public void WriteU8(ISerdeInfo typeInfo, int index, byte b) => GetSerializer(index).WriteU8(b);
+        public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt) => GetSerializer(index).WriteDateTime(dt);
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => GetSerializer(index).WriteDateTimeOffset(dt);
         public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) => GetSerializer(index).WriteBytes(bytes);
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)

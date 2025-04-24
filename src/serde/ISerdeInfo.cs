@@ -92,7 +92,7 @@ public enum PrimitiveKind
     F64,
     Decimal,
     String,
-    DateTimeOffset,
+    DateTime,
     Bytes,
 }
 
