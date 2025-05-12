@@ -76,7 +76,7 @@ public abstract class DeListBase<
             var builder = GetFixBuilder(size);
             for (int i = 0; i < size; i++)
             {
-                builder[i] = _de.Deserialize(deCollection, info, i);
+                builder.Add(_de.Deserialize(deCollection, info, i));
             }
             return FromFix(builder);
         }
@@ -181,9 +181,7 @@ public static class ListProxy
         {
             if (sizeOpt is int size)
             {
-                var list = new List<T>(size);
-                CollectionsMarshal.SetCount(list, size);
-                return list;
+                return new List<T>(size);
             }
             return new List<T>();
         }
