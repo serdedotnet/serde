@@ -181,7 +181,9 @@ public static class ListProxy
         {
             if (sizeOpt is int size)
             {
-                return new List<T>(size);
+                var list = new List<T>(size);
+                CollectionsMarshal.SetCount(list, size);
+                return list;
             }
             return new List<T>();
         }
