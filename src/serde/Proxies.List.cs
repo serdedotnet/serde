@@ -76,7 +76,7 @@ public abstract class DeListBase<
             var builder = GetFixBuilder(size);
             for (int i = 0; i < size; i++)
             {
-                builder[i] = _de.Deserialize(deCollection, info, i);
+                builder.Add(_de.Deserialize(deCollection, info, i));
             }
             return FromFix(builder);
         }
