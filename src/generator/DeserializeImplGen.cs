@@ -155,6 +155,7 @@ namespace Serde
             TypeSyntax typeSyntax)
         {
             Debug.Assert(type.TypeKind == TypeKind.Enum);
+            var primName = Proxies.TryGetPrimitiveName(((INamedTypeSymbol)type).EnumUnderlyingType!);
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
             var typeFqn = typeSyntax.ToString();
@@ -170,10 +171,15 @@ namespace Serde
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(serdeInfo);
-    int index;
-    if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
+    int index = de.TryReadIndex(serdeInfo, out var errorName);
+    if (index == ITypeDeserializer.IndexNotFound)
     {
         throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
+    }
+    if (index == ITypeDeserializer.EndOfType)
+    {
+        // Assume we want to read the underlying value
+        return ({{typeFqn}})de.Read{{primName}}(serdeInfo, index);
     }
     return index switch {
         {{string.Join("," + Utilities.NewLine, members
