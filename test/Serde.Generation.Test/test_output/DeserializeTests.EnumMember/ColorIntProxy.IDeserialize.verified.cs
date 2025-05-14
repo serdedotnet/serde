@@ -10,10 +10,15 @@ sealed partial class ColorIntProxy :Serde.IDeserialize<ColorInt>,Serde.IDeserial
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);
-        int index;
-        if ((index = de.TryReadIndex(serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
+        int index = de.TryReadIndex(serdeInfo, out var errorName);
+        if (index == ITypeDeserializer.IndexNotFound)
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
+        }
+        if (index == ITypeDeserializer.EndOfType)
+        {
+            // Assume we want to read the underlying value
+            return (ColorInt)de.ReadI32(serdeInfo, index);
         }
         return index switch {
             0 => ColorInt.Red,
