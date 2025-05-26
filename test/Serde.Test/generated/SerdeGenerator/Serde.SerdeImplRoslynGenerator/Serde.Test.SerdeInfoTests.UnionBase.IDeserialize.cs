@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class SerdeInfoTests
 {
-    partial record UnionBase : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase>
+    partial record UnionBase
     {
-        sealed partial class _DeObj : global::Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase.s_serdeInfo;
 

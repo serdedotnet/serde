@@ -308,7 +308,7 @@ sealed partial class {{proxyName}};
                     member.Symbol.Locations[0],
                     proxyType,
                     memberType,
-                    usage.GetProxyInterfaceName() + "Provider"));
+                    usage.GetInterfaceName() + "Provider"));
             }
 
             return proxyType.ToDisplayString(s_fqnFormat);
@@ -500,7 +500,7 @@ sealed partial class {{proxyName}};
 
 internal static class SerdeUsageExt
 {
-    public static string GetProxyInterfaceName(this SerdeUsage usage) => usage switch
+    public static string GetInterfaceName(this SerdeUsage usage) => usage switch
     {
         SerdeUsage.Serialize => "ISerialize",
         SerdeUsage.Deserialize => "IDeserialize",

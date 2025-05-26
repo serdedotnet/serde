@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial record struct OptsWrap : Serde.IDeserializeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
+partial record struct OptsWrap
 {
-    sealed partial class _DeObj :Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
+    sealed partial class _DeObj : Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => OptsWrap.s_serdeInfo;
 
@@ -62,6 +62,5 @@ partial record struct OptsWrap : Serde.IDeserializeProvider<System.Runtime.Inter
 
             return newType;
         }
-
     }
 }

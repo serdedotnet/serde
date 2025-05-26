@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record struct IdStructList : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.IdStructList>
+    partial record struct IdStructList
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.IdStructList.s_serdeInfo;
 
@@ -54,7 +54,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

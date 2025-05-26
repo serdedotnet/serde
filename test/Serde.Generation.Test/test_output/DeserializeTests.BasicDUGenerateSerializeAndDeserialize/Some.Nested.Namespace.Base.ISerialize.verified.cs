@@ -7,7 +7,7 @@ using Serde;
 
 namespace Some.Nested.Namespace;
 
-partial record Base : Serde.ISerializeProvider<Some.Nested.Namespace.Base>
+partial record Base
 {
     sealed partial class _SerObj : Serde.ISerialize<Some.Nested.Namespace.Base>
     {

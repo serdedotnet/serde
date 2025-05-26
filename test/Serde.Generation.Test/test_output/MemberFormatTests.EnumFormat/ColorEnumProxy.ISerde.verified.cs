@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-sealed partial class ColorEnumProxy : global::Serde.ISerde<ColorEnum>
+partial class ColorEnumProxy : Serde.ISerde<ColorEnum>
 {
     void global::Serde.ISerialize<ColorEnum>.Serialize(ColorEnum value, global::Serde.ISerializer serializer)
     {
@@ -41,5 +41,4 @@ sealed partial class ColorEnumProxy : global::Serde.ISerde<ColorEnum>
             _ => throw new InvalidOperationException($"Unexpected index: {index}")
         };
     }
-
 }

@@ -6,9 +6,9 @@ using Serde;
 
 namespace Serde.Test;
 
-partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
+partial record AllInOne
 {
-    sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.AllInOne>
+    sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.AllInOne>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
 
@@ -166,6 +166,5 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
 
             return newType;
         }
-
     }
 }

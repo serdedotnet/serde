@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class SerdeInfoTests
 {
-    partial record RgbProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>
+    partial record RgbProxy
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.RgbProxy.s_serdeInfo;
 
@@ -60,7 +60,6 @@ partial class SerdeInfoTests
 
                 return newType;
             }
-
         }
     }
 }

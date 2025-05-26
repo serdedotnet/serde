@@ -7,7 +7,7 @@ using Serde;
 
 namespace Test;
 
-partial record Parent : Serde.ISerdeProvider<Test.Parent>
+partial record Parent
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<Test.Parent>
     {
@@ -54,6 +54,5 @@ partial record Parent : Serde.ISerdeProvider<Test.Parent>
 
             return newType;
         }
-
     }
 }

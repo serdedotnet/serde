@@ -10,9 +10,9 @@ partial class A
     {
         partial class C
         {
-            partial class D : Serde.IDeserializeProvider<A.B.C.D>
+            partial class D
             {
-                sealed partial class _DeObj :Serde.IDeserialize<A.B.C.D>
+                sealed partial class _DeObj : Serde.IDeserialize<A.B.C.D>
                 {
                     global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => A.B.C.D.s_serdeInfo;
 
@@ -50,7 +50,6 @@ partial class A
 
                         return newType;
                     }
-
                 }
             }
         }

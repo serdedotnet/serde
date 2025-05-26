@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial struct Rgb : Serde.IDeserializeProvider<Rgb>
+partial struct Rgb
 {
-    sealed partial class _DeObj :Serde.IDeserialize<Rgb>
+    sealed partial class _DeObj : Serde.IDeserialize<Rgb>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Rgb.s_serdeInfo;
 
@@ -50,6 +50,5 @@ partial struct Rgb : Serde.IDeserializeProvider<Rgb>
 
             return newType;
         }
-
     }
 }

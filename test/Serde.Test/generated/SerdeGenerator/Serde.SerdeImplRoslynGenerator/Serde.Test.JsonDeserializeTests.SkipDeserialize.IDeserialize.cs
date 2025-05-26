@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record SkipDeserialize : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.SkipDeserialize>
+    partial record SkipDeserialize
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SkipDeserialize>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SkipDeserialize>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.SkipDeserialize.s_serdeInfo;
 
@@ -49,7 +49,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

@@ -7,7 +7,7 @@ using Serde;
 
 namespace Test;
 
-partial class RecursiveWrap : Serde.ISerdeProvider<Recursive>
+partial class RecursiveWrap
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<Recursive>
     {
@@ -54,6 +54,5 @@ partial class RecursiveWrap : Serde.ISerdeProvider<Recursive>
 
             return newType;
         }
-
     }
 }

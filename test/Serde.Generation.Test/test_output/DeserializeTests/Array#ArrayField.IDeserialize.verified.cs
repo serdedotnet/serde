@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial class ArrayField : Serde.IDeserializeProvider<ArrayField>
+partial class ArrayField
 {
-    sealed partial class _DeObj :Serde.IDeserialize<ArrayField>
+    sealed partial class _DeObj : Serde.IDeserialize<ArrayField>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => ArrayField.s_serdeInfo;
 
@@ -44,6 +44,5 @@ partial class ArrayField : Serde.IDeserializeProvider<ArrayField>
 
             return newType;
         }
-
     }
 }

@@ -9,9 +9,9 @@ namespace Some.Nested.Namespace;
 
 partial record Base
 {
-    partial class _m_BProxy : Serde.ISerializeProvider<Some.Nested.Namespace.Base.B>
+    partial class _m_BProxy
     {
-        sealed partial class _SerObj :Serde.ISerialize<Some.Nested.Namespace.Base.B>
+        sealed partial class _SerObj : Serde.ISerialize<Some.Nested.Namespace.Base.B>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base._m_BProxy.s_serdeInfo;
 

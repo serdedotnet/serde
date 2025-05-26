@@ -8,7 +8,7 @@ namespace Serde.Test;
 
 partial class GenericWrapperTests
 {
-    partial record struct CustomArrayWrapExplicitOnType : Serde.ISerdeProvider<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>
+    partial record struct CustomArrayWrapExplicitOnType
     {
         sealed partial class _SerdeObj : global::Serde.ISerde<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>
         {
@@ -55,7 +55,6 @@ partial class GenericWrapperTests
 
                 return newType;
             }
-
         }
     }
 }

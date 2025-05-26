@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record struct SetToNull : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.SetToNull>
+    partial record struct SetToNull
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SetToNull>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SetToNull>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.SetToNull.s_serdeInfo;
 
@@ -54,7 +54,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

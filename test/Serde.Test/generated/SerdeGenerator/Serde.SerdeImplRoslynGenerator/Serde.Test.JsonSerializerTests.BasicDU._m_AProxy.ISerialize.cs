@@ -10,9 +10,9 @@ partial class JsonSerializerTests
 {
     partial record BasicDU
     {
-        partial class _m_AProxy : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU.A>
+        partial class _m_AProxy
         {
-            sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU.A>
+            sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU.A>
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.BasicDU._m_AProxy.s_serdeInfo;
 

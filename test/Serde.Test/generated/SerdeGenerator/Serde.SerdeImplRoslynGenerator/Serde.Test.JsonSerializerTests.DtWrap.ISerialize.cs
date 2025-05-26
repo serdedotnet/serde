@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonSerializerTests
 {
-    partial record DtWrap : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.DtWrap>
+    partial record DtWrap
     {
-        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.DtWrap>
+        sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.DtWrap>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.DtWrap.s_serdeInfo;
 

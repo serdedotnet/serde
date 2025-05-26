@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial class NullableFields : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.NullableFields>
+    partial class NullableFields
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.NullableFields>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.NullableFields>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.NullableFields.s_serdeInfo;
 
@@ -54,7 +54,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

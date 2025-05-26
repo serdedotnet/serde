@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial class A : Serde.IDeserializeProvider<A>
+partial class A
 {
-    sealed partial class _DeObj :Serde.IDeserialize<A>
+    sealed partial class _DeObj : Serde.IDeserialize<A>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => A.s_serdeInfo;
 
@@ -44,6 +44,5 @@ partial class A : Serde.IDeserializeProvider<A>
 
             return newType;
         }
-
     }
 }

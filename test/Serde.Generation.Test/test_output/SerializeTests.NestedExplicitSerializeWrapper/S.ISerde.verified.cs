@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial struct S : Serde.ISerdeProvider<S>
+partial struct S
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<S>
     {
@@ -51,6 +51,5 @@ partial struct S : Serde.ISerdeProvider<S>
 
             return newType;
         }
-
     }
 }

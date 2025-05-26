@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record BasicDU : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU>
+    partial record BasicDU
     {
-        sealed partial class _DeObj : global::Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU.s_serdeInfo;
 

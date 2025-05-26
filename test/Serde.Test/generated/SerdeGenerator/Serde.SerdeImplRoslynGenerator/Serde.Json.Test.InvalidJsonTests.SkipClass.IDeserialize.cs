@@ -8,9 +8,9 @@ namespace Serde.Json.Test;
 
 partial class InvalidJsonTests
 {
-    partial class SkipClass : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.SkipClass>
+    partial class SkipClass
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.SkipClass>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.SkipClass>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.SkipClass.s_serdeInfo;
 
@@ -48,7 +48,6 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-
         }
     }
 }

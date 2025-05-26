@@ -10,9 +10,9 @@ partial class SerdeInfoTests
 {
     partial record UnionBase
     {
-        partial class _m_AProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase.A>
+        partial class _m_AProxy
         {
-            sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>
+            sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase._m_AProxy.s_serdeInfo;
 
@@ -44,7 +44,6 @@ partial class SerdeInfoTests
 
                     return newType;
                 }
-
             }
         }
     }

@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial struct PointWrap : Serde.ISerdeProvider<Point>
+partial struct PointWrap
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<Point>
     {
@@ -58,6 +58,5 @@ partial struct PointWrap : Serde.ISerdeProvider<Point>
 
             return newType;
         }
-
     }
 }

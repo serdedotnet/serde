@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial class ArgumentInfo : Serde.ISerdeProvider<ArgumentInfo>
+partial class ArgumentInfo
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<ArgumentInfo>
     {
@@ -58,6 +58,5 @@ partial class ArgumentInfo : Serde.ISerdeProvider<ArgumentInfo>
 
             return newType;
         }
-
     }
 }

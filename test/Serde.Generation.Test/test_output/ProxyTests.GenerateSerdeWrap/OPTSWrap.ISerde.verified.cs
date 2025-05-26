@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial record struct OPTSWrap : Serde.ISerdeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
+partial record struct OPTSWrap
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
     {
@@ -72,6 +72,5 @@ partial record struct OPTSWrap : Serde.ISerdeProvider<System.Runtime.InteropServ
 
             return newType;
         }
-
     }
 }

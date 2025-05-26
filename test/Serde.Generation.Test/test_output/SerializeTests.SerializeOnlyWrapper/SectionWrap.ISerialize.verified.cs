@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial record struct SectionWrap : Serde.ISerializeProvider<System.Collections.Specialized.BitVector32.Section>
+partial record struct SectionWrap
 {
-    sealed partial class _SerObj :Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
+    sealed partial class _SerObj : Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => SectionWrap.s_serdeInfo;
 

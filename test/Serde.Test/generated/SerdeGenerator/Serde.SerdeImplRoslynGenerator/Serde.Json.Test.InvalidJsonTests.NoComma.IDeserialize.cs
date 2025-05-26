@@ -8,9 +8,9 @@ namespace Serde.Json.Test;
 
 partial class InvalidJsonTests
 {
-    partial record NoComma : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.NoComma>
+    partial record NoComma
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.NoComma>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.NoComma>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.NoComma.s_serdeInfo;
 
@@ -54,7 +54,6 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-
         }
     }
 }

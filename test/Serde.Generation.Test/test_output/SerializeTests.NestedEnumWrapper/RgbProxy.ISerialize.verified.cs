@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-sealed partial class RgbProxy :Serde.ISerialize<Rgb>
+partial class RgbProxy : Serde.ISerialize<Rgb>
 {
     void global::Serde.ISerialize<Rgb>.Serialize(Rgb value, global::Serde.ISerializer serializer)
     {

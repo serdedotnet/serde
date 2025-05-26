@@ -7,7 +7,7 @@ using Serde;
 
 namespace Test;
 
-sealed partial class ChannelProxy :Serde.IDeserialize<Test.Channel>
+partial class ChannelProxy : Serde.IDeserialize<Test.Channel>
 {
     Test.Channel IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
     {
@@ -30,5 +30,4 @@ sealed partial class ChannelProxy :Serde.IDeserialize<Test.Channel>
             _ => throw new InvalidOperationException($"Unexpected index: {index}")
         };
     }
-
 }

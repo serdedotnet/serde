@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial class OPTSWrap : Serde.ISerdeProvider<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
+partial class OPTSWrap
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<System.Runtime.InteropServices.ComTypes.BIND_OPTS>
     {
@@ -72,6 +72,5 @@ partial class OPTSWrap : Serde.ISerdeProvider<System.Runtime.InteropServices.Com
 
             return newType;
         }
-
     }
 }

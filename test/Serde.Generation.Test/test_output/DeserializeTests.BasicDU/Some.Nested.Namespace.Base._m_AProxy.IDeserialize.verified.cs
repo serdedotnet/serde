@@ -9,9 +9,9 @@ namespace Some.Nested.Namespace;
 
 partial record Base
 {
-    partial class _m_AProxy : Serde.IDeserializeProvider<Some.Nested.Namespace.Base.A>
+    partial class _m_AProxy
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Some.Nested.Namespace.Base.A>
+        sealed partial class _DeObj : Serde.IDeserialize<Some.Nested.Namespace.Base.A>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base._m_AProxy.s_serdeInfo;
 
@@ -48,7 +48,6 @@ partial record Base
 
                 return newType;
             }
-
         }
     }
 }

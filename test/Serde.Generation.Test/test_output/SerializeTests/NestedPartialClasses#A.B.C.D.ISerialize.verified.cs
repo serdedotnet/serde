@@ -10,9 +10,9 @@ partial class A
     {
         partial class C
         {
-            partial class D : Serde.ISerializeProvider<A.B.C.D>
+            partial class D
             {
-                sealed partial class _SerObj :Serde.ISerialize<A.B.C.D>
+                sealed partial class _SerObj : Serde.ISerialize<A.B.C.D>
                 {
                     global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => A.B.C.D.s_serdeInfo;
 

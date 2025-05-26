@@ -13,15 +13,14 @@ namespace Serde;
 
 public partial class SerializeImplGen
 {
-    internal static (SourceBuilder, string BaseList) GenSerialize(
+    internal static SourceBuilder GenSerialize(
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         if (receiverType.IsAbstract)
         {
-            return ( GenUnionSerializeMethod((INamedTypeSymbol)receiverType),
-                     $": Serde.ISerialize<{receiverType.ToDisplayString()}>");
+            return GenUnionSerializeMethod((INamedTypeSymbol)receiverType);
         }
 
         var statements = new SourceBuilder();
@@ -143,10 +142,7 @@ public partial class SerializeImplGen
         }
 
         """);
-        List<BaseTypeSyntax> bases = [
-            SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverString}>")),
-        ];
-        return (members, BaseList(SeparatedList(bases)).ToFullString());
+        return members;
     }
 
     /// <summary>
