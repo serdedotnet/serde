@@ -10,9 +10,6 @@ partial class JsonSerializerTests
 {
     partial record BasicDU : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU>
     {
-        static ISerialize<Serde.Test.JsonSerializerTests.BasicDU> ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU>.Instance
-            => _SerObj.Instance;
-
         sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.BasicDU.s_serdeInfo;
@@ -24,17 +21,15 @@ partial class JsonSerializerTests
                 switch (value)
                 {
                     case Serde.Test.JsonSerializerTests.BasicDU.A c:
-                _l_type.WriteValue<Serde.Test.JsonSerializerTests.BasicDU.A, _m_AProxy>(_l_serdeInfo, 0, c);
-                break;
-            case Serde.Test.JsonSerializerTests.BasicDU.B c:
-                _l_type.WriteValue<Serde.Test.JsonSerializerTests.BasicDU.B, _m_BProxy>(_l_serdeInfo, 1, c);
-                break;
+                        _l_type.WriteValue<Serde.Test.JsonSerializerTests.BasicDU.A, _m_AProxy>(_l_serdeInfo, 0, c);
+                        break;
+                    case Serde.Test.JsonSerializerTests.BasicDU.B c:
+                        _l_type.WriteValue<Serde.Test.JsonSerializerTests.BasicDU.B, _m_BProxy>(_l_serdeInfo, 1, c);
+                        break;
 
                 }
                 _l_type.End(_l_serdeInfo);
-            }public static readonly _SerObj Instance = new();
-            private _SerObj() { }
-
+            }
         }
     }
 }

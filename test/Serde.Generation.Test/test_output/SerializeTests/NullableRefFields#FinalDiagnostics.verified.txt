@@ -15,7 +15,7 @@
     "Title": "The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.",
     "Severity": "Warning",
     "WarningLevel": "1",
-    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/S.ISerialize.cs: (20,12)-(20,52)",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/S.ISerialize.cs: (17,12)-(17,52)",
     "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8631)",
     "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.",
     "Message": "The type 'T2' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeSerializerExt.WriteBoxedValueIfNotNull<T, TProvider>(ITypeSerializer, ISerdeInfo, int, T)'. Nullability of type argument 'T2' doesn't match constraint type 'Serde.ISerializeProvider<T2>'.",

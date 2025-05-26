@@ -201,5 +201,15 @@ namespace Serde
             return options;
         }
 
+        public static string ToFqn(this ITypeSymbol type) => type.ToDisplayString(FqnFormat);
+
+        public static readonly SymbolDisplayFormat FqnFormat = new(
+            SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining,
+            SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+            SymbolDisplayGenericsOptions.IncludeTypeParameters,
+            miscellaneousOptions:
+                SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+                | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
+                | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
     }
 }

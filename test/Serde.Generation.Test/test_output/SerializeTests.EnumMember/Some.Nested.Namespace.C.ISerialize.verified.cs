@@ -9,9 +9,6 @@ namespace Some.Nested.Namespace;
 
 partial class C : Serde.ISerializeProvider<Some.Nested.Namespace.C>
 {
-    static ISerialize<Some.Nested.Namespace.C> ISerializeProvider<Some.Nested.Namespace.C>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<Some.Nested.Namespace.C>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.C.s_serdeInfo;
@@ -26,8 +23,6 @@ partial class C : Serde.ISerializeProvider<Some.Nested.Namespace.C>
             _l_type.WriteBoxedValue<Some.Nested.Namespace.ColorULong, Some.Nested.Namespace.ColorULongProxy>(_l_info, 3, value.ColorULong);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }

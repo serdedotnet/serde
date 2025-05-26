@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial struct S : Serde.IDeserializeProvider<S>
 {
-    static IDeserialize<S> IDeserializeProvider<S>.Instance
-        => _DeObj.Instance;
-
     sealed partial class _DeObj :Serde.IDeserialize<S>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => S.s_serdeInfo;
@@ -47,8 +44,6 @@ partial struct S : Serde.IDeserializeProvider<S>
 
             return newType;
         }
-        public static readonly _DeObj Instance = new();
-        private _DeObj() { }
 
     }
 }

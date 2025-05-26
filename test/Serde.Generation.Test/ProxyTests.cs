@@ -22,7 +22,7 @@ using Serde;
 [GenerateDeserialize]
 partial record struct Original()
 {
-    public string Name { get; init; }
+    public required string Name { get; init; }
 }
 
 internal sealed class Proxy : ISerialize<Original>, IDeserialize<Original>,
@@ -69,7 +69,7 @@ using Serde;
 [GenerateDeserialize]
 partial record struct Original()
 {
-    public string Name { get; init; }
+    public required string Name { get; init; }
 }
 
 internal class Proxy : ISerialize<Original>, IDeserialize<Original>,

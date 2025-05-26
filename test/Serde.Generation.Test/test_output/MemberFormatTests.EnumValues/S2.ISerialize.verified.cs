@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial struct S2 : Serde.ISerializeProvider<S2>
 {
-    static ISerialize<S2> ISerializeProvider<S2>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<S2>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => S2.s_serdeInfo;
@@ -20,8 +17,6 @@ partial struct S2 : Serde.ISerializeProvider<S2>
             _l_type.WriteBoxedValue<ColorEnum, ColorEnumProxy>(_l_info, 0, value.E);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }

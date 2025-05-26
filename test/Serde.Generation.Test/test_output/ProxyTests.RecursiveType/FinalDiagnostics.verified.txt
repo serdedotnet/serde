@@ -4,10 +4,21 @@
     "Title": "The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.",
     "Severity": "Warning",
     "WarningLevel": "1",
-    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Test.RecursiveWrap.IDeserialize.cs: (31,34)-(31,91)",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Test.RecursiveWrap.ISerde.cs: (35,34)-(35,91)",
     "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8631)",
     "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.",
     "Message": "The type 'Test.RecursiveWrap' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeDeserializerExt.ReadValue<T, TProvider>(ITypeDeserializer, ISerdeInfo, int)'. Nullability of type argument 'Test.RecursiveWrap' doesn't match constraint type 'Serde.IDeserializeProvider<Recursive?>'.",
+    "Category": "Compiler"
+  },
+  {
+    "Id": "CS8631",
+    "Title": "The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.",
+    "Severity": "Warning",
+    "WarningLevel": "1",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Test.RecursiveWrap.ISerde.cs: (18,12)-(18,71)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8631)",
+    "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.",
+    "Message": "The type 'Test.RecursiveWrap' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeSerializerExt.WriteValueIfNotNull<T, TProvider>(ITypeSerializer, ISerdeInfo, int, T)'. Nullability of type argument 'Test.RecursiveWrap' doesn't match constraint type 'Serde.ISerializeProvider<Recursive?>'.",
     "Category": "Compiler"
   },
   {
@@ -19,17 +30,6 @@
     "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8631)",
     "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.",
     "Message": "The type 'Test.RecursiveWrap' cannot be used as type parameter 'TProvider' in the generic type or method 'SerdeInfoProvider.GetSerializeInfo<T, TProvider>()'. Nullability of type argument 'Test.RecursiveWrap' doesn't match constraint type 'Serde.ISerializeProvider<Recursive?>'.",
-    "Category": "Compiler"
-  },
-  {
-    "Id": "CS8631",
-    "Title": "The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.",
-    "Severity": "Warning",
-    "WarningLevel": "1",
-    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/Test.RecursiveWrap.ISerialize.cs: (21,12)-(21,71)",
-    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8631)",
-    "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.",
-    "Message": "The type 'Test.RecursiveWrap' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeSerializerExt.WriteValueIfNotNull<T, TProvider>(ITypeSerializer, ISerdeInfo, int, T)'. Nullability of type argument 'Test.RecursiveWrap' doesn't match constraint type 'Serde.ISerializeProvider<Recursive?>'.",
     "Category": "Compiler"
   }
 ]

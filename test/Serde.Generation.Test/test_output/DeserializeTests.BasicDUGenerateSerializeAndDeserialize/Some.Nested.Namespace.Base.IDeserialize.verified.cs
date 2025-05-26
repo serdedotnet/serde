@@ -9,9 +9,6 @@ namespace Some.Nested.Namespace;
 
 partial record Base : Serde.IDeserializeProvider<Some.Nested.Namespace.Base>
 {
-    static IDeserialize<Some.Nested.Namespace.Base> IDeserializeProvider<Some.Nested.Namespace.Base>.Instance
-        => _DeObj.Instance;
-
     sealed partial class _DeObj : global::Serde.IDeserialize<Some.Nested.Namespace.Base>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base.s_serdeInfo;
@@ -36,8 +33,6 @@ partial record Base : Serde.IDeserializeProvider<Some.Nested.Namespace.Base>
                 throw Serde.DeserializeException.ExpectedEndOfType(index);
             }
             return _l_result;
-        }public static readonly _DeObj Instance = new();
-        private _DeObj() { }
-
+        }
     }
 }

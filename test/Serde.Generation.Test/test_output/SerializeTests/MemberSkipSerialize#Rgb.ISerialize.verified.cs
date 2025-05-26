@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial struct Rgb : Serde.ISerializeProvider<Rgb>
 {
-    static ISerialize<Rgb> ISerializeProvider<Rgb>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<Rgb>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Rgb.s_serdeInfo;
@@ -21,8 +18,6 @@ partial struct Rgb : Serde.ISerializeProvider<Rgb>
             _l_type.WriteU8(_l_info, 1, value.Blue);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }

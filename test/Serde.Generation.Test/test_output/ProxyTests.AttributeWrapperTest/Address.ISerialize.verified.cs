@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial class Address : Serde.ISerializeProvider<Address>
 {
-    static ISerialize<Address> ISerializeProvider<Address>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<Address>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Address.s_serdeInfo;
@@ -24,8 +21,6 @@ partial class Address : Serde.ISerializeProvider<Address>
             _l_type.WriteString(_l_info, 4, value.Zip);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }

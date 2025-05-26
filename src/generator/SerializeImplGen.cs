@@ -14,14 +14,13 @@ namespace Serde;
 public partial class SerializeImplGen
 {
     internal static (SourceBuilder, string BaseList) GenSerialize(
-        TypeDeclContext typeDeclContext,
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         if (receiverType.IsAbstract)
         {
-            return ( new(GenUnionSerializeMethod((INamedTypeSymbol)receiverType)),
+            return ( GenUnionSerializeMethod((INamedTypeSymbol)receiverType),
                      $": Serde.ISerialize<{receiverType.ToDisplayString()}>");
         }
 
@@ -136,9 +135,6 @@ public partial class SerializeImplGen
         var receiverSyntax = ((INamedTypeSymbol)receiverType).ToFqnSyntax();
         var receiverString = receiverType.ToDisplayString();
 
-        string serdeInfoText = $"""
-static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}>.SerdeInfo => {receiverSyntax}SerdeInfo.Instance;
-""";
         // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
         var members = new SourceBuilder($$"""
         void global::Serde.ISerialize<{{receiverSyntax}}>.Serialize({{receiverSyntax}} value, global::Serde.ISerializer serializer)
@@ -150,21 +146,13 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         List<BaseTypeSyntax> bases = [
             SimpleBaseType(ParseTypeName($"Serde.ISerialize<{receiverString}>")),
         ];
-        if (receiverType.TypeKind == TypeKind.Enum)
-        {
-            bases.Add(SimpleBaseType(ParseTypeName($"Serde.ISerializeProvider<{receiverType.ToDisplayString()}>")));
-            members.AppendLine($$"""
-            static ISerialize<{{receiverString}}> ISerializeProvider<{{receiverString}}>.Instance
-                => {{receiverString}}Proxy.Instance;
-            """);
-        }
         return (members, BaseList(SeparatedList(bases)).ToFullString());
     }
 
     /// <summary>
     /// Generate the ISerialize{T}.Serialize method for a union type.
     /// </summary>
-    private static string GenUnionSerializeMethod(INamedTypeSymbol baseType)
+    private static SourceBuilder GenUnionSerializeMethod(INamedTypeSymbol baseType)
     {
         Debug.Assert(baseType.IsAbstract);
 
@@ -172,7 +160,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
         // field, with the name being the type name and the value being the record case.
 
         var caseTypes = SymbolUtilities.GetDUTypeMembers(baseType);
-        var casesBuilder = new StringBuilder();
+        var casesBuilder = new SourceBuilder();
         for (int i = 0; i < caseTypes.Length; i++)
         {
             var t = caseTypes[i];
@@ -181,7 +169,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             casesBuilder.AppendLine($"    _l_type.WriteValue<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
             casesBuilder.AppendLine($"    break;");
         }
-        string methodDecl = $$"""
+        var methodDecl = new SourceBuilder($$"""
         void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
         {
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
@@ -192,7 +180,7 @@ static global::Serde.SerdeInfo global::Serde.ISerdeInfoProvider<{receiverSyntax}
             }
             _l_type.End(_l_serdeInfo);
         }
-        """;
+        """);
         return methodDecl;
     }
 }

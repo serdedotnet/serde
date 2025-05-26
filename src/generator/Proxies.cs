@@ -11,6 +11,7 @@ using static Serde.Diagnostics;
 using static Serde.WellKnownTypes;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using System.Reflection.Metadata;
 
 namespace Serde;
 
@@ -26,39 +27,21 @@ partial class Proxies
 {
     internal static string GetProxyName(string typeName) => typeName + "Proxy";
 
-    internal static void GenerateEnumProxy(
-        BaseTypeDeclarationSyntax typeDecl,
-        SemanticModel semanticModel,
+    internal static TypeDeclContext GenerateEnumProxy(
+        TypeDeclContext typeDeclContext,
         GeneratorExecutionContext context)
     {
-        var receiverType = semanticModel.GetDeclaredSymbol(typeDecl);
-        if (receiverType is null)
-        {
-            return;
-        }
-
         // Generate enum wrapper stub
-        var typeDeclContext = new TypeDeclContext(typeDecl);
         var typeName = typeDeclContext.Name;
         var proxyName = GetProxyName(typeName);
         var newType = new SourceBuilder($$"""
-sealed partial class {{proxyName}}
-{
-    public static readonly {{proxyName}} Instance = new();
-    private {{proxyName}}() { }
-}
+sealed partial class {{proxyName}};
 """)!;
         newType = typeDeclContext.MakeSiblingType(newType);
-        string fullWrapperName = string.Join(".", typeDeclContext.NamespaceNames
-            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
-            .Concat(new[] { proxyName }));
+        var newDecl = TypeDeclContext.FromFile(newType.ToString(), proxyName);
 
-        var src = new SourceBuilder($"""
-
-        {newType}
-        """);
-
-        context.AddSource(fullWrapperName, src);
+        context.AddSource(newDecl.GetFqn(), newType);
+        return newDecl;
     }
 
     internal static string? TryGetPrimitiveName(ITypeSymbol type)
@@ -515,12 +498,21 @@ sealed partial class {{proxyName}}
     }
 }
 
-internal static class WrapUsageExtensions
+internal static class SerdeUsageExt
 {
     public static string GetProxyInterfaceName(this SerdeUsage usage) => usage switch
     {
         SerdeUsage.Serialize => "ISerialize",
         SerdeUsage.Deserialize => "IDeserialize",
+        SerdeUsage.Both => "ISerde",
+        _ => throw ExceptionUtilities.Unreachable
+    };
+
+    public static string GetSerdeObjName(this SerdeUsage usage) => usage switch
+    {
+        SerdeUsage.Serialize => "_SerObj",
+        SerdeUsage.Deserialize => "_DeObj",
+        SerdeUsage.Both => "_SerdeObj",
         _ => throw ExceptionUtilities.Unreachable
     };
 }

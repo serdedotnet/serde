@@ -42,16 +42,8 @@ namespace Serde
             ];
             if (receiverType.TypeKind == TypeKind.Enum)
             {
-                // `Serde.IDeserializeProvider<'typeName'>. Enums generate a proxy
-                bases.Add(SimpleBaseType(ParseTypeName($"Serde.IDeserializeProvider<{typeFqn}>")));
-
                 var deserialize = GenerateEnumDeserializeMethod(receiverType, typeSyntax);
                 members.AppendLine(deserialize);
-
-                members.AppendLine($"""
-                static IDeserialize<{typeFqn}> IDeserializeProvider<{typeFqn}>.Instance
-                    => {typeFqn}Proxy.Instance;
-                """);
             }
             else
             {

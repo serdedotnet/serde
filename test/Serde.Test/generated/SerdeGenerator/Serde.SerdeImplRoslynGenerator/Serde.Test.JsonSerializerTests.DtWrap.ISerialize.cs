@@ -10,9 +10,6 @@ partial class JsonSerializerTests
 {
     partial record DtWrap : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.DtWrap>
     {
-        static ISerialize<Serde.Test.JsonSerializerTests.DtWrap> ISerializeProvider<Serde.Test.JsonSerializerTests.DtWrap>.Instance
-            => _SerObj.Instance;
-
         sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.DtWrap>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.DtWrap.s_serdeInfo;
@@ -24,8 +21,6 @@ partial class JsonSerializerTests
                 _l_type.WriteDateTime(_l_info, 0, value.Value);
                 _l_type.End(_l_info);
             }
-            public static readonly _SerObj Instance = new();
-            private _SerObj() { }
 
         }
     }

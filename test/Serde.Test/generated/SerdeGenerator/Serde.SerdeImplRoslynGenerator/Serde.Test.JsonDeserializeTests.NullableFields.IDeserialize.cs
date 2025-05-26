@@ -10,9 +10,6 @@ partial class JsonDeserializeTests
 {
     partial class NullableFields : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.NullableFields>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.NullableFields> IDeserializeProvider<Serde.Test.JsonDeserializeTests.NullableFields>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.NullableFields>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.NullableFields.s_serdeInfo;
@@ -57,8 +54,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }

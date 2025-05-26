@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial struct S : Serde.ISerializeProvider<S>
 {
-    static ISerialize<S> ISerializeProvider<S>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<S>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => S.s_serdeInfo;
@@ -21,8 +18,6 @@ partial struct S : Serde.ISerializeProvider<S>
             _l_type.WriteI32(_l_info, 1, value.TwoWord);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }
