@@ -489,7 +489,12 @@ partial {{declKeywords}} {{typeName}}{{typeDeclContext.TypeParameterList}}{{base
         };
         var serdeSymbol = context.Compilation.GetTypeByMetadataName(mdName)?.Construct(argType);
 
-        if (serdeSymbol is not null && targetType.AllInterfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
+        if (serdeSymbol is null)
+        {
+            return false;
+        }
+
+        if (targetType.AllInterfaces.Contains(serdeSymbol, SymbolEqualityComparer.Default)
             || (targetType is ITypeParameterSymbol param && param.ConstraintTypes.Contains(serdeSymbol, SymbolEqualityComparer.Default)))
         {
             return true;
