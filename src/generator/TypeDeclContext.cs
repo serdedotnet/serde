@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -83,6 +84,39 @@ namespace Serde
                 }
                 return null;
             }
+        }
+
+        public string GetFqn(bool includeTypeParameters = true)
+        {
+            // Returns the fully qualified name of the type declaration, including namespaces and
+            // parent types.
+            var builder = new StringBuilder();
+            foreach (var ns in NamespaceNames)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append('.');
+                }
+                builder.Append(ns);
+            }
+            foreach (var (name, kind) in ParentTypeInfo)
+            {
+                if (builder.Length > 0)
+                {
+                    builder.Append('.');
+                }
+                builder.Append(name);
+            }
+            if (builder.Length > 0)
+            {
+                builder.Append('.');
+            }
+            builder.Append(Name);
+            if (includeTypeParameters && TypeParameterList is not null)
+            {
+                builder.Append(TypeParameterList.ToString());
+            }
+            return builder.ToString();
         }
 
         public SourceBuilder MakeSiblingType(SourceBuilder newType)

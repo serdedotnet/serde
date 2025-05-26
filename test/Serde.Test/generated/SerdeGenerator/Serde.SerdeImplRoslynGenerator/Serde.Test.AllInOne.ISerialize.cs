@@ -8,9 +8,6 @@ namespace Serde.Test;
 
 partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
 {
-    static ISerialize<Serde.Test.AllInOne> ISerializeProvider<Serde.Test.AllInOne>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<Serde.Test.AllInOne>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
@@ -42,8 +39,6 @@ partial record AllInOne : Serde.ISerializeProvider<Serde.Test.AllInOne>
             _l_type.WriteBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_info, 20, value.Color);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }

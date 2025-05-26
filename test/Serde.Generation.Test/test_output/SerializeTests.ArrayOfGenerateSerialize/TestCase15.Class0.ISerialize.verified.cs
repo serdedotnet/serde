@@ -8,9 +8,6 @@ partial class TestCase15
 {
     partial class Class0 : Serde.ISerializeProvider<TestCase15.Class0>
     {
-        static ISerialize<TestCase15.Class0> ISerializeProvider<TestCase15.Class0>.Instance
-            => _SerObj.Instance;
-
         sealed partial class _SerObj :Serde.ISerialize<TestCase15.Class0>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => TestCase15.Class0.s_serdeInfo;
@@ -23,8 +20,6 @@ partial class TestCase15
                 _l_type.WriteValue<bool[], Serde.ArrayProxy.Ser<bool, global::Serde.BoolProxy>>(_l_info, 1, value.Field1);
                 _l_type.End(_l_info);
             }
-            public static readonly _SerObj Instance = new();
-            private _SerObj() { }
 
         }
     }

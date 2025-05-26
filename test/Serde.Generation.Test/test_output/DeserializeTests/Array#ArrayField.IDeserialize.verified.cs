@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial class ArrayField : Serde.IDeserializeProvider<ArrayField>
 {
-    static IDeserialize<ArrayField> IDeserializeProvider<ArrayField>.Instance
-        => _DeObj.Instance;
-
     sealed partial class _DeObj :Serde.IDeserialize<ArrayField>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => ArrayField.s_serdeInfo;
@@ -47,8 +44,6 @@ partial class ArrayField : Serde.IDeserializeProvider<ArrayField>
 
             return newType;
         }
-        public static readonly _DeObj Instance = new();
-        private _DeObj() { }
 
     }
 }

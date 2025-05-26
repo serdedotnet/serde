@@ -10,9 +10,6 @@ partial class InvalidJsonTests
 {
     partial class ClassWithDictionaryOfPoco : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>
     {
-        static IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfPoco.s_serdeInfo;
@@ -51,8 +48,6 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }

@@ -9,9 +9,6 @@ namespace Serde.Test;
 
 partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
 {
-    static IDeserialize<Serde.Test.AllInOne> IDeserializeProvider<Serde.Test.AllInOne>.Instance
-        => _DeObj.Instance;
-
     sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.AllInOne>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
@@ -170,8 +167,6 @@ partial record AllInOne : Serde.IDeserializeProvider<Serde.Test.AllInOne>
 
             return newType;
         }
-        public static readonly _DeObj Instance = new();
-        private _DeObj() { }
 
     }
 }

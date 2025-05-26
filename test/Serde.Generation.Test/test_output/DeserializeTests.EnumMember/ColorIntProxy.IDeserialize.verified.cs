@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-sealed partial class ColorIntProxy :Serde.IDeserialize<ColorInt>,Serde.IDeserializeProvider<ColorInt>
+sealed partial class ColorIntProxy :Serde.IDeserialize<ColorInt>
 {
     ColorInt IDeserialize<ColorInt>.Deserialize(IDeserializer deserializer)
     {
@@ -27,7 +27,5 @@ sealed partial class ColorIntProxy :Serde.IDeserialize<ColorInt>,Serde.IDeserial
             _ => throw new InvalidOperationException($"Unexpected index: {index}")
         };
     }
-    static IDeserialize<ColorInt> IDeserializeProvider<ColorInt>.Instance
-        => ColorIntProxy.Instance;
 
 }

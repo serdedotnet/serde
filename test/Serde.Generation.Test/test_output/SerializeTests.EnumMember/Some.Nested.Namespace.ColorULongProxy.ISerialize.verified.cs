@@ -7,7 +7,7 @@ using Serde;
 
 namespace Some.Nested.Namespace;
 
-sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.ColorULong>,Serde.ISerializeProvider<Some.Nested.Namespace.ColorULong>
+sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.ColorULong>
 {
     void global::Serde.ISerialize<Some.Nested.Namespace.ColorULong>.Serialize(Some.Nested.Namespace.ColorULong value, global::Serde.ISerializer serializer)
     {
@@ -23,7 +23,5 @@ sealed partial class ColorULongProxy :Serde.ISerialize<Some.Nested.Namespace.Col
         _l_type.WriteU64(_l_info, index, (ulong)value);
         _l_type.End(_l_info);
     }
-    static ISerialize<Some.Nested.Namespace.ColorULong> ISerializeProvider<Some.Nested.Namespace.ColorULong>.Instance
-        => Some.Nested.Namespace.ColorULongProxy.Instance;
 
 }

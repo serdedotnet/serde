@@ -10,9 +10,6 @@ partial class JsonDeserializeTests
 {
     partial record BasicDU : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU> IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj : global::Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU.s_serdeInfo;
@@ -37,9 +34,7 @@ partial class JsonDeserializeTests
                     throw Serde.DeserializeException.ExpectedEndOfType(index);
                 }
                 return _l_result;
-            }public static readonly _DeObj Instance = new();
-            private _DeObj() { }
-
+            }
         }
     }
 }

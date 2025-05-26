@@ -10,9 +10,6 @@ partial class JsonDeserializeTests
 {
     partial record struct DenyUnknown : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.DenyUnknown>
     {
-        static IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown> IDeserializeProvider<Serde.Test.JsonDeserializeTests.DenyUnknown>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.DenyUnknown>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.DenyUnknown.s_serdeInfo;
@@ -56,8 +53,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }

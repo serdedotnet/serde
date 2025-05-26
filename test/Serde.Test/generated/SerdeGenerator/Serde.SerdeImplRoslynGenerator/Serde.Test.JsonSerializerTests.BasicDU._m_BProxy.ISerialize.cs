@@ -12,9 +12,6 @@ partial class JsonSerializerTests
     {
         partial class _m_BProxy : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU.B>
         {
-            static ISerialize<Serde.Test.JsonSerializerTests.BasicDU.B> ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU.B>.Instance
-                => _SerObj.Instance;
-
             sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU.B>
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.BasicDU._m_BProxy.s_serdeInfo;
@@ -26,8 +23,6 @@ partial class JsonSerializerTests
                     _l_type.WriteString(_l_info, 0, value.Y);
                     _l_type.End(_l_info);
                 }
-                public static readonly _SerObj Instance = new();
-                private _SerObj() { }
 
             }
         }

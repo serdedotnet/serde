@@ -62,6 +62,11 @@ sealed class GenerateSerde : Attribute
     /// This is used to implement serialization and deserialization for a proxy type.
     /// </summary>
     public Type? ForType { get; init; }
+
+    /// <summary>
+    /// Override the generated <see cref="ISerde{T}"/> object with a custom one.
+    /// </summary>
+    public Type? With { get; init; }
 }
 
 /// <summary>

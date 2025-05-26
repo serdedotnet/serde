@@ -12,9 +12,6 @@ partial class SerdeInfoTests
     {
         partial class _m_BProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase.B>
         {
-            static IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.B> IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase.B>.Instance
-                => _DeObj.Instance;
-
             sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.B>
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase._m_BProxy.s_serdeInfo;
@@ -47,8 +44,6 @@ partial class SerdeInfoTests
 
                     return newType;
                 }
-                public static readonly _DeObj Instance = new();
-                private _DeObj() { }
 
             }
         }

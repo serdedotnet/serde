@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -50,109 +51,6 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
     /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        static GenerationOutput GenerateForCtx(
-            SerdeUsage usage,
-            GeneratorAttributeSyntaxContext attrCtx,
-            CancellationToken cancelToken)
-        {
-            var generationContext = new GeneratorExecutionContext(attrCtx);
-            RunGeneration(usage, attrCtx, generationContext, cancelToken);
-            return generationContext.GetOutput();
-
-            static void RunGeneration(
-                SerdeUsage usage,
-                GeneratorAttributeSyntaxContext attrCtx,
-                GeneratorExecutionContext generationContext,
-                CancellationToken cancelToken)
-            {
-                var typeDecl = (BaseTypeDeclarationSyntax)attrCtx.TargetNode;
-                var model = attrCtx.SemanticModel;
-                var typeSymbol = model.GetDeclaredSymbol(typeDecl);
-                if (typeSymbol is null)
-                {
-                    return;
-                }
-                // Assume that all symbol declarations are non-null, even if in an unnanotated
-                // context
-                typeSymbol = (INamedTypeSymbol)typeSymbol
-                    .WithNullableAnnotation(NullableAnnotation.NotAnnotated);
-
-                static bool PrivateOrCopyCtor(IMethodSymbol ctor)
-                {
-                    if (ctor.DeclaredAccessibility == Accessibility.Private)
-                    {
-                        return true;
-                    }
-                    if (ctor.Parameters is [{ Type: { } paramType }] && paramType.Equals(ctor.ContainingType, SymbolEqualityComparer.Default))
-                    {
-                        return true;
-                    }
-                    return false;
-                }
-
-                if (typeSymbol.IsAbstract &&
-                    (!typeSymbol.IsRecord
-                     || !typeSymbol.InstanceConstructors.All(c => PrivateOrCopyCtor(c))
-                     || SymbolUtilities.GetDUTypeMembers(typeSymbol).Length == 0))
-                {
-                    generationContext.ReportDiagnostic(CreateDiagnostic(
-                        DiagId.ERR_CantImplementAbstract,
-                        typeDecl.Identifier.GetLocation(),
-                        typeSymbol));
-                    return;
-                }
-
-                var attributeData = attrCtx.Attributes.Single();
-
-                INamedTypeSymbol receiverType = typeSymbol;
-                var proxiedOpt = TryGetProxiedType(attributeData, model, typeDecl, typeSymbol);
-                // If the Through property is set, then we are implementing a wrapper type
-                if (proxiedOpt is { Item1: null })
-                {
-                    // Error already reported
-                    return;
-                }
-                else if (proxiedOpt is { Item1: { } proxiedType })
-                {
-                    receiverType = proxiedType;
-
-                    if (receiverType.SpecialType != SpecialType.None)
-                    {
-                        generationContext.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_CantWrapSpecialType,
-                            attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
-                            receiverType));
-                        return;
-                    }
-                }
-                else if (!typeDecl.IsKind(SyntaxKind.EnumDeclaration))
-                {
-                    if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
-                    {
-                        // Type must be partial
-                        generationContext.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_TypeNotPartial,
-                            typeDecl.Identifier.GetLocation(),
-                            typeDecl.Identifier.ValueText));
-                        return;
-                    }
-                }
-
-                if (typeDecl.IsKind(SyntaxKind.EnumDeclaration))
-                {
-                    Proxies.GenerateEnumProxy(
-                        typeDecl,
-                        attrCtx.SemanticModel,
-                        generationContext);
-                }
-
-                var inProgress = ImmutableList.Create<(ITypeSymbol Receiver, ITypeSymbol Containing)>(
-                    (receiverType.WithNullableAnnotation(NullableAnnotation.Annotated), typeSymbol));
-
-                GenerateInfoAndSerdeImpls(usage, generationContext, typeDecl, receiverType, inProgress);
-            }
-        }
-
         var generateSerdeTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
             WellKnownAttribute.GenerateSerde.GetFqn(),
             (_, _) => true,
@@ -194,6 +92,185 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
 
         context.RegisterSourceOutput(generateSerdeTypes, provideOutput);
         context.RegisterSourceOutput(combined, provideOutput);
+
+        return;
+
+        static GenerationOutput GenerateForCtx(
+            SerdeUsage usage,
+            GeneratorAttributeSyntaxContext attrCtx,
+            CancellationToken cancelToken)
+        {
+            var generationContext = new GeneratorExecutionContext(attrCtx);
+            RunGeneration(usage, attrCtx, generationContext);
+            return generationContext.GetOutput();
+        }
+    }
+
+    private static void RunGeneration(
+        SerdeUsage usage,
+        GeneratorAttributeSyntaxContext attrCtx,
+        GeneratorExecutionContext generationContext)
+    {
+        var typeDecl = (BaseTypeDeclarationSyntax)attrCtx.TargetNode;
+        var model = attrCtx.SemanticModel;
+        var typeSymbol = model.GetDeclaredSymbol(typeDecl);
+        if (typeSymbol is null)
+        {
+            return;
+        }
+        // Assume that all symbol declarations are non-null, even if in an unnanotated
+        // context
+        typeSymbol = (INamedTypeSymbol)typeSymbol
+            .WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+
+        static bool PrivateOrCopyCtor(IMethodSymbol ctor)
+        {
+            if (ctor.DeclaredAccessibility == Accessibility.Private)
+            {
+                return true;
+            }
+            if (ctor.Parameters is [{ Type: { } paramType }] && paramType.Equals(ctor.ContainingType, SymbolEqualityComparer.Default))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        if (typeSymbol.IsAbstract &&
+            (!typeSymbol.IsRecord
+                || !typeSymbol.InstanceConstructors.All(c => PrivateOrCopyCtor(c))
+                || SymbolUtilities.GetDUTypeMembers(typeSymbol).Length == 0))
+        {
+            generationContext.ReportDiagnostic(CreateDiagnostic(
+                DiagId.ERR_CantImplementAbstract,
+                typeDecl.Identifier.GetLocation(),
+                typeSymbol));
+            return;
+        }
+
+        var attributeData = attrCtx.Attributes.Single();
+
+        INamedTypeSymbol receiverType = typeSymbol;
+        var proxiedOpt = TryGetProxiedType(attributeData);
+        bool isEnum = typeDecl.IsKind(SyntaxKind.EnumDeclaration);
+        // If the Through property is set, then we are implementing a wrapper type
+        if (proxiedOpt is { Item1: null })
+        {
+            // Error already reported
+            return;
+        }
+        else if (proxiedOpt is { Item1: { } proxiedType })
+        {
+            receiverType = proxiedType;
+
+            if (receiverType.SpecialType != SpecialType.None)
+            {
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_CantWrapSpecialType,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    receiverType));
+                return;
+            }
+        }
+        else if (!isEnum)
+        {
+            if (!typeDecl.Modifiers.Any(tok => tok.IsKind(SyntaxKind.PartialKeyword)))
+            {
+                // Type must be partial
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_TypeNotPartial,
+                    typeDecl.Identifier.GetLocation(),
+                    typeDecl.Identifier.ValueText));
+                return;
+            }
+        }
+
+        var typeDeclContext = new TypeDeclContext(typeDecl);
+        if (isEnum)
+        {
+            typeDeclContext = Proxies.GenerateEnumProxy(typeDeclContext, generationContext);
+        }
+
+        var inProgress = ImmutableList.Create<(ITypeSymbol Receiver, ITypeSymbol Containing)>(
+            (receiverType.WithNullableAnnotation(NullableAnnotation.Annotated), typeSymbol));
+
+        string serdeObjString;
+        if (TryGetSerdeObj(attributeData) is not { Item1: { } serdeObj })
+        {
+            GenerateInfoAndSerdeImpls(usage, generationContext, typeDecl, receiverType, inProgress);
+            serdeObjString = isEnum
+                ? typeDeclContext.GetFqn()
+                : $"{typeDeclContext.GetFqn()}.{usage.GetSerdeObjName()}";
+        }
+        else
+        {
+            // If the user provided a custom serde object, we only need to attach it, meaning just
+            // generate the provider implementations.
+            serdeObjString = serdeObj.ToFqn();
+        }
+
+        GenerateProviderImpls(
+            usage,
+            generationContext,
+            serdeObjString,
+            typeDeclContext.TypeDecl,
+            receiverType);
+    }
+
+    internal static void GenerateProviderImpls(
+        SerdeUsage usage,
+        GeneratorExecutionContext generationContext,
+        string serdeObjName,
+        BaseTypeDeclarationSyntax typeDecl,
+        INamedTypeSymbol receiverType)
+    {
+        var typeDeclContext = new TypeDeclContext(typeDecl);
+        string fullTypeName = typeDeclContext.GetFqn(includeTypeParameters: false);
+
+        string srcName;
+        SourceBuilder content;
+        content = GenProviderImplHelper(usage);
+        srcName = $"{fullTypeName}.{usage.GetProxyInterfaceName()}Provider";
+        generationContext.AddSource(srcName, content);
+
+        SourceBuilder GenProviderImplHelper(SerdeUsage usage)
+            => GenProviderImpl(usage, serdeObjName, typeDeclContext, receiverType);
+    }
+
+    private static SourceBuilder GenProviderImpl(
+        SerdeUsage usage,
+        string serdeObjName,
+        TypeDeclContext typeDeclContext,
+        ITypeSymbol receiverType
+    )
+    {
+        var receiverString = receiverType.ToDisplayString();
+        var containerString = typeDeclContext.GetFqn();
+
+        string providerString;
+        SourceBuilder members;
+        if (usage == SerdeUsage.Both)
+        {
+            providerString = $"Serde.ISerdeProvider<{containerString}, {serdeObjName}, {receiverString}>";
+            members = new SourceBuilder($$"""
+            static {{serdeObjName}} global::Serde.ISerdeProvider<{{containerString}}, {{serdeObjName}}, {{receiverString}}>.Instance { get; }
+                = new {{serdeObjName}}();
+            """);
+        }
+        else
+        {
+            var interfaceName = $"{usage.GetProxyInterfaceName()}Provider";
+            providerString = $"Serde.{interfaceName}<{receiverType.ToFqn()}>";
+            members = new SourceBuilder($$"""
+            static global::Serde.{{usage.GetProxyInterfaceName()}}<{{receiverType.ToDisplayString()}}> global::Serde.{{interfaceName}}<{{receiverType.ToFqn()}}>.Instance { get; }
+                = new {{serdeObjName}}();
+            """);
+
+        }
+
+        var newType = new SourceBuilder();
+        typeDeclContext.AppendPartialDecl(newType, providerString, members);
+        return newType;
     }
 
 
@@ -211,25 +288,12 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             usage,
             inProgress);
 
-        if (usage.HasFlag(SerdeUsage.Serialize))
-        {
-            GenerateImpl(
-                SerdeUsage.Serialize,
-                new TypeDeclContext(typeDecl),
-                receiverType,
-                generationContext,
-                inProgress);
-        }
-
-        if (usage.HasFlag(SerdeUsage.Deserialize))
-        {
-            GenerateImpl(
-                SerdeUsage.Deserialize,
-                new TypeDeclContext(typeDecl),
-                receiverType,
-                generationContext,
-                inProgress);
-        }
+        GenSerdeObjImpl(
+            usage,
+            new TypeDeclContext(typeDecl),
+            receiverType,
+            generationContext,
+            inProgress);
     }
 
     /// <summary>
@@ -240,11 +304,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
     /// Returns null if there is no `Through` property. Returns ValueTuple(null) if there is an
     /// error. Returns ValueTuple(ITypeSymbol) if there is a valid proxied type.
     /// </returns>
-    private static ValueTuple<INamedTypeSymbol?>? TryGetProxiedType(
-        AttributeData attributeData,
-        SemanticModel model,
-        BaseTypeDeclarationSyntax typeDecl,
-        ITypeSymbol attributedSymbol)
+    private static ValueTuple<INamedTypeSymbol?>? TryGetProxiedType(AttributeData attributeData)
     {
         foreach (var namedArg in attributeData.NamedArguments)
         {
@@ -263,7 +323,30 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         return null;
     }
 
-    internal static void GenerateImpl(
+    /// <summary>
+    /// Check if the generation attribute has a <see cref="GenerateSerde.With"/> property,
+    /// which specifies a custom serde object to use for serialization or deserialization.
+    /// </summary>
+    private static ValueTuple<INamedTypeSymbol?>? TryGetSerdeObj(AttributeData attributeData)
+    {
+        foreach (var namedArg in attributeData.NamedArguments)
+        {
+            switch (namedArg)
+            {
+                case { Key: nameof(GenerateSerde.With),
+                       Value: { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol } }:
+                    if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
+                    {
+                        // TODO: Error about bad type
+                        return new(null);
+                    }
+                    return new(namedTypeSymbol);
+            }
+        }
+        return null;
+    }
+
+    internal static void GenSerdeObjImpl(
         SerdeUsage usage,
         TypeDeclContext typeDeclContext,
         ITypeSymbol receiverType,
@@ -271,19 +354,30 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         var typeName = typeDeclContext.Name;
-        string fullTypeName = string.Join(".", typeDeclContext.NamespaceNames
-            .Concat(typeDeclContext.ParentTypeInfo.Select(x => x.Name))
-            .Concat(new[] { typeName }));
-
-        var fullTypeString = fullTypeName + (typeDeclContext.TypeParameterList?.ToString() ?? "");
+        string fullTypeName = typeDeclContext.GetFqn(includeTypeParameters: false);
+        var fullTypeString = typeDeclContext.GetFqn();
 
         // Generate statements for the implementation
-        var (implMembers, baseList) = usage switch
+        SourceBuilder implMembers;
+        string? baseList;
+        switch (usage)
         {
-            SerdeUsage.Serialize => SerializeImplGen.GenSerialize(typeDeclContext, context, receiverType, inProgress),
-            SerdeUsage.Deserialize => DeserializeImplGen.GenDeserialize(typeDeclContext, context, receiverType, inProgress),
-            _ => throw ExceptionUtilities.Unreachable
-        };
+            case SerdeUsage.Serialize:
+                (implMembers, baseList) = SerializeImplGen.GenSerialize(context, receiverType, inProgress);
+                break;
+            case SerdeUsage.Deserialize:
+                (implMembers, baseList) = DeserializeImplGen.GenDeserialize(typeDeclContext, context, receiverType, inProgress);
+                break;
+            case SerdeUsage.Both:
+                (implMembers, _) = SerializeImplGen.GenSerialize(context, receiverType, inProgress);
+                var (deserializeMembers, _) =
+                    DeserializeImplGen.GenDeserialize(typeDeclContext, context, receiverType, inProgress);
+                implMembers.Append(deserializeMembers);
+                baseList = $": global::Serde.ISerde<{receiverType.ToFqn()}>";
+                break;
+            default:
+                throw ExceptionUtilities.Unreachable;
+        }
 
         var typeKind = typeDeclContext.Kind;
         var newType = new SourceBuilder("""
@@ -312,17 +406,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         }
         else
         {
-            var objPrefix = usage == SerdeUsage.Serialize ? "Ser" : "De";
-            var objName = $"_{objPrefix}Obj";
-
-            implMembers.AppendLine(
-                $"public static readonly {objName} Instance = new();"
-            );
-            implMembers.AppendLine(
-                $$"""
-                private {{objName}}() { }
-                """
-            );
+            var objName = usage.GetSerdeObjName();
 
             var interfaceName = usage.GetProxyInterfaceName();
             var proxyType = new SourceBuilder($$"""
@@ -334,14 +418,8 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             }
             """);
 
-            var members = new SourceBuilder($$"""
-            static {{interfaceName}}<{{receiverType.ToDisplayString()}}> {{interfaceName}}Provider<{{receiverType.ToDisplayString()}}>.Instance
-                => {{objName}}.Instance;
-
-            {{proxyType}}
-            """);
-            var providerString = $"Serde.{interfaceName}Provider<{receiverType.ToDisplayString()}>";
-            typeDeclContext.AppendPartialDecl(newType, providerString, members);
+            var providerString = $"Serde.{interfaceName}Provider<{receiverType.ToFqn()}>";
+            typeDeclContext.AppendPartialDecl(newType, providerString, proxyType);
         }
 
         var srcName = fullTypeName + "." + usage.GetProxyInterfaceName();

@@ -12,9 +12,6 @@ partial class JsonDeserializeTests
     {
         partial class _m_AProxy : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU.A>
         {
-            static IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.A> IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU.A>.Instance
-                => _DeObj.Instance;
-
             sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.A>
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU._m_AProxy.s_serdeInfo;
@@ -52,8 +49,6 @@ partial class JsonDeserializeTests
 
                     return newType;
                 }
-                public static readonly _DeObj Instance = new();
-                private _DeObj() { }
 
             }
         }

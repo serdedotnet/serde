@@ -9,9 +9,6 @@ namespace Test;
 
 partial record struct ChannelList : Serde.IDeserializeProvider<Test.ChannelList>
 {
-    static IDeserialize<Test.ChannelList> IDeserializeProvider<Test.ChannelList>.Instance
-        => _DeObj.Instance;
-
     sealed partial class _DeObj :Serde.IDeserialize<Test.ChannelList>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Test.ChannelList.s_serdeInfo;
@@ -50,8 +47,6 @@ partial record struct ChannelList : Serde.IDeserializeProvider<Test.ChannelList>
 
             return newType;
         }
-        public static readonly _DeObj Instance = new();
-        private _DeObj() { }
 
     }
 }

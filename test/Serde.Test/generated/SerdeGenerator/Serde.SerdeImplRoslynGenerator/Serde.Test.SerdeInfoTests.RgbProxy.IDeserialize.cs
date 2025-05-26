@@ -10,9 +10,6 @@ partial class SerdeInfoTests
 {
     partial record RgbProxy : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>
     {
-        static IDeserialize<Serde.Test.SerdeInfoTests.Rgb> IDeserializeProvider<Serde.Test.SerdeInfoTests.Rgb>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.RgbProxy.s_serdeInfo;
@@ -63,8 +60,6 @@ partial class SerdeInfoTests
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }

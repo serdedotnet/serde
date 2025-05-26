@@ -10,9 +10,6 @@ partial class InvalidJsonTests
 {
     partial record NoComma : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.NoComma>
     {
-        static IDeserialize<Serde.Json.Test.InvalidJsonTests.NoComma> IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.NoComma>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.NoComma>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.NoComma.s_serdeInfo;
@@ -57,8 +54,6 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }

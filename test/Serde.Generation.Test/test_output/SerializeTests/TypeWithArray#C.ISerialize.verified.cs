@@ -6,9 +6,6 @@ using System;
 using Serde;
 partial class C : Serde.ISerializeProvider<C>
 {
-    static ISerialize<C> ISerializeProvider<C>.Instance
-        => _SerObj.Instance;
-
     sealed partial class _SerObj :Serde.ISerialize<C>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
@@ -20,8 +17,6 @@ partial class C : Serde.ISerializeProvider<C>
             _l_type.WriteValue<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.IntArr);
             _l_type.End(_l_info);
         }
-        public static readonly _SerObj Instance = new();
-        private _SerObj() { }
 
     }
 }

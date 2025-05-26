@@ -11,9 +11,6 @@ partial record Base
 {
     partial class _m_AProxy : Serde.IDeserializeProvider<Some.Nested.Namespace.Base.A>
     {
-        static IDeserialize<Some.Nested.Namespace.Base.A> IDeserializeProvider<Some.Nested.Namespace.Base.A>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Some.Nested.Namespace.Base.A>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base._m_AProxy.s_serdeInfo;
@@ -51,8 +48,6 @@ partial record Base
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }

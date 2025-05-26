@@ -8,9 +8,6 @@ namespace Serde.Json.Test;
 
 partial class PocoDictionary : Serde.IDeserializeProvider<Serde.Json.Test.PocoDictionary>
 {
-    static IDeserialize<Serde.Json.Test.PocoDictionary> IDeserializeProvider<Serde.Json.Test.PocoDictionary>.Instance
-        => _DeObj.Instance;
-
     sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.PocoDictionary>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.PocoDictionary.s_serdeInfo;
@@ -49,8 +46,6 @@ partial class PocoDictionary : Serde.IDeserializeProvider<Serde.Json.Test.PocoDi
 
             return newType;
         }
-        public static readonly _DeObj Instance = new();
-        private _DeObj() { }
 
     }
 }

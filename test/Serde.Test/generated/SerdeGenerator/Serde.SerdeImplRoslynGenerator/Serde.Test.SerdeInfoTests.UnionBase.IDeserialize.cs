@@ -10,9 +10,6 @@ partial class SerdeInfoTests
 {
     partial record UnionBase : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase>
     {
-        static IDeserialize<Serde.Test.SerdeInfoTests.UnionBase> IDeserializeProvider<Serde.Test.SerdeInfoTests.UnionBase>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj : global::Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase.s_serdeInfo;
@@ -37,9 +34,7 @@ partial class SerdeInfoTests
                     throw Serde.DeserializeException.ExpectedEndOfType(index);
                 }
                 return _l_result;
-            }public static readonly _DeObj Instance = new();
-            private _DeObj() { }
-
+            }
         }
     }
 }

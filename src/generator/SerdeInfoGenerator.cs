@@ -39,7 +39,7 @@ internal static class SerdeInfoGenerator
     {
         if (receiverType.IsAbstract)
         {
-            GenerateUnionSerdeInfo(typeDecl, receiverType, context, usage, inProgress);
+            GenerateUnionInfoAndSerdeImpls(typeDecl, receiverType, context, usage, inProgress);
             return;
         }
 
@@ -147,7 +147,7 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
         }
     }
 
-    private static void GenerateUnionSerdeInfo(
+    private static void GenerateUnionInfoAndSerdeImpls(
         BaseTypeDeclarationSyntax typeDecl,
         INamedTypeSymbol receiverType,
         GeneratorExecutionContext context,
@@ -172,8 +172,10 @@ partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}}
 }
 """));
             var newCtx = TypeDeclContext.FromFile(nestedType.ToString(), proxyName);
-            var wrappedDecl = (BaseTypeDeclarationSyntax)newCtx.TypeDecl;
+            var wrappedDecl = newCtx.TypeDecl;
             SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, wrappedDecl, m, inProgress.Add((m, receiverType)));
+            var serdeObjFqn = $"{newCtx.GetFqn()}.{usage.GetSerdeObjName()}";
+            SerdeImplRoslynGenerator.GenerateProviderImpls(usage, context, serdeObjFqn, wrappedDecl, m);
         }
 
         var bodies = new SourceBuilder($$"""

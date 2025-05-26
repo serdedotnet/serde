@@ -10,9 +10,6 @@ partial class JsonSerializerTests
 {
     partial class NullableFields : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.NullableFields>
     {
-        static ISerialize<Serde.Test.JsonSerializerTests.NullableFields> ISerializeProvider<Serde.Test.JsonSerializerTests.NullableFields>.Instance
-            => _SerObj.Instance;
-
         sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.NullableFields>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.NullableFields.s_serdeInfo;
@@ -25,8 +22,6 @@ partial class JsonSerializerTests
                 _l_type.WriteValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictProxy.Ser<string, string?, global::Serde.StringProxy, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>>(_l_info, 1, value.D);
                 _l_type.End(_l_info);
             }
-            public static readonly _SerObj Instance = new();
-            private _SerObj() { }
 
         }
     }

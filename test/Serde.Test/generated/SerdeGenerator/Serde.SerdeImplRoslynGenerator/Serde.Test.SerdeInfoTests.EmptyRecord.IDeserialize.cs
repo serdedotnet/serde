@@ -10,9 +10,6 @@ partial class SerdeInfoTests
 {
     partial record EmptyRecord : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>
     {
-        static IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord> IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>.Instance
-            => _DeObj.Instance;
-
         sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.EmptyRecord.s_serdeInfo;
@@ -45,8 +42,6 @@ partial class SerdeInfoTests
 
                 return newType;
             }
-            public static readonly _DeObj Instance = new();
-            private _DeObj() { }
 
         }
     }
