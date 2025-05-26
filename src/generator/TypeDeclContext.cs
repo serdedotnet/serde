@@ -174,7 +174,7 @@ partial {{TypeKindToString(kind)}} {{name}}
 
             builder.AppendLine(
                 $$"""
-                partial {{TypeKindToString(Kind)}} {{Name}}{{TypeParameterList}} : {{baseList}}
+                partial {{TypeKindToString(Kind)}} {{Name}}{{TypeParameterList}}{{baseList}}
                 {
                     {{members}}
                 }

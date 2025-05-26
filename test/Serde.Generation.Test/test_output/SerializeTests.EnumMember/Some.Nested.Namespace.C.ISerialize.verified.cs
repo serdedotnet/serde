@@ -7,9 +7,9 @@ using Serde;
 
 namespace Some.Nested.Namespace;
 
-partial class C : Serde.ISerializeProvider<Some.Nested.Namespace.C>
+partial class C
 {
-    sealed partial class _SerObj :Serde.ISerialize<Some.Nested.Namespace.C>
+    sealed partial class _SerObj : Serde.ISerialize<Some.Nested.Namespace.C>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.C.s_serdeInfo;
 

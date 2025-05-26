@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record ThrowMissingFalse : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>
+    partial record ThrowMissingFalse
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.ThrowMissingFalse.s_serdeInfo;
 
@@ -54,7 +54,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

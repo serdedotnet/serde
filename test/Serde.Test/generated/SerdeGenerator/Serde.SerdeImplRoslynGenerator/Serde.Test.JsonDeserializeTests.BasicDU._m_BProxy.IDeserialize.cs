@@ -10,9 +10,9 @@ partial class JsonDeserializeTests
 {
     partial record BasicDU
     {
-        partial class _m_BProxy : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.BasicDU.B>
+        partial class _m_BProxy
         {
-            sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.B>
+            sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.B>
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU._m_BProxy.s_serdeInfo;
 
@@ -49,7 +49,6 @@ partial class JsonDeserializeTests
 
                     return newType;
                 }
-
             }
         }
     }

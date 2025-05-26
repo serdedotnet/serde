@@ -8,7 +8,7 @@ namespace Serde.Test;
 
 partial class JsonSerializerTests
 {
-    partial record BasicDU : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.BasicDU>
+    partial record BasicDU
     {
         sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.BasicDU>
         {

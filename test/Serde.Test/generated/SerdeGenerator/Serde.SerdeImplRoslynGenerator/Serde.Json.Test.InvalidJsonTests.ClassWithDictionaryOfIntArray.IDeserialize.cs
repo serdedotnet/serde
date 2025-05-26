@@ -8,9 +8,9 @@ namespace Serde.Json.Test;
 
 partial class InvalidJsonTests
 {
-    partial class ClassWithDictionaryOfIntArray : Serde.IDeserializeProvider<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray>
+    partial class ClassWithDictionaryOfIntArray
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray.s_serdeInfo;
 
@@ -48,7 +48,6 @@ partial class InvalidJsonTests
 
                 return newType;
             }
-
         }
     }
 }

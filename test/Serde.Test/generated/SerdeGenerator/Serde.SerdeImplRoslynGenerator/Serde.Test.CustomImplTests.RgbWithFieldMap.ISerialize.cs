@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class CustomImplTests
 {
-    partial record RgbWithFieldMap : Serde.ISerializeProvider<Serde.Test.CustomImplTests.RgbWithFieldMap>
+    partial record RgbWithFieldMap
     {
-        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.CustomImplTests.RgbWithFieldMap>
+        sealed partial class _SerObj : Serde.ISerialize<Serde.Test.CustomImplTests.RgbWithFieldMap>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.CustomImplTests.RgbWithFieldMap.s_serdeInfo;
 

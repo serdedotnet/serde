@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonSerializerTests
 {
-    partial struct Color : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.Color>
+    partial struct Color
     {
-        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>
+        sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.Color>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.Color.s_serdeInfo;
 

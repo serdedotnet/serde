@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class SerdeInfoTests
 {
-    partial record EmptyRecord : Serde.IDeserializeProvider<Serde.Test.SerdeInfoTests.EmptyRecord>
+    partial record EmptyRecord
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.SerdeInfoTests.EmptyRecord>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.EmptyRecord.s_serdeInfo;
 
@@ -42,7 +42,6 @@ partial class SerdeInfoTests
 
                 return newType;
             }
-
         }
     }
 }

@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial record struct SetToNull : Serde.IDeserializeProvider<SetToNull>
+partial record struct SetToNull
 {
-    sealed partial class _DeObj :Serde.IDeserialize<SetToNull>
+    sealed partial class _DeObj : Serde.IDeserialize<SetToNull>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => SetToNull.s_serdeInfo;
 
@@ -56,6 +56,5 @@ partial record struct SetToNull : Serde.IDeserializeProvider<SetToNull>
 
             return newType;
         }
-
     }
 }

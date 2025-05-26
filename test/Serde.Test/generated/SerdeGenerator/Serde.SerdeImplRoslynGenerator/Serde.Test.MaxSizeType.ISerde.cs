@@ -6,7 +6,7 @@ using Serde;
 
 namespace Serde.Test;
 
-partial struct MaxSizeType : Serde.ISerdeProvider<Serde.Test.MaxSizeType>
+partial struct MaxSizeType
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<Serde.Test.MaxSizeType>
     {
@@ -494,6 +494,5 @@ partial struct MaxSizeType : Serde.ISerdeProvider<Serde.Test.MaxSizeType>
 
             return newType;
         }
-
     }
 }

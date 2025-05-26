@@ -6,9 +6,9 @@ using Serde;
 
 namespace Serde.Json.Test;
 
-partial class PocoDictionary : Serde.IDeserializeProvider<Serde.Json.Test.PocoDictionary>
+partial class PocoDictionary
 {
-    sealed partial class _DeObj :Serde.IDeserialize<Serde.Json.Test.PocoDictionary>
+    sealed partial class _DeObj : Serde.IDeserialize<Serde.Json.Test.PocoDictionary>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.PocoDictionary.s_serdeInfo;
 
@@ -46,6 +46,5 @@ partial class PocoDictionary : Serde.IDeserializeProvider<Serde.Json.Test.PocoDi
 
             return newType;
         }
-
     }
 }

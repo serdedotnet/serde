@@ -6,9 +6,9 @@ using System;
 using Serde;
 partial class TestCase15
 {
-    partial class Class1 : Serde.ISerializeProvider<TestCase15.Class1>
+    partial class Class1
     {
-        sealed partial class _SerObj :Serde.ISerialize<TestCase15.Class1>
+        sealed partial class _SerObj : Serde.ISerialize<TestCase15.Class1>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => TestCase15.Class1.s_serdeInfo;
 

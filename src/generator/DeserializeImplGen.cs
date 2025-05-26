@@ -16,8 +16,7 @@ namespace Serde
 {
     internal class DeserializeImplGen
     {
-        internal static (SourceBuilder, string BaseList) GenDeserialize(
-            TypeDeclContext typeDeclContext,
+        internal static SourceBuilder GenDeserialize(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
             ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
@@ -28,30 +27,14 @@ namespace Serde
             if (receiverType.IsAbstract)
             {
                 var memberDecl = GenUnionDeserializeMethod((INamedTypeSymbol)receiverType);
-                return (memberDecl, $": global::Serde.IDeserialize<{typeFqn}>");
+                return memberDecl;
             }
 
             // Generate members for IDeserialize.Deserialize implementation
-            var members = new SourceBuilder();
-            List<BaseTypeSyntax> bases = [
-                // `Serde.IDeserialize<'typeName'>
-                SimpleBaseType(QualifiedName(IdentifierName("Serde"), GenericName(
-                    Identifier("IDeserialize"),
-                    TypeArgumentList(SeparatedList(new[] { typeSyntax }))
-                ))),
-            ];
-            if (receiverType.TypeKind == TypeKind.Enum)
-            {
-                var deserialize = GenerateEnumDeserializeMethod(receiverType, typeSyntax);
-                members.AppendLine(deserialize);
-            }
-            else
-            {
-                var method = GenerateCustomDeserializeMethod(typeDeclContext, context, receiverType, typeSyntax, inProgress);
-                members.AppendLine(method);
-            }
-            var baseList = BaseList(SeparatedList(bases));
-            return (members, baseList.ToFullString());
+            var members = receiverType.TypeKind == TypeKind.Enum
+                ? GenerateEnumDeserializeMethod(receiverType, typeSyntax)
+                : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, inProgress);
+            return members;
         }
 
         /// <summary>
@@ -205,7 +188,6 @@ namespace Serde
         /// </code>
         /// </summary>
         private static SourceBuilder GenerateCustomDeserializeMethod(
-            TypeDeclContext typeDeclContext,
             GeneratorExecutionContext context,
             ITypeSymbol type,
             TypeSyntax typeSyntax,

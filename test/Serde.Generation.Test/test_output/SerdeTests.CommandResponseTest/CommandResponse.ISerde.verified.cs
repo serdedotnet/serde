@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial class CommandResponse<TResult, TProxy> : Serde.ISerdeProvider<CommandResponse<TResult, TProxy>>
+partial class CommandResponse<TResult, TProxy>
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<CommandResponse<TResult, TProxy>>
     {
@@ -79,6 +79,5 @@ partial class CommandResponse<TResult, TProxy> : Serde.ISerdeProvider<CommandRes
 
             return newType;
         }
-
     }
 }

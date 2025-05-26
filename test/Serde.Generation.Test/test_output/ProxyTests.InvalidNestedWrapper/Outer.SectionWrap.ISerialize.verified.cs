@@ -6,9 +6,9 @@ using System;
 using Serde;
 partial class Outer
 {
-    partial class SectionWrap : Serde.ISerializeProvider<System.Collections.Specialized.BitVector32.Section>
+    partial class SectionWrap
     {
-        sealed partial class _SerObj :Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
+        sealed partial class _SerObj : Serde.ISerialize<System.Collections.Specialized.BitVector32.Section>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Outer.SectionWrap.s_serdeInfo;
 

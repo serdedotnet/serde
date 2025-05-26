@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial class InvalidProxyTest<T> : Serde.ISerdeProvider<InvalidProxyTest<T>>
+partial class InvalidProxyTest<T>
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<InvalidProxyTest<T>>
     {
@@ -62,6 +62,5 @@ partial class InvalidProxyTest<T> : Serde.ISerdeProvider<InvalidProxyTest<T>>
 
             return newType;
         }
-
     }
 }

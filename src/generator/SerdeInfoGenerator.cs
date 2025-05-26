@@ -31,7 +31,7 @@ internal static class SerdeInfoGenerator
     /// </code>
     /// </summary>
     public static void GenerateSerdeInfo(
-        BaseTypeDeclarationSyntax typeDecl,
+        TypeDeclContext typeDeclContext,
         INamedTypeSymbol receiverType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
@@ -39,7 +39,7 @@ internal static class SerdeInfoGenerator
     {
         if (receiverType.IsAbstract)
         {
-            GenerateUnionInfoAndSerdeImpls(typeDecl, receiverType, context, usage, inProgress);
+            GenerateUnionInfoAndSerdeImpls(typeDeclContext.TypeDecl, receiverType, context, usage, inProgress);
             return;
         }
 
@@ -50,18 +50,16 @@ internal static class SerdeInfoGenerator
             usage = SerdeUsage.Serialize;
         }
 
-        bool isEnum;
+        bool isEnum = receiverType.TypeKind == TypeKind.Enum;
         string makeFuncSuffix;
         string fieldArrayType;
-        if (receiverType.TypeKind == TypeKind.Enum)
+        if (isEnum)
         {
-            isEnum = true;
             makeFuncSuffix = "Enum";
             fieldArrayType = "(string, System.Reflection.MemberInfo?)[]";
         }
         else
         {
-            isEnum = false;
             makeFuncSuffix = "Custom";
             fieldArrayType = "(string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[]";
         }
@@ -113,7 +111,6 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
     {{argsString}}
 );
 """);
-        var typeDeclContext = new TypeDeclContext(typeDecl);
         var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
             typeDeclContext,
             baseList: isEnum ? " : global::Serde.ISerdeInfoProvider" : null,
@@ -172,10 +169,9 @@ partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}}
 }
 """));
             var newCtx = TypeDeclContext.FromFile(nestedType.ToString(), proxyName);
-            var wrappedDecl = newCtx.TypeDecl;
-            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, wrappedDecl, m, inProgress.Add((m, receiverType)));
+            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, newCtx, m, inProgress.Add((m, receiverType)));
             var serdeObjFqn = $"{newCtx.GetFqn()}.{usage.GetSerdeObjName()}";
-            SerdeImplRoslynGenerator.GenerateProviderImpls(usage, context, serdeObjFqn, wrappedDecl, m);
+            SerdeImplRoslynGenerator.GenerateProviderImpls(usage, context, serdeObjFqn, newCtx, m);
         }
 
         var bodies = new SourceBuilder($$"""

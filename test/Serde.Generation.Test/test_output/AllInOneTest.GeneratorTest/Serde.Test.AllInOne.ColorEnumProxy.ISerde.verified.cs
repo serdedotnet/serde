@@ -9,7 +9,7 @@ namespace Serde.Test;
 
 partial record AllInOne
 {
-    sealed partial class ColorEnumProxy : global::Serde.ISerde<Serde.Test.AllInOne.ColorEnum>
+    partial class ColorEnumProxy : Serde.ISerde<Serde.Test.AllInOne.ColorEnum>
     {
         void global::Serde.ISerialize<Serde.Test.AllInOne.ColorEnum>.Serialize(Serde.Test.AllInOne.ColorEnum value, global::Serde.ISerializer serializer)
         {
@@ -46,6 +46,5 @@ partial record AllInOne
                 _ => throw new InvalidOperationException($"Unexpected index: {index}")
             };
         }
-
     }
 }

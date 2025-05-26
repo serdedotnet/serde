@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonSerializerTests
 {
-    partial class NullableFields : Serde.ISerializeProvider<Serde.Test.JsonSerializerTests.NullableFields>
+    partial class NullableFields
     {
-        sealed partial class _SerObj :Serde.ISerialize<Serde.Test.JsonSerializerTests.NullableFields>
+        sealed partial class _SerObj : Serde.ISerialize<Serde.Test.JsonSerializerTests.NullableFields>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonSerializerTests.NullableFields.s_serdeInfo;
 

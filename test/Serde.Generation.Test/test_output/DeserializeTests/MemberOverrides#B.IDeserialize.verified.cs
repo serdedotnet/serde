@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial record B : Serde.IDeserializeProvider<B>
+partial record B
 {
-    sealed partial class _DeObj :Serde.IDeserialize<B>
+    sealed partial class _DeObj : Serde.IDeserialize<B>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => B.s_serdeInfo;
 
@@ -48,6 +48,5 @@ partial record B : Serde.IDeserializeProvider<B>
 
             return newType;
         }
-
     }
 }

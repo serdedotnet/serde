@@ -9,7 +9,7 @@ namespace Some.Nested.Namespace;
 
 partial record Base
 {
-    partial class _m_BProxy : Serde.ISerdeProvider<Some.Nested.Namespace.Base.B>
+    partial class _m_BProxy
     {
         sealed partial class _SerdeObj : global::Serde.ISerde<Some.Nested.Namespace.Base.B>
         {
@@ -55,7 +55,6 @@ partial record Base
 
                 return newType;
             }
-
         }
     }
 }

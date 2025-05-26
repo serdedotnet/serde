@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial struct ExtraMembers : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.ExtraMembers>
+    partial struct ExtraMembers
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ExtraMembers>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ExtraMembers>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.ExtraMembers.s_serdeInfo;
 
@@ -48,7 +48,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

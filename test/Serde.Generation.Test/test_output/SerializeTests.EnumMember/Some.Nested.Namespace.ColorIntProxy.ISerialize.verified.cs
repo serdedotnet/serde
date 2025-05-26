@@ -7,7 +7,7 @@ using Serde;
 
 namespace Some.Nested.Namespace;
 
-sealed partial class ColorIntProxy :Serde.ISerialize<Some.Nested.Namespace.ColorInt>
+partial class ColorIntProxy : Serde.ISerialize<Some.Nested.Namespace.ColorInt>
 {
     void global::Serde.ISerialize<Some.Nested.Namespace.ColorInt>.Serialize(Some.Nested.Namespace.ColorInt value, global::Serde.ISerializer serializer)
     {

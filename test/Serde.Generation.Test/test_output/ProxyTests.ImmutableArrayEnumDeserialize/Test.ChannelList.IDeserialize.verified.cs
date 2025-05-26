@@ -7,9 +7,9 @@ using Serde;
 
 namespace Test;
 
-partial record struct ChannelList : Serde.IDeserializeProvider<Test.ChannelList>
+partial record struct ChannelList
 {
-    sealed partial class _DeObj :Serde.IDeserialize<Test.ChannelList>
+    sealed partial class _DeObj : Serde.IDeserialize<Test.ChannelList>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Test.ChannelList.s_serdeInfo;
 
@@ -47,6 +47,5 @@ partial record struct ChannelList : Serde.IDeserializeProvider<Test.ChannelList>
 
             return newType;
         }
-
     }
 }

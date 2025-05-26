@@ -4,9 +4,9 @@
 
 using System;
 using Serde;
-partial class B : Serde.ISerializeProvider<B>
+partial class B
 {
-    sealed partial class _SerObj :Serde.ISerialize<B>
+    sealed partial class _SerObj : Serde.ISerialize<B>
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => B.s_serdeInfo;
 

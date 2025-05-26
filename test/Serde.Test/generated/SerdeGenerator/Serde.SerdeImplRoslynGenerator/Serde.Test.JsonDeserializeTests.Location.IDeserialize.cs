@@ -8,9 +8,9 @@ namespace Serde.Test;
 
 partial class JsonDeserializeTests
 {
-    partial record Location : Serde.IDeserializeProvider<Serde.Test.JsonDeserializeTests.Location>
+    partial record Location
     {
-        sealed partial class _DeObj :Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.Location.s_serdeInfo;
 
@@ -96,7 +96,6 @@ partial class JsonDeserializeTests
 
                 return newType;
             }
-
         }
     }
 }

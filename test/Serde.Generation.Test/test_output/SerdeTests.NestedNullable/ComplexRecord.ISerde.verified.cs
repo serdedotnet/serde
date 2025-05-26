@@ -4,7 +4,7 @@
 
 using System;
 using Serde;
-partial record ComplexRecord : Serde.ISerdeProvider<ComplexRecord>
+partial record ComplexRecord
 {
     sealed partial class _SerdeObj : global::Serde.ISerde<ComplexRecord>
     {
@@ -62,6 +62,5 @@ partial record ComplexRecord : Serde.ISerdeProvider<ComplexRecord>
 
             return newType;
         }
-
     }
 }
