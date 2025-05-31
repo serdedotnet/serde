@@ -1,0 +1,6 @@
+[book]
+authors = ["Andy Gocke"]
+language = "en"
+multilingual = false
+src = "."
+title = "serde-dn"

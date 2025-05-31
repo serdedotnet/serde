@@ -4,18 +4,9 @@ using System;
 using Serde;
 using Serde.Json;
 
+// Attach a custom serializer to the Color type
 [GenerateSerde(With = typeof(ColorSerdeObj))]
 partial record Color(int R, int G, int B);
-
-// Attach a custom serializer to the Color type
-partial record Color : ISerdeProvider<Color>
-{
-    public static ISerde<Color> Instance { get; } = new ColorSerdeObj();
-
-    static ISerialize<Color> ISerializeProvider<Color>.Instance => Instance;
-
-    static IDeserialize<Color> IDeserializeProvider<Color>.Instance => Instance;
-}
 
 // Create a serde object for the Color type that serializes as a hex string
 class ColorSerdeObj : ISerde<Color>
