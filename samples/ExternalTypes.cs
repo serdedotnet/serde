@@ -9,9 +9,10 @@ namespace ExternalTypesSample;
 public record Response(string ResponseType, string Body);
 
 // Proxy for the Response type.
-// We use the [GenerateSerde] attribute with the `ForType` parameter to control generation for the
-// proxy type. Since the ResponseProxy type is empty, Serde will assume that we want to automatically
-// use all the public properties and fields of the Response type, with no further customization.
+// We use the [GenerateSerde] attribute with the `ForType` parameter to control
+// generation for the proxy type. Since the ResponseProxy type is empty, Serde
+// will assume that we want to automatically use all the public properties and
+// fields of the Response type, with no further customization.
 [GenerateSerde(ForType = typeof(Response))]
 partial class ResponseProxy;
 

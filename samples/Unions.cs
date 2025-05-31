@@ -7,15 +7,17 @@ using static Utils;
 // Sample code for serializing and deserializing union types
 
 
-[StaticCs.Closed] // Library for annotating union types
+// ANCHOR: union-def
+[StaticCs.Closed] // Optional library for annotating union types
 [GenerateSerde]
 abstract partial record UnionBase
 {
     private UnionBase() { }
 
-    public sealed partial record DerivedA(int A) : UnionBase;
-    public sealed partial record DerivedB(string B) : UnionBase;
+    public partial record DerivedA(int A) : UnionBase;
+    public partial record DerivedB(string B) : UnionBase;
 }
+// ANCHOR_END: union-def
 
 public static class UnionSample
 {
