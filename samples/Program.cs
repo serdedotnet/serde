@@ -1,6 +1,8 @@
 ﻿
 // Unions
 using System;
+using CustomSerdeSample;
+using EqArraySample;
 
 Console.WriteLine("Unions sample:");
 Console.WriteLine("=========================");
@@ -18,3 +20,8 @@ Console.WriteLine();
 Console.WriteLine("External types sample:");
 Console.WriteLine("=========================");
 ExternalTypesSample.Sample.Run();
+
+// Generic types
+Console.WriteLine();
+Console.WriteLine("Generic types sample:");
+GenericTypeSample.Run();

@@ -3,9 +3,21 @@
 
 Serde-dn provides a variety of options that can be specified via attributes to configure the generated serialization and deserialization implementations.
 
-To apply options to an entire type and all its members, use `[SerdeTypeOptions]`. To apply options to one member in particular, use `[SerdeMemberOptions]`.
+## Direct Generate options
+
+The `GenerateSerde`, `GenerateSerialize`, and `GenerateDeserialize` attributes have a few options to select a custom implementation.
+
+- `[GenerateSerde(ForType = typeof(...))]`
+
+  Used to create proxy types. See [External types](../foreign-types.md) for more info.
+
+- `[GenerateSerde(With = typeof(...))]`
+
+  Used to override the generation of the serde object with the specified custom serde object. The target type needs to implement `ISerde<T>`.
 
 ## Type options
+
+To apply options to an entire type and all its members, use `[SerdeTypeOptions]`. To apply options to one member in particular, use `[SerdeMemberOptions]`.
 
 Note that these options only apply to the target type, not the type of nested members (including ones which have wrappers auto-generated). To provide options for member types the attribute will also need to be applied to them (or their wrapper).
 

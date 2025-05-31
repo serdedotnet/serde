@@ -3,6 +3,8 @@ using System;
 using Serde;
 using Serde.Json;
 
+namespace ProxySample;
+
 // Serde implementation for the System.Version type, which we can't modify directly
 
 // Proxy for the Version type. It should have the same structure as the Version type.
