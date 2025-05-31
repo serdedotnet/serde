@@ -1,33 +1,13 @@
 # Customization
 
-Wrappers are an essential part of the serde-dn design. Many types aren't under user control and won't be able to implement the `ISerialize` or `IDeserialize` interfaces directly. Instead, simple wrapper structs are used to proxy the target type.
+For complete control, you can disable source-generated implementation of the `ISerde<T>`/`ISerialize<T>`/`IDeserialize<T>` interfaces entirely and implement it yourself.
 
-Often, wrappers will be created for you as necessary. If you are serializing a type you define, the source generator will automatically create wrappers for nested external types. However, wrappers will never be automatically created for types in your source code. If you control the type, it must implement the required interfaces directly.
+To specify the custom object, use `[GenerateSerde(With = typeof(CustomObject))]`. The custom type can be a private nested class, if desired.
 
-## Creating a wrapper type
+Here is a simple example where Colors are converted to strings:
 
-By convention, wrappers are named `<OriginalTypeName>Wrap` and are always placed in the `Serde` namespace. Since wrappers are normal C#, you could choose to implement the `ISerialize` or `IDeserialize` logic yourself, just as you would for a custom implementation on your own type. However, the serde-dn source generator also has support for generating implementations for wrappers.
-
-To use implement via source generator do the following:
-
-  1. Create a wrapper type (often a struct) named `<OriginalTypeName>Wrap` in the `Serde` namespace.
-  1. Make it `partial`.
-  1. Add a field or property to store the wrapped instance.
-  1. Add the `[GenerateWrapper]` attribute and pass it the name of your field or property as a string (maybe using `nameof`)
-
-The "records" feature is particularly useful for this:
-
-```C#
-using Serde;
-
-// Type we can't modify
-class ExternalClass { ... }
-
-namespace Serde
-{
-    [GenerateWrapper(nameof(Value))]
-    partial readonly record struct ExternalClassWrap(ExternalClass Value);
-}
+```csharp
+{{#include ../samples/CustomSerialize.cs }}
 ```
 
-By default, this will implement both `ISerialize` and `IDeserialize` in the wrapper.
+In the above, the custom implementation also implements the required interface `ISerdeInfo`. The implementation of all these interfaces must match.

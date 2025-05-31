@@ -4,6 +4,8 @@ using System;
 using Serde;
 using Serde.Json;
 
+namespace CustomSerdeSample;
+
 // Attach a custom serializer to the Color type
 [GenerateSerde(With = typeof(ColorSerdeObj))]
 partial record Color(int R, int G, int B);
