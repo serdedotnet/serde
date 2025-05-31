@@ -12,3 +12,9 @@ Console.WriteLine();
 Console.WriteLine("Custom serialization sample:");
 Console.WriteLine("=========================");
 CustomSerializationSample.Run();
+
+// External types
+Console.WriteLine();
+Console.WriteLine("External types sample:");
+Console.WriteLine("=========================");
+ExternalTypesSample.Sample.Run();
