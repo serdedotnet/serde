@@ -35,7 +35,7 @@ Steps to get started:
 2. Add the `partial` modifier to the type you want to serialize/deserialize.
 3. Add one of the `[GenerateSerde]`, `[GenerateSerialize]`, or `[GenerateDeserialize]` attributes.
 
-```c#
+```csharp
 using Serde;
 using Serde.Json;
 
