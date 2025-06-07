@@ -86,7 +86,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             }
             foreach (var (fileName, content) in output.Sources)
             {
-                ctx.AddSource(fileName, content.ToSourceText());
+                ctx.AddSource(fileName + ".g", content.ToSourceText());
             }
         };
 
