@@ -20,6 +20,8 @@ Serde.NET is multi-format because it separates how a type serializes itself from
 
 Supported formats:
 * JSON, the flagship format. Bundled with Serde.NET.
+* MessagePack, via the Serde.MsgPack nuget package
+* XML, via the Serde.Xml nuget package
 
 
 ## Getting started
