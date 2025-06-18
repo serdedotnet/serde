@@ -5,11 +5,14 @@
 using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using Serde;
+using Serde.Test;
 
 namespace Benchmarks
 {
     [GenericTypeArguments(typeof(LoginViewModel), typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location), typeof(LocationWrap))]
+    [GenericTypeArguments(typeof(Primitives), typeof(Primitives))]
+    [GenericTypeArguments(typeof(AllInOne), typeof(AllInOne))]
     public class DeserializeFromString<T, U>
         where T : Serde.IDeserializeProvider<T>
         where U : Serde.IDeserializeProvider<T>

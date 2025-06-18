@@ -79,15 +79,15 @@ namespace Benchmarks
 
         Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
         {
-            int _l_id = default !;
-            string _l_address1 = default !;
-            string _l_address2 = default !;
-            string _l_city = default !;
-            string _l_state = default !;
-            string _l_postalcode = default !;
-            string _l_name = default !;
-            string _l_phonenumber = default !;
-            string _l_country = default !;
+            int _l_id = default!;
+            string _l_address1 = default!;
+            string _l_address2 = default!;
+            string _l_city = default!;
+            string _l_state = default!;
+            string _l_postalcode = default!;
+            string _l_name = default!;
+            string _l_phonenumber = default!;
+            string _l_country = default!;
             ushort _r_assignedValid = 0b0;
 
             var _l_serdeInfo = SerdeInfo;
@@ -160,5 +160,52 @@ namespace Benchmarks
             };
             return newType;
         }
+    }
+
+    [GenerateSerde]
+    public partial record Primitives(
+        bool BoolField,
+        char CharField,
+        byte ByteField,
+        ushort UShortField,
+        uint UIntField,
+        ulong ULongField,
+
+        sbyte SByteField,
+        short ShortField,
+        int IntField,
+        long LongField
+    )
+    {
+        public static readonly Primitives Sample = new Primitives(
+            BoolField: true,
+            CharField: '#',
+            ByteField: byte.MaxValue,
+            UShortField: ushort.MaxValue,
+            UIntField: uint.MaxValue,
+            ULongField: ulong.MaxValue,
+
+            SByteField: sbyte.MaxValue,
+            ShortField: short.MaxValue,
+            IntField: int.MaxValue,
+            LongField: long.MaxValue
+        );
+
+        public const string SampleSerialized = """
+{
+  "boolField": true,
+  "charField": "#",
+  "byteField": 255,
+  "uShortField": 65535,
+  "uIntField": 4294967295,
+  "uLongField": 18446744073709551615,
+  "sByteField": 127,
+  "shortField": 32767,
+  "intField": 2147483647,
+  "longField": 9223372036854775807
+}
+""";
+
+
     }
 }
