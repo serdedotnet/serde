@@ -13,6 +13,8 @@ namespace Benchmarks
                 return (T)(object)Location.Sample;
             if (typeof(T) == typeof(Serde.Test.AllInOne))
                 return (T)(object)Serde.Test.AllInOne.Sample;
+            if (typeof(T) == typeof(Primitives))
+                return (T)(object)Primitives.Sample;
 
             throw new InvalidOperationException();
 
@@ -47,6 +49,8 @@ namespace Benchmarks
                 return Location.SampleString;
             if (typeof(T) == typeof(Serde.Test.AllInOne))
                 return Serde.Test.AllInOne.SampleSerialized;
+            if (typeof(T) == typeof(Primitives))
+                return Primitives.SampleSerialized;
 
             throw new InvalidOperationException("Unexpected type");
         }
