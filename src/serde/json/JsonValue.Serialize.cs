@@ -6,18 +6,32 @@ using System.Linq;
 
 namespace Serde.Json
 {
-    partial record JsonValue : ISerializeProvider<JsonValue>
+    partial record JsonValue : ISerializeProvider<JsonValue>, IDeserializeProvider<JsonValue>
     {
+        static IDeserialize<JsonValue> IDeserializeProvider<JsonValue>.Instance { get; }
+            = new JsonValueDeserialize();
+
         static ISerialize<JsonValue> ISerializeProvider<JsonValue>.Instance { get; }
-            = JsonValueSerialize.Instance;
+            = new JsonValueSerialize();
+    }
+
+    file sealed class JsonValueDeserialize : IDeserialize<JsonValue>
+    {
+        public ISerdeInfo SerdeInfo => JsonValue.UnionInfo.Instance;
+
+        public JsonValue Deserialize(IDeserializer deserializer)
+        {
+            if (deserializer is not BaseJsonDeserializer jsonDeserializer)
+            {
+                throw new ArgumentException("deserializer must be JsonDeserializer", nameof(deserializer));
+            }
+            return jsonDeserializer.ReadJsonValue();
+        }
     }
 
     file sealed class JsonValueSerialize : ISerialize<JsonValue>
     {
-        public static JsonValueSerialize Instance { get; } = new();
-        public ISerdeInfo SerdeInfo { get; } = JsonValue.UnionInfo.Instance;
-
-        private JsonValueSerialize() { }
+        public ISerdeInfo SerdeInfo => JsonValue.UnionInfo.Instance;
 
         void ISerialize<JsonValue>.Serialize(JsonValue value, ISerializer serializer)
         {
@@ -40,7 +54,7 @@ namespace Serde.Json
                         foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
                         {
                             dict.WriteString(serdeInfo, index++, name);
-                            dict.WriteValue(serdeInfo, index++, node, Instance);
+                            dict.WriteValue(serdeInfo, index++, node, this);
                         }
                         dict.End(serdeInfo);
                         break;
@@ -52,7 +66,7 @@ namespace Serde.Json
                         int index = 0;
                         foreach (var element in elements)
                         {
-                            enumerable.WriteValue(serdeInfo, index++, element, Instance);
+                            enumerable.WriteValue(serdeInfo, index++, element, this);
                         }
                         enumerable.End(serdeInfo);
                         break;
