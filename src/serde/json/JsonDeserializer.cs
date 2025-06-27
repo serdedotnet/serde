@@ -28,7 +28,12 @@ internal static class JsonDeserializer
     }
 }
 
-internal sealed partial class JsonDeserializer<TReader> : IDeserializer
+internal abstract class BaseJsonDeserializer
+{
+    public abstract JsonValue ReadJsonValue();
+}
+
+internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, IDeserializer
     where TReader : IByteReader
 {
     private Utf8JsonLexer<TReader> Reader;
@@ -206,7 +211,7 @@ internal sealed partial class JsonDeserializer<TReader> : IDeserializer
         _scratch = null!;
     }
 
-    public JsonValue ReadJsonValue()
+    public override JsonValue ReadJsonValue()
     {
         // Spec: https://www.json.org/json-en.html
         var peek = Reader.SkipWhitespace();
