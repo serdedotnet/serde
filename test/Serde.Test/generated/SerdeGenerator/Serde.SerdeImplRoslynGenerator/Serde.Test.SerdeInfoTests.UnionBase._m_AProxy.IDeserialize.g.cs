@@ -16,7 +16,7 @@ partial class SerdeInfoTests
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase._m_AProxy.s_serdeInfo;
 
-                Serde.Test.SerdeInfoTests.UnionBase.A Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>.Deserialize(IDeserializer deserializer)
+                async global::System.Threading.Tasks.ValueTask<Serde.Test.SerdeInfoTests.UnionBase.A> Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.A>.Deserialize(IDeserializer deserializer)
                 {
 
                     byte _r_assignedValid = 0;
@@ -25,7 +25,7 @@ partial class SerdeInfoTests
                     var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                     while (true)
                     {
-                        var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                        var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                         if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                         {
                             break;
@@ -34,7 +34,7 @@ partial class SerdeInfoTests
                         switch (_l_index_)
                         {
                             case Serde.ITypeDeserializer.IndexNotFound:
-                                typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                                await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                                 break;
                             default:
                                 throw new InvalidOperationException("Unexpected index: " + _l_index_);

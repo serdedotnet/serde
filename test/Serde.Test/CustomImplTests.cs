@@ -1,5 +1,6 @@
 
 using System.IO;
+using System.Threading.Tasks;
 using Serde.Json;
 using Xunit;
 
@@ -28,7 +29,7 @@ public sealed partial class CustomImplTests
     private sealed class RgbWithFieldMapDeserialize : IDeserialize<RgbWithFieldMap>
     {
         ISerdeInfo ISerdeInfoProvider.SerdeInfo => RgbWithFieldMap.SerdeInfo;
-        RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
+        async ValueTask<RgbWithFieldMap> IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
             var fieldMap = RgbWithFieldMap.SerdeInfo;
             var deType = deserializer.ReadType(fieldMap);
@@ -37,7 +38,7 @@ public sealed partial class CustomImplTests
             int blue = default;
             while (true)
             {
-                var index = deType.TryReadIndex(fieldMap);
+                var index = await deType.TryReadIndex(fieldMap);
                 if (index == ITypeDeserializer.EndOfType)
                 {
                     break;
@@ -45,13 +46,13 @@ public sealed partial class CustomImplTests
                 switch (index)
                 {
                     case 0:
-                        red = deType.ReadI32(fieldMap, index);
+                        red = await deType.ReadI32(fieldMap, index);
                         break;
                     case 1:
-                        green = deType.ReadI32(fieldMap, index);
+                        green = await deType.ReadI32(fieldMap, index);
                         break;
                     case 2:
-                        blue = deType.ReadI32(fieldMap, index);
+                        blue = await deType.ReadI32(fieldMap, index);
                         break;
                 }
             }

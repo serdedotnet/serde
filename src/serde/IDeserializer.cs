@@ -1,41 +1,41 @@
-
 using System;
 using System.Buffers;
+using System.Threading.Tasks;
 
 namespace Serde;
 
 public interface IDeserializer : IDisposable
 {
-    T? ReadNullableRef<T>(IDeserialize<T> deserialize) where T : class;
+    ValueTask<T?> ReadNullableRef<T>(IDeserialize<T> deserialize) where T : class;
 
-    bool ReadBool();
-    char ReadChar();
-    byte ReadU8();
-    ushort ReadU16();
-    uint ReadU32();
-    ulong ReadU64();
-    sbyte ReadI8();
-    short ReadI16();
-    int ReadI32();
-    long ReadI64();
-    float ReadF32();
-    double ReadF64();
-    decimal ReadDecimal();
-    string ReadString();
-    DateTime ReadDateTime();
-    void ReadBytes(IBufferWriter<byte> writer);
+    ValueTask<bool> ReadBool();
+    ValueTask<char> ReadChar();
+    ValueTask<byte> ReadU8();
+    ValueTask<ushort> ReadU16();
+    ValueTask<uint> ReadU32();
+    ValueTask<ulong> ReadU64();
+    ValueTask<sbyte> ReadI8();
+    ValueTask<short> ReadI16();
+    ValueTask<int> ReadI32();
+    ValueTask<long> ReadI64();
+    ValueTask<float> ReadF32();
+    ValueTask<double> ReadF64();
+    ValueTask<decimal> ReadDecimal();
+    ValueTask<string> ReadString();
+    ValueTask<DateTime> ReadDateTime();
+    ValueTask ReadBytes(IBufferWriter<byte> writer);
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
 
 public static class IDeserializerExt
 {
-    public static T ReadValue<T, TProvider>(this IDeserializer deserializer)
+    public static ValueTask<T> ReadValue<T, TProvider>(this IDeserializer deserializer)
         where TProvider : IDeserializeProvider<T>
     {
         var de = DeserializeProvider.GetDeserialize<T, TProvider>();
         return de.Deserialize(deserializer);
     }
-    public static T ReadValue<T>(this IDeserializer deserializer)
+    public static ValueTask<T> ReadValue<T>(this IDeserializer deserializer)
         where T : IDeserializeProvider<T>
         => deserializer.ReadValue<T, T>();
 }
@@ -57,7 +57,7 @@ public interface ITypeDeserializer
     /// cref="IndexNotFound" />. To retrieve the name of the missing field, use <see
     /// cref="TryReadIndexWithName" />.
     /// </summary>
-    int TryReadIndex(ISerdeInfo info);
+    ValueTask<int> TryReadIndex(ISerdeInfo info);
 
     /// <summary>
     /// Try to read the index of the next field in the type. If the index is found, the method
@@ -66,42 +66,42 @@ public interface ITypeDeserializer
     /// found, the method should return <see cref="IndexNotFound" /> and set errorName to the name
     /// of the missing field, or the best-possible user-facing name.
     /// </summary>
-    (int, string? errorName) TryReadIndexWithName(ISerdeInfo info);
+    ValueTask<(int, string? errorName)> TryReadIndexWithName(ISerdeInfo info);
 
-    T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> deserialize)
+    ValueTask<T> ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> deserialize)
         where T : class?;
 
-    void SkipValue(ISerdeInfo info, int index);
-    bool ReadBool(ISerdeInfo info, int index);
-    char ReadChar(ISerdeInfo info, int index);
-    byte ReadU8(ISerdeInfo info, int index);
-    ushort ReadU16(ISerdeInfo info, int index);
-    uint ReadU32(ISerdeInfo info, int index);
-    ulong ReadU64(ISerdeInfo info, int index);
-    sbyte ReadI8(ISerdeInfo info, int index);
-    short ReadI16(ISerdeInfo info, int index);
-    int ReadI32(ISerdeInfo info, int index);
-    long ReadI64(ISerdeInfo info, int index);
-    float ReadF32(ISerdeInfo info, int index);
-    double ReadF64(ISerdeInfo info, int index);
-    decimal ReadDecimal(ISerdeInfo info, int index);
-    string ReadString(ISerdeInfo info, int index);
-    DateTime ReadDateTime(ISerdeInfo info, int index);
-    void ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
+    ValueTask SkipValue(ISerdeInfo info, int index);
+    ValueTask<bool> ReadBool(ISerdeInfo info, int index);
+    ValueTask<char> ReadChar(ISerdeInfo info, int index);
+    ValueTask<byte> ReadU8(ISerdeInfo info, int index);
+    ValueTask<ushort> ReadU16(ISerdeInfo info, int index);
+    ValueTask<uint> ReadU32(ISerdeInfo info, int index);
+    ValueTask<ulong> ReadU64(ISerdeInfo info, int index);
+    ValueTask<sbyte> ReadI8(ISerdeInfo info, int index);
+    ValueTask<short> ReadI16(ISerdeInfo info, int index);
+    ValueTask<int> ReadI32(ISerdeInfo info, int index);
+    ValueTask<long> ReadI64(ISerdeInfo info, int index);
+    ValueTask<float> ReadF32(ISerdeInfo info, int index);
+    ValueTask<double> ReadF64(ISerdeInfo info, int index);
+    ValueTask<decimal> ReadDecimal(ISerdeInfo info, int index);
+    ValueTask<string> ReadString(ISerdeInfo info, int index);
+    ValueTask<DateTime> ReadDateTime(ISerdeInfo info, int index);
+    ValueTask ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
 }
 
 public static class ITypeDeserializerExt
 {
-    public static T ReadValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
+    public static async ValueTask<T> ReadValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
         where T : class?
         where TProvider : IDeserializeProvider<T>
     {
-        return deserializeType.ReadValue(info, index, TProvider.Instance);
+        return await deserializeType.ReadValue(info, index, TProvider.Instance);
     }
 
-    public static T ReadBoxedValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
+    public static async ValueTask<T> ReadBoxedValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
         where TProvider : IDeserializeProvider<T>
     {
-        return (T)deserializeType.ReadValue(info, index, BoxProxy.De<T, TProvider>.Instance)!;
+        return (T)(await deserializeType.ReadValue(info, index, BoxProxy.De<T, TProvider>.Instance))!;
     }
 }

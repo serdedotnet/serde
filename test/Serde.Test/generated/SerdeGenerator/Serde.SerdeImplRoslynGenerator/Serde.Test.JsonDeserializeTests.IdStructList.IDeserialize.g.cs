@@ -14,7 +14,7 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.IdStructList.s_serdeInfo;
 
-            Serde.Test.JsonDeserializeTests.IdStructList Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.IdStructList> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>.Deserialize(IDeserializer deserializer)
             {
                 int _l_count = default!;
                 System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct> _l_list = default!;
@@ -25,7 +25,7 @@ partial class JsonDeserializeTests
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 while (true)
                 {
-                    var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                    var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                     if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                     {
                         break;
@@ -34,15 +34,15 @@ partial class JsonDeserializeTests
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_count = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                            _l_count = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_list = typeDeserialize.ReadValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, Serde.ListProxy.De<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>(_l_serdeInfo, _l_index_);
+                            _l_list = await typeDeserialize.ReadValue<System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct>, Serde.ListProxy.De<Serde.Test.JsonDeserializeTests.IdStruct, Serde.Test.JsonDeserializeTests.IdStruct>>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.ITypeDeserializer.IndexNotFound:
-                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                            await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);

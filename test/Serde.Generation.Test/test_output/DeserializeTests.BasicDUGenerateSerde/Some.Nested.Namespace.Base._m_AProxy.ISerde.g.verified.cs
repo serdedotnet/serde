@@ -22,7 +22,7 @@ partial record Base
                 _l_type.WriteI32(_l_info, 0, value.X);
                 _l_type.End(_l_info);
             }
-            Some.Nested.Namespace.Base.A Serde.IDeserialize<Some.Nested.Namespace.Base.A>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.ValueTask<Some.Nested.Namespace.Base.A> Serde.IDeserialize<Some.Nested.Namespace.Base.A>.Deserialize(IDeserializer deserializer)
             {
                 int _l_x = default!;
 
@@ -32,7 +32,7 @@ partial record Base
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 while (true)
                 {
-                    var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                    var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                     if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                     {
                         break;
@@ -41,11 +41,11 @@ partial record Base
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_x = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                            _l_x = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case Serde.ITypeDeserializer.IndexNotFound:
-                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                            await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);

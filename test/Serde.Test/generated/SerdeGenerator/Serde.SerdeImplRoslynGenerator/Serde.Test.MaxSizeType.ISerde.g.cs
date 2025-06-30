@@ -82,7 +82,7 @@ partial struct MaxSizeType
             _l_type.WriteU8(_l_info, 63, value.Field64);
             _l_type.End(_l_info);
         }
-        Serde.Test.MaxSizeType Serde.IDeserialize<Serde.Test.MaxSizeType>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<Serde.Test.MaxSizeType> Serde.IDeserialize<Serde.Test.MaxSizeType>.Deserialize(IDeserializer deserializer)
         {
             byte _l_field1 = default!;
             byte _l_field2 = default!;
@@ -155,7 +155,7 @@ partial struct MaxSizeType
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             while (true)
             {
-                var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                 if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                 {
                     break;
@@ -164,263 +164,263 @@ partial struct MaxSizeType
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_field1 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field1 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 0;
                         break;
                     case 1:
-                        _l_field2 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field2 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 1;
                         break;
                     case 2:
-                        _l_field3 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field3 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 2;
                         break;
                     case 3:
-                        _l_field4 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field4 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 3;
                         break;
                     case 4:
-                        _l_field5 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field5 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 4;
                         break;
                     case 5:
-                        _l_field6 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field6 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 5;
                         break;
                     case 6:
-                        _l_field7 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field7 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 6;
                         break;
                     case 7:
-                        _l_field8 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field8 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 7;
                         break;
                     case 8:
-                        _l_field9 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field9 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 8;
                         break;
                     case 9:
-                        _l_field10 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field10 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 9;
                         break;
                     case 10:
-                        _l_field11 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field11 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 10;
                         break;
                     case 11:
-                        _l_field12 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field12 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 11;
                         break;
                     case 12:
-                        _l_field13 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field13 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 12;
                         break;
                     case 13:
-                        _l_field14 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field14 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 13;
                         break;
                     case 14:
-                        _l_field15 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field15 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 14;
                         break;
                     case 15:
-                        _l_field16 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field16 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 15;
                         break;
                     case 16:
-                        _l_field17 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field17 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 16;
                         break;
                     case 17:
-                        _l_field18 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field18 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 17;
                         break;
                     case 18:
-                        _l_field19 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field19 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 18;
                         break;
                     case 19:
-                        _l_field20 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field20 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 19;
                         break;
                     case 20:
-                        _l_field21 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field21 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 20;
                         break;
                     case 21:
-                        _l_field22 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field22 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 21;
                         break;
                     case 22:
-                        _l_field23 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field23 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 22;
                         break;
                     case 23:
-                        _l_field24 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field24 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 23;
                         break;
                     case 24:
-                        _l_field25 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field25 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 24;
                         break;
                     case 25:
-                        _l_field26 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field26 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 25;
                         break;
                     case 26:
-                        _l_field27 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field27 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 26;
                         break;
                     case 27:
-                        _l_field28 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field28 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 27;
                         break;
                     case 28:
-                        _l_field29 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field29 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 28;
                         break;
                     case 29:
-                        _l_field30 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field30 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 29;
                         break;
                     case 30:
-                        _l_field31 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field31 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 30;
                         break;
                     case 31:
-                        _l_field32 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field32 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 31;
                         break;
                     case 32:
-                        _l_field33 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field33 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 32;
                         break;
                     case 33:
-                        _l_field34 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field34 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 33;
                         break;
                     case 34:
-                        _l_field35 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field35 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 34;
                         break;
                     case 35:
-                        _l_field36 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field36 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 35;
                         break;
                     case 36:
-                        _l_field37 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field37 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 36;
                         break;
                     case 37:
-                        _l_field38 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field38 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 37;
                         break;
                     case 38:
-                        _l_field39 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field39 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 38;
                         break;
                     case 39:
-                        _l_field40 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field40 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 39;
                         break;
                     case 40:
-                        _l_field41 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field41 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 40;
                         break;
                     case 41:
-                        _l_field42 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field42 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 41;
                         break;
                     case 42:
-                        _l_field43 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field43 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 42;
                         break;
                     case 43:
-                        _l_field44 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field44 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 43;
                         break;
                     case 44:
-                        _l_field45 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field45 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 44;
                         break;
                     case 45:
-                        _l_field46 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field46 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 45;
                         break;
                     case 46:
-                        _l_field47 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field47 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 46;
                         break;
                     case 47:
-                        _l_field48 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field48 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 47;
                         break;
                     case 48:
-                        _l_field49 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field49 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 48;
                         break;
                     case 49:
-                        _l_field50 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field50 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 49;
                         break;
                     case 50:
-                        _l_field51 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field51 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 50;
                         break;
                     case 51:
-                        _l_field52 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field52 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 51;
                         break;
                     case 52:
-                        _l_field53 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field53 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 52;
                         break;
                     case 53:
-                        _l_field54 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field54 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 53;
                         break;
                     case 54:
-                        _l_field55 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field55 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 54;
                         break;
                     case 55:
-                        _l_field56 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field56 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 55;
                         break;
                     case 56:
-                        _l_field57 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field57 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 56;
                         break;
                     case 57:
-                        _l_field58 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field58 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 57;
                         break;
                     case 58:
-                        _l_field59 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field59 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 58;
                         break;
                     case 59:
-                        _l_field60 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field60 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 59;
                         break;
                     case 60:
-                        _l_field61 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field61 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 60;
                         break;
                     case 61:
-                        _l_field62 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field62 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 61;
                         break;
                     case 62:
-                        _l_field63 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field63 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 62;
                         break;
                     case 63:
-                        _l_field64 = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_field64 = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((ulong)1) << 63;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

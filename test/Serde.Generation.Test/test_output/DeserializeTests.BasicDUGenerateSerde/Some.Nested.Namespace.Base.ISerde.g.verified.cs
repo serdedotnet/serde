@@ -28,22 +28,22 @@ partial record Base
 
             }
             _l_type.End(_l_serdeInfo);
-        }Some.Nested.Namespace.Base IDeserialize<Some.Nested.Namespace.Base>.Deserialize(IDeserializer deserializer)
+        }async global::System.Threading.Tasks.ValueTask<Some.Nested.Namespace.Base> IDeserialize<Some.Nested.Namespace.Base>.Deserialize(IDeserializer deserializer)
         {
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var de = deserializer.ReadType(_l_serdeInfo);
-            var (index, errorName) = de.TryReadIndexWithName(_l_serdeInfo);
+            var (index, errorName) = await de.TryReadIndexWithName(_l_serdeInfo);
             if (index == ITypeDeserializer.IndexNotFound)
             {
                 throw Serde.DeserializeException.UnknownMember(errorName!, _l_serdeInfo);
             }
             Some.Nested.Namespace.Base _l_result = index switch {
-                0 => de.ReadValue<Some.Nested.Namespace.Base.A, _m_AProxy>(_l_serdeInfo, 0),
-                1 => de.ReadValue<Some.Nested.Namespace.Base.B, _m_BProxy>(_l_serdeInfo, 1),
+                0 => await de.ReadValue<Some.Nested.Namespace.Base.A, _m_AProxy>(_l_serdeInfo, 0),
+                1 => await de.ReadValue<Some.Nested.Namespace.Base.B, _m_BProxy>(_l_serdeInfo, 1),
 
                 _ => throw new InvalidOperationException($"Unexpected index: {index}")
             };
-            index = de.TryReadIndex(_l_serdeInfo);
+            index = await de.TryReadIndex(_l_serdeInfo);
             if (index != ITypeDeserializer.EndOfType)
             {
                 throw Serde.DeserializeException.ExpectedEndOfType(index);

@@ -20,7 +20,7 @@ partial record struct OPTSWrap
             _l_type.WriteI32(_l_info, 3, value.grfMode);
             _l_type.End(_l_info);
         }
-        System.Runtime.InteropServices.ComTypes.BIND_OPTS Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<System.Runtime.InteropServices.ComTypes.BIND_OPTS> Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
         {
             int _l_cbstruct = default!;
             int _l_dwtickcountdeadline = default!;
@@ -33,7 +33,7 @@ partial record struct OPTSWrap
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             while (true)
             {
-                var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                 if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                 {
                     break;
@@ -42,23 +42,23 @@ partial record struct OPTSWrap
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_cbstruct = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_cbstruct = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
-                        _l_dwtickcountdeadline = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_dwtickcountdeadline = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case 2:
-                        _l_grfflags = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_grfflags = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 3:
-                        _l_grfmode = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_grfmode = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 3;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

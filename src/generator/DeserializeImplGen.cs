@@ -76,15 +76,15 @@ namespace Serde
             for (int i = 0; i < members.Length; i++)
             {
                 var m = members[i];
-                membersBuilder.AppendLine($"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>(_l_serdeInfo, {i}),");
+                membersBuilder.AppendLine($"{i} => await de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>(_l_serdeInfo, {i}),");
             }
 
             var src = new SourceBuilder($$"""
-{{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(_l_serdeInfo);
-    var (index, errorName) = de.TryReadIndexWithName(_l_serdeInfo);
+    var (index, errorName) = await de.TryReadIndexWithName(_l_serdeInfo);
     if (index == ITypeDeserializer.IndexNotFound)
     {
         throw Serde.DeserializeException.UnknownMember(errorName!, _l_serdeInfo);
@@ -93,7 +93,7 @@ namespace Serde
         {{membersBuilder}}
         _ => throw new InvalidOperationException($"Unexpected index: {index}")
     };
-    index = de.TryReadIndex(_l_serdeInfo);
+    index = await de.TryReadIndex(_l_serdeInfo);
     if (index != ITypeDeserializer.EndOfType)
     {
         throw Serde.DeserializeException.ExpectedEndOfType(index);
@@ -112,7 +112,7 @@ namespace Serde
         /// {
         ///    var serdeInfo = GetInfo(this);
         ///    var de = deserializer.ReadType(serdeInfo);
-        ///    var (index, errorName) = de.TryReadIndex(serdeInfo);
+        ///    var (index, errorName) = await de.TryReadIndex(serdeInfo);
         ///    if (index == ITypeDeserializer.IndexNotFound)
         ///    {
         ///      throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
@@ -143,11 +143,11 @@ namespace Serde
                 _ => throw new InvalidOperationException("Too many members in type")
             };
             var src = new SourceBuilder($$"""
-{{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(serdeInfo);
-    var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
+    var (index, errorName) = await de.TryReadIndexWithName(serdeInfo);
     if (index == ITypeDeserializer.IndexNotFound)
     {
         throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
@@ -155,7 +155,7 @@ namespace Serde
     if (index == ITypeDeserializer.EndOfType)
     {
         // Assume we want to read the underlying value
-        return ({{typeFqn}})de.Read{{primName}}(serdeInfo, index);
+        return ({{typeFqn}})(await de.Read{{primName}}(serdeInfo, index));
     }
     return index switch {
         {{string.Join("," + Utilities.NewLine, members
@@ -221,7 +221,7 @@ namespace Serde
                 : "_";
 
             var methodText = new SourceBuilder($$"""
-{{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;
@@ -230,7 +230,7 @@ namespace Serde
     var typeDeserialize = deserializer.ReadType({{typeInfoLocalName}});
     while (true)
     {
-        var ({{indexLocalName}}, {{errorNameOrDiscard}}) = typeDeserialize.TryReadIndexWithName({{typeInfoLocalName}});
+        var ({{indexLocalName}}, {{errorNameOrDiscard}}) = await typeDeserialize.TryReadIndexWithName({{typeInfoLocalName}});
         if ({{indexLocalName}} == Serde.ITypeDeserializer.EndOfType)
         {
             break;
@@ -298,7 +298,7 @@ namespace Serde
                     localsBuilder.AppendLine($"{memberType} {localName} = default!;");
                     casesBuilder.AppendLine($"""
                     case {fieldIndex}:
-                        {localName} = typeDeserialize.{readValueCall}(_l_serdeInfo, {indexLocalName});
+                        {localName} = await typeDeserialize.{readValueCall}(_l_serdeInfo, {indexLocalName});
                         {AssignedVarName} |= (({assignedVarType})1) << {fieldIndex};
                         break;
                     """);
@@ -315,7 +315,7 @@ namespace Serde
                     throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
                     """
                     : $"""
-                    typeDeserialize.SkipValue(_l_serdeInfo, {indexLocalName});
+                    await typeDeserialize.SkipValue(_l_serdeInfo, {indexLocalName});
                     break;
                     """;
                 foreach (var i in skippedIndices)

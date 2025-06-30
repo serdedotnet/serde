@@ -14,7 +14,7 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.SkipDeserialize.s_serdeInfo;
 
-            Serde.Test.JsonDeserializeTests.SkipDeserialize Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SkipDeserialize>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.SkipDeserialize> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.SkipDeserialize>.Deserialize(IDeserializer deserializer)
             {
                 string _l_required = default!;
 
@@ -24,7 +24,7 @@ partial class JsonDeserializeTests
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 while (true)
                 {
-                    var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                    var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                     if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                     {
                         break;
@@ -33,12 +33,12 @@ partial class JsonDeserializeTests
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_required = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                            _l_required = await typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
                         case Serde.ITypeDeserializer.IndexNotFound:
-                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                            await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);

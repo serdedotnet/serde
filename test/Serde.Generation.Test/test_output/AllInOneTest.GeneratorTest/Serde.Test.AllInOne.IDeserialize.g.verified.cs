@@ -13,7 +13,7 @@ partial record AllInOne
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
 
-        Serde.Test.AllInOne Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<Serde.Test.AllInOne> Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize(IDeserializer deserializer)
         {
             bool _l_boolfield = default!;
             char _l_charfield = default!;
@@ -43,7 +43,7 @@ partial record AllInOne
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             while (true)
             {
-                var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                 if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                 {
                     break;
@@ -52,91 +52,91 @@ partial record AllInOne
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_boolfield = typeDeserialize.ReadBool(_l_serdeInfo, _l_index_);
+                        _l_boolfield = await typeDeserialize.ReadBool(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 0;
                         break;
                     case 1:
-                        _l_charfield = typeDeserialize.ReadChar(_l_serdeInfo, _l_index_);
+                        _l_charfield = await typeDeserialize.ReadChar(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 1;
                         break;
                     case 2:
-                        _l_bytefield = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                        _l_bytefield = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 2;
                         break;
                     case 3:
-                        _l_ushortfield = typeDeserialize.ReadU16(_l_serdeInfo, _l_index_);
+                        _l_ushortfield = await typeDeserialize.ReadU16(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 3;
                         break;
                     case 4:
-                        _l_uintfield = typeDeserialize.ReadU32(_l_serdeInfo, _l_index_);
+                        _l_uintfield = await typeDeserialize.ReadU32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 4;
                         break;
                     case 5:
-                        _l_ulongfield = typeDeserialize.ReadU64(_l_serdeInfo, _l_index_);
+                        _l_ulongfield = await typeDeserialize.ReadU64(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 5;
                         break;
                     case 6:
-                        _l_sbytefield = typeDeserialize.ReadI8(_l_serdeInfo, _l_index_);
+                        _l_sbytefield = await typeDeserialize.ReadI8(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 6;
                         break;
                     case 7:
-                        _l_shortfield = typeDeserialize.ReadI16(_l_serdeInfo, _l_index_);
+                        _l_shortfield = await typeDeserialize.ReadI16(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 7;
                         break;
                     case 8:
-                        _l_intfield = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_intfield = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 8;
                         break;
                     case 9:
-                        _l_longfield = typeDeserialize.ReadI64(_l_serdeInfo, _l_index_);
+                        _l_longfield = await typeDeserialize.ReadI64(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 9;
                         break;
                     case 10:
-                        _l_stringfield = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_stringfield = await typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 10;
                         break;
                     case 11:
-                        _l_datetimeoffsetfield = typeDeserialize.ReadBoxedValue<System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>(_l_serdeInfo, _l_index_);
+                        _l_datetimeoffsetfield = await typeDeserialize.ReadBoxedValue<System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 11;
                         break;
                     case 12:
-                        _l_datetimefield = typeDeserialize.ReadDateTime(_l_serdeInfo, _l_index_);
+                        _l_datetimefield = await typeDeserialize.ReadDateTime(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 12;
                         break;
                     case 13:
-                        _l_guidfield = typeDeserialize.ReadBoxedValue<System.Guid, global::Serde.GuidProxy>(_l_serdeInfo, _l_index_);
+                        _l_guidfield = await typeDeserialize.ReadBoxedValue<System.Guid, global::Serde.GuidProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 13;
                         break;
                     case 14:
-                        _l_escapedstringfield = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_escapedstringfield = await typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 14;
                         break;
                     case 15:
-                        _l_nullstringfield = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
+                        _l_nullstringfield = await typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 15;
                         break;
                     case 16:
-                        _l_uintarr = typeDeserialize.ReadValue<uint[], Serde.ArrayProxy.De<uint, global::Serde.U32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_uintarr = await typeDeserialize.ReadValue<uint[], Serde.ArrayProxy.De<uint, global::Serde.U32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 16;
                         break;
                     case 17:
-                        _l_nestedarr = typeDeserialize.ReadValue<int[][], Serde.ArrayProxy.De<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>>(_l_serdeInfo, _l_index_);
+                        _l_nestedarr = await typeDeserialize.ReadValue<int[][], Serde.ArrayProxy.De<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 17;
                         break;
                     case 18:
-                        _l_bytearr = typeDeserialize.ReadValue<byte[], global::Serde.ByteArrayProxy>(_l_serdeInfo, _l_index_);
+                        _l_bytearr = await typeDeserialize.ReadValue<byte[], global::Serde.ByteArrayProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 18;
                         break;
                     case 19:
-                        _l_intimm = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_intimm = await typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 19;
                         break;
                     case 20:
-                        _l_color = typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
+                        _l_color = await typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 20;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

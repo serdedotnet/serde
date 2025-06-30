@@ -11,6 +11,7 @@ public class SerdeTests
     {
         var src = """
 using System;
+using System.Threading.Tasks;
 using Serde;
 using Serde.Json;
 
@@ -29,9 +30,9 @@ class ColorSerdeObj : ISerde<Color>
         serializer.WriteString(hex);
     }
 
-    public Color Deserialize(IDeserializer deserializer)
+    public async ValueTask<Color> Deserialize(IDeserializer deserializer)
     {
-        var hex = deserializer.ReadString();
+        var hex = await deserializer.ReadString();
         if (hex.Length != 7 || hex[0] != '#')
             throw new FormatException("Invalid hex color format");
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using Serde;
 using Serde.Json;
 
@@ -41,9 +42,9 @@ public static class EqArrayProxy
         static IDeserialize<EqArray<T>> IDeserializeProvider<EqArray<T>>.Instance => Instance;
 
         public ISerdeInfo SerdeInfo => s_typeInfo;
-        EqArray<T> IDeserialize<EqArray<T>>.Deserialize(IDeserializer deserializer)
+        async ValueTask<EqArray<T>> IDeserialize<EqArray<T>>.Deserialize(IDeserializer deserializer)
         {
-            return new(ImmutableArrayProxy.De<T, TProvider>.Instance.Deserialize(deserializer));
+            return new(await ImmutableArrayProxy.De<T, TProvider>.Instance.Deserialize(deserializer));
         }
     }
 }

@@ -6,11 +6,11 @@ using System;
 using Serde;
 partial class ColorByteProxy : Serde.IDeserialize<ColorByte>
 {
-    ColorByte IDeserialize<ColorByte>.Deserialize(IDeserializer deserializer)
+    async global::System.Threading.Tasks.ValueTask<ColorByte> IDeserialize<ColorByte>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);
-        var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
+        var (index, errorName) = await de.TryReadIndexWithName(serdeInfo);
         if (index == ITypeDeserializer.IndexNotFound)
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
@@ -18,7 +18,7 @@ partial class ColorByteProxy : Serde.IDeserialize<ColorByte>
         if (index == ITypeDeserializer.EndOfType)
         {
             // Assume we want to read the underlying value
-            return (ColorByte)de.ReadU8(serdeInfo, index);
+            return (ColorByte)(await de.ReadU8(serdeInfo, index));
         }
         return index switch {
             0 => ColorByte.Red,

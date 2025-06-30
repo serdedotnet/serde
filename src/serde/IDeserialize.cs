@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Serde;
 
 /// <summary>
@@ -9,7 +11,7 @@ namespace Serde;
 /// </summary>
 public interface IDeserialize<T> : ISerdeInfoProvider
 {
-    T Deserialize(IDeserializer deserializer);
+    ValueTask<T> Deserialize(IDeserializer deserializer);
 }
 
 /// <summary>
@@ -36,7 +38,7 @@ public static class DeserializeProvider
 /// </summary>
 public interface ITypeDeserialize<T>
 {
-    T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
+    ValueTask<T> Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
 }
 
 public static class TypeDeserialize

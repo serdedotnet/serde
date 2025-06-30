@@ -2,6 +2,7 @@
 #nullable disable
 
 using System;
+using System.Threading.Tasks;
 using Serde;
 
 namespace Benchmarks
@@ -77,7 +78,7 @@ namespace Benchmarks
                 ("country", StringProxy.SerdeInfo, typeof(Location).GetProperty("Country"))
             ]);
 
-        Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
+        async ValueTask<Benchmarks.Location> Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
             string _l_address1 = default!;
@@ -94,7 +95,7 @@ namespace Benchmarks
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             while (true)
             {
-                var index = typeDeserialize.TryReadIndex(_l_serdeInfo);
+                var index = await typeDeserialize.TryReadIndex(_l_serdeInfo);
                 if (index == ITypeDeserializer.EndOfType)
                 {
                     break;
@@ -102,43 +103,43 @@ namespace Benchmarks
                 switch (index)
                 {
                     case 0:
-                        _l_id = typeDeserialize.ReadI32(_l_serdeInfo, index);
+                        _l_id = await typeDeserialize.ReadI32(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 0;
                         break;
                     case 1:
-                        _l_address1 = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_address1 = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 1;
                         break;
                     case 2:
-                        _l_address2 = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_address2 = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 2;
                         break;
                     case 3:
-                        _l_city = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_city = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 3;
                         break;
                     case 4:
-                        _l_state = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_state = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 4;
                         break;
                     case 5:
-                        _l_postalcode = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_postalcode = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 5;
                         break;
                     case 6:
-                        _l_name = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_name = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 6;
                         break;
                     case 7:
-                        _l_phonenumber = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_phonenumber = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 7;
                         break;
                     case 8:
-                        _l_country = typeDeserialize.ReadString(_l_serdeInfo, index);
+                        _l_country = await typeDeserialize.ReadString(_l_serdeInfo, index);
                         _r_assignedValid |= ((ushort)1) << 8;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, index);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, index);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + index);

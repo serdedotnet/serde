@@ -18,7 +18,7 @@ partial record SimpleRecord
             _l_type.WriteString(_l_info, 1, value.Name);
             _l_type.End(_l_info);
         }
-        SimpleRecord Serde.IDeserialize<SimpleRecord>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<SimpleRecord> Serde.IDeserialize<SimpleRecord>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
             string _l_name = default!;
@@ -29,7 +29,7 @@ partial record SimpleRecord
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             while (true)
             {
-                var (_l_index_, _) = typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
+                var (_l_index_, _) = await typeDeserialize.TryReadIndexWithName(_l_serdeInfo);
                 if (_l_index_ == Serde.ITypeDeserializer.EndOfType)
                 {
                     break;
@@ -38,15 +38,15 @@ partial record SimpleRecord
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_id = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_id = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
-                        _l_name = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_name = await typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

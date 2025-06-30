@@ -64,6 +64,7 @@ partial record Container
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Serde;
 
 [GenerateDeserialize]
@@ -82,9 +83,9 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>,
 
     public ISerdeInfo SerdeInfo { get; } = StringProxy.SerdeInfo;
 
-    public Original Deserialize(IDeserializer deserializer)
+    public async ValueTask<Original> Deserialize(IDeserializer deserializer)
     {
-        var str = StringProxy.Instance.Deserialize(deserializer);
+        var str = await StringProxy.Instance.Deserialize(deserializer);
         return new Original { Name = str };
     }
 
