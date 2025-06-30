@@ -10,15 +10,15 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
 {
     int? ITypeDeserializer.SizeOpt => null;
 
-    async ValueTask<int> ITypeDeserializer.TryReadIndex(ISerdeInfo info)
+    async Task<int> ITypeDeserializer.TryReadIndex(ISerdeInfo info)
     {
         return (await TryReadIndexWithName(info)).Item1;
     }
 
-    async ValueTask<(int, string? errorName)> ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo)
+    async Task<(int, string? errorName)> ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo)
         => await TryReadIndexWithName(serdeInfo);
 
-    private async ValueTask<(int, string? errorName)> TryReadIndexWithName(ISerdeInfo serdeInfo)
+    private async Task<(int, string? errorName)> TryReadIndexWithName(ISerdeInfo serdeInfo)
     {
         if (serdeInfo.Kind == InfoKind.Enum)
         {
@@ -63,7 +63,7 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         return (localIndex, errorName);
     }
 
-    async ValueTask<T> ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
+    async Task<T> ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
     {
         ReadColon();
         return await d.Deserialize(this).ConfigureAwait(false);
@@ -79,91 +79,91 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         Reader.Advance();
     }
 
-    ValueTask<bool> ITypeDeserializer.ReadBool(ISerdeInfo info, int index)
+    Task<bool> ITypeDeserializer.ReadBool(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadBool());
+        return Task.FromResult(ReadBool());
     }
-    ValueTask<char> ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
+    Task<char> ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadChar());
+        return Task.FromResult(ReadChar());
     }
-    ValueTask<byte> ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
+    Task<byte> ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadU8());
+        return Task.FromResult(ReadU8());
     }
-    ValueTask<ushort> ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
+    Task<ushort> ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadU16());
+        return Task.FromResult(ReadU16());
     }
-    ValueTask<uint> ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
+    Task<uint> ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadU32());
+        return Task.FromResult(ReadU32());
     }
-    ValueTask<ulong> ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
+    Task<ulong> ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadU64());
+        return Task.FromResult(ReadU64());
     }
-    ValueTask<sbyte> ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
+    Task<sbyte> ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadI8());
+        return Task.FromResult(ReadI8());
     }
-    ValueTask<short> ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
+    Task<short> ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadI16());
+        return Task.FromResult(ReadI16());
     }
-    ValueTask<int> ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
+    Task<int> ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadI32());
+        return Task.FromResult(ReadI32());
     }
-    ValueTask<long> ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
+    Task<long> ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadI64());
+        return Task.FromResult(ReadI64());
     }
-    ValueTask<float> ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
+    Task<float> ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadF32());
+        return Task.FromResult(ReadF32());
     }
-    ValueTask<double> ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
+    Task<double> ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadF64());
+        return Task.FromResult(ReadF64());
     }
-    ValueTask<decimal> ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
+    Task<decimal> ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadDecimal());
+        return Task.FromResult(ReadDecimal());
     }
-    ValueTask<string> ITypeDeserializer.ReadString(ISerdeInfo info, int index)
+    Task<string> ITypeDeserializer.ReadString(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(this.ReadString());
+        return Task.FromResult(this.ReadString());
     }
-    ValueTask<DateTime> ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
+    Task<DateTime> ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ValueTask.FromResult(ReadDateTime());
+        return Task.FromResult(ReadDateTime());
     }
-    ValueTask ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
+    Task ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
     {
         ReadColon();
         ReadBytes(writer);
-        return ValueTask.CompletedTask;
+        return Task.CompletedTask;
     }
-    ValueTask ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
+    Task ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
     {
         ReadColon();
         Reader.Skip();
-        return ValueTask.CompletedTask;
+        return Task.CompletedTask;
     }
 }

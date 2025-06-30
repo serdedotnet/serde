@@ -16,7 +16,7 @@ partial class SerdeInfoTests
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.UnionBase._m_BProxy.s_serdeInfo;
 
-                async global::System.Threading.Tasks.ValueTask<Serde.Test.SerdeInfoTests.UnionBase.B> Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.B>.Deserialize(IDeserializer deserializer)
+                async global::System.Threading.Tasks.Task<Serde.Test.SerdeInfoTests.UnionBase.B> Serde.IDeserialize<Serde.Test.SerdeInfoTests.UnionBase.B>.Deserialize(IDeserializer deserializer)
                 {
 
                     byte _r_assignedValid = 0;

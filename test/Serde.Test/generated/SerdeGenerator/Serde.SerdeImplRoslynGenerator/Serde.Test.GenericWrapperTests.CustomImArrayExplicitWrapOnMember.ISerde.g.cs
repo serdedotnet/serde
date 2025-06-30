@@ -21,7 +21,7 @@ partial class GenericWrapperTests
                 _l_type.WriteBoxedValue<Serde.Test.GenericWrapperTests.CustomImArray<int>, Serde.Test.GenericWrapperTests.CustomImArrayProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.A);
                 _l_type.End(_l_info);
             }
-            async global::System.Threading.Tasks.ValueTask<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember> Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember> Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember>.Deserialize(IDeserializer deserializer)
             {
                 Serde.Test.GenericWrapperTests.CustomImArray<int> _l_a = default!;
 

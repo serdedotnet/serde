@@ -80,7 +80,7 @@ namespace Serde
             }
 
             var src = new SourceBuilder($$"""
-async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+async global::System.Threading.Tasks.Task<{{typeFqn}}> IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(_l_serdeInfo);
@@ -143,7 +143,7 @@ async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> IDeserialize<{{typeF
                 _ => throw new InvalidOperationException("Too many members in type")
             };
             var src = new SourceBuilder($$"""
-async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+async global::System.Threading.Tasks.Task<{{typeFqn}}> IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
     var de = deserializer.ReadType(serdeInfo);
@@ -221,7 +221,7 @@ async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> IDeserialize<{{typeF
                 : "_";
 
             var methodText = new SourceBuilder($$"""
-async global::System.Threading.Tasks.ValueTask<{{typeFqn}}> Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+async global::System.Threading.Tasks.Task<{{typeFqn}}> Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;

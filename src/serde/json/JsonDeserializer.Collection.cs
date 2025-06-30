@@ -94,7 +94,7 @@ partial class JsonDeserializer<TReader>
             return _index;
         }
 
-        public async ValueTask<T> ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d) where T : class?
+        public async Task<T> ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d) where T : class?
         {
             var next = await d.Deserialize(_deserializer);
             _index++;
@@ -218,24 +218,24 @@ partial class JsonDeserializer<TReader>
             _index++;
         }
 
-        ValueTask<(int, string? errorName)> ITypeDeserializer.TryReadIndexWithName(ISerdeInfo info) => ValueTask.FromResult(TryReadIndexWithName(info));
-        ValueTask<int> ITypeDeserializer.TryReadIndex(ISerdeInfo info) => ValueTask.FromResult(TryReadIndex(info));
-        ValueTask<bool> ITypeDeserializer.ReadBool(ISerdeInfo info, int index) => ValueTask.FromResult(ReadBool(info, index));
-        ValueTask<char> ITypeDeserializer.ReadChar(ISerdeInfo info, int index) => ValueTask.FromResult(ReadChar(info, index));
-        ValueTask<byte> ITypeDeserializer.ReadU8(ISerdeInfo info, int index) => ValueTask.FromResult(ReadU8(info, index));
-        ValueTask<ushort> ITypeDeserializer.ReadU16(ISerdeInfo info, int index) => ValueTask.FromResult(ReadU16(info, index));
-        ValueTask<uint> ITypeDeserializer.ReadU32(ISerdeInfo info, int index) => ValueTask.FromResult(ReadU32(info, index));
-        ValueTask<ulong> ITypeDeserializer.ReadU64(ISerdeInfo info, int index) => ValueTask.FromResult(ReadU64(info, index));
-        ValueTask<sbyte> ITypeDeserializer.ReadI8(ISerdeInfo info, int index) => ValueTask.FromResult(ReadI8(info, index));
-        ValueTask<short> ITypeDeserializer.ReadI16(ISerdeInfo info, int index) => ValueTask.FromResult(ReadI16(info, index));
-        ValueTask<int> ITypeDeserializer.ReadI32(ISerdeInfo info, int index) => ValueTask.FromResult(ReadI32(info, index));
-        ValueTask<long> ITypeDeserializer.ReadI64(ISerdeInfo info, int index) => ValueTask.FromResult(ReadI64(info, index));
-        ValueTask<float> ITypeDeserializer.ReadF32(ISerdeInfo info, int index) => ValueTask.FromResult(ReadF32(info, index));
-        ValueTask<double> ITypeDeserializer.ReadF64(ISerdeInfo info, int index) => ValueTask.FromResult(ReadF64(info, index));
-        ValueTask<decimal> ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index) => ValueTask.FromResult(ReadDecimal(info, index));
-        ValueTask<string> ITypeDeserializer.ReadString(ISerdeInfo info, int index) => ValueTask.FromResult(ReadString(info, index));
-        ValueTask<DateTime> ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index) => ValueTask.FromResult(ReadDateTime(info, index));
-        ValueTask ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer) { ReadBytes(info, index, writer); return ValueTask.CompletedTask; }
-        ValueTask ITypeDeserializer.SkipValue(ISerdeInfo info, int index) { SkipValue(info, index); return ValueTask.CompletedTask; }
+        Task<(int, string? errorName)> ITypeDeserializer.TryReadIndexWithName(ISerdeInfo info) => Task.FromResult(TryReadIndexWithName(info));
+        Task<int> ITypeDeserializer.TryReadIndex(ISerdeInfo info) => Task.FromResult(TryReadIndex(info));
+        Task<bool> ITypeDeserializer.ReadBool(ISerdeInfo info, int index) => Task.FromResult(ReadBool(info, index));
+        Task<char> ITypeDeserializer.ReadChar(ISerdeInfo info, int index) => Task.FromResult(ReadChar(info, index));
+        Task<byte> ITypeDeserializer.ReadU8(ISerdeInfo info, int index) => Task.FromResult(ReadU8(info, index));
+        Task<ushort> ITypeDeserializer.ReadU16(ISerdeInfo info, int index) => Task.FromResult(ReadU16(info, index));
+        Task<uint> ITypeDeserializer.ReadU32(ISerdeInfo info, int index) => Task.FromResult(ReadU32(info, index));
+        Task<ulong> ITypeDeserializer.ReadU64(ISerdeInfo info, int index) => Task.FromResult(ReadU64(info, index));
+        Task<sbyte> ITypeDeserializer.ReadI8(ISerdeInfo info, int index) => Task.FromResult(ReadI8(info, index));
+        Task<short> ITypeDeserializer.ReadI16(ISerdeInfo info, int index) => Task.FromResult(ReadI16(info, index));
+        Task<int> ITypeDeserializer.ReadI32(ISerdeInfo info, int index) => Task.FromResult(ReadI32(info, index));
+        Task<long> ITypeDeserializer.ReadI64(ISerdeInfo info, int index) => Task.FromResult(ReadI64(info, index));
+        Task<float> ITypeDeserializer.ReadF32(ISerdeInfo info, int index) => Task.FromResult(ReadF32(info, index));
+        Task<double> ITypeDeserializer.ReadF64(ISerdeInfo info, int index) => Task.FromResult(ReadF64(info, index));
+        Task<decimal> ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index) => Task.FromResult(ReadDecimal(info, index));
+        Task<string> ITypeDeserializer.ReadString(ISerdeInfo info, int index) => Task.FromResult(ReadString(info, index));
+        Task<DateTime> ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index) => Task.FromResult(ReadDateTime(info, index));
+        Task ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer) { ReadBytes(info, index, writer); return Task.CompletedTask; }
+        Task ITypeDeserializer.SkipValue(ISerdeInfo info, int index) { SkipValue(info, index); return Task.CompletedTask; }
     }
 }

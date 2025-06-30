@@ -10,7 +10,7 @@ partial record struct Original
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Original.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Original> Serde.IDeserialize<Original>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Original> Serde.IDeserialize<Original>.Deserialize(IDeserializer deserializer)
         {
             string _l_name = default!;
 

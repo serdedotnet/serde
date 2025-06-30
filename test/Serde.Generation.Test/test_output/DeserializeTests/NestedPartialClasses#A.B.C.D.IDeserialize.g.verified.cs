@@ -16,7 +16,7 @@ partial class A
                 {
                     global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => A.B.C.D.s_serdeInfo;
 
-                    async global::System.Threading.Tasks.ValueTask<A.B.C.D> Serde.IDeserialize<A.B.C.D>.Deserialize(IDeserializer deserializer)
+                    async global::System.Threading.Tasks.Task<A.B.C.D> Serde.IDeserialize<A.B.C.D>.Deserialize(IDeserializer deserializer)
                     {
                         int _l_field = default!;
 

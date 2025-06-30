@@ -10,7 +10,7 @@ partial record struct OptsWrap
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => OptsWrap.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<System.Runtime.InteropServices.ComTypes.BIND_OPTS> Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<System.Runtime.InteropServices.ComTypes.BIND_OPTS> Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
         {
             int _l_cbstruct = default!;
             int _l_dwtickcountdeadline = default!;

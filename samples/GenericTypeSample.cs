@@ -42,7 +42,7 @@ public static class EqArrayProxy
         static IDeserialize<EqArray<T>> IDeserializeProvider<EqArray<T>>.Instance => Instance;
 
         public ISerdeInfo SerdeInfo => s_typeInfo;
-        async ValueTask<EqArray<T>> IDeserialize<EqArray<T>>.Deserialize(IDeserializer deserializer)
+        async Task<EqArray<T>> IDeserialize<EqArray<T>>.Deserialize(IDeserializer deserializer)
         {
             return new(await ImmutableArrayProxy.De<T, TProvider>.Instance.Deserialize(deserializer));
         }

@@ -15,7 +15,7 @@ partial record Base
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base._m_BProxy.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Some.Nested.Namespace.Base.B> Serde.IDeserialize<Some.Nested.Namespace.Base.B>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Some.Nested.Namespace.Base.B> Serde.IDeserialize<Some.Nested.Namespace.Base.B>.Deserialize(IDeserializer deserializer)
             {
                 string _l_y = default!;
 

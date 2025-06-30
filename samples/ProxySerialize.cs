@@ -33,7 +33,7 @@ sealed partial class VersionSerdeObj : ISerde<Version>
         serializer.WriteValue(proxy);
     }
 
-    public async ValueTask<Version> Deserialize(IDeserializer deserializer)
+    public async Task<Version> Deserialize(IDeserializer deserializer)
     {
         var proxy = await deserializer.ReadValue<VersionProxy>();
         return new Version(proxy.Major, proxy.Major, proxy.Build, proxy.Revision);

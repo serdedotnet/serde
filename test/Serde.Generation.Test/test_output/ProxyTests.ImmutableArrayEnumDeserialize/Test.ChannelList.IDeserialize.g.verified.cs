@@ -13,7 +13,7 @@ partial record struct ChannelList
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Test.ChannelList.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Test.ChannelList> Serde.IDeserialize<Test.ChannelList>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Test.ChannelList> Serde.IDeserialize<Test.ChannelList>.Deserialize(IDeserializer deserializer)
         {
             System.Collections.Immutable.ImmutableArray<Test.Channel> _l_channels = default!;
 

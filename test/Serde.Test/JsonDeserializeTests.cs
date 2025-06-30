@@ -363,7 +363,7 @@ namespace Serde.Test
                 ]
             );
 
-            async ValueTask<ColorEnum> IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
+            async Task<ColorEnum> IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = SerdeInfo;
                 var de = deserializer.ReadType(typeInfo);
@@ -475,7 +475,7 @@ namespace Serde.Test
 
                 public ISerdeInfo SerdeInfo => BasicDUManualTag.SerdeInfo;
 
-                public async ValueTask<BasicDUManualTag> Deserialize(IDeserializer deserializer)
+                public async Task<BasicDUManualTag> Deserialize(IDeserializer deserializer)
                 {
                     var _l_baseInfo = BasicDUManualTag.SerdeInfo;
                     var typeDeserialize = deserializer.ReadType(_l_baseInfo);

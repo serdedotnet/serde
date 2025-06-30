@@ -23,7 +23,7 @@ class ColorSerdeObj : ISerde<Color>
         serializer.WriteString(hex);
     }
 
-    public async ValueTask<Color> Deserialize(IDeserializer deserializer)
+    public async Task<Color> Deserialize(IDeserializer deserializer)
     {
         var hex = await deserializer.ReadString();
         if (hex.Length != 7 || hex[0] != '#')

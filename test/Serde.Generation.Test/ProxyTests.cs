@@ -83,7 +83,7 @@ internal class Proxy : ISerialize<Original>, IDeserialize<Original>,
 
     public ISerdeInfo SerdeInfo { get; } = StringProxy.SerdeInfo;
 
-    public async ValueTask<Original> Deserialize(IDeserializer deserializer)
+    public async Task<Original> Deserialize(IDeserializer deserializer)
     {
         var str = await StringProxy.Instance.Deserialize(deserializer);
         return new Original { Name = str };

@@ -12,7 +12,7 @@ partial class PocoDictionary
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.PocoDictionary.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Serde.Json.Test.PocoDictionary> Serde.IDeserialize<Serde.Json.Test.PocoDictionary>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Serde.Json.Test.PocoDictionary> Serde.IDeserialize<Serde.Json.Test.PocoDictionary>.Deserialize(IDeserializer deserializer)
         {
             System.Collections.Generic.Dictionary<string, string> _l_key = default!;
 

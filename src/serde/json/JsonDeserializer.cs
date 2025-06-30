@@ -52,7 +52,7 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
         _scratch = new ScratchBuffer();
     }
 
-    public async ValueTask<T?> ReadNullableRef<T>(IDeserialize<T> proxy)
+    public async Task<T?> ReadNullableRef<T>(IDeserialize<T> proxy)
         where T : class
     {
         var peek = Reader.SkipWhitespace();
@@ -360,25 +360,25 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
         }
     }
 
-    ValueTask<bool> IDeserializer.ReadBool() => ValueTask.FromResult(ReadBool());
-    ValueTask<float> IDeserializer.ReadF32() => ValueTask.FromResult(ReadF32());
-    ValueTask<double> IDeserializer.ReadF64() => ValueTask.FromResult(ReadF64());
-    ValueTask<decimal> IDeserializer.ReadDecimal() => ValueTask.FromResult(ReadDecimal());
-    ValueTask<sbyte> IDeserializer.ReadI8() => ValueTask.FromResult(ReadI8());
-    ValueTask<short> IDeserializer.ReadI16() => ValueTask.FromResult(ReadI16());
-    ValueTask<int> IDeserializer.ReadI32() => ValueTask.FromResult(ReadI32());
-    ValueTask<long> IDeserializer.ReadI64() => ValueTask.FromResult(ReadI64());
-    ValueTask<byte> IDeserializer.ReadU8() => ValueTask.FromResult(ReadU8());
-    ValueTask<ushort> IDeserializer.ReadU16() => ValueTask.FromResult(ReadU16());
-    ValueTask<uint> IDeserializer.ReadU32() => ValueTask.FromResult(ReadU32());
-    ValueTask<ulong> IDeserializer.ReadU64() => ValueTask.FromResult(ReadU64());
-    ValueTask<char> IDeserializer.ReadChar() => ValueTask.FromResult(ReadChar());
-    ValueTask<DateTime> IDeserializer.ReadDateTime() => ValueTask.FromResult(ReadDateTime());
-    ValueTask<string> IDeserializer.ReadString() => ValueTask.FromResult(ReadString());
+    Task<bool> IDeserializer.ReadBool() => Task.FromResult(ReadBool());
+    Task<float> IDeserializer.ReadF32() => Task.FromResult(ReadF32());
+    Task<double> IDeserializer.ReadF64() => Task.FromResult(ReadF64());
+    Task<decimal> IDeserializer.ReadDecimal() => Task.FromResult(ReadDecimal());
+    Task<sbyte> IDeserializer.ReadI8() => Task.FromResult(ReadI8());
+    Task<short> IDeserializer.ReadI16() => Task.FromResult(ReadI16());
+    Task<int> IDeserializer.ReadI32() => Task.FromResult(ReadI32());
+    Task<long> IDeserializer.ReadI64() => Task.FromResult(ReadI64());
+    Task<byte> IDeserializer.ReadU8() => Task.FromResult(ReadU8());
+    Task<ushort> IDeserializer.ReadU16() => Task.FromResult(ReadU16());
+    Task<uint> IDeserializer.ReadU32() => Task.FromResult(ReadU32());
+    Task<ulong> IDeserializer.ReadU64() => Task.FromResult(ReadU64());
+    Task<char> IDeserializer.ReadChar() => Task.FromResult(ReadChar());
+    Task<DateTime> IDeserializer.ReadDateTime() => Task.FromResult(ReadDateTime());
+    Task<string> IDeserializer.ReadString() => Task.FromResult(ReadString());
     ITypeDeserializer IDeserializer.ReadType(ISerdeInfo info) => ReadType(info);
-    ValueTask IDeserializer.ReadBytes(IBufferWriter<byte> writer)
+    Task IDeserializer.ReadBytes(IBufferWriter<byte> writer)
     {
         ReadBytes(writer);
-        return ValueTask.CompletedTask;
+        return Task.CompletedTask;
     }
 }

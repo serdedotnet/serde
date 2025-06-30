@@ -29,7 +29,7 @@ public sealed partial class CustomImplTests
     private sealed class RgbWithFieldMapDeserialize : IDeserialize<RgbWithFieldMap>
     {
         ISerdeInfo ISerdeInfoProvider.SerdeInfo => RgbWithFieldMap.SerdeInfo;
-        async ValueTask<RgbWithFieldMap> IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
+        async Task<RgbWithFieldMap> IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
             var fieldMap = RgbWithFieldMap.SerdeInfo;
             var deType = deserializer.ReadType(fieldMap);

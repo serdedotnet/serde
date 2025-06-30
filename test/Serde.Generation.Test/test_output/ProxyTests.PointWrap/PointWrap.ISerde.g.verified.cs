@@ -18,7 +18,7 @@ partial struct PointWrap
             _l_type.WriteI32(_l_info, 1, value.Y);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<Point> Serde.IDeserialize<Point>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Point> Serde.IDeserialize<Point>.Deserialize(IDeserializer deserializer)
         {
             int _l_x = default!;
             int _l_y = default!;

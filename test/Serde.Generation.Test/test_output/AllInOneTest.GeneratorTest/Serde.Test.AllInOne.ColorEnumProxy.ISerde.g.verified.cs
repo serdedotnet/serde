@@ -25,7 +25,7 @@ partial record AllInOne
             _l_type.WriteI32(_l_info, index, (int)value);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<Serde.Test.AllInOne.ColorEnum> IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Serde.Test.AllInOne.ColorEnum> IDeserialize<Serde.Test.AllInOne.ColorEnum>.Deserialize(IDeserializer deserializer)
         {
             var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var de = deserializer.ReadType(serdeInfo);

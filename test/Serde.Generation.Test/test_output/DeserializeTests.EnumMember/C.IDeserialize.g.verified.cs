@@ -10,7 +10,7 @@ partial class C
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<C> Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<C> Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
             ColorInt _l_colorint = default!;
             ColorByte _l_colorbyte = default!;

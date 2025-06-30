@@ -7,7 +7,7 @@
     "Location": ": (11,52)-(11,74)",
     "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0738)",
     "MessageFormat": "'{0}' does not implement interface member '{1}'. '{2}' cannot implement '{1}' because it does not have the matching return type of '{3}'.",
-    "Message": "'Proxy' does not implement interface member 'IDeserialize<Original>.Deserialize(IDeserializer)'. 'Proxy.Deserialize(IDeserializer)' cannot implement 'IDeserialize<Original>.Deserialize(IDeserializer)' because it does not have the matching return type of 'ValueTask<Original>'.",
+    "Message": "'Proxy' does not implement interface member 'IDeserialize<Original>.Deserialize(IDeserializer)'. 'Proxy.Deserialize(IDeserializer)' cannot implement 'IDeserialize<Original>.Deserialize(IDeserializer)' because it does not have the matching return type of 'Task<Original>'.",
     "Category": "Compiler"
   },
   {

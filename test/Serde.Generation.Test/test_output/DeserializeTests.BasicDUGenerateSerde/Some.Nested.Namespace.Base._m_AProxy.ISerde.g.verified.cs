@@ -22,7 +22,7 @@ partial record Base
                 _l_type.WriteI32(_l_info, 0, value.X);
                 _l_type.End(_l_info);
             }
-            async global::System.Threading.Tasks.ValueTask<Some.Nested.Namespace.Base.A> Serde.IDeserialize<Some.Nested.Namespace.Base.A>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Some.Nested.Namespace.Base.A> Serde.IDeserialize<Some.Nested.Namespace.Base.A>.Deserialize(IDeserializer deserializer)
             {
                 int _l_x = default!;
 

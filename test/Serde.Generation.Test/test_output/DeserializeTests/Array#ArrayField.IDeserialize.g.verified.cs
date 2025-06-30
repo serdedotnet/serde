@@ -10,7 +10,7 @@ partial class ArrayField
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => ArrayField.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<ArrayField> Serde.IDeserialize<ArrayField>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<ArrayField> Serde.IDeserialize<ArrayField>.Deserialize(IDeserializer deserializer)
         {
             int[] _l_intarr = default!;
 

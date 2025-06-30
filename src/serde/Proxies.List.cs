@@ -68,7 +68,7 @@ public abstract class DeListBase<
         SerdeInfo = serdeInfo;
     }
 
-    public async ValueTask<TList> Deserialize(IDeserializer deserializer)
+    public async Task<TList> Deserialize(IDeserializer deserializer)
     {
         var info = SerdeInfo;
         var deCollection = deserializer.ReadType(info);
