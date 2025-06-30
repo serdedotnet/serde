@@ -14,7 +14,7 @@ partial class SerdeInfoTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.RgbProxy.s_serdeInfo;
 
-            Serde.Test.SerdeInfoTests.Rgb Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.ValueTask<Serde.Test.SerdeInfoTests.Rgb> Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>.Deserialize(IDeserializer deserializer)
             {
                 byte _l_r = default!;
                 byte _l_g = default!;
@@ -25,24 +25,24 @@ partial class SerdeInfoTests
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
                 int _l_index_;
-                while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+                while ((_l_index_ = await typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     switch (_l_index_)
                     {
                         case 0:
-                            _l_r = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                            _l_r = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
-                            _l_g = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                            _l_g = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case 2:
-                            _l_b = typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
+                            _l_b = await typeDeserialize.ReadU8(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 2;
                             break;
                         case Serde.ITypeDeserializer.IndexNotFound:
-                            typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                            await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                             break;
                         default:
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);

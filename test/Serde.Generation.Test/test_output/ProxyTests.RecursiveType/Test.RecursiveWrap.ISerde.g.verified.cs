@@ -20,7 +20,7 @@ partial class RecursiveWrap
             _l_type.WriteValueIfNotNull<Recursive?, Test.RecursiveWrap>(_l_info, 0, value.Next);
             _l_type.End(_l_info);
         }
-        Recursive Serde.IDeserialize<Recursive>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<Recursive> Serde.IDeserialize<Recursive>.Deserialize(IDeserializer deserializer)
         {
             Recursive? _l_next = default!;
 
@@ -29,16 +29,16 @@ partial class RecursiveWrap
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+            while ((_l_index_ = await typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
             {
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_next = typeDeserialize.ReadValue<Recursive?, Test.RecursiveWrap>(_l_serdeInfo, _l_index_);
+                        _l_next = await typeDeserialize.ReadValue<Recursive?, Test.RecursiveWrap>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

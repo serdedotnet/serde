@@ -1,8 +1,8 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Serde.Json
 {
@@ -19,13 +19,13 @@ namespace Serde.Json
     {
         public ISerdeInfo SerdeInfo => JsonValue.UnionInfo.Instance;
 
-        public JsonValue Deserialize(IDeserializer deserializer)
+        public ValueTask<JsonValue> Deserialize(IDeserializer deserializer)
         {
             if (deserializer is not BaseJsonDeserializer jsonDeserializer)
             {
                 throw new ArgumentException("deserializer must be JsonDeserializer", nameof(deserializer));
             }
-            return jsonDeserializer.ReadJsonValue();
+            return new ValueTask<JsonValue>(jsonDeserializer.ReadJsonValue());
         }
     }
 

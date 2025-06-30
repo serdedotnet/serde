@@ -21,7 +21,7 @@ partial class CommandResponse<TResult, TProxy>
             _l_type.WriteI64(_l_info, 4, value.Duration);
             _l_type.End(_l_info);
         }
-        CommandResponse<TResult, TProxy> Serde.IDeserialize<CommandResponse<TResult, TProxy>>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<CommandResponse<TResult, TProxy>> Serde.IDeserialize<CommandResponse<TResult, TProxy>>.Deserialize(IDeserializer deserializer)
         {
             int _l_status = default!;
             string _l_message = default!;
@@ -34,32 +34,32 @@ partial class CommandResponse<TResult, TProxy>
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+            while ((_l_index_ = await typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
             {
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_status = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_status = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
-                        _l_message = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_message = await typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case 2:
-                        _l_arguments = typeDeserialize.ReadValue<System.Collections.Generic.List<ArgumentInfo>?, Serde.NullableRefProxy.De<System.Collections.Generic.List<ArgumentInfo>, Serde.ListProxy.De<ArgumentInfo, ArgumentInfo>>>(_l_serdeInfo, _l_index_);
+                        _l_arguments = await typeDeserialize.ReadValue<System.Collections.Generic.List<ArgumentInfo>?, Serde.NullableRefProxy.De<System.Collections.Generic.List<ArgumentInfo>, Serde.ListProxy.De<ArgumentInfo, ArgumentInfo>>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case 3:
-                        _l_results = typeDeserialize.ReadValue<TResult, TProxy>(_l_serdeInfo, _l_index_);
+                        _l_results = await typeDeserialize.ReadValue<TResult, TProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 3;
                         break;
                     case 4:
-                        _l_duration = typeDeserialize.ReadI64(_l_serdeInfo, _l_index_);
+                        _l_duration = await typeDeserialize.ReadI64(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 4;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

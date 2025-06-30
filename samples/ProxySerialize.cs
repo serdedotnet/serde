@@ -1,5 +1,6 @@
 
 using System;
+using System.Threading.Tasks;
 using Serde;
 using Serde.Json;
 
@@ -32,9 +33,9 @@ sealed partial class VersionSerdeObj : ISerde<Version>
         serializer.WriteValue(proxy);
     }
 
-    public Version Deserialize(IDeserializer deserializer)
+    public async ValueTask<Version> Deserialize(IDeserializer deserializer)
     {
-        var proxy = deserializer.ReadValue<VersionProxy>();
+        var proxy = await deserializer.ReadValue<VersionProxy>();
         return new Version(proxy.Major, proxy.Major, proxy.Build, proxy.Revision);
     }
 }

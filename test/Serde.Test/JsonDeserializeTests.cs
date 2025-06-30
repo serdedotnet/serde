@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Drawing;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
@@ -362,12 +363,12 @@ namespace Serde.Test
                 ]
             );
 
-            ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
+            async ValueTask<ColorEnum> IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
             {
                 var typeInfo = SerdeInfo;
                 var de = deserializer.ReadType(typeInfo);
                 int index;
-                if ((index = de.TryReadIndex(typeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
+                if ((index = await de.TryReadIndex(typeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
                 {
                     throw DeserializeException.UnknownMember(errorName!, typeInfo);
                 }
@@ -474,19 +475,19 @@ namespace Serde.Test
 
                 public ISerdeInfo SerdeInfo => BasicDUManualTag.SerdeInfo;
 
-                public BasicDUManualTag Deserialize(IDeserializer deserializer)
+                public async ValueTask<BasicDUManualTag> Deserialize(IDeserializer deserializer)
                 {
                     var _l_baseInfo = BasicDUManualTag.SerdeInfo;
                     var typeDeserialize = deserializer.ReadType(_l_baseInfo);
-                    if (typeDeserialize.TryReadIndex(_l_baseInfo, out var errorName) != 0)
+                    if (await typeDeserialize.TryReadIndex(_l_baseInfo, out var errorName) != 0)
                     {
                         throw new DeserializeException($"Unexpected key '{errorName}', expected union tag named 'tag'.");
                     }
-                    var caseName = typeDeserialize.ReadString(_l_baseInfo, 0);
+                    var caseName = await typeDeserialize.ReadString(_l_baseInfo, 0);
                     return caseName switch
                     {
-                        nameof(A) => _m_AProxy.Instance.Deserialize(typeDeserialize),
-                        nameof(B) => _m_BProxy.Instance.Deserialize(typeDeserialize),
+                        nameof(A) => await _m_AProxy.Instance.Deserialize(typeDeserialize),
+                        nameof(B) => await _m_BProxy.Instance.Deserialize(typeDeserialize),
                         _ => throw new DeserializeException($"Unknown union tag '{caseName}'."),
                     };
                 }
@@ -504,27 +505,27 @@ namespace Serde.Test
                         ("x", I32Proxy.SerdeInfo, typeof(A).GetProperty("X")),
                     ]);
 
-                public A Deserialize(ITypeDeserializer typeDeserialize)
+                public async Task<A> Deserialize(ITypeDeserializer typeDeserialize)
                 {
                     var _l_AProxy = this.SerdeInfo;
                     int _l_index;
                     int _l_w = default;
                     int _l_x = default;
                     byte _r_assignedValid = 0;
-                    while ((_l_index = typeDeserialize.TryReadIndex(_l_AProxy, out _)) != ITypeDeserializer.EndOfType)
+                    while ((_l_index = await typeDeserialize.TryReadIndex(_l_AProxy, out _)) != ITypeDeserializer.EndOfType)
                     {
                         switch (_l_index)
                         {
                             case 0:
-                                _l_w = typeDeserialize.ReadI32(_l_AProxy, _l_index);
+                                _l_w = await typeDeserialize.ReadI32(_l_AProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 1:
-                                _l_x = typeDeserialize.ReadI32(_l_AProxy, _l_index);
+                                _l_x = await typeDeserialize.ReadI32(_l_AProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 1;
                                 break;
                             case Serde.ITypeDeserializer.IndexNotFound:
-                                typeDeserialize.SkipValue(_l_AProxy, _l_index);
+                                await typeDeserialize.SkipValue(_l_AProxy, _l_index);
                                 break;
                             default:
                                 throw new InvalidOperationException("Unexpected index: " + _l_index);
@@ -550,27 +551,27 @@ namespace Serde.Test
                         ("y", StringProxy.SerdeInfo, typeof(B).GetProperty("Y")),
                         ("z", StringProxy.SerdeInfo, typeof(B).GetProperty("Z")),
                     ]);
-                public B Deserialize(ITypeDeserializer d)
+                public async Task<B> Deserialize(ITypeDeserializer d)
                 {
                     var _l_BProxy = this.SerdeInfo;
                     int _l_index;
                     string _l_y = default!;
                     string _l_z = default!;
                     byte _r_assignedValid = 0;
-                    while ((_l_index = d.TryReadIndex(_l_BProxy, out _)) != ITypeDeserializer.EndOfType)
+                    while ((_l_index = await d.TryReadIndex(_l_BProxy, out _)) != ITypeDeserializer.EndOfType)
                     {
                         switch (_l_index)
                         {
                             case 0:
-                                _l_y = d.ReadString(_l_BProxy, _l_index);
+                                _l_y = await d.ReadString(_l_BProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 0;
                                 break;
                             case 1:
-                                _l_z = d.ReadString(_l_BProxy, _l_index);
+                                _l_z = await d.ReadString(_l_BProxy, _l_index);
                                 _r_assignedValid |= ((byte)1) << 1;
                                 break;
                             case Serde.ITypeDeserializer.IndexNotFound:
-                                d.SkipValue(_l_BProxy, _l_index);
+                                await d.SkipValue(_l_BProxy, _l_index);
                                 break;
                             default:
                                 throw new InvalidOperationException("Unexpected index: " + _l_index);

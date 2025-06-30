@@ -14,22 +14,22 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU.s_serdeInfo;
 
-            Serde.Test.JsonDeserializeTests.BasicDU IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.BasicDU> IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>.Deserialize(IDeserializer deserializer)
             {
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var de = deserializer.ReadType(_l_serdeInfo);
                 int index;
-                if ((index = de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
+                if ((index = await de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
                 {
                     throw Serde.DeserializeException.UnknownMember(errorName!, _l_serdeInfo);
                 }
                 Serde.Test.JsonDeserializeTests.BasicDU _l_result = index switch {
-                    0 => de.ReadValue<Serde.Test.JsonDeserializeTests.BasicDU.A, _m_AProxy>(_l_serdeInfo, 0),
-                    1 => de.ReadValue<Serde.Test.JsonDeserializeTests.BasicDU.B, _m_BProxy>(_l_serdeInfo, 1),
+                    0 => await de.ReadValue<Serde.Test.JsonDeserializeTests.BasicDU.A, _m_AProxy>(_l_serdeInfo, 0),
+                    1 => await de.ReadValue<Serde.Test.JsonDeserializeTests.BasicDU.B, _m_BProxy>(_l_serdeInfo, 1),
 
                     _ => throw new InvalidOperationException($"Unexpected index: {index}")
                 };
-                if ((index = de.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+                if ((index = await de.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
                 {
                     throw Serde.DeserializeException.ExpectedEndOfType(index);
                 }

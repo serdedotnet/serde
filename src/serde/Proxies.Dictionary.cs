@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 
 namespace Serde;
@@ -67,21 +68,21 @@ public abstract class DeDictBase<
 
     protected DeDictBase() { }
 
-    public TDict Deserialize(IDeserializer deserializer)
+    public async ValueTask<TDict> Deserialize(IDeserializer deserializer)
     {
         var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
         var deCollection = deserializer.ReadType(typeInfo);
         var sizeOpt = deCollection.SizeOpt;
         TBuilder builder = GetBuilder(sizeOpt);
         int index;
-        while ((index = deCollection.TryReadIndex(typeInfo, out _)) != ITypeDeserializer.EndOfType)
+        while ((index = await deCollection.TryReadIndex(typeInfo, out _)) != ITypeDeserializer.EndOfType)
         {
-            var key = _keyDe.Deserialize(deCollection, typeInfo, index);
-            if ((index = deCollection.TryReadIndex(typeInfo, out _)) == ITypeDeserializer.EndOfType)
+            var key = await _keyDe.Deserialize(deCollection, typeInfo, index);
+            if ((index = await deCollection.TryReadIndex(typeInfo, out _)) == ITypeDeserializer.EndOfType)
             {
                 throw new DeserializeException("Expected value, but reached end of collection.");
             }
-            var value = _valueDe.Deserialize(deCollection, typeInfo, index);
+            var value = await _valueDe.Deserialize(deCollection, typeInfo, index);
             Add(builder, key, value);
         }
         if (sizeOpt is int size && size != builder.Count)

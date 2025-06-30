@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Buffers.Text;
+using System.Threading.Tasks;
 using static Serde.Json.ThrowHelpers;
 
 namespace Serde.Json;
@@ -9,7 +10,7 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
 {
     int? ITypeDeserializer.SizeOpt => null;
 
-    int ITypeDeserializer.TryReadIndex(ISerdeInfo serdeInfo, out string? errorName)
+    ValueTask<int> ITypeDeserializer.TryReadIndex(ISerdeInfo serdeInfo, out string? errorName)
     {
         if (serdeInfo.Kind == InfoKind.Enum)
         {
@@ -28,7 +29,7 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
             {
                 errorName = null;
                 Reader.Advance();
-                return ITypeDeserializer.EndOfType;
+                return ValueTask.FromResult(ITypeDeserializer.EndOfType);
             }
             if (!_first)
             {
@@ -52,13 +53,13 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         var localIndex = serdeInfo.TryGetIndex(span);
         errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
         _first = false;
-        return localIndex;
+        return ValueTask.FromResult(localIndex);
     }
 
-    T ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
+    async ValueTask<T> ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
     {
         ReadColon();
-        return d.Deserialize(this);
+        return await d.Deserialize(this).ConfigureAwait(false);
     }
 
     private void ReadColon()
@@ -71,90 +72,91 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         Reader.Advance();
     }
 
-    bool ITypeDeserializer.ReadBool(ISerdeInfo info, int index)
+    ValueTask<bool> ITypeDeserializer.ReadBool(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadBool();
+        return ValueTask.FromResult(ReadBool());
     }
-    char ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
+    ValueTask<char> ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadChar();
+        return ValueTask.FromResult(ReadChar());
     }
-    byte ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
+    ValueTask<byte> ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadU8();
+        return ValueTask.FromResult(ReadU8());
     }
-    ushort ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
+    ValueTask<ushort> ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadU16();
+        return ValueTask.FromResult(ReadU16());
     }
-    uint ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
+    ValueTask<uint> ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadU32();
+        return ValueTask.FromResult(ReadU32());
     }
-    ulong ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
+    ValueTask<ulong> ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadU64();
+        return ValueTask.FromResult(ReadU64());
     }
-    sbyte ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
+    ValueTask<sbyte> ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadI8();
+        return ValueTask.FromResult(ReadI8());
     }
-    short ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
+    ValueTask<short> ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadI16();
+        return ValueTask.FromResult(ReadI16());
     }
-    int ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
+    ValueTask<int> ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadI32();
+        return ValueTask.FromResult(ReadI32());
     }
-    long ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
+    ValueTask<long> ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadI64();
+        return ValueTask.FromResult(ReadI64());
     }
-    float ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
+    ValueTask<float> ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadF32();
+        return ValueTask.FromResult(ReadF32());
     }
-    double ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
+    ValueTask<double> ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadF64();
+        return ValueTask.FromResult(ReadF64());
     }
-    decimal ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
+    ValueTask<decimal> ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadDecimal();
+        return ValueTask.FromResult(ReadDecimal());
     }
-    string ITypeDeserializer.ReadString(ISerdeInfo info, int index)
+    ValueTask<string> ITypeDeserializer.ReadString(ISerdeInfo info, int index)
     {
         ReadColon();
-        return this.ReadString();
+        return ValueTask.FromResult(this.ReadString());
     }
-    DateTime ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
+    ValueTask<DateTime> ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
     {
         ReadColon();
-        return ReadDateTime();
+        return ValueTask.FromResult(ReadDateTime());
     }
-    void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
+    ValueTask ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
     {
         ReadColon();
         ReadBytes(writer);
+        return ValueTask.CompletedTask;
     }
-
-    void ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
+    ValueTask ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
     {
         ReadColon();
         Reader.Skip();
+        return ValueTask.CompletedTask;
     }
 }

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Serde.Json
 {
@@ -78,17 +79,7 @@ namespace Serde.Json
         private static T Deserialize_Unsafe<T>(byte[] utf8Bytes, IDeserialize<T> d)
         {
 #if DEBUG
-            var reader = new System.Text.Json.Utf8JsonReader(utf8Bytes);
-            bool expectedSuccess = true;
-            try
-            {
-                while (reader.Read())
-                    ;
-            }
-            catch (System.Text.Json.JsonException)
-            {
-                expectedSuccess = false;
-            }
+            bool expectedSuccess = ParseWithUtf8JsonReader(utf8Bytes);
 #endif // DEBUG
 
             T result;
@@ -97,7 +88,9 @@ namespace Serde.Json
             {
 #endif // DEBUG
                 using var deserializer = JsonDeserializer.FromUtf8_Unsafe(utf8Bytes);
-                result = d.Deserialize(deserializer);
+                // The deserialize call here is async, but the input is a byte array, so there's
+                // no reason to block. There should be no problem with calling GetAwaiter().GetResult().
+                result = d.Deserialize(deserializer).GetAwaiter().GetResult();
                 deserializer.Eof();
 #if DEBUG
             }
@@ -109,6 +102,22 @@ namespace Serde.Json
             Debug.Assert(expectedSuccess, "Utf8JsonReader failed, but Serde.Json suceeded");
 #endif // DEBUG
             return result;
+
+            static bool ParseWithUtf8JsonReader(byte[] utf8Bytes)
+            {
+                var reader = new System.Text.Json.Utf8JsonReader(utf8Bytes);
+                bool expectedSuccess = true;
+                try
+                {
+                    while (reader.Read())
+                        ;
+                }
+                catch (System.Text.Json.JsonException)
+                {
+                    expectedSuccess = false;
+                }
+                return expectedSuccess;
+            }
         }
 
         public static JsonValue DeserializeJsonValue(string source)

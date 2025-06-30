@@ -19,7 +19,7 @@ partial record ComplexRecord
             _l_type.WriteValueIfNotNull<SimpleRecord?, Serde.NullableRefProxy.Ser<SimpleRecord, SimpleRecord>>(_l_info, 2, value.NestedRecord);
             _l_type.End(_l_info);
         }
-        ComplexRecord Serde.IDeserialize<ComplexRecord>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.ValueTask<ComplexRecord> Serde.IDeserialize<ComplexRecord>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
             string? _l_description = default!;
@@ -30,24 +30,24 @@ partial record ComplexRecord
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
             int _l_index_;
-            while ((_l_index_ = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+            while ((_l_index_ = await typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
             {
                 switch (_l_index_)
                 {
                     case 0:
-                        _l_id = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _l_id = await typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
-                        _l_description = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
+                        _l_description = await typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case 2:
-                        _l_nestedrecord = typeDeserialize.ReadValue<SimpleRecord?, Serde.NullableRefProxy.De<SimpleRecord, SimpleRecord>>(_l_serdeInfo, _l_index_);
+                        _l_nestedrecord = await typeDeserialize.ReadValue<SimpleRecord?, Serde.NullableRefProxy.De<SimpleRecord, SimpleRecord>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
-                        typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
+                        await typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
                     default:
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);

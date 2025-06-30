@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Serde;
 
@@ -67,7 +68,7 @@ public abstract class DeListBase<
         SerdeInfo = serdeInfo;
     }
 
-    public TList Deserialize(IDeserializer deserializer)
+    public async ValueTask<TList> Deserialize(IDeserializer deserializer)
     {
         var info = SerdeInfo;
         var deCollection = deserializer.ReadType(info);
@@ -76,7 +77,7 @@ public abstract class DeListBase<
             var builder = GetFixBuilder(size);
             for (int i = 0; i < size; i++)
             {
-                builder.Add(_de.Deserialize(deCollection, info, i));
+                builder.Add(await _de.Deserialize(deCollection, info, i).ConfigureAwait(false));
             }
             return FromFix(builder);
         }
@@ -84,9 +85,9 @@ public abstract class DeListBase<
         {
             var builder = GetVarBuilder();
             int index;
-            while ((index = deCollection.TryReadIndex(info, out _)) != ITypeDeserializer.EndOfType)
+            while ((index = await deCollection.TryReadIndex(info, out _)) != ITypeDeserializer.EndOfType)
             {
-                builder.Add(_de.Deserialize(deCollection, info, index));
+                builder.Add(await _de.Deserialize(deCollection, info, index).ConfigureAwait(false));
             }
             return FromVar(builder);
         }
