@@ -14,7 +14,7 @@ partial class InvalidJsonTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray> Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray> Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithPocoArray>.Deserialize(IDeserializer deserializer)
             {
                 Serde.Json.Test.Poco[] _l_obj = default!;
 

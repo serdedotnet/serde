@@ -10,7 +10,7 @@ partial record Container
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Container.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Container> Serde.IDeserialize<Container>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Container> Serde.IDeserialize<Container>.Deserialize(IDeserializer deserializer)
         {
             Original? _l_sdkdir = default!;
 

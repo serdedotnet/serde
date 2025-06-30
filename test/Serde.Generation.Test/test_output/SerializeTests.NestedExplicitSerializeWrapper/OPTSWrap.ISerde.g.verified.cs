@@ -20,7 +20,7 @@ partial class OPTSWrap
             _l_type.WriteI32(_l_info, 3, value.grfMode);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<System.Runtime.InteropServices.ComTypes.BIND_OPTS> Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<System.Runtime.InteropServices.ComTypes.BIND_OPTS> Serde.IDeserialize<System.Runtime.InteropServices.ComTypes.BIND_OPTS>.Deserialize(IDeserializer deserializer)
         {
             int _l_cbstruct = default!;
             int _l_dwtickcountdeadline = default!;

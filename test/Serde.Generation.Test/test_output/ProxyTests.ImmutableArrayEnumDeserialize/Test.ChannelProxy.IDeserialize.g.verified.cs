@@ -9,7 +9,7 @@ namespace Test;
 
 partial class ChannelProxy : Serde.IDeserialize<Test.Channel>
 {
-    async global::System.Threading.Tasks.ValueTask<Test.Channel> IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
+    async global::System.Threading.Tasks.Task<Test.Channel> IDeserialize<Test.Channel>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);

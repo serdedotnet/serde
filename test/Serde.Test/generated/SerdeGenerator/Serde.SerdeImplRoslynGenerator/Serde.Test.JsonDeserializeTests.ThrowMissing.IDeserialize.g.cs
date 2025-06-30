@@ -14,7 +14,7 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.ThrowMissing.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.ThrowMissing> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Test.JsonDeserializeTests.ThrowMissing> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissing>.Deserialize(IDeserializer deserializer)
             {
                 string _l_present = default!;
                 string? _l_missing = default!;

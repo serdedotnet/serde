@@ -19,7 +19,7 @@ partial record ComplexRecord
             _l_type.WriteValueIfNotNull<SimpleRecord?, Serde.NullableRefProxy.Ser<SimpleRecord, SimpleRecord>>(_l_info, 2, value.NestedRecord);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<ComplexRecord> Serde.IDeserialize<ComplexRecord>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<ComplexRecord> Serde.IDeserialize<ComplexRecord>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
             string? _l_description = default!;

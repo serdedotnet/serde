@@ -10,7 +10,7 @@ partial struct S
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => S.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<S> Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<S> Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
         {
             ColorEnum _l_e = default!;
 

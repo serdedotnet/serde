@@ -14,7 +14,7 @@ partial class SerdeInfoTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.SerdeInfoTests.RgbProxy.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Serde.Test.SerdeInfoTests.Rgb> Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Test.SerdeInfoTests.Rgb> Serde.IDeserialize<Serde.Test.SerdeInfoTests.Rgb>.Deserialize(IDeserializer deserializer)
             {
                 byte _l_r = default!;
                 byte _l_g = default!;

@@ -10,7 +10,7 @@ partial record struct SetToNull
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => SetToNull.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<SetToNull> Serde.IDeserialize<SetToNull>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<SetToNull> Serde.IDeserialize<SetToNull>.Deserialize(IDeserializer deserializer)
         {
             string _l_present = default!;
             string? _l_missing = default!;

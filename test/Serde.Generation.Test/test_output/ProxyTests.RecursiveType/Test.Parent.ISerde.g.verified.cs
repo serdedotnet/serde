@@ -20,7 +20,7 @@ partial record Parent
             _l_type.WriteValue<Recursive, Test.RecursiveWrap>(_l_info, 0, value.R);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<Test.Parent> Serde.IDeserialize<Test.Parent>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Test.Parent> Serde.IDeserialize<Test.Parent>.Deserialize(IDeserializer deserializer)
         {
             Recursive _l_r = default!;
 

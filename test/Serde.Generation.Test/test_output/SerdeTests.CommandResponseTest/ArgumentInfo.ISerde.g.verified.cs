@@ -18,7 +18,7 @@ partial class ArgumentInfo
             _l_type.WriteString(_l_info, 1, value.Value);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<ArgumentInfo> Serde.IDeserialize<ArgumentInfo>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<ArgumentInfo> Serde.IDeserialize<ArgumentInfo>.Deserialize(IDeserializer deserializer)
         {
             string _l_name = default!;
             string _l_value = default!;

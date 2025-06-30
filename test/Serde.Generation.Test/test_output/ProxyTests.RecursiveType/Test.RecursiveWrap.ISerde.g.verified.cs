@@ -20,7 +20,7 @@ partial class RecursiveWrap
             _l_type.WriteValueIfNotNull<Recursive?, Test.RecursiveWrap>(_l_info, 0, value.Next);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<Recursive> Serde.IDeserialize<Recursive>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Recursive> Serde.IDeserialize<Recursive>.Deserialize(IDeserializer deserializer)
         {
             Recursive? _l_next = default!;
 

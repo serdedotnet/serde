@@ -14,7 +14,7 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.IdStructList.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.IdStructList> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Test.JsonDeserializeTests.IdStructList> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.IdStructList>.Deserialize(IDeserializer deserializer)
             {
                 int _l_count = default!;
                 System.Collections.Generic.List<Serde.Test.JsonDeserializeTests.IdStruct> _l_list = default!;

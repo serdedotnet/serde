@@ -11,7 +11,7 @@ namespace Serde;
 /// </summary>
 public interface IDeserialize<T> : ISerdeInfoProvider
 {
-    ValueTask<T> Deserialize(IDeserializer deserializer);
+    Task<T> Deserialize(IDeserializer deserializer);
 }
 
 /// <summary>
@@ -38,7 +38,7 @@ public static class DeserializeProvider
 /// </summary>
 public interface ITypeDeserialize<T>
 {
-    ValueTask<T> Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
+    Task<T> Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
 }
 
 public static class TypeDeserialize

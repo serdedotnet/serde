@@ -18,7 +18,7 @@ partial record SimpleRecord
             _l_type.WriteString(_l_info, 1, value.Name);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<SimpleRecord> Serde.IDeserialize<SimpleRecord>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<SimpleRecord> Serde.IDeserialize<SimpleRecord>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
             string _l_name = default!;

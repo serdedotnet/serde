@@ -17,7 +17,7 @@ partial struct S
             _l_type.WriteBoxedValue<System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS>, Serde.ImmutableArrayProxy.Ser<System.Runtime.InteropServices.ComTypes.BIND_OPTS, OPTSWrap>>(_l_info, 0, value.Opts);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<S> Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<S> Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
         {
             System.Collections.Immutable.ImmutableArray<System.Runtime.InteropServices.ComTypes.BIND_OPTS> _l_opts = default!;
 

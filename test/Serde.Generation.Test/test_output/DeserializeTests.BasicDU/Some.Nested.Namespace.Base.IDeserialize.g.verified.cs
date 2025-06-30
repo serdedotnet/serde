@@ -13,7 +13,7 @@ partial record Base
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Some.Nested.Namespace.Base.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Some.Nested.Namespace.Base> IDeserialize<Some.Nested.Namespace.Base>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Some.Nested.Namespace.Base> IDeserialize<Some.Nested.Namespace.Base>.Deserialize(IDeserializer deserializer)
         {
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
             var de = deserializer.ReadType(_l_serdeInfo);

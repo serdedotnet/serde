@@ -12,7 +12,7 @@ partial class Poco
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.Poco.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Serde.Json.Test.Poco> Serde.IDeserialize<Serde.Json.Test.Poco>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Serde.Json.Test.Poco> Serde.IDeserialize<Serde.Json.Test.Poco>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
 

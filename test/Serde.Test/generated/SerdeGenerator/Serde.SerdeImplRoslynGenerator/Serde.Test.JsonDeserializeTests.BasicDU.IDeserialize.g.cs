@@ -14,7 +14,7 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.BasicDU> IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Test.JsonDeserializeTests.BasicDU> IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU>.Deserialize(IDeserializer deserializer)
             {
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var de = deserializer.ReadType(_l_serdeInfo);

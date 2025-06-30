@@ -78,7 +78,7 @@ namespace Benchmarks
                 ("country", StringProxy.SerdeInfo, typeof(Location).GetProperty("Country"))
             ]);
 
-        async ValueTask<Benchmarks.Location> Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
+        async Task<Benchmarks.Location> Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
         {
             int _l_id = default!;
             string _l_address1 = default!;

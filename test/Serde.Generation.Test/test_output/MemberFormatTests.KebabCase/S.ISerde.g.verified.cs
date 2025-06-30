@@ -18,7 +18,7 @@ partial struct S
             _l_type.WriteI32(_l_info, 1, value.TwoWord);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<S> Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<S> Serde.IDeserialize<S>.Deserialize(IDeserializer deserializer)
         {
             int _l_one = default!;
             int _l_twoword = default!;

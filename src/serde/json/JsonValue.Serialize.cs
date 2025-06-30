@@ -19,13 +19,13 @@ namespace Serde.Json
     {
         public ISerdeInfo SerdeInfo => JsonValue.UnionInfo.Instance;
 
-        public ValueTask<JsonValue> Deserialize(IDeserializer deserializer)
+        public Task<JsonValue> Deserialize(IDeserializer deserializer)
         {
             if (deserializer is not BaseJsonDeserializer jsonDeserializer)
             {
                 throw new ArgumentException("deserializer must be JsonDeserializer", nameof(deserializer));
             }
-            return new ValueTask<JsonValue>(jsonDeserializer.ReadJsonValue());
+            return Task.FromResult(jsonDeserializer.ReadJsonValue());
         }
     }
 

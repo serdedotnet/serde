@@ -68,7 +68,7 @@ public abstract class DeDictBase<
 
     protected DeDictBase() { }
 
-    public async ValueTask<TDict> Deserialize(IDeserializer deserializer)
+    public async Task<TDict> Deserialize(IDeserializer deserializer)
     {
         var typeInfo = DictSerdeInfo<TKey, TValue>.Instance;
         var deCollection = deserializer.ReadType(typeInfo);

@@ -16,7 +16,7 @@ partial class JsonDeserializeTests
             {
                 global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.BasicDU._m_BProxy.s_serdeInfo;
 
-                async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.BasicDU.B> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.B>.Deserialize(IDeserializer deserializer)
+                async global::System.Threading.Tasks.Task<Serde.Test.JsonDeserializeTests.BasicDU.B> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.BasicDU.B>.Deserialize(IDeserializer deserializer)
                 {
                     string _l_y = default!;
 

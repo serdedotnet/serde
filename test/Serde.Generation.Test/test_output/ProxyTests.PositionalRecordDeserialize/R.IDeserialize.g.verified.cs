@@ -10,7 +10,7 @@ partial record R
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => R.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<R> Serde.IDeserialize<R>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<R> Serde.IDeserialize<R>.Deserialize(IDeserializer deserializer)
         {
             int _l_a = default!;
             string _l_b = default!;

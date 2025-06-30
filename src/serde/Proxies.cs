@@ -29,11 +29,11 @@ public sealed class BoolProxy : ISerdePrimitive<BoolProxy, bool>
     private const string s_typeName = "bool";
     void ISerialize<bool>.Serialize(bool value, ISerializer serializer)
         => serializer.WriteBool(value);
-    ValueTask<bool> IDeserialize<bool>.Deserialize(IDeserializer deserializer)
+    Task<bool> IDeserialize<bool>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadBool();
     void ITypeSerialize<bool>.Serialize(bool value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteBool(info, index, value);
-    ValueTask<bool> ITypeDeserialize<bool>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<bool> ITypeDeserialize<bool>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadBool(info, index);
 }
 
@@ -48,11 +48,11 @@ public sealed class CharProxy : ISerdePrimitive<CharProxy, char>
     private const string s_typeName = "char";
     void ISerialize<char>.Serialize(char value, ISerializer serializer)
         => serializer.WriteChar(value);
-    ValueTask<char> IDeserialize<char>.Deserialize(IDeserializer deserializer)
+    Task<char> IDeserialize<char>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadChar();
     void ITypeSerialize<char>.Serialize(char value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteChar(info, index, value);
-    ValueTask<char> ITypeDeserialize<char>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<char> ITypeDeserialize<char>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadChar(info, index);
 }
 
@@ -67,11 +67,11 @@ public sealed class U8Proxy : ISerdePrimitive<U8Proxy, byte>
     private const string s_typeName = "byte";
     void ISerialize<byte>.Serialize(byte value, ISerializer serializer)
         => serializer.WriteU8(value);
-    ValueTask<byte> IDeserialize<byte>.Deserialize(IDeserializer deserializer)
+    Task<byte> IDeserialize<byte>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadU8();
     void ITypeSerialize<byte>.Serialize(byte value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteU8(info, index, value);
-    ValueTask<byte> ITypeDeserialize<byte>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<byte> ITypeDeserialize<byte>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadU8(info, index);
 }
 
@@ -86,9 +86,9 @@ public sealed class U16Proxy : ISerdePrimitive<U16Proxy, ushort>
     private const string s_typeName = "ushort";
     void ISerialize<ushort>.Serialize(ushort value, ISerializer serializer)
         => serializer.WriteU16(value);
-    ValueTask<ushort> IDeserialize<ushort>.Deserialize(IDeserializer deserializer)
+    Task<ushort> IDeserialize<ushort>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadU16();
-    ValueTask<ushort> ITypeDeserialize<ushort>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<ushort> ITypeDeserialize<ushort>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadU16(info, index);
 
     void ITypeSerialize<ushort>.Serialize(ushort value, ITypeSerializer serializer, ISerdeInfo info, int index)
@@ -107,9 +107,9 @@ public sealed class U32Proxy : ISerdePrimitive<U32Proxy, uint>
     void ISerialize<uint>.Serialize(uint value, ISerializer serializer)
         => serializer.WriteU32(value);
 
-    ValueTask<uint> IDeserialize<uint>.Deserialize(IDeserializer deserializer)
+    Task<uint> IDeserialize<uint>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadU32();
-    ValueTask<uint> ITypeDeserialize<uint>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<uint> ITypeDeserialize<uint>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadU32(info, index);
 
     void ITypeSerialize<uint>.Serialize(uint value, ITypeSerializer serializer, ISerdeInfo info, int index)
@@ -127,12 +127,12 @@ public sealed class U64Proxy : ISerdePrimitive<U64Proxy, ulong>
     private const string s_typeName = "ulong";
     void ISerialize<ulong>.Serialize(ulong value, ISerializer serializer)
         => serializer.WriteU64(value);
-    ValueTask<ulong> IDeserialize<ulong>.Deserialize(IDeserializer deserializer)
+    Task<ulong> IDeserialize<ulong>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadU64();
 
     void ITypeSerialize<ulong>.Serialize(ulong value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteU64(info, index, value);
-    ValueTask<ulong> ITypeDeserialize<ulong>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<ulong> ITypeDeserialize<ulong>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadU64(info, index);
 }
 
@@ -147,11 +147,11 @@ public sealed class I8Proxy : ISerdePrimitive<I8Proxy, sbyte>
     private const string s_typeName = "sbyte";
     void ISerialize<sbyte>.Serialize(sbyte value, ISerializer serializer)
         => serializer.WriteI8(value);
-    ValueTask<sbyte> IDeserialize<sbyte>.Deserialize(IDeserializer deserializer)
+    Task<sbyte> IDeserialize<sbyte>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadI8();
     void ITypeSerialize<sbyte>.Serialize(sbyte value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteI8(info, index, value);
-    ValueTask<sbyte> ITypeDeserialize<sbyte>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<sbyte> ITypeDeserialize<sbyte>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadI8(info, index);
 }
 
@@ -166,11 +166,11 @@ public sealed class I16Proxy : ISerdePrimitive<I16Proxy, short>
     private const string s_typeName = "short";
     void ISerialize<short>.Serialize(short value, ISerializer serializer)
         => serializer.WriteI16(value);
-    ValueTask<short> IDeserialize<short>.Deserialize(IDeserializer deserializer)
+    Task<short> IDeserialize<short>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadI16();
     void ITypeSerialize<short>.Serialize(short value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteI16(info, index, value);
-    ValueTask<short> ITypeDeserialize<short>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<short> ITypeDeserialize<short>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadI16(info, index);
 }
 
@@ -187,9 +187,9 @@ public sealed class I32Proxy : ISerdePrimitive<I32Proxy, int>
         => serializer.WriteI32(value);
     void ITypeSerialize<int>.Serialize(int value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteI32(info, index, value);
-    ValueTask<int> ITypeDeserialize<int>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<int> ITypeDeserialize<int>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadI32(info, index);
-    ValueTask<int> IDeserialize<int>.Deserialize(IDeserializer deserializer)
+    Task<int> IDeserialize<int>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadI32();
 }
 
@@ -206,9 +206,9 @@ public sealed class I64Proxy : ISerdePrimitive<I64Proxy, long>
         => serializer.WriteI64(value);
     void ITypeSerialize<long>.Serialize(long value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteI64(info, index, value);
-    ValueTask<long> ITypeDeserialize<long>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<long> ITypeDeserialize<long>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadI64(info, index);
-    ValueTask<long> IDeserialize<long>.Deserialize(IDeserializer deserializer)
+    Task<long> IDeserialize<long>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadI64();
 }
 
@@ -224,9 +224,9 @@ public sealed class F32Proxy : ISerdePrimitive<F32Proxy, float>
         => serializer.WriteF32(value);
     void ITypeSerialize<float>.Serialize(float value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteF32(info, index, value);
-    ValueTask<float> ITypeDeserialize<float>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<float> ITypeDeserialize<float>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadF32(info, index);
-    ValueTask<float> IDeserialize<float>.Deserialize(IDeserializer deserializer)
+    Task<float> IDeserialize<float>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadF32();
 }
 
@@ -242,9 +242,9 @@ public sealed class F64Proxy : ISerdePrimitive<F64Proxy, double>
         => serializer.WriteF64(value);
     void ITypeSerialize<double>.Serialize(double value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteF64(info, index, value);
-    ValueTask<double> ITypeDeserialize<double>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<double> ITypeDeserialize<double>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadF64(info, index);
-    ValueTask<double> IDeserialize<double>.Deserialize(IDeserializer deserializer)
+    Task<double> IDeserialize<double>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadF64();
 }
 
@@ -260,9 +260,9 @@ public sealed class DecimalProxy : ISerdePrimitive<DecimalProxy, decimal>
         => serializer.WriteDecimal(value);
     void ITypeSerialize<decimal>.Serialize(decimal value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteDecimal(info, index, value);
-    ValueTask<decimal> ITypeDeserialize<decimal>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<decimal> ITypeDeserialize<decimal>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadDecimal(info, index);
-    ValueTask<decimal> IDeserialize<decimal>.Deserialize(IDeserializer deserializer)
+    Task<decimal> IDeserialize<decimal>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadDecimal();
 }
 
@@ -279,9 +279,9 @@ public sealed class StringProxy : ISerdePrimitive<StringProxy, string>
         => serializer.WriteString(value);
     void ITypeSerialize<string>.Serialize(string value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteString(info, index, value);
-    ValueTask<string> ITypeDeserialize<string>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<string> ITypeDeserialize<string>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadString(info, index);
-    ValueTask<string> IDeserialize<string>.Deserialize(IDeserializer deserializer)
+    Task<string> IDeserialize<string>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadString();
 }
 
@@ -316,15 +316,15 @@ public static class BoxProxy
         private De() {}
 
         public ISerdeInfo SerdeInfo => _underlying.SerdeInfo;
-        public async ValueTask<object?> Deserialize(IDeserializer deserializer)
+        public async Task<object?> Deserialize(IDeserializer deserializer)
             => await _underlying.Deserialize(deserializer).ConfigureAwait(false);
-        public async ValueTask<T> Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        public async Task<T> Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
             => await deserializer.ReadValue(info, index, this).ConfigureAwait(false) is T t ? t : default!;
 
         // Explicit interface implementations
-        ValueTask<object?> IDeserialize<object?>.Deserialize(IDeserializer deserializer)
+        Task<object?> IDeserialize<object?>.Deserialize(IDeserializer deserializer)
             => Deserialize(deserializer);
-        ValueTask<T> ITypeDeserialize<T>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        Task<T> ITypeDeserialize<T>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
             => Deserialize(deserializer, info, index);
     }
 }
@@ -364,12 +364,12 @@ public static class NullableProxy
         public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeNullable(TProvider.Instance.SerdeInfo);
         private De() {}
 
-        public async ValueTask<T?> Deserialize(IDeserializer deserializer)
+        public async Task<T?> Deserialize(IDeserializer deserializer)
         {
             var result = await deserializer.ReadNullableRef<object>(BoxProxy.De<T, TProvider>.Instance!).ConfigureAwait(false);
             return (T?)result;
         }
-        ValueTask<T?> IDeserialize<T?>.Deserialize(IDeserializer deserializer) => Deserialize(deserializer);
+        Task<T?> IDeserialize<T?>.Deserialize(IDeserializer deserializer) => Deserialize(deserializer);
     }
 }
 
@@ -412,11 +412,11 @@ public static class NullableRefProxy
 
         private De() { }
 
-        public ValueTask<T?> Deserialize(IDeserializer deserializer)
+        public Task<T?> Deserialize(IDeserializer deserializer)
         {
             return deserializer.ReadNullableRef(_de);
         }
-        ValueTask<T?> IDeserialize<T?>.Deserialize(IDeserializer deserializer) => Deserialize(deserializer);
+        Task<T?> IDeserialize<T?>.Deserialize(IDeserializer deserializer) => Deserialize(deserializer);
     }
 }
 
@@ -441,13 +441,13 @@ public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
         serializer.WriteString(info, index, bytes);
     }
 
-    async ValueTask<Guid> ITypeDeserialize<Guid>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    async Task<Guid> ITypeDeserialize<Guid>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
     {
         var bytes = await deserializer.ReadString(info, index).ConfigureAwait(false);
         return Guid.Parse(bytes);
     }
 
-    async ValueTask<Guid> IDeserialize<Guid>.Deserialize(IDeserializer deserializer)
+    async Task<Guid> IDeserialize<Guid>.Deserialize(IDeserializer deserializer)
     {
         var str = await deserializer.ReadString().ConfigureAwait(false);
         return Guid.Parse(str);
@@ -467,9 +467,9 @@ public sealed class DateTimeProxy : ISerdePrimitive<DateTimeProxy, DateTime>
         => serializer.WriteDateTime(value);
     void ITypeSerialize<DateTime>.Serialize(DateTime value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteDateTime(info, index, value);
-    ValueTask<DateTime> ITypeDeserialize<DateTime>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<DateTime> ITypeDeserialize<DateTime>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadDateTime(info, index);
-    ValueTask<DateTime> IDeserialize<DateTime>.Deserialize(IDeserializer deserializer)
+    Task<DateTime> IDeserialize<DateTime>.Deserialize(IDeserializer deserializer)
         => deserializer.ReadDateTime();
 }
 
@@ -487,12 +487,12 @@ public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, D
     void ITypeSerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ITypeSerializer serializer, ISerdeInfo info, int index)
         => serializer.WriteDateTimeOffset(info, index, value);
 
-    async ValueTask<DateTimeOffset> ITypeDeserialize<DateTimeOffset>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    async Task<DateTimeOffset> ITypeDeserialize<DateTimeOffset>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
     {
         var dt = await deserializer.ReadDateTime(info, index).ConfigureAwait(false);
         return new DateTimeOffset(dt);
     }
-    async ValueTask<DateTimeOffset> IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer)
+    async Task<DateTimeOffset> IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer)
     {
         var dt = await deserializer.ReadDateTime().ConfigureAwait(false);
         return new DateTimeOffset(dt);
@@ -587,7 +587,7 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         => serializer.WriteBytes(info, index, value);
 
     // Remove all sync/duplicate implementations and make all deserialization async
-    public async ValueTask<byte[]> DeserializeAsync(IDeserializer deserializer)
+    public async Task<byte[]> DeserializeAsync(IDeserializer deserializer)
     {
         var (bufferWriter, owned) = BorrowBufferWriter();
         try
@@ -604,7 +604,7 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         }
     }
 
-    public async ValueTask<byte[]> DeserializeAsync(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    public async Task<byte[]> DeserializeAsync(ITypeDeserializer deserializer, ISerdeInfo info, int index)
     {
         var (bufferWriter, owned) = BorrowBufferWriter();
         try
@@ -621,9 +621,9 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         }
     }
 
-    ValueTask<byte[]> IDeserialize<byte[]>.Deserialize(IDeserializer deserializer)
+    Task<byte[]> IDeserialize<byte[]>.Deserialize(IDeserializer deserializer)
         => DeserializeAsync(deserializer);
 
-    ValueTask<byte[]> ITypeDeserialize<byte[]>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    Task<byte[]> ITypeDeserialize<byte[]>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => DeserializeAsync(deserializer, info, index);
 }

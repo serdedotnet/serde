@@ -10,7 +10,7 @@ partial struct Rgb
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Rgb.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Rgb> Serde.IDeserialize<Rgb>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Rgb> Serde.IDeserialize<Rgb>.Deserialize(IDeserializer deserializer)
         {
             byte _l_red = default!;
             byte _l_blue = default!;

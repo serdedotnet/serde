@@ -16,7 +16,7 @@ partial class InvalidProxyTest<T>
             var _l_type = serializer.WriteType(_l_info);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<InvalidProxyTest<T>> Serde.IDeserialize<InvalidProxyTest<T>>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<InvalidProxyTest<T>> Serde.IDeserialize<InvalidProxyTest<T>>.Deserialize(IDeserializer deserializer)
         {
             T? _l_value1 = default!;
             T? _l_value2 = default!;

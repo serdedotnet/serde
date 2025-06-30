@@ -21,7 +21,7 @@ partial class CommandResponse<TResult, TProxy>
             _l_type.WriteI64(_l_info, 4, value.Duration);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<CommandResponse<TResult, TProxy>> Serde.IDeserialize<CommandResponse<TResult, TProxy>>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<CommandResponse<TResult, TProxy>> Serde.IDeserialize<CommandResponse<TResult, TProxy>>.Deserialize(IDeserializer deserializer)
         {
             int _l_status = default!;
             string _l_message = default!;

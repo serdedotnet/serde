@@ -12,7 +12,7 @@ partial record AllInOne
     {
         global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.AllInOne.s_serdeInfo;
 
-        async global::System.Threading.Tasks.ValueTask<Serde.Test.AllInOne> Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Serde.Test.AllInOne> Serde.IDeserialize<Serde.Test.AllInOne>.Deserialize(IDeserializer deserializer)
         {
             bool _l_boolfield = default!;
             char _l_charfield = default!;

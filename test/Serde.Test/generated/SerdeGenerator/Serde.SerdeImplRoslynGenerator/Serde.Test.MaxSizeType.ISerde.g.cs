@@ -82,7 +82,7 @@ partial struct MaxSizeType
             _l_type.WriteU8(_l_info, 63, value.Field64);
             _l_type.End(_l_info);
         }
-        async global::System.Threading.Tasks.ValueTask<Serde.Test.MaxSizeType> Serde.IDeserialize<Serde.Test.MaxSizeType>.Deserialize(IDeserializer deserializer)
+        async global::System.Threading.Tasks.Task<Serde.Test.MaxSizeType> Serde.IDeserialize<Serde.Test.MaxSizeType>.Deserialize(IDeserializer deserializer)
         {
             byte _l_field1 = default!;
             byte _l_field2 = default!;

@@ -14,7 +14,7 @@ partial class JsonDeserializeTests
         {
             global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.JsonDeserializeTests.Location.s_serdeInfo;
 
-            async global::System.Threading.Tasks.ValueTask<Serde.Test.JsonDeserializeTests.Location> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>.Deserialize(IDeserializer deserializer)
+            async global::System.Threading.Tasks.Task<Serde.Test.JsonDeserializeTests.Location> Serde.IDeserialize<Serde.Test.JsonDeserializeTests.Location>.Deserialize(IDeserializer deserializer)
             {
                 int _l_id = default!;
                 string _l_address1 = default!;

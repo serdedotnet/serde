@@ -6,7 +6,7 @@ using System;
 using Serde;
 partial class ColorByteProxy : Serde.IDeserialize<ColorByte>
 {
-    async global::System.Threading.Tasks.ValueTask<ColorByte> IDeserialize<ColorByte>.Deserialize(IDeserializer deserializer)
+    async global::System.Threading.Tasks.Task<ColorByte> IDeserialize<ColorByte>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);
