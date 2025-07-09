@@ -366,8 +366,8 @@ namespace Serde.Test
             {
                 var typeInfo = SerdeInfo;
                 var de = deserializer.ReadType(typeInfo);
-                int index;
-                if ((index = de.TryReadIndex(typeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
+                var (index, errorName) = de.TryReadIndexWithName(typeInfo);
+                if (index == ITypeDeserializer.IndexNotFound)
                 {
                     throw DeserializeException.UnknownMember(errorName!, typeInfo);
                 }
@@ -478,9 +478,10 @@ namespace Serde.Test
                 {
                     var _l_baseInfo = BasicDUManualTag.SerdeInfo;
                     var typeDeserialize = deserializer.ReadType(_l_baseInfo);
-                    if (typeDeserialize.TryReadIndex(_l_baseInfo, out var errorName) != 0)
+                    var (index, errorName) = typeDeserialize.TryReadIndexWithName(_l_baseInfo);
+                    if (index == ITypeDeserializer.IndexNotFound)
                     {
-                        throw new DeserializeException($"Unexpected key '{errorName}', expected union tag named 'tag'.");
+                        throw DeserializeException.UnknownMember(errorName!, _l_baseInfo);
                     }
                     var caseName = typeDeserialize.ReadString(_l_baseInfo, 0);
                     return caseName switch
@@ -507,12 +508,17 @@ namespace Serde.Test
                 public A Deserialize(ITypeDeserializer typeDeserialize)
                 {
                     var _l_AProxy = this.SerdeInfo;
-                    int _l_index;
                     int _l_w = default;
                     int _l_x = default;
                     byte _r_assignedValid = 0;
-                    while ((_l_index = typeDeserialize.TryReadIndex(_l_AProxy, out _)) != ITypeDeserializer.EndOfType)
+                    while (true)
                     {
+                        var _l_index = typeDeserialize.TryReadIndex(_l_AProxy);
+                        if (_l_index == ITypeDeserializer.EndOfType)
+                        {
+                            break;
+                        }
+
                         switch (_l_index)
                         {
                             case 0:
@@ -553,12 +559,17 @@ namespace Serde.Test
                 public B Deserialize(ITypeDeserializer d)
                 {
                     var _l_BProxy = this.SerdeInfo;
-                    int _l_index;
                     string _l_y = default!;
                     string _l_z = default!;
                     byte _r_assignedValid = 0;
-                    while ((_l_index = d.TryReadIndex(_l_BProxy, out _)) != ITypeDeserializer.EndOfType)
+                    while (true)
                     {
+                        var _l_index = d.TryReadIndex(_l_BProxy);
+                        if (_l_index == ITypeDeserializer.EndOfType)
+                        {
+                            break;
+                        }
+
                         switch (_l_index)
                         {
                             case 0:

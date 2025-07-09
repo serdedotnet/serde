@@ -9,7 +9,15 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
 {
     int? ITypeDeserializer.SizeOpt => null;
 
-    int ITypeDeserializer.TryReadIndex(ISerdeInfo serdeInfo, out string? errorName)
+    int ITypeDeserializer.TryReadIndex(ISerdeInfo info)
+    {
+        return TryReadIndexWithName(info).Item1;
+    }
+
+    (int, string? errorName) ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo)
+        => TryReadIndexWithName(serdeInfo);
+
+    private (int, string? errorName) TryReadIndexWithName(ISerdeInfo serdeInfo)
     {
         if (serdeInfo.Kind == InfoKind.Enum)
         {
@@ -26,9 +34,8 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
             var peek = Reader.SkipWhitespace();
             if (peek == (byte)'}')
             {
-                errorName = null;
                 Reader.Advance();
-                return ITypeDeserializer.EndOfType;
+                return (ITypeDeserializer.EndOfType, null);
             }
             if (!_first)
             {
@@ -50,9 +57,9 @@ partial class JsonDeserializer<TReader> : ITypeDeserializer
         _scratch.Clear();
         var span = Reader.LexUtf8Span(_scratch);
         var localIndex = serdeInfo.TryGetIndex(span);
-        errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
+        var errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
         _first = false;
-        return localIndex;
+        return (localIndex, errorName);
     }
 
     T ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)

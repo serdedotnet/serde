@@ -92,9 +92,13 @@ namespace Benchmarks
 
             var _l_serdeInfo = SerdeInfo;
             var typeDeserialize = deserializer.ReadType(_l_serdeInfo);
-            int index;
-            while ((index = typeDeserialize.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+            while (true)
             {
+                var index = typeDeserialize.TryReadIndex(_l_serdeInfo);
+                if (index == ITypeDeserializer.EndOfType)
+                {
+                    break;
+                }
                 switch (index)
                 {
                     case 0:

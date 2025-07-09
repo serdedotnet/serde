@@ -24,7 +24,7 @@ partial class ColorEnumProxy : Serde.ISerde<ColorEnum>
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
         var de = deserializer.ReadType(serdeInfo);
-        int index = de.TryReadIndex(serdeInfo, out var errorName);
+        var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
         if (index == ITypeDeserializer.IndexNotFound)
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);

@@ -21,14 +21,18 @@ partial class JsonDeserializer<TReader>
 
         public int? SizeOpt => null;
 
-        public int TryReadIndex(ISerdeInfo info, out string? errorName)
+        public int TryReadIndex(ISerdeInfo info)
+            => TryReadIndexWithName(info).Item1;
+
+        public (int, string? errorName) TryReadIndexWithName(ISerdeInfo info)
         {
+            string? errorName;
             switch (info.Kind)
             {
                 case InfoKind.List:
-                    return TryReadIndexEnumerable(out errorName);
+                    return (TryReadIndexEnumerable(out errorName), errorName);
                 case InfoKind.Dictionary:
-                    return TryReadIndexDictionary(out errorName);
+                    return (TryReadIndexDictionary(out errorName), errorName);
                 default:
                     throw new ArgumentException($"TypeKind is {info.Kind}, expected Enumerable or Dictionary");
             }
