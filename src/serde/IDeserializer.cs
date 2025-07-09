@@ -52,13 +52,21 @@ public interface ITypeDeserializer
 
     /// <summary>
     /// Try to read the index of the next field in the type. If the index is found, the method
-    /// should return the index and set <paramref name="errorName" /> to null. If the end of the
-    /// type is reached, the method should return <see cref="EndOfType" /> and set <paramref
-    /// name="errorName" /> to null. If the field is not found, the method should return <see
-    /// cref="IndexNotFound" /> and set <paramref name="errorName" /> to the name of the missing
-    /// field, or the best-possible user-facing name.
+    /// should return the index. If the end of the type is reached, the method should return <see
+    /// cref="EndOfType" />. If the field is not found, the method should return <see
+    /// cref="IndexNotFound" />. To retrieve the name of the missing field, use <see
+    /// cref="TryReadIndexWithName" />.
     /// </summary>
-    int TryReadIndex(ISerdeInfo info, out string? errorName);
+    int TryReadIndex(ISerdeInfo info);
+
+    /// <summary>
+    /// Try to read the index of the next field in the type. If the index is found, the method
+    /// should return the index and set errorName to null. If the end of the type is reached, the
+    /// method should return <see cref="EndOfType" /> and set errorName to null. If the field is not
+    /// found, the method should return <see cref="IndexNotFound" /> and set errorName to the name
+    /// of the missing field, or the best-possible user-facing name.
+    /// </summary>
+    (int, string? errorName) TryReadIndexWithName(ISerdeInfo info);
 
     T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> deserialize)
         where T : class?;

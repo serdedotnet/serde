@@ -74,10 +74,17 @@ public abstract class DeDictBase<
         var sizeOpt = deCollection.SizeOpt;
         TBuilder builder = GetBuilder(sizeOpt);
         int index;
-        while ((index = deCollection.TryReadIndex(typeInfo, out _)) != ITypeDeserializer.EndOfType)
+        while (true)
         {
+            index = deCollection.TryReadIndex(typeInfo);
+            if (index == ITypeDeserializer.EndOfType)
+            {
+                break;
+            }
+
             var key = _keyDe.Deserialize(deCollection, typeInfo, index);
-            if ((index = deCollection.TryReadIndex(typeInfo, out _)) == ITypeDeserializer.EndOfType)
+            index = deCollection.TryReadIndex(typeInfo);
+            if (index == ITypeDeserializer.EndOfType)
             {
                 throw new DeserializeException("Expected value, but reached end of collection.");
             }

@@ -18,8 +18,8 @@ partial class SerdeInfoTests
             {
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var de = deserializer.ReadType(_l_serdeInfo);
-                int index;
-                if ((index = de.TryReadIndex(_l_serdeInfo, out var errorName)) == ITypeDeserializer.IndexNotFound)
+                var (index, errorName) = de.TryReadIndexWithName(_l_serdeInfo);
+                if (index == ITypeDeserializer.IndexNotFound)
                 {
                     throw Serde.DeserializeException.UnknownMember(errorName!, _l_serdeInfo);
                 }
@@ -29,7 +29,8 @@ partial class SerdeInfoTests
 
                     _ => throw new InvalidOperationException($"Unexpected index: {index}")
                 };
-                if ((index = de.TryReadIndex(_l_serdeInfo, out _)) != ITypeDeserializer.EndOfType)
+                index = de.TryReadIndex(_l_serdeInfo);
+                if (index != ITypeDeserializer.EndOfType)
                 {
                     throw Serde.DeserializeException.ExpectedEndOfType(index);
                 }

@@ -84,8 +84,14 @@ public abstract class DeListBase<
         {
             var builder = GetVarBuilder();
             int index;
-            while ((index = deCollection.TryReadIndex(info, out _)) != ITypeDeserializer.EndOfType)
+            while (true)
             {
+                index = deCollection.TryReadIndex(info);
+                if (index == ITypeDeserializer.EndOfType)
+                {
+                    break;
+                }
+
                 builder.Add(_de.Deserialize(deCollection, info, index));
             }
             return FromVar(builder);
