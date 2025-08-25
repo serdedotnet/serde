@@ -296,9 +296,16 @@ namespace Serde
                     }
                     var localName = GetLocalName(m);
                     localsBuilder.AppendLine($"{memberType} {localName} = default!;");
+
+                    var typeOptions = SymbolUtilities.GetTypeOptions(type);
+                    var duplicateKeyCheck = !typeOptions.AllowDuplicateKeys
+                        ? $"Serde.DeserializeException.ThrowIfDuplicate({AssignedVarName}, {fieldIndex}, {typeInfoLocalName});"
+                        : "";
+
                     casesBuilder.AppendLine($"""
                     case {fieldIndex}:
-                        {localName} = typeDeserialize.{readValueCall}(_l_serdeInfo, {indexLocalName});
+                        {duplicateKeyCheck}
+                        {localName} = typeDeserialize.{readValueCall}({typeInfoLocalName}, {indexLocalName});
                         {AssignedVarName} |= (({assignedVarType})1) << {fieldIndex};
                         break;
                     """);

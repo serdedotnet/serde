@@ -4,19 +4,20 @@
 using System;
 using Serde;
 
-namespace Serde.Json.Test;
+namespace Serde.Test;
 
-partial class InvalidJsonTests
+partial class DuplicateKeyTests
 {
-    partial class ClassWithDictionaryOfIntArray
+    partial struct SimpleTypeAllowDuplicates
     {
-        sealed partial class _DeObj : Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray>
+        sealed partial class _DeObj : Serde.IDeserialize<Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates>
         {
-            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray.s_serdeInfo;
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates.s_serdeInfo;
 
-            Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray Serde.IDeserialize<Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray>.Deserialize(IDeserializer deserializer)
+            Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates Serde.IDeserialize<Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates>.Deserialize(IDeserializer deserializer)
             {
-                System.Collections.Generic.Dictionary<string, int[]> _l_obj = default!;
+                string _l_name = default!;
+                int _l_value = default!;
 
                 byte _r_assignedValid = 0;
 
@@ -33,9 +34,14 @@ partial class InvalidJsonTests
                     switch (_l_index_)
                     {
                         case 0:
-                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                            _l_obj = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<string, int[]>, Serde.DictProxy.De<string, int[], global::Serde.StringProxy, Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>>(_l_serdeInfo, _l_index_);
+
+                            _l_name = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
+                            break;
+                        case 1:
+
+                            _l_value = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                            _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case Serde.ITypeDeserializer.IndexNotFound:
                             typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -44,12 +50,13 @@ partial class InvalidJsonTests
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
                     }
                 }
-                if ((_r_assignedValid & 0b1) != 0b1)
+                if ((_r_assignedValid & 0b11) != 0b11)
                 {
                     throw Serde.DeserializeException.UnassignedMember();
                 }
-                var newType = new Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray() {
-                    Obj = _l_obj,
+                var newType = new Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates() {
+                    Name = _l_name,
+                    Value = _l_value,
                 };
 
                 return newType;

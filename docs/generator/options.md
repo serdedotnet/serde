@@ -33,6 +33,10 @@ Note that these options only apply to the target type, not the type of nested me
 
   `false` by default. When false, the generated implementation of `IDeserialize` will skip over any members in the source that aren't defined on the type. When true, an exception will be thrown if there are any unrecognized members in the source.
 
+- `[SerdeTypeOptions(AllowDuplicateKeys = false)]`
+
+  `false` by default. When false, the generated implementation of `IDeserialize` will throw an exception if duplicate keys are encountered during deserialization. When true, duplicate keys will overwrite previous values (last value wins behavior).
+
 ## Member options
 
 - `[SerdeMemberOptions(ThrowIfMissing = false)]`
