@@ -17,10 +17,10 @@ void RunTest()
     //};
     //var json1 = System.Text.Json.JsonSerializer.Serialize(Location.Sample, options);
     //var loc1 = System.Text.Json.JsonSerializer.Deserialize<Location>(LocationSample, options);
-    Location loc2 = Serde.Json.JsonSerializer.Deserialize<Location>(LocationSample);
+    Location loc2 = Serde.Json.JsonSerializer.Deserialize<Location, LocationWrap>(LocationSample);
     for (int i = 0; i < 10000; i++)
     {
-        loc2 = Serde.Json.JsonSerializer.Deserialize<Location>(LocationSample);
+        loc2 = Serde.Json.JsonSerializer.Deserialize<Location, LocationWrap>(LocationSample);
     }
     Console.WriteLine(loc2 == Location.Sample);
 }
