@@ -187,6 +187,12 @@ namespace Serde
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
                             ) => options with { DenyUnknownMembers = (bool)value },
+                            (nameof(TypeOptions.AllowDuplicateKeys),
+                                {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            ) => options with { AllowDuplicateKeys = (bool)value },
                             (nameof(TypeOptions.Rename),
                                 {
                                     Kind: TypedConstantKind.Primitive,

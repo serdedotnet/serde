@@ -41,38 +41,47 @@ partial class JsonDeserializeTests
                     switch (_l_index_)
                     {
                         case 0:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
                             _l_id = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 0;
                             break;
                         case 1:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
                             _l_address1 = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 1;
                             break;
                         case 2:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 2, _l_serdeInfo);
                             _l_address2 = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 2;
                             break;
                         case 3:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 3, _l_serdeInfo);
                             _l_city = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 3;
                             break;
                         case 4:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 4, _l_serdeInfo);
                             _l_state = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 4;
                             break;
                         case 5:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 5, _l_serdeInfo);
                             _l_postalcode = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 5;
                             break;
                         case 6:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 6, _l_serdeInfo);
                             _l_name = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 6;
                             break;
                         case 7:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 7, _l_serdeInfo);
                             _l_phonenumber = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 7;
                             break;
                         case 8:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 8, _l_serdeInfo);
                             _l_country = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((ushort)1) << 8;
                             break;

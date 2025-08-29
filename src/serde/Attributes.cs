@@ -92,6 +92,13 @@ sealed class SerdeTypeOptions : Attribute
     public bool DenyUnknownMembers { get; init; } = false;
 
     /// <summary>
+    /// Allow duplicate keys during deserialization.
+    /// When true, duplicate keys will overwrite previous values.
+    /// When false, duplicate keys will throw an exception.
+    /// </summary>
+    public bool AllowDuplicateKeys { get; init; } = false;
+
+    /// <summary>
     /// Override the formatting for members.
     /// </summary>
     public MemberFormat MemberFormat { get; init; } = MemberFormat.CamelCase;

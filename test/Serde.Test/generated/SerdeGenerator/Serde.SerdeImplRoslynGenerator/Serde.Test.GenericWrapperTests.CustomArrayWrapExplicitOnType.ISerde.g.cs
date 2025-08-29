@@ -40,6 +40,7 @@ partial class GenericWrapperTests
                     switch (_l_index_)
                     {
                         case 0:
+                            Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
                             _l_a = typeDeserialize.ReadBoxedValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;

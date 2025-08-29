@@ -40,14 +40,17 @@ partial record ComplexRecord
                 switch (_l_index_)
                 {
                     case 0:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
                         _l_id = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
                         _l_description = typeDeserialize.ReadValue<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case 2:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 2, _l_serdeInfo);
                         _l_nestedrecord = typeDeserialize.ReadValue<SimpleRecord?, Serde.NullableRefProxy.De<SimpleRecord, SimpleRecord>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;

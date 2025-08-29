@@ -7,6 +7,7 @@ namespace Serde;
 internal record TypeOptions
 {
     public bool DenyUnknownMembers { get; init; } = false;
+    public bool AllowDuplicateKeys { get; init; } = false;
     public MemberFormat MemberFormat { get; init; } = MemberFormat.CamelCase;
     public bool SerializeNull { get; init; } = false;
     public string? Rename { get; init; } = null;
