@@ -83,7 +83,7 @@ namespace Serde
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-    var de = deserializer.ReadType(_l_serdeInfo);
+    using var de = deserializer.ReadType(_l_serdeInfo);
     var (index, errorName) = de.TryReadIndexWithName(_l_serdeInfo);
     if (index == ITypeDeserializer.IndexNotFound)
     {
@@ -146,7 +146,7 @@ namespace Serde
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-    var de = deserializer.ReadType(serdeInfo);
+    using var de = deserializer.ReadType(serdeInfo);
     var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
     if (index == ITypeDeserializer.IndexNotFound)
     {
