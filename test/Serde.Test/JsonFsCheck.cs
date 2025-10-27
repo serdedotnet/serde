@@ -22,11 +22,11 @@ namespace Serde.Test
     public class JsonFsCheck
     {
         private static readonly EmitOptions s_emitOptions = new EmitOptions();
-        private static readonly ReferenceAssemblies s_latestTfRefs =
+        private static readonly ReferenceAssemblies s_net10Refs =
             new ReferenceAssemblies(
-                "net8.0",
-                new PackageIdentity("Microsoft.NETCore.App.Ref", "8.0.6"),
-                Path.Combine("ref", "net8.0"))
+                "net10.0",
+                new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0-rc.1.25515.110"),
+                Path.Combine("ref", "net10.0"))
             .WithNuGetConfigFilePath(Path.Combine(
                 GetDirectoryPath(),
                 "..",
@@ -131,7 +131,7 @@ namespace Serde.Test
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
                syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
-               references: (await s_latestTfRefs.ResolveAsync(null, default)).Concat(refs),
+               references: (await s_net10Refs.ResolveAsync(null, default)).Concat(refs),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
             var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });

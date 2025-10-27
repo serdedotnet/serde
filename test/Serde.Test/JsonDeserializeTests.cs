@@ -201,7 +201,7 @@ namespace Serde.Test
             Assert.Equal(1531298, result.List[0].Id);
             Assert.Equal(32414, result.List[1].Id);
             Assert.Equal(14254, result.List[2].Id);
-            var listDirect = JsonSerializer.DeserializeList<IdStruct>(listSrc);
+            var listDirect = JsonSerializer.Deserialize(listSrc, List<IdStruct>.Deserialize);
             for (int i = 0; i < result.Count; i++)
             {
                 Assert.Equal(result.List[i], listDirect[i]);
