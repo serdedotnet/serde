@@ -1,27 +1,15 @@
-<Project Sdk="Microsoft.Build.NoTargets/3.5.0">
-
-  <!-- Package settings -->
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-
-    <PackageId>Serde</PackageId>
-    <PackageVersion>$(SerdePkgVersion)</PackageVersion>
-    <IsPackable>true</IsPackable>
-    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/agocke/serde-dn</RepositoryUrl>
-    <PackageProjectUrl>https://commentout.com/serde-dn</PackageProjectUrl>
-    <PackageReadmeFile>README.Serde.md</PackageReadmeFile>
-
+    <TargetFramework>$(TestTfm)</TargetFramework>
+    <NoBuild>true</NoBuild>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NuspecFile>Serde.Pkg.nuspec</NuspecFile>
+    <NuspecProperties>SerdePkgVersion=$(SerdePkgVersion)</NuspecProperties>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../src/serde/Serde.csproj" />
     <ProjectReference Include="../src/generator/SerdeGenerator.csproj" />
-
-    <PackageReference Include="NuGetizer">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
