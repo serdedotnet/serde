@@ -25,7 +25,7 @@ namespace Serde.Test
         private static readonly ReferenceAssemblies s_net10Refs =
             new ReferenceAssemblies(
                 "net10.0",
-                new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0-rc.1.25515.110"),
+                new PackageIdentity("Microsoft.NETCore.App.Ref", "10.0.0-rc.2.25502.107"),
                 Path.Combine("ref", "net10.0"))
             .WithNuGetConfigFilePath(Path.Combine(
                 GetDirectoryPath(),
