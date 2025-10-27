@@ -5,163 +5,178 @@ using static Serde.Json.ThrowHelpers;
 
 namespace Serde.Json;
 
-partial class JsonDeserializer<TReader> : ITypeDeserializer
+partial class JsonDeserializer<TReader>
 {
-    int? ITypeDeserializer.SizeOpt => null;
-
-    int ITypeDeserializer.TryReadIndex(ISerdeInfo info)
+    private sealed class DeType : ITypeDeserializer
     {
-        return TryReadIndexWithName(info).Item1;
-    }
+        private readonly JsonDeserializer<TReader> _deserializer;
 
-    (int, string? errorName) ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo)
-        => TryReadIndexWithName(serdeInfo);
-
-    private (int, string? errorName) TryReadIndexWithName(ISerdeInfo serdeInfo)
-    {
-        if (serdeInfo.Kind == InfoKind.Enum)
+        public DeType(JsonDeserializer<TReader> deserializer)
         {
-            switch (ThrowIfEos(Reader.SkipWhitespace()))
-            {
-                case (byte)'"':
-                    break;
-                default:
-                    throw new JsonException("Expected enum name as string");
-            }
+            _deserializer = deserializer;
         }
-        else
+
+        int? ITypeDeserializer.SizeOpt => null;
+
+        int ITypeDeserializer.TryReadIndex(ISerdeInfo info)
         {
-            var peek = Reader.SkipWhitespace();
-            if (peek == (byte)'}')
+            return TryReadIndexWithName(info).Item1;
+        }
+
+        (int, string? errorName) ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo)
+            => TryReadIndexWithName(serdeInfo);
+
+        private (int, string? errorName) TryReadIndexWithName(ISerdeInfo serdeInfo)
+        {
+            if (serdeInfo.Kind == InfoKind.Enum)
             {
-                Reader.Advance();
-                return (ITypeDeserializer.EndOfType, null);
-            }
-            if (!_first)
-            {
-                if (peek != (byte)',')
+                switch (ThrowIfEos(_deserializer.Reader.SkipWhitespace()))
                 {
-                    throw new JsonException($"Expected '}}' or ',', found: '{(char)peek}'");
+                    case (byte)'"':
+                        break;
+                    default:
+                        throw new JsonException("Expected enum name as string");
                 }
-                Reader.Advance();
-                peek = Reader.SkipWhitespace();
             }
-            if (peek != (byte)'"')
+            else
             {
-                throw new JsonException($"Expected property name, got: '{(char)peek}'");
+                var peek = _deserializer.Reader.SkipWhitespace();
+                if (peek == (byte)'}')
+                {
+                    _deserializer.Reader.Advance();
+                    return (ITypeDeserializer.EndOfType, null);
+                }
+                if (!_deserializer._first)
+                {
+                    if (peek != (byte)',')
+                    {
+                        throw new JsonException($"Expected '}}' or ',', found: '{(char)peek}'");
+                    }
+                    _deserializer.Reader.Advance();
+                    peek = _deserializer.Reader.SkipWhitespace();
+                }
+                if (peek != (byte)'"')
+                {
+                    throw new JsonException($"Expected property name, got: '{(char)peek}'");
+                }
             }
+
+            // Read a string
+            _deserializer.Reader.Advance();
+            _deserializer._scratch.Clear();
+            var span = _deserializer.Reader.LexUtf8Span(_deserializer._scratch);
+            var localIndex = serdeInfo.TryGetIndex(span);
+            var errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
+            _deserializer._first = false;
+            return (localIndex, errorName);
         }
 
-        // Read a string
-        Reader.Advance();
-        _scratch.Clear();
-        var span = Reader.LexUtf8Span(_scratch);
-        var localIndex = serdeInfo.TryGetIndex(span);
-        var errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
-        _first = false;
-        return (localIndex, errorName);
-    }
-
-    T ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
-    {
-        ReadColon();
-        return d.Deserialize(this);
-    }
-
-    private void ReadColon()
-    {
-        var peek = ThrowIfEos(Reader.SkipWhitespace());
-        if (peek != (byte)':')
+        T ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
         {
-            throw new JsonException("Expected ':'");
+            ReadColon();
+            return d.Deserialize(_deserializer);
         }
-        Reader.Advance();
-    }
 
-    bool ITypeDeserializer.ReadBool(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadBool();
-    }
-    char ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadChar();
-    }
-    byte ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadU8();
-    }
-    ushort ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadU16();
-    }
-    uint ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadU32();
-    }
-    ulong ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadU64();
-    }
-    sbyte ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadI8();
-    }
-    short ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadI16();
-    }
-    int ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadI32();
-    }
-    long ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadI64();
-    }
-    float ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadF32();
-    }
-    double ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadF64();
-    }
-    decimal ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadDecimal();
-    }
-    string ITypeDeserializer.ReadString(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return this.ReadString();
-    }
-    DateTime ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        return ReadDateTime();
-    }
-    void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
-    {
-        ReadColon();
-        ReadBytes(writer);
-    }
+        private void ReadColon()
+        {
+            var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());
+            if (peek != (byte)':')
+            {
+                throw new JsonException("Expected ':'");
+            }
+            _deserializer.Reader.Advance();
+        }
 
-    void ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
-    {
-        ReadColon();
-        Reader.Skip();
+        bool ITypeDeserializer.ReadBool(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadBool();
+        }
+        char ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadChar();
+        }
+        byte ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadU8();
+        }
+        ushort ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadU16();
+        }
+        uint ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadU32();
+        }
+        ulong ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadU64();
+        }
+        sbyte ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadI8();
+        }
+        short ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadI16();
+        }
+        int ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadI32();
+        }
+        long ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadI64();
+        }
+        float ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadF32();
+        }
+        double ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadF64();
+        }
+        decimal ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadDecimal();
+        }
+        string ITypeDeserializer.ReadString(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadString();
+        }
+        DateTime ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadDateTime();
+        }
+        void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
+        {
+            ReadColon();
+            _deserializer.ReadBytes(writer);
+        }
+
+        void ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            _deserializer.Reader.Skip();
+        }
+
+        void IDisposable.Dispose()
+        {
+            // Nothing to dispose
+        }
     }
 }

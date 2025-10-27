@@ -9,7 +9,7 @@ partial class ColorULongProxy : Serde.IDeserialize<ColorULong>
     ColorULong IDeserialize<ColorULong>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-        var de = deserializer.ReadType(serdeInfo);
+        using var de = deserializer.ReadType(serdeInfo);
         var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
         if (index == ITypeDeserializer.IndexNotFound)
         {

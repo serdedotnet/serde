@@ -139,7 +139,7 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
                 goto case InfoKind.Enum;
             }
             case InfoKind.Enum:
-                return this;
+                return new DeType(this);
             case InfoKind.List:
             {
                 var peek = Reader.SkipWhitespace();

@@ -40,7 +40,7 @@ public static class IDeserializerExt
         => deserializer.ReadValue<T, T>();
 }
 
-public interface ITypeDeserializer
+public interface ITypeDeserializer : IDisposable
 {
     public const int EndOfType = -1;
     public const int IndexNotFound = -2;
@@ -88,6 +88,8 @@ public interface ITypeDeserializer
     string ReadString(ISerdeInfo info, int index);
     DateTime ReadDateTime(ISerdeInfo info, int index);
     void ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
+
+    void IDisposable.Dispose() { }
 }
 
 public static class ITypeDeserializerExt
