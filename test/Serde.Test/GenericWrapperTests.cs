@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
-using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client;
 using Xunit;
 
 namespace Serde.Test;
@@ -118,6 +116,8 @@ public sealed partial class GenericWrapperTests
                     : ImmutableArray.CreateBuilder<T>();
             }
 
+            protected override void Add(ImmutableArray<T>.Builder builder, T item) => builder.Add(item);
+
             protected override CustomImArray<T> ToList(ImmutableArray<T>.Builder builder)
             {
                 return new CustomImArray<T>(builder.ToImmutable());
@@ -153,6 +153,8 @@ public sealed partial class GenericWrapperTests
                     ? ImmutableArray.CreateBuilder<T>(size)
                     : ImmutableArray.CreateBuilder<T>();
             }
+
+            protected override void Add(ImmutableArray<T>.Builder builder, T item) => builder.Add(item);
 
             protected override CustomImArray2<T> ToList(ImmutableArray<T>.Builder builder)
             {

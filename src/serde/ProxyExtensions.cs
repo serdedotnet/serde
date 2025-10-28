@@ -2,7 +2,43 @@
 #if NET10_0_OR_GREATER
 using System.Collections.Generic;
 
-namespace Serde.Json;
+namespace Serde;
+
+public static class ArrayTExtensions
+{
+    extension<T>(T[]) where T : IDeserializeProvider<T>
+    {
+        public static IDeserialize<T[]> Deserialize => ArrayProxy.De<T, T>.Instance;
+    }
+    extension<T>(T[]) where T : ISerializeProvider<T>
+    {
+        public static ISerialize<T[]> Serialize => ArrayProxy.Ser<T, T>.Instance;
+    }
+}
+
+public static class ArrayIntExtensions
+{
+    extension(int[])
+    {
+        public static IDeserialize<int[]> Deserialize => ArrayProxy.De<int, I32Proxy>.Instance;
+    }
+    extension(int[])
+    {
+        public static ISerialize<int[]> Serialize => ArrayProxy.Ser<int, I32Proxy>.Instance;
+    }
+}
+
+public static class ArrayStringExtensions
+{
+    extension(string[])
+    {
+        public static IDeserialize<string[]> Deserialize => ArrayProxy.De<string, StringProxy>.Instance;
+    }
+    extension(string[])
+    {
+        public static ISerialize<string[]> Serialize => ArrayProxy.Ser<string, StringProxy>.Instance;
+    }
+}
 
 public static class ListTExtensions
 {
