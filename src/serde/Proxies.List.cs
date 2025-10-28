@@ -129,13 +129,6 @@ public abstract class DeListBase<
     protected sealed override TList FromVar(TBuilder builder) => ToList(builder);
 }
 
-public static partial class DeserializeExtensions
-{
-    public static IDeserialize<List<T>> GetDeserialize<T>(this List<T>? _)
-        where T : IDeserializeProvider<T>
-        => ListProxy.De<T, T>.Instance;
-}
-
 internal static class ArraySerdeTypeInfo<T>
 {
     public static readonly ISerdeInfo SerdeInfo = Serde.SerdeInfo.MakeEnumerable(typeof(T[]).ToString());

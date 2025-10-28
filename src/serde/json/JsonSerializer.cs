@@ -43,7 +43,11 @@ namespace Serde.Json
 
         public static List<T> DeserializeList<T>(string source)
             where T : IDeserializeProvider<T>
-            => Deserialize(source, default(List<T>).GetDeserialize());
+#if NET10_0_OR_GREATER
+            => Deserialize(source, List<T>.Deserialize);
+#else
+            => Deserialize(source, ListProxy.De<T, T>.Instance);
+#endif
 
         public static T Deserialize<T, TProvider>(string source)
             where TProvider : IDeserializeProvider<T>

@@ -65,7 +65,7 @@ public sealed partial class InvalidJsonTests
         AssertInvalid("""
         { "a": 1 "b": 2 }
         """);
-        AssertInvalid<List<int>, ListProxy.De<int, I32Proxy>>("[ 1 2]");
+        AssertInvalid("[ 1 2]", List<int>.Deserialize);
         AssertInvalid<NoComma>("""
         { "a": 1 "b": 2 }
         """);
@@ -81,19 +81,25 @@ public sealed partial class InvalidJsonTests
     private static void AssertInvalid(string json)
     {
         var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<JsonElement>(json));
-        var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.DeserializeJsonValue(json));
+        var serde = Assert.Throws<JsonException>(() => JsonSerializer.DeserializeJsonValue(json));
     }
 
     private static void AssertInvalid<T>(string json) where T : IDeserializeProvider<T>
     {
         var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<T>(json));
-        var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.Deserialize<T>(json));
+        var serde = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<T>(json));
     }
 
     private static void AssertInvalid<T, TProvider>(string json) where TProvider : IDeserializeProvider<T>
     {
         var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<T>(json));
-        var serde = Assert.Throws<Serde.Json.JsonException>(() => Serde.Json.JsonSerializer.Deserialize<T, TProvider>(json));
+        var serde = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<T, TProvider>(json));
+    }
+
+    private static void AssertInvalid<T>(string json, IDeserialize<T> de)
+    {
+        var stj = Assert.Throws<System.Text.Json.JsonException>(() => System.Text.Json.JsonSerializer.Deserialize<T>(json));
+        var serde = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize(json, de));
     }
 
     [Theory]

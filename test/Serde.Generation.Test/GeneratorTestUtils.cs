@@ -127,7 +127,7 @@ namespace Serde.Test
         public static async Task<CSharpCompilation> CreateCompilation(string src, MetadataReference[]? additionalRefs = null)
         {
             additionalRefs ??= Array.Empty<MetadataReference>();
-            IEnumerable<MetadataReference> refs = await Config.LatestTfRefs.ResolveAsync(null, default);
+            IEnumerable<MetadataReference> refs = await Config.Net9Ref.ResolveAsync(null, default);
             refs = refs.Concat(additionalRefs);
             refs = refs.Append(MetadataReference.CreateFromFile(typeof(Serde.GenerateSerialize).Assembly.Location));
             return CSharpCompilation.Create(

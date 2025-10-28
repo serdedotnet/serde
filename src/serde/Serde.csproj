@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <DebugType>embedded</DebugType>
     <IsTrimmable>true</IsTrimmable>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
@@ -22,10 +22,6 @@
       <StronglyTypedClassName>SR</StronglyTypedClassName>
       <OutputName>SR.resources</OutputName>
     </EmbeddedResource>
-    <PackageReference Include="NuGetizer">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="StaticCs">
       <Pack>false</Pack>
     </PackageReference>
