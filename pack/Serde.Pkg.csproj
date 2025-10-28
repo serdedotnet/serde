@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(TestTfm)</TargetFramework>
-    <NoBuild>true</NoBuild>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NuspecFile>Serde.Pkg.nuspec</NuspecFile>
     <NuspecProperties>SerdePkgVersion=$(SerdePkgVersion)</NuspecProperties>
