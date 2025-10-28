@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -52,8 +53,8 @@ public abstract class DeListBase<
     TProvider>
     : IDeserialize<TList>
     where TSelf : IDeserialize<TList>, new()
-    where TFixBuilder : IList<T>
-    where TVarBuilder : ICollection<T>
+    where TFixBuilder : class
+    where TVarBuilder : class
     where TProvider : IDeserializeProvider<T>
 {
     public static IDeserialize<TList> Instance { get; } = new TSelf();
@@ -76,7 +77,7 @@ public abstract class DeListBase<
             var builder = GetFixBuilder(size);
             for (int i = 0; i < size; i++)
             {
-                builder.Add(_de.Deserialize(deCollection, info, i));
+                FixAdd(builder, _de.Deserialize(deCollection, info, i));
             }
             return FromFix(builder);
         }
@@ -92,13 +93,15 @@ public abstract class DeListBase<
                     break;
                 }
 
-                builder.Add(_de.Deserialize(deCollection, info, index));
+                VarAdd(builder, _de.Deserialize(deCollection, info, index));
             }
             return FromVar(builder);
         }
     }
 
     protected abstract TFixBuilder GetFixBuilder(int size);
+    protected abstract void FixAdd(TFixBuilder builder, T item);
+    protected abstract void VarAdd(TVarBuilder builder, T item);
     protected abstract TVarBuilder GetVarBuilder();
     protected abstract TList FromFix(TFixBuilder builder);
     protected abstract TList FromVar(TVarBuilder builder);
@@ -113,7 +116,7 @@ public abstract class DeListBase<
     : DeListBase<TSelf, T, TList, TBuilder, TBuilder, TProvider>,
     IDeserializeProvider<TList>
     where TSelf : IDeserialize<TList>, new()
-    where TBuilder : IList<T>
+    where TBuilder : class
     where TProvider : IDeserializeProvider<T>
 {
     protected DeListBase(ISerdeInfo serdeInfo)
@@ -123,6 +126,10 @@ public abstract class DeListBase<
     protected abstract TBuilder GetBuilder(int? sizeOpt);
     protected sealed override TBuilder GetFixBuilder(int size) => GetBuilder(size);
     protected sealed override TBuilder GetVarBuilder() => GetBuilder(null);
+
+    protected abstract void Add(TBuilder builder, T item);
+    protected sealed override void FixAdd(TBuilder builder, T item) => Add(builder, item);
+    protected sealed override void VarAdd(TBuilder builder, T item) => Add(builder, item);
 
     protected abstract TList ToList(TBuilder builder);
     protected sealed override TList FromFix(TBuilder builder) => ToList(builder);
@@ -145,13 +152,29 @@ public static class ArrayProxy
     }
 
     public sealed class De<T, TProvider>()
-        : DeListBase<De<T, TProvider>, T, T[], T[], List<T>, TProvider>(ArraySerdeTypeInfo<T>.SerdeInfo),
+        : DeListBase<
+            De<T, TProvider>,
+            T,
+            T[],
+            De<T, TProvider>.ArrayBuilder,
+            List<T>,
+            TProvider
+          >(ArraySerdeTypeInfo<T>.SerdeInfo),
           IDeserializeProvider<T[]>
         where TProvider : IDeserializeProvider<T>
     {
-        protected override T[] GetFixBuilder(int size) => new T[size];
+        public sealed class ArrayBuilder(int size)
+        {
+            private int _index = 0;
+            private readonly T[] _array = new T[size];
+            public void Add(T item) => _array[_index++] = item;
+            public T[] ToArray() => _array;
+        }
+        protected override ArrayBuilder GetFixBuilder(int size) => new(size);
+        protected override void FixAdd(ArrayBuilder builder, T item) => builder.Add(item);
+        protected override void VarAdd(List<T> builder, T item) => builder.Add(item);
         protected override List<T> GetVarBuilder() => [];
-        protected override T[] FromFix(T[] builder) => builder;
+        protected override T[] FromFix(ArrayBuilder builder) => builder.ToArray();
         protected override T[] FromVar(List<T> builder) => builder.ToArray();
     }
 }
@@ -185,6 +208,11 @@ public static class ListProxy
             return new List<T>();
         }
 
+        protected override void Add(List<T> builder, T item)
+        {
+            builder.Add(item);
+        }
+
         protected override List<T> ToList(List<T> builder) => builder;
     }
 }
@@ -212,6 +240,7 @@ public static class ImmutableArrayProxy
         protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt) => sizeOpt is int size
             ? ImmutableArray.CreateBuilder<T>(size)
             : ImmutableArray.CreateBuilder<T>();
+        protected override void Add(ImmutableArray<T>.Builder builder, T item) => builder.Add(item);
         protected override ImmutableArray<T> ToList(ImmutableArray<T>.Builder builder) => builder.ToImmutable();
     }
 }
