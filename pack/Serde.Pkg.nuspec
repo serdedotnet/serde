@@ -4,6 +4,7 @@
       <id>Serde</id>
       <authors>Serde.NET</authors>
       <description>Serde.NET is a multi-format serialization library.</description>
+      <readme>docs/README.Serde.md</readme>
       <version>$SerdePkgVersion$</version>
       <license type="expression">BSD-3-Clause</license>
       <projectUrl>https://commentout.com/serde-dn</projectUrl>
