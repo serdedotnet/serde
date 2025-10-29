@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Serde.FixedWidth
 {
-    internal sealed partial class FixedWidthDeserializer : ITypeDeserializer
+    internal sealed partial class FixedWidthDeserializer<TReader> : ITypeDeserializer
     {
         int? ITypeDeserializer.SizeOpt => null;
 

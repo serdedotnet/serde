@@ -9,10 +9,8 @@ namespace Serde.FixedWidth
     /// <summary>
     /// Defines a type which handles deserializing a fixed-width file.
     /// </summary>
-    internal sealed partial class FixedWidthDeserializer
+    internal static class FixedWidthDeserializer
     {
-        internal readonly TReader _byteReader = byteReader;
-
         public static FixedWidthDeserializer<FixedWidthReader> FromString(string s)
             => FromUtf8_Unsafe(Encoding.UTF8.GetBytes(s));
 

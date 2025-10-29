@@ -28,7 +28,7 @@ namespace Serde.FixedWidth
 
         private Utf8Span ReadUtf8Span()
         {
-            var peek = _byteReader.Peek();
+            var peek = byteReader.Peek();
             if (peek == IByteReader.EndOfStream)
             {
                 throw new EndOfStreamException();
