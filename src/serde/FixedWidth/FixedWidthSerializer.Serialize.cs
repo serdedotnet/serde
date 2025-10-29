@@ -4,66 +4,37 @@ using System.Text;
 
 namespace Serde.FixedWidth
 {
-    public sealed partial class FixedWidthSerializer
+    public sealed partial class FixedWidthSerializer : ISerializer
     {
         /// <inheritdoc/>
-        public void WriteString(string s) => writer.WriteLine(s);
+        ITypeSerializer ISerializer.WriteType(ISerdeInfo info)
+        {
+            if (info.Kind is not InfoKind.CustomType)
+            {
+                throw new ArgumentException("Invalid type for WriteType: " + info.Kind);
+            }
 
-        /// <inheritdoc/>
-        public void WriteBool(bool b) => throw new NotImplementedException();
+            return this;
+        }
 
-        /// <inheritdoc/>
-        public void WriteBytes(ReadOnlyMemory<byte> bytes) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteChar(char c) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public ITypeSerializer WriteCollection(ISerdeInfo info, int? count) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteDateTime(DateTime dt) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteDateTimeOffset(DateTimeOffset dt) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteDecimal(decimal d) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteF32(float f) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteF64(double d) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteI16(short i16) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteI32(int i32) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteI64(long i64) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteI8(sbyte b) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteNull() => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public ITypeSerializer WriteType(ISerdeInfo info) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteU16(ushort u16) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteU32(uint u32) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteU64(ulong u64) => throw new NotImplementedException();
-
-        /// <inheritdoc/>
-        public void WriteU8(byte b) => throw new NotImplementedException();
+        void ISerializer.WriteString(string s) => throw new NotImplementedException();
+        void ISerializer.WriteBool(bool b) => throw new NotImplementedException();
+        void ISerializer.WriteBytes(ReadOnlyMemory<byte> bytes) => throw new NotImplementedException();
+        void ISerializer.WriteChar(char c) => throw new NotImplementedException();
+        ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? count) => throw new NotImplementedException();
+        void ISerializer.WriteDateTime(DateTime dt) => throw new NotImplementedException();
+        void ISerializer.WriteDateTimeOffset(DateTimeOffset dt) => throw new NotImplementedException();
+        void ISerializer.WriteDecimal(decimal d) => throw new NotImplementedException();
+        void ISerializer.WriteF32(float f) => throw new NotImplementedException();
+        void ISerializer.WriteF64(double d) => throw new NotImplementedException();
+        void ISerializer.WriteI16(short i16) => throw new NotImplementedException();
+        void ISerializer.WriteI32(int i32) => throw new NotImplementedException();
+        void ISerializer.WriteI64(long i64) => throw new NotImplementedException();
+        void ISerializer.WriteI8(sbyte b) => throw new NotImplementedException();
+        void ISerializer.WriteNull() => throw new NotImplementedException();
+        void ISerializer.WriteU16(ushort u16) => throw new NotImplementedException();
+        void ISerializer.WriteU32(uint u32) => throw new NotImplementedException();
+        void ISerializer.WriteU64(ulong u64) => throw new NotImplementedException();
+        void ISerializer.WriteU8(byte b) => throw new NotImplementedException();
     }
 }

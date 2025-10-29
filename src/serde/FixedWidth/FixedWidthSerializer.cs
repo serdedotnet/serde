@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Serde.FixedWidth.Reader;
+using Serde.FixedWidth.Writer;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -9,11 +11,11 @@ namespace Serde.FixedWidth
     /// <summary>
     /// Defines a serializer for Fixed Width files.
     /// </summary>
-    public sealed partial class FixedWidthSerializer(StringWriter writer) : ISerializer
+    public sealed partial class FixedWidthSerializer(FixedWidthWriter writer)
     {
         public static string Serialize<T>(T provider, ISerialize<T> serde)
         {
-            using var writer = new StringWriter();
+            using var writer = new FixedWidthWriter();
             var serializer = new FixedWidthSerializer(writer);
             serde.Serialize(provider, serializer);
             writer.Flush();
@@ -67,7 +69,7 @@ namespace Serde.FixedWidth
         private static T Deserialize_Unsafe<T>(byte[] utf8Bytes, IDeserialize<T> d)
         {
             T result;
-            using var deserializer = FixedWidthDeserializer.FromUtf8_Unsafe(utf8Bytes);
+            var deserializer = FixedWidthDeserializer.FromUtf8_Unsafe(utf8Bytes);
             result = d.Deserialize(deserializer);
             deserializer.EoF();
             return result;

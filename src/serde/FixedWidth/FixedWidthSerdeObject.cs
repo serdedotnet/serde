@@ -13,6 +13,7 @@ namespace Serde.FixedWidth
     /// </summary>
     /// <typeparam name="T">The underlying model for the file.</typeparam>
     /// <param name="options">Options for configuring the serialization of the type.</param>
+    [Obsolete("This is now handled with the serializer/deserializer")]
     public class FixedWidthSerdeObject<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(FixedWidthSerializationOptions options) : ISerde<T>
     {
         /// <inheritdoc/>
@@ -85,6 +86,8 @@ namespace Serde.FixedWidth
         {
             var fieldInfo = FixedFieldInfo.FromProperties(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public)).OrderBy(it => it.Offset);
             string line = deserializer.ReadString();
+
+            throw new NotImplementedException();
         }
     }
 

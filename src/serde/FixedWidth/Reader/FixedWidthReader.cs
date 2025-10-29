@@ -56,7 +56,7 @@ namespace Serde.FixedWidth.Reader
             int start = _pos;
 
             SkipToEndOfLine();
-            if (_pos >= span.Length)
+            if (_pos > span.Length)
             {
                 throw new EndOfStreamException();
             }
