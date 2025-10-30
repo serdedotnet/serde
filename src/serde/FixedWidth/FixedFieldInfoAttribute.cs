@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 
 namespace Serde.FixedWidth
 {
@@ -8,15 +11,6 @@ namespace Serde.FixedWidth
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public sealed class FixedFieldInfoAttribute : Attribute
     {
-        public FixedFieldInfoAttribute(int offset, int length, string format = "")
-        {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(offset);
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
-            Offset = offset;
-            Length = length;
-            Format = string.IsNullOrWhiteSpace(format) ? string.Empty : format;
-        }
-
         /// <summary>
         /// Gets the offset that indicates where the field begins.
         /// </summary>
@@ -30,6 +24,79 @@ namespace Serde.FixedWidth
         /// <summary>
         /// Gets the format string for providing to <c>TryParseExact</c>.
         /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="string.Empty"/>.
+        /// </remarks>
         public string Format { get; }
+
+        /// <summary>
+        /// Gets a value indicating how to handle field overflows.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="FieldOverflowHandling.Throw"/>.
+        /// </remarks>
+        public FieldOverflowHandling OverflowHandling { get; }
+
+        public FixedFieldInfoAttribute(int offset, int length, string format = "", FieldOverflowHandling overflowHandling = FieldOverflowHandling.Throw)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(offset);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
+            Offset = offset;
+            Length = length;
+            Format = string.IsNullOrWhiteSpace(format) ? string.Empty : format;
+            OverflowHandling = overflowHandling;
+        }
+
+        public static FixedFieldInfoAttribute FromCustomAttributeData(CustomAttributeData? customAttribute)
+        {
+            if (!TryGetFixedFieldInfoAttribute(customAttribute, out var attribute))
+            {
+                throw new InvalidOperationException($"Cannot write fixed field value without required '{nameof(FixedFieldInfoAttribute)}' annotation.");
+            }
+
+            return attribute;
+        }
+
+        public static bool TryGetFixedFieldInfoAttribute(CustomAttributeData? customAttribute, [NotNullWhen(true)] out FixedFieldInfoAttribute? fixedFieldInfoAttribute)
+        {
+            fixedFieldInfoAttribute = null;
+
+            if (customAttribute is null)
+            {
+                return false;
+            }
+
+            string format;
+
+            if (!TryGetNamedArgumentValue(customAttribute, nameof(Offset), out int offset))
+            {
+                return false;
+            }
+
+            if (!TryGetNamedArgumentValue(customAttribute, nameof(Length), out int length))
+            {
+                return false;
+            }
+
+            if (!TryGetNamedArgumentValue(customAttribute, nameof(Format), out string? formatValue))
+            {
+                format = string.Empty;
+            }
+            format = formatValue ?? string.Empty;
+
+            if (!TryGetNamedArgumentValue(customAttribute, nameof(FieldOverflowHandling), out FieldOverflowHandling fieldOverflowHandling))
+            {
+                fieldOverflowHandling = FieldOverflowHandling.Throw;
+            }
+
+            fixedFieldInfoAttribute = new(offset, length, format, fieldOverflowHandling);
+            return true;
+
+            static bool TryGetNamedArgumentValue<T>(CustomAttributeData customAttribute, string name, [NotNullWhen(true)] out T? value)
+            {
+                value = (T?)customAttribute.NamedArguments.FirstOrDefault(it => it.MemberInfo.Name == name).TypedValue.Value;
+                return value is { };
+            }
+        }
     }
 }

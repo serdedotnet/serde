@@ -1,103 +1,92 @@
-﻿using System;
+﻿using Serde.IO;
+using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using Serde.IO;
+using System.Linq;
+using System.Numerics;
+using System.Reflection;
+using System.Text;
 
 namespace Serde.FixedWidth.Reader
 {
-    internal struct FixedWidthReader(byte[] bytes) : IByteReader
+    internal struct FixedWidthReader(string line)
     {
-        private readonly byte[] _bytes = bytes;
+        private const char padding = ' ';
+        private readonly string _line = line;
         private int _pos = 0;
 
-        /// <inheritdoc/>
-        public short Next()
+        public string ReadString(ISerdeInfo typeInfo, int index)
+            => GetText(typeInfo, index, out _).ToString();
+
+        public bool ReadBool(ISerdeInfo typeInfo, int index)
         {
-            var b = Peek();
-            if (b != IByteReader.EndOfStream)
+            var span = GetText(typeInfo, index, out var attribute);
+
+            if (string.IsNullOrEmpty(attribute.Format))
             {
-                _pos++;
+                return bool.Parse(span);
             }
 
-            return b;
-        }
-
-        /// <inheritdoc/>
-        public void Advance(int count = 1)
-        {
-            _pos += count;
-        }
-
-        /// <inheritdoc/>
-        public readonly short Peek()
-        {
-            if (_pos >= _bytes.Length)
+            string[] splitFormat = attribute.Format.Split('/', StringSplitOptions.TrimEntries);
+            if (splitFormat.Length != 2)
             {
-                return IByteReader.EndOfStream;
+                throw new InvalidOperationException("Split format must be an empty string or have true and false text separated by a forward slash ('/')");
             }
-            return _bytes[_pos];
-        }
 
-        /// <inheritdoc/>
-        public readonly bool StartsWith(Utf8Span span)
-        {
-            if (span.Length > _bytes.Length - _pos)
+            if (span.Equals(splitFormat[0], StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            else if (span.Equals(splitFormat[1], StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
-
-            return span.SequenceEqual(_bytes.AsSpan(_pos, span.Length));
-        }
-
-        /// <inheritdoc/>
-        public Utf8Span LexUtf8Span(bool skipOnly, ScratchBuffer? scratch)
-        {
-            var span = _bytes.AsSpan();
-            int start = _pos;
-
-            SkipToEndOfLine();
-            if (_pos > span.Length)
-            {
-                throw new EndOfStreamException();
-            }
-
-            if (skipOnly)
-            {
-                Advance();
-                return Utf8Span.Empty;
-            }
-
-            Debug.Assert(scratch is not null);
-            var curSpan = span[start.._pos];
-            Utf8Span strSpan;
-            if (scratch.Count == 0)
-            {
-                strSpan = curSpan;
-            }
             else
             {
-                scratch.AddRange(curSpan);
-                strSpan = scratch.Span;
+                throw new InvalidOperationException($"Value '{span}' was neither '{splitFormat[0]}' nor '{splitFormat[1]}'.");
             }
-            Advance();
-            return strSpan;
         }
 
-        private void SkipToEndOfLine()
+        public char ReadChar(ISerdeInfo typeInfo, int index)
         {
-            var span = _bytes.AsSpan(_pos);
-            var offset = 0;
-            while (offset < span.Length && !IsEndOfLine(span[offset]))
+            var span = GetText(typeInfo, index, out var attribute);
+
+            return span.Length == 1 ? span[0] : throw new InvalidOperationException("Char field comprised of multiple non-space characters.");
+        }
+
+        public DateTime ReadDateTime(ISerdeInfo typeInfo, int index)
+        {
+            var span = GetText(typeInfo, index, out var attribute);
+
+            return string.IsNullOrEmpty(attribute.Format)
+                ? DateTime.Parse(span)
+                : DateTime.ParseExact(span, attribute.Format, CultureInfo.CurrentCulture);
+        }
+
+        public TNumber ReadNumber<TNumber>(ISerdeInfo typeInfo, int index, NumberStyles numberStyles)
+            where TNumber : struct, INumber<TNumber>
+        {
+            var span = GetText(typeInfo, index, out _);
+            
+            var trimmedValue = span.Trim();
+
+            if (trimmedValue.IsEmpty)
             {
-                offset++;
+                return TNumber.Zero;
             }
 
-            _pos += offset;
+            return TNumber.Parse(trimmedValue, numberStyles, CultureInfo.InvariantCulture);
         }
 
-        private static bool IsEndOfLine(byte b)
+        private ReadOnlySpan<char> GetText(ISerdeInfo typeInfo, int index, out FixedFieldInfoAttribute attribute)
         {
-            return b == (byte)'\r' || b == (byte)'\n';
+            var customAttribute = typeInfo.GetFieldAttributes(index).FirstOrDefault(it => it.AttributeType == typeof(FixedFieldInfoAttribute));
+            attribute = FixedFieldInfoAttribute.FromCustomAttributeData(customAttribute);
+
+            _pos = attribute.Offset + attribute.Length;
+
+            return _line.AsSpan(attribute.Offset, attribute.Length);
         }
     }
 }

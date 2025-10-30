@@ -13,7 +13,7 @@ namespace Serde.FixedWidth
     /// </summary>
     /// <typeparam name="T">The underlying model for the file.</typeparam>
     /// <param name="options">Options for configuring the serialization of the type.</param>
-    [Obsolete("This is now handled with the serializer/deserializer")]
+    [Obsolete("This is now handled with the serializer/deserializer", error: true)]
     public class FixedWidthSerdeObject<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(FixedWidthSerializationOptions options) : ISerde<T>
     {
         /// <inheritdoc/>

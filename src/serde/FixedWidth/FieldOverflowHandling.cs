@@ -1,8 +1,11 @@
-﻿namespace Serde.FixedWidth
+﻿using StaticCs;
+
+namespace Serde.FixedWidth
 {
     /// <summary>
     /// Enumerates the supported options for field values that are too long.
     /// </summary>
+    [Closed]
     public enum FieldOverflowHandling
     {
         /// <summary>

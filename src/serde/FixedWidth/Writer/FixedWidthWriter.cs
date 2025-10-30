@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 
 namespace Serde.FixedWidth.Writer
@@ -29,64 +27,61 @@ namespace Serde.FixedWidth.Writer
 
         public void WriteObject<T>(ISerdeInfo typeInfo, int index, T value)
         {
-            var attributes = typeInfo.GetFieldAttributes(index);
-            var attribute = attributes.FirstOrDefault(it => it.AttributeType == typeof(FixedFieldInfoAttribute))
-                ?? throw new InvalidOperationException($"Cannot write fixed field value without required '{nameof(FixedFieldInfoAttribute)}' annotation.");
+            var customAttribute = typeInfo.GetFieldAttributes(index).FirstOrDefault(it => it.AttributeType == typeof(FixedFieldInfoAttribute));
+            var attribute = FixedFieldInfoAttribute.FromCustomAttributeData(customAttribute);
 
-            GetAttributeData(attribute, out int fieldOffset, out int fieldLength, out string format);
-
-            WriteObject(value, fieldOffset, fieldLength, format);
+            WriteObject(value, attribute.Offset, attribute.Length, attribute.Format, attribute.OverflowHandling);
         }
 
-        private void WriteObject<T>(T value, int fieldOffset, int fieldLength, string format)
+        private void WriteObject<T>(T value, int fieldOffset, int fieldLength, string format, FieldOverflowHandling overflowHandling)
         {
             // We special case some types.
             if (value is bool b)
             {
-                WriteBool(b, fieldOffset, fieldLength, format);
+                WriteBool(b, fieldOffset, fieldLength, format, overflowHandling);
                 return;
             }
 
             if (value is ReadOnlyMemory<byte> byteMemory)
             {
-                WriteUtf8Span(byteMemory.Span, fieldOffset, fieldLength);
+                WriteUtf8Span(byteMemory.Span, fieldOffset, fieldLength, overflowHandling);
                 return;
             }
 
             if (value is IFormattable formattable)
             {
-                WriteText(formattable.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength);
+                WriteText(formattable.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
             }
 
             // Format string is either not used, null, or it's not a special case.
-            WriteText(value?.ToString() ?? string.Empty, fieldOffset, fieldLength);
+            WriteText(value?.ToString() ?? string.Empty, fieldOffset, fieldLength, overflowHandling);
         }
 
-        private void WriteUtf8Span(Utf8Span span, int fieldOffset, int fieldLength)
+        private void WriteUtf8Span(Utf8Span span, int fieldOffset, int fieldLength, FieldOverflowHandling overflowHandling)
         {
             string text = Encoding.UTF8.GetString(span);
-            WriteText(text, fieldOffset, fieldLength);
+            WriteText(text, fieldOffset, fieldLength, overflowHandling);
         }
 
-        private void WriteBool(bool value, int fieldOffset, int fieldLength, string format)
+        private void WriteBool(bool value, int fieldOffset, int fieldLength, string format, FieldOverflowHandling overflowHandling)
         {
             // FixedFieldInfoAttribute ctor prevents format strings that are all white space.
             if (string.IsNullOrEmpty(format))
             {
-                WriteText(value.ToString(), fieldOffset, fieldLength);
+                WriteText(value.ToString(), fieldOffset, fieldLength, overflowHandling);
                 return;
             }
 
             string[] splitFormat = format.Split('/', StringSplitOptions.TrimEntries);
             if (splitFormat.Length != 2)
             {
-                throw new InvalidOperationException("Split format must have true and false text separated by a forward slash ('/')");
+                throw new InvalidOperationException("Split format must be an empty string or have true and false text separated by a forward slash ('/')");
             }
 
-            WriteText(value ? splitFormat[0] : splitFormat[1], fieldOffset, fieldLength);
+            WriteText(value ? splitFormat[0] : splitFormat[1], fieldOffset, fieldLength, overflowHandling);
         }
 
-        private void WriteText(string value, int fieldOffset, int fieldLength)
+        private void WriteText(string value, int fieldOffset, int fieldLength, FieldOverflowHandling overflowHandling)
         {
             if (_pos < fieldOffset)
             {
@@ -97,7 +92,12 @@ namespace Serde.FixedWidth.Writer
 
             if (value.Length > fieldLength)
             {
-                throw new InvalidOperationException($"Cannot write {value} (length {value.Length}) to a field that is only {fieldLength} long.");
+                value = overflowHandling switch
+                {
+                    FieldOverflowHandling.Throw => throw new InvalidOperationException($"Cannot write {value} (length {value.Length}) to a field that is only {fieldLength} long."),
+                    FieldOverflowHandling.Truncate => value[..fieldLength],
+                    _ => throw new ArgumentOutOfRangeException(nameof(overflowHandling), $"{overflowHandling} is not a valid value for {nameof(FieldOverflowHandling)}.")
+                };                
             }
 
             _writer.Write(value.PadRight(fieldLength));
@@ -105,32 +105,6 @@ namespace Serde.FixedWidth.Writer
 
         public void WriteLine()
             => _writer.WriteLine();
-
-        private static void GetAttributeData(CustomAttributeData customAttribute, out int offset, out int length, out string format)
-        {
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(FixedFieldInfoAttribute.Offset), out offset))
-            {
-                offset = -1;
-            }
-
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(FixedFieldInfoAttribute.Length), out length))
-            {
-                length = -1;
-            }
-
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(FixedFieldInfoAttribute.Format), out string? formatValue))
-            {
-                format = string.Empty;
-            }
-
-            format = formatValue ?? string.Empty;
-
-            static bool TryGetNamedArgumentValue<T>(CustomAttributeData customAttribute, string name, [NotNullWhen(true)] out T? value)
-            {
-                value = (T?)customAttribute.NamedArguments.FirstOrDefault(it => it.MemberInfo.Name == name).TypedValue.Value;
-                return value is { };
-            }
-        }
 
         public override string ToString()
             => GetStringBuilder().ToString();

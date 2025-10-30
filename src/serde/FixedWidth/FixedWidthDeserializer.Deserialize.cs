@@ -1,15 +1,10 @@
-﻿using Serde.IO;
+﻿using Serde.FixedWidth.Reader;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 
 namespace Serde.FixedWidth
 {
-    internal sealed partial class FixedWidthDeserializer<TReader>(TReader byteReader) : IDeserializer
-        where TReader : IByteReader
+    internal sealed partial class FixedWidthDeserializer : IDeserializer
     {
         ITypeDeserializer IDeserializer.ReadType(ISerdeInfo typeInfo)
         {
@@ -21,32 +16,7 @@ namespace Serde.FixedWidth
             return this;
         }
 
-        private readonly ScratchBuffer _scratch = new();
-
-        /// <inheritdoc/>
-        public string ReadString() => Encoding.UTF8.GetString(ReadUtf8Span());
-
-        private Utf8Span ReadUtf8Span()
-        {
-            var peek = byteReader.Peek();
-            if (peek == IByteReader.EndOfStream)
-            {
-                throw new EndOfStreamException();
-            }
-
-            byteReader.Advance();
-            _scratch.Clear();
-            return byteReader.LexUtf8Span(false, _scratch);
-        }
-
-        public void EoF()
-        {
-            if (byteReader.Peek() != IByteReader.EndOfStream)
-            {
-                throw new InvalidOperationException("Expected end of stream.");
-            }
-        }
-
+        string IDeserializer.ReadString() => throw new NotImplementedException();
         T? IDeserializer.ReadNullableRef<T>(IDeserialize<T> deserialize) where T : class => throw new NotImplementedException();
         bool IDeserializer.ReadBool() => throw new NotImplementedException();
         char IDeserializer.ReadChar() => throw new NotImplementedException();
