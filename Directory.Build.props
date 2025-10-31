@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <Deterministic>true</Deterministic>
     <TestTfm>net10.0</TestTfm>
-    <SerdeAssemblyVersion>0.10.0-fixedWidth.4</SerdeAssemblyVersion>
-    <SerdePkgVersion>0.10.0-fixedWidth.4</SerdePkgVersion>
+    <SerdeAssemblyVersion>0.10.0-fixedWidth.6</SerdeAssemblyVersion>
+    <SerdePkgVersion>0.10.0-fixedWidth.6</SerdePkgVersion>
   </PropertyGroup>
 </Project>

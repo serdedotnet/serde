@@ -48,9 +48,16 @@ namespace Serde.FixedWidth.Writer
                 return;
             }
 
+            if (value is DateTime dt)
+            {
+                WriteText(dt.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
+                return;
+            }
+
             if (value is IFormattable formattable)
             {
                 WriteText(formattable.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
+                return;
             }
 
             // Format string is either not used, null, or it's not a special case.
