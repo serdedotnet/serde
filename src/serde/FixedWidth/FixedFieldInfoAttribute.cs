@@ -68,23 +68,23 @@ namespace Serde.FixedWidth
 
             string format;
 
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(Offset), out int offset))
+            if (!TryGetNamedArgumentValue(customAttribute, 0, out int offset))
             {
                 return false;
             }
 
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(Length), out int length))
+            if (!TryGetNamedArgumentValue(customAttribute, 1, out int length))
             {
                 return false;
             }
 
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(Format), out string? formatValue))
+            if (!TryGetNamedArgumentValue(customAttribute, 2, out string? formatValue))
             {
                 format = string.Empty;
             }
             format = formatValue ?? string.Empty;
 
-            if (!TryGetNamedArgumentValue(customAttribute, nameof(FieldOverflowHandling), out FieldOverflowHandling fieldOverflowHandling))
+            if (!TryGetNamedArgumentValue(customAttribute, 3, out FieldOverflowHandling fieldOverflowHandling))
             {
                 fieldOverflowHandling = FieldOverflowHandling.Throw;
             }
@@ -92,9 +92,9 @@ namespace Serde.FixedWidth
             fixedFieldInfoAttribute = new(offset, length, format, fieldOverflowHandling);
             return true;
 
-            static bool TryGetNamedArgumentValue<T>(CustomAttributeData customAttribute, string name, [NotNullWhen(true)] out T? value)
+            static bool TryGetNamedArgumentValue<T>(CustomAttributeData customAttribute, int argumentIndex, [NotNullWhen(true)] out T? value)
             {
-                value = (T?)customAttribute.NamedArguments.FirstOrDefault(it => it.MemberInfo.Name == name).TypedValue.Value;
+                value = (T?)customAttribute.ConstructorArguments[argumentIndex].Value;
                 return value is { };
             }
         }
