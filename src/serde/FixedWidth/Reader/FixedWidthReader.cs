@@ -1,16 +1,11 @@
-﻿using Serde.IO;
-using System;
-using System.Diagnostics;
+﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
-using System.Text;
 
 namespace Serde.FixedWidth.Reader
 {
-    internal struct FixedWidthReader(string line)
+    internal readonly struct FixedWidthReader(string line)
     {
         private readonly string _line = line;
 
@@ -77,7 +72,7 @@ namespace Serde.FixedWidth.Reader
             return TNumber.Parse(trimmedValue, numberStyles, CultureInfo.InvariantCulture);
         }
 
-        private readonly ReadOnlySpan<char> GetText(ISerdeInfo typeInfo, int index, out FixedFieldInfoAttribute attribute)
+        private ReadOnlySpan<char> GetText(ISerdeInfo typeInfo, int index, out FixedFieldInfoAttribute attribute)
         {
             var customAttribute = typeInfo.GetFieldAttributes(index).FirstOrDefault(it => it.AttributeType == typeof(FixedFieldInfoAttribute));
             attribute = FixedFieldInfoAttribute.FromCustomAttributeData(customAttribute);
