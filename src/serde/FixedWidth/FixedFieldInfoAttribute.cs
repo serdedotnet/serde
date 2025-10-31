@@ -39,7 +39,7 @@ namespace Serde.FixedWidth
 
         public FixedFieldInfoAttribute(int offset, int length, string format = "", FieldOverflowHandling overflowHandling = FieldOverflowHandling.Throw)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(offset);
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
             Offset = offset;
             Length = length;
