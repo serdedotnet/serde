@@ -5,10 +5,12 @@ using System.Globalization;
 namespace Serde.FixedWidth
 {
     internal sealed partial class FixedWidthDeserializer : ITypeDeserializer
-    {
+    {   
         private const NumberStyles Numeric = NumberStyles.Integer | NumberStyles.AllowThousands;
 
         int? ITypeDeserializer.SizeOpt => null;
+
+        private int _fieldIndex = -1;
 
         T ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> deserialize)
             => deserialize.Deserialize(this);
@@ -37,7 +39,13 @@ namespace Serde.FixedWidth
 
         private (int, string? errorName) TryReadIndexWithName(ISerdeInfo serdeInfo)
         {
-            throw new NotImplementedException();
+            _fieldIndex++;
+            if (_fieldIndex == serdeInfo.FieldCount)
+            {
+                return (ITypeDeserializer.EndOfType, null);
+            }
+
+            return (_fieldIndex, null);
         }
         
         void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
