@@ -35,30 +35,33 @@ namespace Serde.FixedWidth.Writer
 
         private void WriteObject<T>(T value, int fieldOffset, int fieldLength, string format, FieldOverflowHandling overflowHandling)
         {
-            // We special case some types.
-            if (value is bool b)
+            // attribute ctor sets white space strings to empty.
+            if (!string.IsNullOrEmpty(format))
             {
-                WriteBool(b, fieldOffset, fieldLength, format, overflowHandling);
-                return;
-            }
+                if (value is bool b)
+                {
+                    WriteBool(b, fieldOffset, fieldLength, format, overflowHandling);
+                    return;
+                }
+
+                if (value is DateTime dt)
+                {
+                    WriteText(dt.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
+                    return;
+                }
+
+                if (value is IFormattable formattable)
+                {
+                    WriteText(formattable.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
+                    return;
+                }
+            }           
 
             if (value is ReadOnlyMemory<byte> byteMemory)
             {
                 WriteUtf8Span(byteMemory.Span, fieldOffset, fieldLength, overflowHandling);
                 return;
-            }
-
-            if (value is DateTime dt)
-            {
-                WriteText(dt.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
-                return;
-            }
-
-            if (value is IFormattable formattable)
-            {
-                WriteText(formattable.ToString(format, CultureInfo.CurrentCulture), fieldOffset, fieldLength, overflowHandling);
-                return;
-            }
+            }            
 
             // Format string is either not used, null, or it's not a special case.
             WriteText(value?.ToString() ?? string.Empty, fieldOffset, fieldLength, overflowHandling);
@@ -72,13 +75,6 @@ namespace Serde.FixedWidth.Writer
 
         private void WriteBool(bool value, int fieldOffset, int fieldLength, string format, FieldOverflowHandling overflowHandling)
         {
-            // FixedFieldInfoAttribute ctor prevents format strings that are all white space.
-            if (string.IsNullOrEmpty(format))
-            {
-                WriteText(value.ToString(), fieldOffset, fieldLength, overflowHandling);
-                return;
-            }
-
             string[] splitFormat = format.Split('/', StringSplitOptions.TrimEntries);
             if (splitFormat.Length != 2)
             {
@@ -108,6 +104,7 @@ namespace Serde.FixedWidth.Writer
             }
 
             _writer.Write(value.PadRight(fieldLength));
+            _pos += fieldLength;
         }
 
         public void WriteLine()
