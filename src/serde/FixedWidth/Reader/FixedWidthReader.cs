@@ -12,12 +12,10 @@ namespace Serde.FixedWidth.Reader
 {
     internal struct FixedWidthReader(string line)
     {
-        private const char padding = ' ';
         private readonly string _line = line;
-        private int _pos = 0;
 
         public string ReadString(ISerdeInfo typeInfo, int index)
-            => GetText(typeInfo, index, out _).ToString();
+            => GetText(typeInfo, index, out _).Trim().ToString();
 
         public bool ReadBool(ISerdeInfo typeInfo, int index)
         {
@@ -50,7 +48,7 @@ namespace Serde.FixedWidth.Reader
 
         public char ReadChar(ISerdeInfo typeInfo, int index)
         {
-            var span = GetText(typeInfo, index, out var attribute);
+            var span = GetText(typeInfo, index, out _);
 
             return span.Length == 1 ? span[0] : throw new InvalidOperationException("Char field comprised of multiple non-space characters.");
         }
@@ -79,14 +77,12 @@ namespace Serde.FixedWidth.Reader
             return TNumber.Parse(trimmedValue, numberStyles, CultureInfo.InvariantCulture);
         }
 
-        private ReadOnlySpan<char> GetText(ISerdeInfo typeInfo, int index, out FixedFieldInfoAttribute attribute)
+        private readonly ReadOnlySpan<char> GetText(ISerdeInfo typeInfo, int index, out FixedFieldInfoAttribute attribute)
         {
             var customAttribute = typeInfo.GetFieldAttributes(index).FirstOrDefault(it => it.AttributeType == typeof(FixedFieldInfoAttribute));
             attribute = FixedFieldInfoAttribute.FromCustomAttributeData(customAttribute);
 
-            _pos = attribute.Offset + attribute.Length;
-
-            return _line.AsSpan(attribute.Offset, attribute.Length);
+            return _line.AsSpan(attribute.Offset, attribute.Length).Trim();
         }
     }
 }
