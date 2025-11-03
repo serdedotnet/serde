@@ -86,6 +86,16 @@ namespace Serde.FixedWidth
             where TProvider : IDeserializeProvider<T>
             => Deserialize(source, TProvider.Instance);
 
+        /// <inheritdoc cref="DeserializeDocument{T}(string, IDeserialize{T}, int)"/>
+        public static IEnumerable<T> DeserializeDocument<T>(string document, int headerLines = 0)
+            where T : IDeserializeProvider<T>
+            => DeserializeDocument(document, T.Instance, headerLines);
+
+        /// <inheritdoc cref="DeserializeDocument{T}(string, IDeserialize{T}, int)"/>
+        public static IEnumerable<T> DeserializeDocument<T, TProvider>(string document, int headerLines = 0)
+            where TProvider : IDeserializeProvider<T>
+            => DeserializeDocument(document, TProvider.Instance, headerLines);
+
         /// <summary>
         /// Deserializes the provided document.
         /// </summary>
@@ -101,10 +111,5 @@ namespace Serde.FixedWidth
                 yield return Deserialize(line, d);
             }
         }
-
-        /// <inheritdoc cref="DeserializeDocument{T}(string, IDeserialize{T}, int)"/>
-        public static IEnumerable<T> DeserializeDocument<T, TProvider>(string document, int headerLines = 0)
-            where TProvider : IDeserializeProvider<T>
-            => DeserializeDocument(document, TProvider.Instance, headerLines);
     }
 }
