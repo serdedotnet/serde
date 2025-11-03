@@ -66,6 +66,42 @@ namespace Serde.Test
         [GenerateSerialize]
         private partial record DtoWrap(System.DateTimeOffset Value);
 
+#if NET6_0_OR_GREATER
+        [Fact]
+        public void DateOnly()
+        {
+            var date = new DateOnlyWrap(new(2023, 10, 1));
+            var js = Serde.Json.JsonSerializer.Serialize(date);
+            Assert.Equal("""
+            {"value":"2023-10-01"}
+            """, js);
+            
+            // Test deserialization
+            var deserialized = Serde.Json.JsonSerializer.Deserialize<DateOnlyWrap>(js);
+            Assert.Equal(date, deserialized);
+        }
+
+        [GenerateSerde]
+        private partial record DateOnlyWrap([property: SerdeMemberOptions(Proxy = typeof(DateOnlyProxy))] System.DateOnly Value);
+
+        [Fact]
+        public void TimeOnly()
+        {
+            var time = new TimeOnlyWrap(new(12, 30, 45));
+            var js = Serde.Json.JsonSerializer.Serialize(time);
+            Assert.Equal("""
+            {"value":"12:30:45.0000000"}
+            """, js);
+            
+            // Test deserialization
+            var deserialized = Serde.Json.JsonSerializer.Deserialize<TimeOnlyWrap>(js);
+            Assert.Equal(time, deserialized);
+        }
+
+        [GenerateSerde]
+        private partial record TimeOnlyWrap([property: SerdeMemberOptions(Proxy = typeof(TimeOnlyProxy))] System.TimeOnly Value);
+#endif
+
         [Fact]
         public void SerializeRgb()
         {

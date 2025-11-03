@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Serde;
 
-internal interface ISerdePrimitive<TSelf, T>
+public interface ISerdePrimitive<TSelf, T>
     : ISerde<T>, ISerdeProvider<TSelf, TSelf, T>, ITypeSerialize<T>, ITypeDeserialize<T>
     where TSelf : ISerdePrimitive<TSelf, T>
 {
@@ -505,6 +505,75 @@ public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, D
         => deserializer.ReadDateTime(info, index);
 }
 
+#if NET6_0_OR_GREATER
+public sealed class DateOnlyProxy : ISerdePrimitive<DateOnlyProxy, DateOnly>
+{
+    public static DateOnlyProxy Instance { get; } = new();
+    private DateOnlyProxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; }
+        = Serde.SerdeInfo.MakePrimitive("System.DateOnly", PrimitiveKind.String);
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    void ISerialize<DateOnly>.Serialize(DateOnly value, ISerializer serializer)
+    {
+        var str = value.ToString("O");
+        serializer.WriteString(str);
+    }
+
+    DateOnly IDeserialize<DateOnly>.Deserialize(IDeserializer deserializer)
+    {
+        var str = deserializer.ReadString();
+        return DateOnly.Parse(str);
+    }
+
+    void ITypeSerialize<DateOnly>.Serialize(DateOnly value, ITypeSerializer serializer, ISerdeInfo info, int index)
+    {
+        var str = value.ToString("O");
+        serializer.WriteString(info, index, str);
+    }
+
+    DateOnly ITypeDeserialize<DateOnly>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    {
+        var str = deserializer.ReadString(info, index);
+        return DateOnly.Parse(str);
+    }
+}
+
+public sealed class TimeOnlyProxy : ISerdePrimitive<TimeOnlyProxy, TimeOnly>
+{
+    public static TimeOnlyProxy Instance { get; } = new();
+    private TimeOnlyProxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; }
+        = Serde.SerdeInfo.MakePrimitive("System.TimeOnly", PrimitiveKind.String);
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    void ISerialize<TimeOnly>.Serialize(TimeOnly value, ISerializer serializer)
+    {
+        var str = value.ToString("O");
+        serializer.WriteString(str);
+    }
+
+    TimeOnly IDeserialize<TimeOnly>.Deserialize(IDeserializer deserializer)
+    {
+        var str = deserializer.ReadString();
+        return TimeOnly.Parse(str);
+    }
+
+    void ITypeSerialize<TimeOnly>.Serialize(TimeOnly value, ITypeSerializer serializer, ISerdeInfo info, int index)
+    {
+        var str = value.ToString("O");
+        serializer.WriteString(info, index, str);
+    }
+
+    TimeOnly ITypeDeserialize<TimeOnly>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    {
+        var str = deserializer.ReadString(info, index);
+        return TimeOnly.Parse(str);
+    }
+}
+#endif
 
 public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
 {
