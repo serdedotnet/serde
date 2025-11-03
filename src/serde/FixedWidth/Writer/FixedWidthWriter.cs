@@ -107,8 +107,15 @@ namespace Serde.FixedWidth.Writer
             _pos += fieldLength;
         }
 
-        public void WriteLine()
+        internal void WriteRaw()
             => _writer.WriteLine();
+
+        internal void WriteRaw(string value)
+            => _writer.WriteLine(value);
+
+        internal void WriteRaw<T>(T value)
+            where T : notnull
+            => _writer.WriteLine(value.ToString());
 
         public override string ToString()
             => GetStringBuilder().ToString();

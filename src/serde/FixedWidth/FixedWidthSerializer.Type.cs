@@ -7,8 +7,11 @@ namespace Serde.FixedWidth
         void ITypeSerializer.WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
             => serialize.Serialize(value, this);
 
-        void ITypeSerializer.End(ISerdeInfo info) => writer.WriteLine();
-        void ITypeSerializer.WriteBool(ISerdeInfo typeInfo, int index, bool b) => writer.WriteObject(typeInfo, index, b);
+        void ITypeSerializer.End(ISerdeInfo info) => writer.WriteRaw();
+        void ITypeSerializer.WriteBool(ISerdeInfo typeInfo, int index, bool b)
+        {
+            writer.WriteObject(typeInfo, index, b);
+        }
         void ITypeSerializer.WriteChar(ISerdeInfo typeInfo, int index, char c) => writer.WriteObject(typeInfo, index, c);
         void ITypeSerializer.WriteU8(ISerdeInfo typeInfo, int index, byte b) => writer.WriteObject(typeInfo, index, b);
         void ITypeSerializer.WriteU16(ISerdeInfo typeInfo, int index, ushort u16) => writer.WriteObject(typeInfo, index, u16);
