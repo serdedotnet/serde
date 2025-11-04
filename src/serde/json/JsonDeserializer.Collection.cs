@@ -212,6 +212,27 @@ partial class JsonDeserializer<TReader>
             return v;
         }
 
+        public DateTimeOffset ReadDateTimeOffset(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadDateTimeOffset();
+            _index++;
+            return v;
+        }
+
+        public DateOnly ReadDateOnly(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadDateOnly();
+            _index++;
+            return v;
+        }
+
+        public TimeOnly ReadTimeOnly(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadTimeOnly();
+            _index++;
+            return v;
+        }
+
         void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
         {
             _deserializer.ReadBytes(writer);

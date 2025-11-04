@@ -51,6 +51,14 @@ partial class JsonSerializer : ISerializer
     {
         _writer.WriteStringValue(dt);
     }
+    public void WriteDateOnly(DateOnly d)
+    {
+        _writer.WriteStringValue(d.ToString("yyyy-MM-dd"));
+    }
+    public void WriteTimeOnly(TimeOnly t)
+    {
+        _writer.WriteStringValue(t.ToString("HH:mm:ss"));
+    }
     public void WriteBytes(ReadOnlyMemory<byte> bytes) => _writer.WriteBase64StringValue(bytes.Span);
 
     ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? size)
@@ -109,6 +117,8 @@ partial class JsonSerializer : ISerializer
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => WriteEnumName(typeInfo, index);
         public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt) => ThrowInvalidEnum();
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => ThrowInvalidEnum();
+        public void WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d) => ThrowInvalidEnum();
+        public void WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t) => ThrowInvalidEnum();
         public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) => ThrowInvalidEnum();
         private void ThrowInvalidEnum() => throw new InvalidOperationException("Invalid operation for enum serialization, expected integer value.");
     }
@@ -229,6 +239,16 @@ partial class JsonSerializer : ITypeSerializer
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));
         WriteDateTimeOffset(dt);
+    }
+    void ITypeSerializer.WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteDateOnly(d);
+    }
+    void ITypeSerializer.WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteTimeOnly(t);
     }
     void ITypeSerializer.WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes)
     {

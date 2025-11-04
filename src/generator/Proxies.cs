@@ -108,6 +108,16 @@ sealed partial class {{proxyName}};
                 Name: "System",
                 ContainingNamespace: { IsGlobalNamespace: true } } }
             => new("global::System.DateTimeOffset", "global::Serde.DateTimeOffsetProxy"),
+            { Name: "DateOnly",
+              ContainingNamespace: {
+                Name: "System",
+                ContainingNamespace: { IsGlobalNamespace: true } } }
+            => new("global::System.DateOnly", "global::Serde.DateOnlyProxy"),
+            { Name: "TimeOnly",
+              ContainingNamespace: {
+                Name: "System",
+                ContainingNamespace: { IsGlobalNamespace: true } } }
+            => new("global::System.TimeOnly", "global::Serde.TimeOnlyProxy"),
             IArrayTypeSymbol { ElementType: { SpecialType: SpecialType.System_Byte } }
             => new("global::System.Byte[]", "global::Serde.ByteArrayProxy"),
             _ => null

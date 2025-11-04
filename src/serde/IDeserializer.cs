@@ -23,6 +23,19 @@ public interface IDeserializer : IDisposable
     decimal ReadDecimal();
     string ReadString();
     DateTime ReadDateTime();
+    DateTimeOffset ReadDateTimeOffset();
+    DateOnly ReadDateOnly()
+    {
+        // Default implementation: parse ISO 8601 date string
+        var s = ReadString();
+        return DateOnly.Parse(s);
+    }
+    TimeOnly ReadTimeOnly()
+    {
+        // Default implementation: parse ISO 8601 time string
+        var s = ReadString();
+        return TimeOnly.Parse(s);
+    }
     void ReadBytes(IBufferWriter<byte> writer);
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
@@ -87,6 +100,19 @@ public interface ITypeDeserializer : IDisposable
     decimal ReadDecimal(ISerdeInfo info, int index);
     string ReadString(ISerdeInfo info, int index);
     DateTime ReadDateTime(ISerdeInfo info, int index);
+    DateTimeOffset ReadDateTimeOffset(ISerdeInfo info, int index);
+    DateOnly ReadDateOnly(ISerdeInfo info, int index)
+    {
+        // Default implementation: parse ISO 8601 date string
+        var s = ReadString(info, index);
+        return DateOnly.Parse(s);
+    }
+    TimeOnly ReadTimeOnly(ISerdeInfo info, int index)
+    {
+        // Default implementation: parse ISO 8601 time string
+        var s = ReadString(info, index);
+        return TimeOnly.Parse(s);
+    }
     void ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
 
     void IDisposable.Dispose() { }

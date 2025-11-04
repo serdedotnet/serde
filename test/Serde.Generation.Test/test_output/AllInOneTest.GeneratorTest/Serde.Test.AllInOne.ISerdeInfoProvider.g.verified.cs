@@ -23,6 +23,8 @@ partial record AllInOne
         ("stringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Serde.Test.AllInOne).GetField("StringField")),
         ("dateTimeOffsetField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>(), typeof(Serde.Test.AllInOne).GetField("DateTimeOffsetField")),
         ("dateTimeField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.DateTime, global::Serde.DateTimeProxy>(), typeof(Serde.Test.AllInOne).GetField("DateTimeField")),
+        ("dateOnlyField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.DateOnly, global::Serde.DateOnlyProxy>(), typeof(Serde.Test.AllInOne).GetField("DateOnlyField")),
+        ("timeOnlyField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.TimeOnly, global::Serde.TimeOnlyProxy>(), typeof(Serde.Test.AllInOne).GetField("TimeOnlyField")),
         ("guidField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Guid, global::Serde.GuidProxy>(), typeof(Serde.Test.AllInOne).GetField("GuidField")),
         ("escapedStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Serde.Test.AllInOne).GetField("EscapedStringField")),
         ("nullStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>(), typeof(Serde.Test.AllInOne).GetField("NullStringField")),

@@ -94,6 +94,8 @@ public enum PrimitiveKind
     String,
     DateTime,
     Bytes,
+    DateOnly,
+    TimeOnly,
 }
 
 /// <summary>
