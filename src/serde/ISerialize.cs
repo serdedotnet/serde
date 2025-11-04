@@ -92,6 +92,16 @@ public interface ISerializer
     void WriteDateTime(DateTime dt);
     void WriteDateTimeOffset(DateTimeOffset dt);
     void WriteBytes(ReadOnlyMemory<byte> bytes);
+    void WriteDateOnly(DateOnly d)
+    {
+        // Default implementation: serialize as ISO 8601 date string
+        WriteString(d.ToString("yyyy-MM-dd"));
+    }
+    void WriteTimeOnly(TimeOnly t)
+    {
+        // Default implementation: serialize as ISO 8601 time string
+        WriteString(t.ToString("HH:mm:ss"));
+    }
 
     /// <summary>
     /// Write a collection type -- either a list or a dictionary.
@@ -176,6 +186,16 @@ public interface ITypeSerializer
     void WriteNull(ISerdeInfo typeInfo, int index);
     void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt);
     void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt);
+    void WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d)
+    {
+        // Default implementation: serialize as ISO 8601 date string
+        WriteString(typeInfo, index, d.ToString("yyyy-MM-dd"));
+    }
+    void WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t)
+    {
+        // Default implementation: serialize as ISO 8601 time string
+        WriteString(typeInfo, index, t.ToString("HH:mm:ss"));
+    }
     void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes);
 
     /// <summary>

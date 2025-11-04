@@ -197,6 +197,24 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
         return DateTime.Parse(s, styles: DateTimeStyles.RoundtripKind);
     }
 
+    public DateTimeOffset ReadDateTimeOffset()
+    {
+        var s = ReadString();
+        return DateTimeOffset.Parse(s, styles: DateTimeStyles.RoundtripKind);
+    }
+
+    public DateOnly ReadDateOnly()
+    {
+        var s = ReadString();
+        return DateOnly.Parse(s);
+    }
+
+    public TimeOnly ReadTimeOnly()
+    {
+        var s = ReadString();
+        return TimeOnly.Parse(s);
+    }
+
     public void Eof()
     {
         if (Reader.SkipWhitespace() != IByteReader.EndOfStream)

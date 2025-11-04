@@ -92,6 +92,14 @@ partial class JsonSerializer
         {
             serializer.WriteDateTimeOffset(dt);
         }
+        public void WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d)
+        {
+            serializer.WriteDateOnly(d);
+        }
+        public void WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t)
+        {
+            serializer.WriteTimeOnly(t);
+        }
         public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes)
         {
             serializer.WriteBytes(bytes);
@@ -122,6 +130,8 @@ partial class JsonSerializer
         public void WriteDecimal(decimal d) => throw new KeyNotStringException();
         public void WriteDateTime(DateTime dt) => throw new KeyNotStringException();
         public void WriteDateTimeOffset(DateTimeOffset dt) => throw new KeyNotStringException();
+        public void WriteDateOnly(DateOnly d) => throw new KeyNotStringException();
+        public void WriteTimeOnly(TimeOnly t) => throw new KeyNotStringException();
         public void WriteBytes(ReadOnlyMemory<byte> bytes) => throw new KeyNotStringException();
 
         public void WriteString(string s)
@@ -161,6 +171,8 @@ partial class JsonSerializer
         public void WriteU8(ISerdeInfo typeInfo, int index, byte b) => GetSerializer(index).WriteU8(b);
         public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt) => GetSerializer(index).WriteDateTime(dt);
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => GetSerializer(index).WriteDateTimeOffset(dt);
+        public void WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d) => GetSerializer(index).WriteDateOnly(d);
+        public void WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t) => GetSerializer(index).WriteTimeOnly(t);
         public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) => GetSerializer(index).WriteBytes(bytes);
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
             where T : class?
