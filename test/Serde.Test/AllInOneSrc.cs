@@ -27,6 +27,8 @@ namespace Serde.Test
         public short ShortField;
         public int IntField;
         public long LongField;
+        public Int128 Int128Field;
+        public UInt128 UInt128Field;
         public string StringField = "StringValue";
         public DateTimeOffset DateTimeOffsetField;
         public DateTime DateTimeField;
@@ -68,6 +70,8 @@ namespace Serde.Test
                 ShortField == other.ShortField &&
                 IntField == other.IntField &&
                 LongField == other.LongField &&
+                Int128Field == other.Int128Field &&
+                UInt128Field == other.UInt128Field &&
                 StringField == other.StringField &&
                 DateTimeOffsetField == other.DateTimeOffsetField &&
                 DateTimeField == other.DateTimeField &&
@@ -114,6 +118,8 @@ namespace Serde.Test
             ShortField = short.MaxValue,
             IntField = int.MaxValue,
             LongField = long.MaxValue,
+            Int128Field = Int128.MaxValue,
+            UInt128Field = UInt128.MaxValue,
             StringField = "StringValue",
             DateTimeOffsetField = new DateTimeOffset(2040, 1, 1, 1, 1, 1, TimeSpan.FromHours(-7)),
             DateTimeField = new DateTime(2040, 1, 1, 1, 1, 1, DateTimeKind.Utc),

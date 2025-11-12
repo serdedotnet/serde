@@ -388,6 +388,22 @@ public static class DeepEquals
         {
             public sealed override SyntaxKind SyntaxKind => SyntaxKind.DecimalKeyword;
         }
+        public sealed record TestInt128 : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("Int128");
+            public override ExpressionSyntax Value(int typeIndex) => MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                IdentifierName("Int128"),
+                IdentifierName("MaxValue"));
+        }
+        public sealed record TestUInt128 : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("UInt128");
+            public override ExpressionSyntax Value(int typeIndex) => MemberAccessExpression(
+                SyntaxKind.SimpleMemberAccessExpression,
+                IdentifierName("UInt128"),
+                IdentifierName("MaxValue"));
+        }
         public sealed record TestDateTime : TestType
         {
             public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("DateTime");
@@ -517,6 +533,8 @@ public static class DeepEquals
                     Gen.Constant<TestType>(new TestInt()),
                     Gen.Constant<TestType>(new TestDouble()),
                     Gen.Constant<TestType>(new TestDecimal()),
+                    Gen.Constant<TestType>(new TestInt128()),
+                    Gen.Constant<TestType>(new TestUInt128()),
                     Gen.Constant<TestType>(new TestDateTimeOffset()),
                     Gen.Constant<TestType>(new TestDateOnly()),
                     Gen.Constant<TestType>(new TestTimeOnly()),
