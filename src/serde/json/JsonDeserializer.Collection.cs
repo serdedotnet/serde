@@ -149,6 +149,13 @@ partial class JsonDeserializer<TReader>
             return v;
         }
 
+        public UInt128 ReadU128(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadU128();
+            _index++;
+            return v;
+        }
+
         public sbyte ReadI8(ISerdeInfo info, int index)
         {
             var v = _deserializer.ReadI8();
@@ -173,6 +180,13 @@ partial class JsonDeserializer<TReader>
         public long ReadI64(ISerdeInfo info, int index)
         {
             var v = _deserializer.ReadI64();
+            _index++;
+            return v;
+        }
+
+        public Int128 ReadI128(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadI128();
             _index++;
             return v;
         }

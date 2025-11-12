@@ -141,6 +141,27 @@ public sealed class U64Proxy : ISerdePrimitive<U64Proxy, ulong>
         => deserializer.ReadU64(info, index);
 }
 
+public sealed class U128Proxy : ISerdePrimitive<U128Proxy, UInt128>
+{
+    public static U128Proxy Instance { get; } = new();
+    private U128Proxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.U128);
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    private const string s_typeName = "System.UInt128";
+    void ISerialize<UInt128>.Serialize(UInt128 value, ISerializer serializer)
+        => serializer.WriteU128(value);
+    UInt128 IDeserialize<UInt128>.Deserialize(IDeserializer deserializer)
+        => deserializer.ReadU128();
+
+    void ITypeSerialize<UInt128>.Serialize(UInt128 value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        => serializer.WriteU128(info, index, value);
+
+    UInt128 ITypeDeserialize<UInt128>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        => deserializer.ReadU128(info, index);
+}
+
 public sealed class I8Proxy : ISerdePrimitive<I8Proxy, sbyte>
 {
     public static I8Proxy Instance { get; } = new();
@@ -223,6 +244,27 @@ public sealed class I64Proxy : ISerdePrimitive<I64Proxy, long>
 
     long ITypeDeserialize<long>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
         => deserializer.ReadI64(info, index);
+}
+
+public sealed class I128Proxy : ISerdePrimitive<I128Proxy, Int128>
+{
+    public static I128Proxy Instance { get; } = new();
+    private I128Proxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive(s_typeName, PrimitiveKind.I128);
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    private const string s_typeName = "System.Int128";
+    void ISerialize<Int128>.Serialize(Int128 value, ISerializer serializer)
+        => serializer.WriteI128(value);
+    Int128 IDeserialize<Int128>.Deserialize(IDeserializer deserializer)
+        => deserializer.ReadI128();
+
+    void ITypeSerialize<Int128>.Serialize(Int128 value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        => serializer.WriteI128(info, index, value);
+
+    Int128 ITypeDeserialize<Int128>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        => deserializer.ReadI128(info, index);
 }
 
 public sealed class F32Proxy : ISerdePrimitive<F32Proxy, float>
