@@ -30,12 +30,38 @@ partial class JsonSerializer : ISerializer
     public void WriteU16(ushort u16) => _writer.WriteNumberValue(u16);
     public void WriteU32(uint u32) => _writer.WriteNumberValue(u32);
     public void WriteU64(ulong u64) => _writer.WriteNumberValue(u64);
-    public void WriteU128(UInt128 u128) => _writer.WriteStringValue(u128.ToString());
+    public void WriteU128(UInt128 u128)
+    {
+        if (u128 <= ulong.MaxValue)
+        {
+            _writer.WriteNumberValue((ulong)u128);
+            return;
+        }
+        Span<byte> buffer = stackalloc byte[39]; // max length of UInt128 in decimal is 39 digits
+        if (!u128.TryFormat(buffer, out int written))
+        {
+            throw new InvalidOperationException("Failed to format UInt128: " + u128.ToString());
+        }
+        _writer.WriteRawValue(buffer.Slice(0, written));
+    }
     public void WriteI8(sbyte b) => _writer.WriteNumberValue(b);
     public void WriteI16(short i16) => _writer.WriteNumberValue(i16);
     public void WriteI32(int i32) => _writer.WriteNumberValue(i32);
     public void WriteI64(long i64) => _writer.WriteNumberValue(i64);
-    public void WriteI128(Int128 i128) => _writer.WriteStringValue(i128.ToString());
+    public void WriteI128(Int128 i128)
+    {
+        if (i128 >= long.MinValue && i128 <= long.MaxValue)
+        {
+            _writer.WriteNumberValue((long)i128);
+            return;
+        }
+        Span<byte> buffer = stackalloc byte[40]; // max length of Int128 in decimal is 39 digits + optional '-'
+        if (!i128.TryFormat(buffer, out int written))
+        {
+            throw new InvalidOperationException("Failed to format Int128: " + i128.ToString());
+        }
+        _writer.WriteRawValue(buffer.Slice(0, written));
+    }
     public void WriteF32(float f) => _writer.WriteNumberValue(f);
     public void WriteF64(double d) => _writer.WriteNumberValue(d);
     public void WriteDecimal(decimal d) => _writer.WriteNumberValue(d);

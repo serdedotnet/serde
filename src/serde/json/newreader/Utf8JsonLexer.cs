@@ -2,8 +2,10 @@
 using System;
 using System.Buffers.Text;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
+using System.Text;
 using Serde.IO;
 using static Serde.Json.ThrowHelpers;
 
@@ -68,7 +70,29 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
 
     public long GetInt64(ScratchBuffer scratch) => (long)GetDecimal(scratch);
 
+    public Int128 GetInt128(ScratchBuffer scratch)
+    {
+        CheckNumber();
+        var span = LexNumber(skipOnly: false, scratch);
+        if (!Int128.TryParse(span, CultureInfo.InvariantCulture, out var result))
+        {
+            throw new JsonException("Expected Int128 value, found: " + Encoding.UTF8.GetString(span));
+        }
+        return result;
+    }
+
     public ulong GetUInt64(ScratchBuffer scratch) => (ulong)GetDecimal(scratch);
+
+    public UInt128 GetUInt128(ScratchBuffer scratch)
+    {
+        CheckNumber();
+        var span = LexNumber(skipOnly: false, scratch);
+        if (!UInt128.TryParse(span, CultureInfo.InvariantCulture, out var result))
+        {
+            throw new JsonException("Expected UInt128 value, found: " + Encoding.UTF8.GetString(span));
+        }
+        return result;
+    }
 
     public void Skip()
     {

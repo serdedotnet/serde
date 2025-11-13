@@ -101,8 +101,9 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
 
     public Int128 ReadI128()
     {
-        var s = ReadString();
-        return Int128.Parse(s);
+        _ = ThrowIfEos(Reader.SkipWhitespace());
+        _scratch.Clear();
+        return Reader.GetInt128(_scratch);
     }
 
     public string ReadString()
@@ -197,8 +198,10 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
 
     public UInt128 ReadU128()
     {
-        var s = ReadString();
-        return UInt128.Parse(s);
+        Reader.SkipWhitespace();
+        _scratch.Clear();
+        var u128 = Reader.GetUInt128(_scratch);
+        return u128;
     }
 
     public char ReadChar() => ReadString().Single();
