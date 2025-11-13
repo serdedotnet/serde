@@ -11,10 +11,12 @@ public interface ISerializer
     void WriteU16(ushort u16);
     void WriteU32(uint u32);
     void WriteU64(ulong u64);
+    void WriteU128(UInt128 u128);
     void WriteI8(sbyte b);
     void WriteI16(short i16);
     void WriteI32(int i32);
     void WriteI64(long i64);
+    void WriteI128(Int128 i128);
     void WriteF32(float f);
     void WriteF64(double d);
     void WriteDecimal(decimal d);
@@ -106,10 +108,12 @@ public interface ITypeSerializer
     void WriteU16(ISerdeInfo typeInfo, int index, ushort u16);
     void WriteU32(ISerdeInfo typeInfo, int index, uint u32);
     void WriteU64(ISerdeInfo typeInfo, int index, ulong u64);
+    void WriteU128(ISerdeInfo typeInfo, int index, UInt128 u128);
     void WriteI8(ISerdeInfo typeInfo, int index, sbyte b);
     void WriteI16(ISerdeInfo typeInfo, int index, short i16);
     void WriteI32(ISerdeInfo typeInfo, int index, int i32);
     void WriteI64(ISerdeInfo typeInfo, int index, long i64);
+    void WriteI128(ISerdeInfo typeInfo, int index, Int128 i128);
     void WriteF32(ISerdeInfo typeInfo, int index, float f);
     void WriteF64(ISerdeInfo typeInfo, int index, double d);
     void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);

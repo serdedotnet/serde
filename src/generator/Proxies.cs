@@ -80,6 +80,20 @@ sealed partial class {{proxyName}};
         {
             return "DateTime";
         }
+        if (type is { Name: "Int128",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "I128";
+        }
+        if (type is { Name: "UInt128",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "U128";
+        }
         return null;
     }
 

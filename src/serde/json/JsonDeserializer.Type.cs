@@ -117,6 +117,11 @@ partial class JsonDeserializer<TReader>
             ReadColon();
             return _deserializer.ReadU64();
         }
+        UInt128 ITypeDeserializer.ReadU128(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadU128();
+        }
         sbyte ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
         {
             ReadColon();
@@ -136,6 +141,11 @@ partial class JsonDeserializer<TReader>
         {
             ReadColon();
             return _deserializer.ReadI64();
+        }
+        Int128 ITypeDeserializer.ReadI128(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadI128();
         }
         float ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
         {

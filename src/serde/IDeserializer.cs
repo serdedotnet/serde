@@ -14,10 +14,12 @@ public interface IDeserializer : IDisposable
     ushort ReadU16();
     uint ReadU32();
     ulong ReadU64();
+    UInt128 ReadU128();
     sbyte ReadI8();
     short ReadI16();
     int ReadI32();
     long ReadI64();
+    Int128 ReadI128();
     float ReadF32();
     double ReadF64();
     decimal ReadDecimal();
@@ -91,10 +93,12 @@ public interface ITypeDeserializer : IDisposable
     ushort ReadU16(ISerdeInfo info, int index);
     uint ReadU32(ISerdeInfo info, int index);
     ulong ReadU64(ISerdeInfo info, int index);
+    UInt128 ReadU128(ISerdeInfo info, int index);
     sbyte ReadI8(ISerdeInfo info, int index);
     short ReadI16(ISerdeInfo info, int index);
     int ReadI32(ISerdeInfo info, int index);
     long ReadI64(ISerdeInfo info, int index);
+    Int128 ReadI128(ISerdeInfo info, int index);
     float ReadF32(ISerdeInfo info, int index);
     double ReadF64(ISerdeInfo info, int index);
     decimal ReadDecimal(ISerdeInfo info, int index);

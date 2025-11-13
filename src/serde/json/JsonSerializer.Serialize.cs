@@ -30,10 +30,38 @@ partial class JsonSerializer : ISerializer
     public void WriteU16(ushort u16) => _writer.WriteNumberValue(u16);
     public void WriteU32(uint u32) => _writer.WriteNumberValue(u32);
     public void WriteU64(ulong u64) => _writer.WriteNumberValue(u64);
+    public void WriteU128(UInt128 u128)
+    {
+        if (u128 <= ulong.MaxValue)
+        {
+            _writer.WriteNumberValue((ulong)u128);
+            return;
+        }
+        Span<byte> buffer = stackalloc byte[39]; // max length of UInt128 in decimal is 39 digits
+        if (!u128.TryFormat(buffer, out int written))
+        {
+            throw new InvalidOperationException("Failed to format UInt128: " + u128.ToString());
+        }
+        _writer.WriteRawValue(buffer.Slice(0, written));
+    }
     public void WriteI8(sbyte b) => _writer.WriteNumberValue(b);
     public void WriteI16(short i16) => _writer.WriteNumberValue(i16);
     public void WriteI32(int i32) => _writer.WriteNumberValue(i32);
     public void WriteI64(long i64) => _writer.WriteNumberValue(i64);
+    public void WriteI128(Int128 i128)
+    {
+        if (i128 >= long.MinValue && i128 <= long.MaxValue)
+        {
+            _writer.WriteNumberValue((long)i128);
+            return;
+        }
+        Span<byte> buffer = stackalloc byte[40]; // max length of Int128 in decimal is 39 digits + optional '-'
+        if (!i128.TryFormat(buffer, out int written))
+        {
+            throw new InvalidOperationException("Failed to format Int128: " + i128.ToString());
+        }
+        _writer.WriteRawValue(buffer.Slice(0, written));
+    }
     public void WriteF32(float f) => _writer.WriteNumberValue(f);
     public void WriteF64(double d) => _writer.WriteNumberValue(d);
     public void WriteDecimal(decimal d) => _writer.WriteNumberValue(d);
@@ -109,12 +137,14 @@ partial class JsonSerializer : ISerializer
         public void WriteI16(ISerdeInfo typeInfo, int index, short i16) => WriteEnumName(typeInfo, index);
         public void WriteI32(ISerdeInfo typeInfo, int index, int i32) => WriteEnumName(typeInfo, index);
         public void WriteI64(ISerdeInfo typeInfo, int index, long i64) => WriteEnumName(typeInfo, index);
+        public void WriteI128(ISerdeInfo typeInfo, int index, Int128 i128) => WriteEnumName(typeInfo, index);
         public void WriteNull(ISerdeInfo typeInfo, int index) => ThrowInvalidEnum();
         public void WriteI8(ISerdeInfo typeInfo, int index, sbyte b) => WriteEnumName(typeInfo, index);
         public void WriteString(ISerdeInfo typeInfo, int index, string s) => ThrowInvalidEnum();
         public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16) => WriteEnumName(typeInfo, index);
         public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) => WriteEnumName(typeInfo, index);
         public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) => WriteEnumName(typeInfo, index);
+        public void WriteU128(ISerdeInfo typeInfo, int index, UInt128 u128) => WriteEnumName(typeInfo, index);
         public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt) => ThrowInvalidEnum();
         public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) => ThrowInvalidEnum();
         public void WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d) => ThrowInvalidEnum();
@@ -176,6 +206,12 @@ partial class JsonSerializer : ITypeSerializer
         WriteU64(u64);
     }
 
+    void ITypeSerializer.WriteU128(ISerdeInfo typeInfo, int index, UInt128 u128)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteU128(u128);
+    }
+
     void ITypeSerializer.WriteI8(ISerdeInfo typeInfo, int index, sbyte b)
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));
@@ -198,6 +234,12 @@ partial class JsonSerializer : ITypeSerializer
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));
         WriteI64(i64);
+    }
+
+    void ITypeSerializer.WriteI128(ISerdeInfo typeInfo, int index, Int128 i128)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteI128(i128);
     }
 
     void ITypeSerializer.WriteF32(ISerdeInfo typeInfo, int index, float f)
