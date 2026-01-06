@@ -62,6 +62,7 @@ public static class SerdeInfo
 
     private sealed record PrimitiveInfo(string Name, PrimitiveKind PrimitiveKind) : INoFieldsInfo
     {
+        PrimitiveKind? ISerdeInfo.PrimitiveKind => PrimitiveKind;
         public InfoKind Kind => InfoKind.Primitive;
 
         public IList<CustomAttributeData> Attributes => [];
@@ -72,6 +73,8 @@ public static class SerdeInfo
         InfoKind Kind) : INoFieldsInfo
     {
         public int FieldCount => 0;
+
+        public PrimitiveKind? PrimitiveKind => null;
 
         public IList<CustomAttributeData> Attributes => [];
     }
@@ -88,6 +91,7 @@ file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
     public string Name { get; } = UnderlyingInfo.Name + "?";
 
     public InfoKind Kind => InfoKind.Nullable;
+    public PrimitiveKind? PrimitiveKind => null;
     public int FieldCount => 1;
 
     public IList<CustomAttributeData> Attributes => [];
@@ -155,6 +159,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
     public string Name { get; }
 
     public InfoKind Kind { get; }
+
+    public PrimitiveKind? PrimitiveKind => null;
 
     public IList<CustomAttributeData> Attributes { get; }
 

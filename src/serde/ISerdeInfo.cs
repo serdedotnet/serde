@@ -20,6 +20,11 @@ public interface ISerdeInfo
     InfoKind Kind { get; }
 
     /// <summary>
+    /// If the type is a primitive type, return its specific kind. Otherwise, return null.
+    /// </summary>
+    PrimitiveKind? PrimitiveKind { get; }
+
+    /// <summary>
     /// Get the attributes for the type. This list may be modified from the original set of attributes
     /// in source code or metadata to reflect only the attributes that are relevant to serialization or
     /// deserialization.
@@ -106,6 +111,8 @@ public enum PrimitiveKind
 public interface IUnionSerdeInfo : ISerdeInfo
 {
     InfoKind ISerdeInfo.Kind => InfoKind.Union;
+
+    PrimitiveKind? ISerdeInfo.PrimitiveKind => null;
 
     ImmutableArray<ISerdeInfo> CaseInfos { get; }
 }

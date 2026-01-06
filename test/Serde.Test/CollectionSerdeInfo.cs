@@ -9,6 +9,7 @@ internal sealed record CollectionSerdeInfo(
     string Name,
     InfoKind Kind) : ISerdeInfo
 {
+    public PrimitiveKind? PrimitiveKind => null;
     public int FieldCount => 0;
 
     public IList<CustomAttributeData> Attributes => [];

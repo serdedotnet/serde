@@ -83,5 +83,69 @@ public sealed partial class SerdeInfoTests
         Assert.Equal(SerdeInfoProvider.GetDeserializeInfo<string, StringProxy>(), info.GetFieldInfo(0));
     }
 
+    [Theory]
+    [InlineData(PrimitiveKind.Bool)]
+    [InlineData(PrimitiveKind.Char)]
+    [InlineData(PrimitiveKind.U8)]
+    [InlineData(PrimitiveKind.U16)]
+    [InlineData(PrimitiveKind.U32)]
+    [InlineData(PrimitiveKind.U64)]
+    [InlineData(PrimitiveKind.I8)]
+    [InlineData(PrimitiveKind.I16)]
+    [InlineData(PrimitiveKind.I32)]
+    [InlineData(PrimitiveKind.I64)]
+    [InlineData(PrimitiveKind.F32)]
+    [InlineData(PrimitiveKind.F64)]
+    [InlineData(PrimitiveKind.Decimal)]
+    [InlineData(PrimitiveKind.String)]
+    public void PrimitiveKind_ReturnsCorrectKind(PrimitiveKind expectedKind)
+    {
+        var info = expectedKind switch
+        {
+            PrimitiveKind.Bool => BoolProxy.SerdeInfo,
+            PrimitiveKind.Char => CharProxy.SerdeInfo,
+            PrimitiveKind.U8 => U8Proxy.SerdeInfo,
+            PrimitiveKind.U16 => U16Proxy.SerdeInfo,
+            PrimitiveKind.U32 => U32Proxy.SerdeInfo,
+            PrimitiveKind.U64 => U64Proxy.SerdeInfo,
+            PrimitiveKind.I8 => I8Proxy.SerdeInfo,
+            PrimitiveKind.I16 => I16Proxy.SerdeInfo,
+            PrimitiveKind.I32 => I32Proxy.SerdeInfo,
+            PrimitiveKind.I64 => I64Proxy.SerdeInfo,
+            PrimitiveKind.F32 => F32Proxy.SerdeInfo,
+            PrimitiveKind.F64 => F64Proxy.SerdeInfo,
+            PrimitiveKind.Decimal => DecimalProxy.SerdeInfo,
+            PrimitiveKind.String => StringProxy.SerdeInfo,
+            _ => throw new System.ArgumentException($"Unknown kind: {expectedKind}")
+        };
+
+        Assert.Equal(InfoKind.Primitive, info.Kind);
+        Assert.Equal(expectedKind, info.PrimitiveKind);
+    }
+
+    [Fact]
+    public void PrimitiveKind_NullForNonPrimitives()
+    {
+        // Custom types should have null PrimitiveKind
+        var customInfo = SerdeInfoProvider.GetDeserializeInfo<EmptyRecord>();
+        Assert.Equal(InfoKind.CustomType, customInfo.Kind);
+        Assert.Null(customInfo.PrimitiveKind);
+
+        // Nullable types should have null PrimitiveKind
+        var nullableInfo = SerdeInfoProvider.GetSerializeInfo<string?, NullableRefProxy.Ser<string, StringProxy>>();
+        Assert.Equal(InfoKind.Nullable, nullableInfo.Kind);
+        Assert.Null(nullableInfo.PrimitiveKind);
+
+        // List types should have null PrimitiveKind
+        var listInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.List<int>, ListProxy.Ser<int, I32Proxy>>();
+        Assert.Equal(InfoKind.List, listInfo.Kind);
+        Assert.Null(listInfo.PrimitiveKind);
+
+        // Dictionary types should have null PrimitiveKind
+        var dictInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.Dictionary<string, int>, DictProxy.Ser<string, int, StringProxy, I32Proxy>>();
+        Assert.Equal(InfoKind.Dictionary, dictInfo.Kind);
+        Assert.Null(dictInfo.PrimitiveKind);
+    }
+
 #pragma warning restore SerdeExperimentalFieldInfo // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }
