@@ -136,15 +136,25 @@ public abstract class DeListBase<
     protected sealed override TList FromVar(TBuilder builder) => ToList(builder);
 }
 
-internal static class ArraySerdeTypeInfo<T>
-{
-    public static readonly ISerdeInfo SerdeInfo = Serde.SerdeInfo.MakeEnumerable(typeof(T[]).ToString());
-}
-
 public static class ArrayProxy
 {
+    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo)
+        => Serde.SerdeInfo.MakeEnumerable(typeof(T[]).ToString(), elementInfo);
+
+    private static class SerCache<T, TProvider>
+        where TProvider : ISerializeProvider<T>
+    {
+        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+    }
+
+    private static class DeCache<T, TProvider>
+        where TProvider : IDeserializeProvider<T>
+    {
+        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+    }
+
     public class Ser<T, TProvider>()
-        : SerListBase<Ser<T, TProvider>, T, T[], TProvider>(ArraySerdeTypeInfo<T>.SerdeInfo),
+        : SerListBase<Ser<T, TProvider>, T, T[], TProvider>(SerCache<T, TProvider>.SerdeInfo),
           ISerializeProvider<T[]>
         where TProvider : ISerializeProvider<T>
     {
@@ -159,7 +169,7 @@ public static class ArrayProxy
             De<T, TProvider>.ArrayBuilder,
             List<T>,
             TProvider
-          >(ArraySerdeTypeInfo<T>.SerdeInfo),
+          >(DeCache<T, TProvider>.SerdeInfo),
           IDeserializeProvider<T[]>
         where TProvider : IDeserializeProvider<T>
     {
@@ -179,15 +189,25 @@ public static class ArrayProxy
     }
 }
 
-internal static class ListSerdeTypeInfo<T>
-{
-    public static readonly ISerdeInfo SerdeInfo = Serde.SerdeInfo.MakeEnumerable(typeof(List<T>).ToString());
-}
-
 public static class ListProxy
 {
+    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo)
+        => Serde.SerdeInfo.MakeEnumerable(typeof(List<T>).ToString(), elementInfo);
+
+    private static class SerCache<T, TProvider>
+        where TProvider : ISerializeProvider<T>
+    {
+        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+    }
+
+    private static class DeCache<T, TProvider>
+        where TProvider : IDeserializeProvider<T>
+    {
+        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+    }
+
     public sealed class Ser<T, TProvider>()
-        : SerListBase<Ser<T, TProvider>, T, List<T>, TProvider>(ListSerdeTypeInfo<T>.SerdeInfo),
+        : SerListBase<Ser<T, TProvider>, T, List<T>, TProvider>(SerCache<T, TProvider>.SerdeInfo),
           ISerializeProvider<List<T>>
         where TProvider : ISerializeProvider<T>
     {
@@ -195,7 +215,7 @@ public static class ListProxy
     }
 
     public sealed class De<T, TProvider>()
-        : DeListBase<De<T, TProvider>, T, List<T>, List<T>, TProvider>(ListSerdeTypeInfo<T>.SerdeInfo),
+        : DeListBase<De<T, TProvider>, T, List<T>, List<T>, TProvider>(DeCache<T, TProvider>.SerdeInfo),
           IDeserialize<List<T>>, IDeserializeProvider<List<T>>
         where TProvider : IDeserializeProvider<T>
     {
@@ -217,15 +237,25 @@ public static class ListProxy
     }
 }
 
-internal static class ImmutableArraySerdeTypeInfo<T>
-{
-    public static readonly ISerdeInfo SerdeInfo = Serde.SerdeInfo.MakeEnumerable(typeof(ImmutableArray<T>).ToString());
-}
-
 public static class ImmutableArrayProxy
 {
+    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo)
+        => Serde.SerdeInfo.MakeEnumerable(typeof(ImmutableArray<T>).ToString(), elementInfo);
+
+    private static class SerCache<T, TProvider>
+        where TProvider : ISerializeProvider<T>
+    {
+        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+    }
+
+    private static class DeCache<T, TProvider>
+        where TProvider : IDeserializeProvider<T>
+    {
+        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+    }
+
     public sealed class Ser<T, TProvider>()
-        : SerListBase<Ser<T, TProvider>, T, ImmutableArray<T>, TProvider>(ImmutableArraySerdeTypeInfo<T>.SerdeInfo),
+        : SerListBase<Ser<T, TProvider>, T, ImmutableArray<T>, TProvider>(SerCache<T, TProvider>.SerdeInfo),
           ISerializeProvider<ImmutableArray<T>>
         where TProvider : ISerializeProvider<T>
     {
@@ -233,7 +263,7 @@ public static class ImmutableArrayProxy
     }
 
     public sealed class De<T, TProvider>()
-        : DeListBase<De<T, TProvider>, T, ImmutableArray<T>, ImmutableArray<T>.Builder, TProvider>(ImmutableArraySerdeTypeInfo<T>.SerdeInfo),
+        : DeListBase<De<T, TProvider>, T, ImmutableArray<T>, ImmutableArray<T>.Builder, TProvider>(DeCache<T, TProvider>.SerdeInfo),
           IDeserializeProvider<ImmutableArray<T>>
         where TProvider : IDeserializeProvider<T>
     {

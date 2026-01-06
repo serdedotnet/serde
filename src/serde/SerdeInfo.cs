@@ -44,11 +44,14 @@ public static class SerdeInfo
     public static ISerdeInfo MakeNullable(ISerdeInfo underlying) => new NullableSerdeInfo(underlying);
 
     public static ISerdeInfo MakeEnumerable(
-        string typeName)
-        => new CollectionInfo(typeName, InfoKind.List);
+        string typeName,
+        ISerdeInfo elementInfo)
+        => new CollectionInfo(typeName, InfoKind.List, [elementInfo]);
     public static ISerdeInfo MakeDictionary(
-        string typeName)
-        => new CollectionInfo(typeName, InfoKind.Dictionary);
+        string typeName,
+        ISerdeInfo keyInfo,
+        ISerdeInfo valueInfo)
+        => new CollectionInfo(typeName, InfoKind.Dictionary, [keyInfo, valueInfo]);
 
     /// <summary>
     /// Make an ISerdeInfo that represents a union. Each case is represented as a field, meaning
@@ -70,13 +73,39 @@ public static class SerdeInfo
 
     private sealed record CollectionInfo(
         string Name,
-        InfoKind Kind) : INoFieldsInfo
+        InfoKind Kind,
+        ImmutableArray<ISerdeInfo> TypeArgInfos) : ISerdeInfo
     {
-        public int FieldCount => 0;
+        public int FieldCount => TypeArgInfos.Length;
 
         public PrimitiveKind? PrimitiveKind => null;
 
         public IList<CustomAttributeData> Attributes => [];
+
+        public Utf8Span GetFieldName(int index)
+            => index >= 0 && index < TypeArgInfos.Length
+                ? ISerdeInfo.UTF8Encoding.GetBytes(TypeArgInfos[index].Name)
+                : throw GetOOR(index);
+
+        public string GetFieldStringName(int index)
+            => index >= 0 && index < TypeArgInfos.Length
+                ? TypeArgInfos[index].Name
+                : throw GetOOR(index);
+
+        public IList<CustomAttributeData> GetFieldAttributes(int index)
+            => index >= 0 && index < TypeArgInfos.Length
+                ? []
+                : throw GetOOR(index);
+
+        public int TryGetIndex(Utf8Span fieldName) => ITypeDeserializer.IndexNotFound;
+
+        public ISerdeInfo GetFieldInfo(int index)
+            => index >= 0 && index < TypeArgInfos.Length
+                ? TypeArgInfos[index]
+                : throw GetOOR(index);
+
+        private ArgumentOutOfRangeException GetOOR(int index)
+            => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has {TypeArgInfos.Length} type argument(s).");
     }
 
 }

@@ -147,5 +147,38 @@ public sealed partial class SerdeInfoTests
         Assert.Null(dictInfo.PrimitiveKind);
     }
 
+    [Fact]
+    public void ListInfo_GetFieldInfo_ReturnsElementInfo()
+    {
+        var listInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.List<int>, ListProxy.Ser<int, I32Proxy>>();
+
+        Assert.Equal(InfoKind.List, listInfo.Kind);
+        Assert.Equal(1, listInfo.FieldCount);
+
+        var elementInfo = listInfo.GetFieldInfo(0);
+        Assert.Equal(I32Proxy.SerdeInfo, elementInfo);
+        Assert.Equal(InfoKind.Primitive, elementInfo.Kind);
+        Assert.Equal(PrimitiveKind.I32, elementInfo.PrimitiveKind);
+    }
+
+    [Fact]
+    public void DictionaryInfo_GetFieldInfo_ReturnsKeyAndValueInfo()
+    {
+        var dictInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.Dictionary<string, int>, DictProxy.Ser<string, int, StringProxy, I32Proxy>>();
+
+        Assert.Equal(InfoKind.Dictionary, dictInfo.Kind);
+        Assert.Equal(2, dictInfo.FieldCount);
+
+        var keyInfo = dictInfo.GetFieldInfo(0);
+        Assert.Equal(StringProxy.SerdeInfo, keyInfo);
+        Assert.Equal(InfoKind.Primitive, keyInfo.Kind);
+        Assert.Equal(PrimitiveKind.String, keyInfo.PrimitiveKind);
+
+        var valueInfo = dictInfo.GetFieldInfo(1);
+        Assert.Equal(I32Proxy.SerdeInfo, valueInfo);
+        Assert.Equal(InfoKind.Primitive, valueInfo.Kind);
+        Assert.Equal(PrimitiveKind.I32, valueInfo.PrimitiveKind);
+    }
+
 #pragma warning restore SerdeExperimentalFieldInfo // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 }

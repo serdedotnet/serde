@@ -15,7 +15,18 @@ public readonly struct EqArray<T>(ImmutableArray<T> value)
 
 public static class EqArrayProxy
 {
-    private static readonly ISerdeInfo s_typeInfo = Serde.SerdeInfo.MakeEnumerable("EqArray");
+    internal static class SerTypeInfo<T, TProvider>
+        where TProvider : ISerializeProvider<T>
+    {
+        public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable("EqArray", TProvider.Instance.SerdeInfo);
+    }
+
+    internal static class DeTypeInfo<T, TProvider>
+        where TProvider : IDeserializeProvider<T>
+    {
+        public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable("EqArray", TProvider.Instance.SerdeInfo);
+    }
+
     public sealed class Ser<T, TProvider>
         : ISerializeProvider<EqArray<T>>, ISerialize<EqArray<T>>
         where TProvider : ISerializeProvider<T>
@@ -23,7 +34,7 @@ public static class EqArrayProxy
         public static readonly Ser<T, TProvider> Instance = new();
         static ISerialize<EqArray<T>> ISerializeProvider<EqArray<T>>.Instance => Instance;
 
-        public ISerdeInfo SerdeInfo => s_typeInfo;
+        public ISerdeInfo SerdeInfo => SerTypeInfo<T, TProvider>.Instance;
 
         void ISerialize<EqArray<T>>.Serialize(EqArray<T> value, ISerializer serializer)
         {
@@ -40,7 +51,7 @@ public static class EqArrayProxy
         public static readonly De<T, TProvider> Instance = new();
         static IDeserialize<EqArray<T>> IDeserializeProvider<EqArray<T>>.Instance => Instance;
 
-        public ISerdeInfo SerdeInfo => s_typeInfo;
+        public ISerdeInfo SerdeInfo => DeTypeInfo<T, TProvider>.Instance;
         EqArray<T> IDeserialize<EqArray<T>>.Deserialize(IDeserializer deserializer)
         {
             return new(ImmutableArrayProxy.De<T, TProvider>.Instance.Deserialize(deserializer));

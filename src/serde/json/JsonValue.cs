@@ -32,8 +32,12 @@ namespace Serde.Json
 
             public IList<CustomAttributeData> Attributes => [];
 
-            internal static readonly ISerdeInfo ObjectInfo = SerdeInfo.MakeDictionary(nameof(Object));
-            internal static readonly ISerdeInfo ArrayInfo = SerdeInfo.MakeEnumerable(nameof(Array));
+            // Use lazy initialization to break the circular reference
+            private static ISerdeInfo? _objectInfo;
+            internal static ISerdeInfo ObjectInfo => _objectInfo ??= SerdeInfo.MakeDictionary(nameof(Object), StringProxy.SerdeInfo, Instance);
+
+            private static ISerdeInfo? _arrayInfo;
+            internal static ISerdeInfo ArrayInfo => _arrayInfo ??= SerdeInfo.MakeEnumerable(nameof(Array), Instance);
 
             public ImmutableArray<ISerdeInfo> CaseInfos { get; } = [
                 SerdeInfo.MakePrimitive(nameof(Number), PrimitiveKind.F64),
