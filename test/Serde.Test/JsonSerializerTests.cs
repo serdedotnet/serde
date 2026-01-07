@@ -1,18 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Serde.Json;
 using Xunit;
-using Xunit.Sdk;
 using static Serde.Json.JsonValue;
-using static Serde.Test.JsonSerializerTests;
 
 namespace Serde.Test
 {
@@ -166,13 +161,15 @@ namespace Serde.Test
                 = new Proxy();
 
             private sealed class Proxy()
-                : SerDictBase<Proxy, int, int, JsonDictionaryWrapper, ToStringProxy, I32Proxy>(
+                : SerDictBase<Proxy, int, int, JsonDictionaryWrapper, ToStringProxy, I32Proxy>
+            {
+                private static readonly ISerdeInfo s_serdeInfo =
                     new CollectionSerdeInfo(
                         typeof(Dictionary<int, int>).ToString(),
                         InfoKind.Dictionary
-                    )
-                )
-            { }
+                    );
+                public override ISerdeInfo SerdeInfo => s_serdeInfo;
+            }
         }
 
         [Fact]

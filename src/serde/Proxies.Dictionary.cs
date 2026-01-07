@@ -17,16 +17,15 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
 {
     public static TSelf Instance { get; } = new();
     static ISerialize<TDict> ISerializeProvider<TDict>.Instance => Instance;
-    public ISerdeInfo SerdeInfo { get; }
+    public abstract ISerdeInfo SerdeInfo { get; }
 
     private readonly ITypeSerialize<TK> _keySer;
     private readonly ITypeSerialize<TV> _valueSer;
 
-    protected SerDictBase(ISerdeInfo serdeInfo)
+    protected SerDictBase()
     {
         _keySer = TypeSerialize.GetOrBox<TK, TKProvider>();
         _valueSer = TypeSerialize.GetOrBox<TV, TVProvider>();
-        SerdeInfo = serdeInfo;
     }
 
     void ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
@@ -120,26 +119,6 @@ public static class DictProxy
         where TKey : notnull
         => SerdeInfo.MakeDictionary(typeof(Dictionary<TKey, TValue>).ToString(), keyInfo, valueInfo);
 
-    private static class SerCache<TKey, TValue, TKeyProvider, TValueProvider>
-        where TKey : notnull
-        where TKeyProvider : ISerializeProvider<TKey>
-        where TValueProvider : ISerializeProvider<TValue>
-    {
-        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<TKey, TValue>(
-            TKeyProvider.Instance.SerdeInfo,
-            TValueProvider.Instance.SerdeInfo);
-    }
-
-    private static class DeCache<TKey, TValue, TKProvider, TVProvider>
-        where TKey : notnull
-        where TKProvider : IDeserializeProvider<TKey>
-        where TVProvider : IDeserializeProvider<TValue>
-    {
-        public static readonly ISerdeInfo SerdeInfo = GetSerdeInfo<TKey, TValue>(
-            TKProvider.Instance.SerdeInfo,
-            TVProvider.Instance.SerdeInfo);
-    }
-
     public sealed class Ser<TKey, TValue, TKeyProvider, TValueProvider>()
         : SerDictBase<
             Ser<TKey, TValue, TKeyProvider, TValueProvider>,
@@ -148,12 +127,17 @@ public static class DictProxy
             Dictionary<TKey, TValue>,
             TKeyProvider,
             TValueProvider
-          >(SerCache<TKey, TValue, TKeyProvider, TValueProvider>.SerdeInfo),
+          >,
           ISerializeProvider<Dictionary<TKey, TValue>>
         where TKey : notnull
         where TKeyProvider : ISerializeProvider<TKey>
         where TValueProvider : ISerializeProvider<TValue>
-    { }
+    {
+        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<TKey, TValue>(
+            TKeyProvider.Instance.SerdeInfo,
+            TValueProvider.Instance.SerdeInfo);
+        public override ISerdeInfo SerdeInfo => s_serdeInfo;
+    }
 
     public sealed class De<TKey, TValue, TKProvider, TVProvider>
         : DeDictBase<
@@ -170,7 +154,10 @@ public static class DictProxy
         where TKProvider : IDeserializeProvider<TKey>
         where TVProvider : IDeserializeProvider<TValue>
     {
-        public override ISerdeInfo SerdeInfo => DeCache<TKey, TValue, TKProvider, TVProvider>.SerdeInfo;
+        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<TKey, TValue>(
+            TKProvider.Instance.SerdeInfo,
+            TVProvider.Instance.SerdeInfo);
+        public override ISerdeInfo SerdeInfo => s_serdeInfo;
 
         protected override void Add(Dictionary<TKey, TValue> builder, TKey key, TValue value) => builder.Add(key, value);
 
