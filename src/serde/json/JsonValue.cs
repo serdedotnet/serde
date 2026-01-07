@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using StaticCs;
 
 namespace Serde.Json
@@ -34,10 +35,47 @@ namespace Serde.Json
 
             // Use lazy initialization to break the circular reference
             private static ISerdeInfo? _objectInfo;
-            internal static ISerdeInfo ObjectInfo => _objectInfo ??= SerdeInfo.MakeDictionary(nameof(Object), StringProxy.SerdeInfo, Instance);
+            internal static ISerdeInfo ObjectInfo
+            {
+                get
+                {
+                    if (_objectInfo is null)
+                    {
+                        var objectInfo = SerdeInfo.MakeDictionary(
+                            nameof(Object),
+                            StringProxy.SerdeInfo,
+                            Instance
+                        );
+                        Interlocked.CompareExchange(
+                            ref _objectInfo,
+                            objectInfo,
+                            null
+                        );
+                    }
+                    return _objectInfo;
+                }
+            }
 
             private static ISerdeInfo? _arrayInfo;
-            internal static ISerdeInfo ArrayInfo => _arrayInfo ??= SerdeInfo.MakeEnumerable(nameof(Array), Instance);
+            internal static ISerdeInfo ArrayInfo
+            {
+                get
+                {
+                    if (_arrayInfo is null)
+                    {
+                        var arrayInfo = SerdeInfo.MakeEnumerable(
+                            nameof(Array),
+                            Instance
+                        );
+                        Interlocked.CompareExchange(
+                            ref _arrayInfo,
+                            arrayInfo,
+                            null
+                        );
+                    }
+                    return _arrayInfo;
+                }
+            }
 
             public ImmutableArray<ISerdeInfo> CaseInfos { get; } = [
                 SerdeInfo.MakePrimitive(nameof(Number), PrimitiveKind.F64),

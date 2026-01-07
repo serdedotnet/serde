@@ -4,6 +4,132 @@ using System.Collections.Generic;
 
 namespace Serde;
 
+public static class BoolExtensions
+{
+    extension(bool)
+    {
+        public static ISerialize<bool> Serialize => BoolProxy.Instance;
+        public static IDeserialize<bool> Deserialize => BoolProxy.Instance;
+    }
+}
+
+public static class CharExtensions
+{
+    extension(char)
+    {
+        public static ISerialize<char> Serialize => CharProxy.Instance;
+        public static IDeserialize<char> Deserialize => CharProxy.Instance;
+    }
+}
+
+public static class ByteExtensions
+{
+    extension(byte)
+    {
+        public static ISerialize<byte> Serialize => U8Proxy.Instance;
+        public static IDeserialize<byte> Deserialize => U8Proxy.Instance;
+    }
+}
+
+public static class UInt16Extensions
+{
+    extension(ushort)
+    {
+        public static ISerialize<ushort> Serialize => U16Proxy.Instance;
+        public static IDeserialize<ushort> Deserialize => U16Proxy.Instance;
+    }
+}
+
+public static class UInt32Extensions
+{
+    extension(uint)
+    {
+        public static ISerialize<uint> Serialize => U32Proxy.Instance;
+        public static IDeserialize<uint> Deserialize => U32Proxy.Instance;
+    }
+}
+
+public static class UInt64Extensions
+{
+    extension(ulong)
+    {
+        public static ISerialize<ulong> Serialize => U64Proxy.Instance;
+        public static IDeserialize<ulong> Deserialize => U64Proxy.Instance;
+    }
+}
+
+public static class SByteExtensions
+{
+    extension(sbyte)
+    {
+        public static ISerialize<sbyte> Serialize => I8Proxy.Instance;
+        public static IDeserialize<sbyte> Deserialize => I8Proxy.Instance;
+    }
+}
+
+public static class Int16Extensions
+{
+    extension(short)
+    {
+        public static ISerialize<short> Serialize => I16Proxy.Instance;
+        public static IDeserialize<short> Deserialize => I16Proxy.Instance;
+    }
+}
+
+public static class Int32Extensions
+{
+    extension(int)
+    {
+        public static ISerialize<int> Serialize => I32Proxy.Instance;
+        public static IDeserialize<int> Deserialize => I32Proxy.Instance;
+    }
+}
+
+public static class Int64Extensions
+{
+    extension(long)
+    {
+        public static ISerialize<long> Serialize => I64Proxy.Instance;
+        public static IDeserialize<long> Deserialize => I64Proxy.Instance;
+    }
+}
+
+public static class StringExtensions
+{
+    extension(string)
+    {
+        public static ISerialize<string> Serialize => StringProxy.Instance;
+        public static IDeserialize<string> Deserialize => StringProxy.Instance;
+    }
+}
+
+public static class FloatExtensions
+{
+    extension(float)
+    {
+        public static ISerialize<float> Serialize => F32Proxy.Instance;
+        public static IDeserialize<float> Deserialize => F32Proxy.Instance;
+    }
+}
+
+public static class DoubleExtensions
+{
+    extension(double)
+    {
+        public static ISerialize<double> Serialize => F64Proxy.Instance;
+        public static IDeserialize<double> Deserialize => F64Proxy.Instance;
+    }
+}
+
+public static class DecimalExtensions
+{
+    extension(decimal)
+    {
+        public static ISerialize<decimal> Serialize => DecimalProxy.Instance;
+        public static IDeserialize<decimal> Deserialize => DecimalProxy.Instance;
+    }
+}
+
 public static class ArrayTExtensions
 {
     extension<T>(T[]) where T : IDeserializeProvider<T>
