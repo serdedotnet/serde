@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -137,12 +138,12 @@ public sealed partial class SerdeInfoTests
         Assert.Null(nullableInfo.PrimitiveKind);
 
         // List types should have null PrimitiveKind
-        var listInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.List<int>, ListProxy.Ser<int, I32Proxy>>();
+        var listInfo = SerdeInfoProvider.GetInfo(List<int>.Serialize);
         Assert.Equal(InfoKind.List, listInfo.Kind);
         Assert.Null(listInfo.PrimitiveKind);
 
         // Dictionary types should have null PrimitiveKind
-        var dictInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.Dictionary<string, int>, DictProxy.Ser<string, int, StringProxy, I32Proxy>>();
+        var dictInfo = SerdeInfoProvider.GetInfo(Dictionary<string, int>.Serialize);
         Assert.Equal(InfoKind.Dictionary, dictInfo.Kind);
         Assert.Null(dictInfo.PrimitiveKind);
     }
@@ -150,7 +151,7 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void ListInfo_GetFieldInfo_ReturnsElementInfo()
     {
-        var listInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.List<int>, ListProxy.Ser<int, I32Proxy>>();
+        var listInfo = SerdeInfoProvider.GetInfo(List<int>.Serialize);
 
         Assert.Equal(InfoKind.List, listInfo.Kind);
         Assert.Equal(1, listInfo.FieldCount);
@@ -164,7 +165,7 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void DictionaryInfo_GetFieldInfo_ReturnsKeyAndValueInfo()
     {
-        var dictInfo = SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.Dictionary<string, int>, DictProxy.Ser<string, int, StringProxy, I32Proxy>>();
+        var dictInfo = SerdeInfoProvider.GetInfo(Dictionary<string, int>.Serialize);
 
         Assert.Equal(InfoKind.Dictionary, dictInfo.Kind);
         Assert.Equal(2, dictInfo.FieldCount);

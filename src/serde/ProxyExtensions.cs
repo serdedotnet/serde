@@ -221,6 +221,17 @@ public static class DictStringStringExtensions
         public static ISerialize<Dictionary<string, string>> Serialize => DictProxy.Ser<string, string, StringProxy, StringProxy>.Instance;
     }
 }
+public static class DictStringIntExtensions
+{
+    extension(Dictionary<string, int>)
+    {
+        public static IDeserialize<Dictionary<string, int>> Deserialize => DictProxy.De<string, int, StringProxy, I32Proxy>.Instance;
+    }
+    extension(Dictionary<string, int>)
+    {
+        public static ISerialize<Dictionary<string, int>> Serialize => DictProxy.Ser<string, int, StringProxy, I32Proxy>.Instance;
+    }
+}
 public static class DictStringNullableStringExtensions
 {
     extension(Dictionary<string, string>)
