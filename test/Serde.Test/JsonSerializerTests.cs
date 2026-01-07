@@ -163,10 +163,10 @@ namespace Serde.Test
             private sealed class Proxy()
                 : SerDictBase<Proxy, int, int, JsonDictionaryWrapper, ToStringProxy, I32Proxy>
             {
-                private static readonly ISerdeInfo s_serdeInfo =
-                    new CollectionSerdeInfo(
+                private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeDictionary(
                         typeof(Dictionary<int, int>).ToString(),
-                        InfoKind.Dictionary
+                        ToStringProxy.Instance.SerdeInfo,
+                        I32Proxy.SerdeInfo
                     );
                 public override ISerdeInfo SerdeInfo => s_serdeInfo;
             }

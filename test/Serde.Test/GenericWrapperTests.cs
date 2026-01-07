@@ -133,10 +133,6 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArray2Proxy
     {
-        private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
-            typeof(CustomImArray2<int>).ToString(),
-            InfoKind.List);
-
         public sealed class Ser<T, TProvider>()
             : SerListBase<Ser<T, TProvider>, T, CustomImArray2<T>, TProvider>,
               ISerializeProvider<CustomImArray2<T>>
@@ -144,8 +140,9 @@ public sealed partial class GenericWrapperTests
             where TProvider : ISerializeProvider<T>
         {
             private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeEnumerable(
-                typeof(CustomImArray<int>).ToString(),
+                typeof(CustomImArray2<int>).ToString(),
                 TProvider.Instance.SerdeInfo);
+
             public override ISerdeInfo SerdeInfo => s_serdeInfo;
 
             protected override ReadOnlySpan<T> GetSpan(CustomImArray2<T> value)
