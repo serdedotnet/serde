@@ -93,22 +93,28 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArrayProxy
     {
-        private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
-            typeof(CustomImArray<int>).ToString(),
-            InfoKind.List);
-
         public sealed class Ser<T, TProvider>()
-            : SerListBase<Ser<T, TProvider>, T, CustomImArray<T>, TProvider>(s_serdeInfo),
+            : SerListBase<Ser<T, TProvider>, T, CustomImArray<T>, TProvider>,
               ISerializeProvider<CustomImArray<T>>
             where TProvider : ISerializeProvider<T>
         {
+            private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeEnumerable(
+                typeof(CustomImArray<int>).ToString(),
+                TProvider.Instance.SerdeInfo);
+
+            public override ISerdeInfo SerdeInfo => s_serdeInfo;
             protected override ReadOnlySpan<T> GetSpan(CustomImArray<T> value) => value.Backing.AsSpan();
         }
 
         public sealed class De<T, TProvider>()
-            : DeListBase<De<T, TProvider>, T, CustomImArray<T>, ImmutableArray<T>.Builder, TProvider>(s_serdeInfo)
+            : DeListBase<De<T, TProvider>, T, CustomImArray<T>, ImmutableArray<T>.Builder, TProvider>
             where TProvider : IDeserializeProvider<T>
         {
+            private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeEnumerable(
+                typeof(CustomImArray<int>).ToString(),
+                TProvider.Instance.SerdeInfo);
+            public override ISerdeInfo SerdeInfo => s_serdeInfo;
+
             protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt)
             {
                 return sizeOpt is int size
@@ -127,16 +133,18 @@ public sealed partial class GenericWrapperTests
 
     internal static partial class CustomImArray2Proxy
     {
-        private static readonly ISerdeInfo s_serdeInfo = new CollectionSerdeInfo(
-            typeof(CustomImArray2<int>).ToString(),
-            InfoKind.List);
-
         public sealed class Ser<T, TProvider>()
-            : SerListBase<Ser<T, TProvider>, T, CustomImArray2<T>, TProvider>(s_serdeInfo),
+            : SerListBase<Ser<T, TProvider>, T, CustomImArray2<T>, TProvider>,
               ISerializeProvider<CustomImArray2<T>>
             where T : notnull
             where TProvider : ISerializeProvider<T>
         {
+            private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeEnumerable(
+                typeof(CustomImArray2<int>).ToString(),
+                TProvider.Instance.SerdeInfo);
+
+            public override ISerdeInfo SerdeInfo => s_serdeInfo;
+
             protected override ReadOnlySpan<T> GetSpan(CustomImArray2<T> value)
             {
                 return value.Backing.AsSpan();
@@ -144,9 +152,14 @@ public sealed partial class GenericWrapperTests
         }
 
         public sealed class De<T, TProvider>()
-            : DeListBase<De<T, TProvider>, T, CustomImArray2<T>, ImmutableArray<T>.Builder, TProvider>(s_serdeInfo)
+            : DeListBase<De<T, TProvider>, T, CustomImArray2<T>, ImmutableArray<T>.Builder, TProvider>
             where TProvider : IDeserializeProvider<T>
         {
+            private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeEnumerable(
+                typeof(CustomImArray<int>).ToString(),
+                TProvider.Instance.SerdeInfo);
+            public override ISerdeInfo SerdeInfo => s_serdeInfo;
+
             protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt)
             {
                 return sizeOpt is int size
