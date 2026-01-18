@@ -13,6 +13,7 @@ namespace Benchmarks
     [GenericTypeArguments(typeof(LoginViewModel), typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location), typeof(LocationWrap))]
     [GenericTypeArguments(typeof(Primitives), typeof(Primitives))]
+    [GenericTypeArguments(typeof(Guids), typeof(Guids))]
     [GenericTypeArguments(typeof(AllInOne), typeof(AllInOne))]
     public class DeserializeFromString<T, U>
         where T : Serde.IDeserializeProvider<T>
