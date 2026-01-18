@@ -142,7 +142,7 @@ partial record AllInOne
                         break;
                     case 17:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 17, _l_serdeInfo);
-                        _l_guidfield = typeDeserialize.ReadBoxedValue<System.Guid, global::Serde.GuidProxy>(_l_serdeInfo, _l_index_);
+                        _l_guidfield = typeDeserialize.ReadGuid<global::Serde.GuidProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 17;
                         break;
                     case 18:

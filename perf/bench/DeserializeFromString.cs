@@ -6,6 +6,7 @@ using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using Serde;
 using Serde.Test;
+using STJ = System.Text.Json;
 
 namespace Benchmarks
 {
@@ -29,7 +30,11 @@ namespace Benchmarks
             _options = new JsonSerializerOptions()
             {
                 IncludeFields = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Converters =
+                {
+                    new STJ.Serialization.JsonStringEnumConverter(STJ.JsonNamingPolicy.CamelCase)
+                }
             };
             value = DataGenerator.GenerateDeserialize<T>();
         }

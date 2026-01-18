@@ -77,6 +77,24 @@ partial class JsonDeserializer<TReader>
             return d.Deserialize(_deserializer);
         }
 
+        uint ITypeDeserializer.ReadValue32(ISerdeInfo info, int index, IDeserialize<uint> d)
+        {
+            ReadColon();
+            return d.Deserialize(_deserializer);
+        }
+
+        ulong ITypeDeserializer.ReadValue64(ISerdeInfo info, int index, IDeserialize<ulong> d)
+        {
+            ReadColon();
+            return d.Deserialize(_deserializer);
+        }
+
+        UInt128 ITypeDeserializer.ReadValue128(ISerdeInfo info, int index, IDeserialize<UInt128> d)
+        {
+            ReadColon();
+            return d.Deserialize(_deserializer);
+        }
+
         private void ReadColon()
         {
             var peek = ThrowIfEos(_deserializer.Reader.SkipWhitespace());

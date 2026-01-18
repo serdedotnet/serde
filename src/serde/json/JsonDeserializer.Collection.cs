@@ -101,6 +101,27 @@ partial class JsonDeserializer<TReader>
             return next;
         }
 
+        public UInt32 ReadValue32(ISerdeInfo info, int index, IDeserialize<UInt32> d)
+        {
+            var next = d.Deserialize(_deserializer);
+            _index++;
+            return next;
+        }
+
+        public UInt64 ReadValue64(ISerdeInfo info, int index, IDeserialize<UInt64> d)
+        {
+            var next = d.Deserialize(_deserializer);
+            _index++;
+            return next;
+        }
+
+        public UInt128 ReadValue128(ISerdeInfo info, int index, IDeserialize<UInt128> d)
+        {
+            var next = d.Deserialize(_deserializer);
+            _index++;
+            return next;
+        }
+
         public void SkipValue(ISerdeInfo info, int index)
         {
             _deserializer.Reader.Skip();
