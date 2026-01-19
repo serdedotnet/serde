@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using FsCheck;
+using FsCheck.Fluent;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -43,7 +44,7 @@ namespace Serde.Test
         public async Task CheckPrimitiveEquivalentsAsync()
         {
             // Generates test cases, each of which has multiple generated classes
-            var testCases = Gen.Sample(4, 100, Gen.Sized(TestTypeGenerators.GenTypeDef));
+            var testCases = Gen.Sample(Gen.Sized(TestTypeGenerators.GenTypeDef), 4, 100);
             var wrappers = new MemberDeclarationSyntax[testCases.Length];
             int wrapperIndex = 0;
             foreach (var type in testCases)
@@ -526,7 +527,7 @@ public static class DeepEquals
 
         public static class TestTypeGenerators
         {
-            public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf(new[] {
+            public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf<TestType>(new[] {
                     Gen.Constant<TestType>(new TestByte()),
                     Gen.Constant<TestType>(new TestChar()),
                     Gen.Constant<TestType>(new TestBool()),
@@ -548,7 +549,7 @@ public static class DeepEquals
                 }
                 else
                 {
-                    var genAny = Gen.OneOf(new[] {
+                    var genAny = Gen.OneOf<TestType>(new[] {
                         GenPrimitive,
                         GenTypeArray(size),
                         GenTypeList(size),
@@ -576,12 +577,12 @@ public static class DeepEquals
             {
                 // generate class with between 1 and 3 fields
                 return Gen.Choose(1, 3)
-                    .SelectMany(arraySize => ImmArrayOf(arraySize, GenType(size / 2))
+                    .SelectMany(arraySize => ImmArrayOf<TestType>(arraySize, GenType(size / 2))
                         .Select(types => ((TestType)new TestTypeDef(types))));
             }
 
             public static Gen<ImmutableArray<T>> ImmArrayOf<T>(int n, Gen<T> gen)
-                => Gen.ArrayOf(n, gen).Select(a => a.ToImmutableArray());
+                => Gen.ArrayOf(gen, n).Select(a => a.ToImmutableArray());
         }
     }
 }
