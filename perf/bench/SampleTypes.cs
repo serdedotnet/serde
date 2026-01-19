@@ -209,6 +209,32 @@ public partial record Primitives(
 "longField": 9223372036854775807
 }
 """;
+}
 
-
+[GenerateSerde]
+public partial record Guids(
+    Guid GuidField,
+    Guid GuidField2
+)
+{
+    public static readonly Guids Sample = new Guids(
+        GuidField: new Guid(new byte[] {
+            0x01, 0x02, 0x03, 0x04,
+            0x05, 0x06, 0x07, 0x08,
+            0x09, 0x0A, 0x0B, 0x0C,
+            0x0D, 0x0E, 0x0F, 0x10,
+        }),
+        GuidField2: new Guid(new byte[] {
+            0x10, 0x0F, 0x0E, 0x0D,
+            0x0C, 0x0B, 0x0A, 0x09,
+            0x08, 0x07, 0x06, 0x05,
+            0x04, 0x03, 0x02, 0x01,
+        })
+    );
+    public const string SampleSerialized = """
+{
+"guidField": "04030201-0605-0807-090a-0b0c0d0e0f10",
+"guidField2": "0d0e0f10-0b0a-0908-0706-050403020101"
+}
+""";
 }

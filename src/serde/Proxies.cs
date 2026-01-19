@@ -2,6 +2,7 @@
 
 using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Threading;
 
@@ -370,18 +371,18 @@ public static class BoxProxy
         }
     }
 
-    public sealed class De<T, TProvider> : IDeserialize<object?>, ITypeDeserialize<T>
-        where TProvider : IDeserializeProvider<T>
+    public sealed class De<T>(IDeserialize<T> _underlying) : IDeserialize<object?>, ITypeDeserialize<T>
     {
-        private IDeserialize<T> _underlying = TProvider.Instance;
-
-        public static readonly De<T, TProvider> Instance = new();
-        private De() {}
-
         public ISerdeInfo SerdeInfo => _underlying.SerdeInfo;
         public object? Deserialize(IDeserializer deserializer) => _underlying.Deserialize(deserializer);
         public T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
             => (T)deserializer.ReadValue(info, index, this)!;
+    }
+
+    public static class De<T, TProvider>
+        where TProvider : IDeserializeProvider<T>
+    {
+        public static readonly De<T> Instance = new De<T>(TProvider.Instance);
     }
 }
 
@@ -473,9 +474,13 @@ public static class NullableRefProxy
     }
 }
 
-public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
+public sealed class GuidProxy
+    : ISerdePrimitive<GuidProxy, Guid>,
+    IDeserialize<UInt128>,
+    IDeserializeProvider<UInt128>
 {
     public static GuidProxy Instance { get; } = new();
+    static IDeserialize<UInt128> IDeserializeProvider<UInt128>.Instance => Instance;
     private GuidProxy() { }
 
     public static ISerdeInfo SerdeInfo { get; }
@@ -492,6 +497,20 @@ public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
     {
         var bytes = deserializer.ReadString();
         return Guid.Parse(bytes);
+    }
+
+    UInt128 IDeserialize<UInt128>.Deserialize(IDeserializer deserializer)
+    {
+        var str = deserializer.ReadString();
+        var guid = Guid.Parse(str);
+        Span<byte> guidBytes = stackalloc byte[16];
+        if (!guid.TryWriteBytes(guidBytes, bigEndian: !BitConverter.IsLittleEndian, out int written) || written != 16)
+        {
+            throw new InvalidOperationException("Couldn't write GUID bytes");
+        }
+        return BitConverter.IsLittleEndian
+            ? BinaryPrimitives.ReadUInt128LittleEndian(guidBytes)
+            : BinaryPrimitives.ReadUInt128BigEndian(guidBytes);
     }
 
     void ITypeSerialize<Guid>.Serialize(Guid value, ITypeSerializer serializer, ISerdeInfo info, int index)

@@ -6,12 +6,14 @@ using System.Text.Json;
 using BenchmarkDotNet.Attributes;
 using Serde;
 using Serde.Test;
+using STJ = System.Text.Json;
 
 namespace Benchmarks
 {
     [GenericTypeArguments(typeof(LoginViewModel), typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location), typeof(LocationWrap))]
     [GenericTypeArguments(typeof(Primitives), typeof(Primitives))]
+    [GenericTypeArguments(typeof(Guids), typeof(Guids))]
     [GenericTypeArguments(typeof(AllInOne), typeof(AllInOne))]
     public class DeserializeFromString<T, U>
         where T : Serde.IDeserializeProvider<T>
@@ -29,7 +31,11 @@ namespace Benchmarks
             _options = new JsonSerializerOptions()
             {
                 IncludeFields = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Converters =
+                {
+                    new STJ.Serialization.JsonStringEnumConverter(STJ.JsonNamingPolicy.CamelCase)
+                }
             };
             value = DataGenerator.GenerateDeserialize<T>();
         }
