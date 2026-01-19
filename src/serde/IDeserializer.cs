@@ -191,12 +191,6 @@ public static class ITypeDeserializerExt
     {
         var u128 = deserializeType.ReadValue128(info, index, TProvider.Instance);
         Span<byte> bytes = stackalloc byte[16];
-#if NET10_0_OR_GREATER
-        if (!BitConverter.TryWriteBytes(bytes, u128))
-        {
-            throw new InvalidOperationException("Failed to convert UInt128 to Guid");
-        }
-#else
         if (BitConverter.IsLittleEndian)
         {
             BinaryPrimitives.WriteUInt128LittleEndian(bytes, u128);
@@ -205,7 +199,6 @@ public static class ITypeDeserializerExt
         {
             BinaryPrimitives.WriteUInt128BigEndian(bytes, u128);
         }
-#endif
         return new Guid(bytes, !BitConverter.IsLittleEndian);
     }
 }

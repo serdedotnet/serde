@@ -504,7 +504,7 @@ public sealed class GuidProxy
         var str = deserializer.ReadString();
         var guid = Guid.Parse(str);
         Span<byte> guidBytes = stackalloc byte[16];
-        if (!guid.TryWriteBytes(guidBytes, bigEndian: BitConverter.IsLittleEndian, out int written) || written != 16)
+        if (!guid.TryWriteBytes(guidBytes, bigEndian: !BitConverter.IsLittleEndian, out int written) || written != 16)
         {
             throw new InvalidOperationException("Couldn't write GUID bytes");
         }
