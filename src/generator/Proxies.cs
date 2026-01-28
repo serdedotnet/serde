@@ -231,7 +231,7 @@ sealed partial class {{proxyName}};
 
         foreach (var elemType in elemTypes)
         {
-            if (TryGetProxy(memberSymbol: null, elemType, context, usage, inProgress) is { } proxy)
+            if (TryGetProxyString(memberSymbol: null, elemType, context, usage, inProgress) is { } proxy)
             {
                 typeArgs.Add(proxy);
             }
@@ -252,7 +252,7 @@ sealed partial class {{proxyName}};
     /// 4. Implicit wrappers (primitives, enums, compound types)
     /// Returns null if none apply.
     /// </summary>
-    internal static string? TryGetProxy(
+    internal static string? TryGetProxyString(
         ISymbol? memberSymbol,
         ITypeSymbol type,
         GeneratorExecutionContext context,

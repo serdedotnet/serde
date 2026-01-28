@@ -229,6 +229,6 @@ private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.M
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
-        return Proxies.TryGetProxy(m.Symbol, m.Type, context, usage, inProgress);
+        return Proxies.TryGetProxyString(m.Symbol, m.Type, context, usage, inProgress);
     }
 }
