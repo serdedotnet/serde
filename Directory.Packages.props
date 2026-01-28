@@ -21,7 +21,7 @@
     <PackageVersion Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageVersion Include="PolyKit.Embedded" Version="3.0.9" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.2.0" />
-    <PackageVersion Include="Verify.XUnit" Version="25.0.4" />
+    <PackageVersion Include="Verify.XUnit" Version="31.9.4" />
     <PackageVersion Include="xunit" Version="2.8.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
