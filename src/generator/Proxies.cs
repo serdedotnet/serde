@@ -1,17 +1,10 @@
-
-using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
 using System.Collections.Generic;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 using static Serde.WellKnownTypes;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
-using System.Reflection.Metadata;
 
 namespace Serde;
 
@@ -147,7 +140,7 @@ sealed partial class {{proxyName}};
         (string?, string?)? valueTypeAndProxy = type switch
         {
             { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } =>
-                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
                     $"Serde.NullableProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                     context,
@@ -165,7 +158,7 @@ sealed partial class {{proxyName}};
             // "T?") we must rely on the type parameter itself implementing ISerialize, and
             // therefore the substitution to provide the appropriate nullable wrapper.
             { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated} =>
-                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
                     $"Serde.NullableRefProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                     context,
@@ -173,7 +166,7 @@ sealed partial class {{proxyName}};
                     inProgress)),
 
             IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } =>
-                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
                     $"Serde.ArrayProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(elemType),
                     context,
@@ -181,7 +174,7 @@ sealed partial class {{proxyName}};
                     inProgress)),
 
             INamedTypeSymbol t when TryGetWrapperComponents(t, context, usage) is (var ConvertedType, var WrapperType, var Args)
-                => (ConvertedType, MakeProxyType(WrapperType, Args, context, usage, inProgress)),
+                => (ConvertedType, MakeProxyString(WrapperType, Args, context, usage, inProgress)),
 
             _ => null,
         };
@@ -217,7 +210,11 @@ sealed partial class {{proxyName}};
         return new(typeName, GetProxyName(typeName));
     }
 
-    private static string? MakeProxyType(
+    /// <summary>
+    /// Builds a generic proxy string like <c>DictProxy.Ser&lt;K, V, KProxy, VProxy&gt;</c> from a base wrapper name
+    /// and type arguments, recursively finding proxies for each type argument.
+    /// </summary>
+    private static string? MakeProxyString(
         string baseWrapperName,
         ImmutableArray<ITypeSymbol> elemTypes,
         GeneratorExecutionContext context,
@@ -238,22 +235,13 @@ sealed partial class {{proxyName}};
 
         foreach (var elemType in elemTypes)
         {
-            // Check if the type directly implements the interface
-            if (SerdeImplRoslynGenerator.ImplementsSerde(elemType, elemType, context, usage))
+            if (TryGetProxyString(memberSymbol: null, elemType, context, usage, inProgress) is { } proxy)
             {
-                typeArgs.Add(elemType.ToDisplayString(s_fqnFormat));
-                continue;
+                typeArgs.Add(proxy);
             }
-
-            // Otherwise we'll need to wrap the element type as well e.g.,
-            //      ArrayWrap<`elemType`, `elemTypeWrapper`>
-            switch (TryGetImplicitWrapper(elemType, context, usage, inProgress))
+            else
             {
-                case null:
-                    return null;
-                case var (_, wrapper):
-                    typeArgs.Add(wrapper);
-                    break;
+                return null;
             }
         }
 
@@ -261,10 +249,240 @@ sealed partial class {{proxyName}};
     }
 
     /// <summary>
+    /// Gets the proxy type string for a type, checking in order:
+    /// 1. Proxy attributes on the member (if provided)
+    /// 2. Proxy attributes on the type
+    /// 3. Whether the type directly implements ISerialize/IDeserialize
+    /// 4. Implicit wrappers (primitives, enums, compound types)
+    /// Returns null if none apply.
+    /// </summary>
+    internal static string? TryGetProxyString(
+        ISymbol? memberSymbol,
+        ITypeSymbol type,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+    {
+        // Check for explicit proxy (member first, then type)
+        if (TryGetExplicitProxy(memberSymbol, type, usage, context) is { } proxyType)
+        {
+            return ResolveProxyString(proxyType, type, context, usage, inProgress, memberSymbol);
+        }
+
+        // Then check if the type directly implements serde
+        if (SerdeImplRoslynGenerator.ImplementsSerde(type, type, context, usage))
+        {
+            return type.ToDisplayString(s_fqnFormat);
+        }
+
+        // Finally check implicit wrappers (primitives, enums, compound types)
+        if (TryGetImplicitWrapper(type, context, usage, inProgress) is { } wrapper)
+        {
+            return wrapper.Proxy;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Converts an explicit proxy type symbol (from a <c>[Proxy = typeof(...)]</c> attribute) to a string.
+    /// For unconstructed generics, delegates to <see cref="MakeProxyString"/> to fill in type arguments.
+    /// </summary>
+    private static string? ResolveProxyString(
+        ITypeSymbol proxyType,
+        ITypeSymbol targetType,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ISymbol? memberSymbol)
+    {
+        // If the proxy is an unconstructed generic type, construct it with the target's type arguments
+        if (proxyType is INamedTypeSymbol { IsGenericType: true } namedProxy &&
+            namedProxy.Equals(namedProxy.OriginalDefinition, SymbolEqualityComparer.Default))
+        {
+            var baseName = proxyType.ToDisplayString(s_baseNameFormat);
+            var typeArgs = targetType switch
+            {
+                INamedTypeSymbol n => n.TypeArguments,
+                _ => ImmutableArray<ITypeSymbol>.Empty
+            };
+            return MakeProxyString(baseName, typeArgs, context, usage, inProgress);
+        }
+
+        // Validate that the proxy implements the required interface
+        if (memberSymbol != null && !SerdeImplRoslynGenerator.ImplementsSerde(proxyType, targetType, context, usage))
+        {
+            context.ReportDiagnostic(CreateDiagnostic(
+                DiagId.ERR_WrapperDoesntImplementInterface,
+                memberSymbol.Locations[0],
+                proxyType,
+                targetType,
+                usage.GetInterfaceName() + "Provider"));
+        }
+
+        return proxyType.ToDisplayString(s_fqnFormat);
+    }
+
+    /// <summary>
+    /// Looks for an explicit proxy type from member options or type options.
+    /// Returns the proxy type symbol (unconstructed for generics).
+    /// </summary>
+    private static ITypeSymbol? TryGetExplicitProxy(
+        ISymbol? memberSymbol,
+        ITypeSymbol type,
+        SerdeUsage usage,
+        GeneratorExecutionContext context)
+    {
+        // Check member first, then type
+        if (memberSymbol != null && TryGetProxyFromSymbol(memberSymbol, type, usage, context) is { } memberProxy)
+        {
+            return memberProxy;
+        }
+
+        return TryGetProxyFromSymbol(type, type, usage, context);
+    }
+
+    /// <summary>
+    /// Checks a symbol's attributes for proxy specifications (both SerdeMemberOptions and SerdeTypeOptions).
+    /// For generic types, returns the nested Ser/De type from the proxy.
+    /// </summary>
+    private static ITypeSymbol? TryGetProxyFromSymbol(
+        ISymbol symbol,
+        ITypeSymbol typeToWrap,
+        SerdeUsage usage,
+        GeneratorExecutionContext context)
+    {
+        foreach (var attr in symbol.GetAttributes())
+        {
+            if (attr is { AttributeClass.Name: nameof(SerdeMemberOptions) or nameof(SerdeTypeOptions), NamedArguments: { } named })
+            {
+                foreach (var arg in named)
+                {
+                    switch (arg)
+                    {
+                        // Proxy property (on both SerdeMemberOptions and SerdeTypeOptions)
+                        case { Key: nameof(SerdeTypeOptions.Proxy), Value.Value: INamedTypeSymbol proxyType }:
+                        {
+                            return ResolveProxyForGenericType(proxyType, typeToWrap, symbol, usage, context);
+                        }
+
+                        // SerdeMemberOptions-specific properties
+                        case
+                        {
+                            Key: nameof(SerdeMemberOptions.SerializeProxy),
+                            Value.Value: INamedTypeSymbol wrapperType
+                        } when usage.HasFlag(SerdeUsage.Serialize):
+                        {
+                            return wrapperType;
+                        }
+                        case
+                        {
+                            Key: nameof(SerdeMemberOptions.DeserializeProxy),
+                            Value.Value: INamedTypeSymbol wrapperType
+                        } when usage.HasFlag(SerdeUsage.Deserialize):
+                        {
+                            return wrapperType;
+                        }
+
+                        case
+                        {
+                            Key: nameof(SerdeMemberOptions.TypeParameterProxy),
+                            Value.Value: string typeParamName
+                        }:
+                        {
+                            return ResolveTypeParameterProxy(symbol, typeParamName, context);
+                        }
+
+                        case
+                        {
+                            Key: nameof(SerdeMemberOptions.SerializeTypeParameterProxy),
+                            Value.Value: string typeParamName
+                        } when usage.HasFlag(SerdeUsage.Serialize):
+                        {
+                            return ResolveTypeParameterProxy(symbol, typeParamName, context);
+                        }
+
+                        case
+                        {
+                            Key: nameof(SerdeMemberOptions.DeserializeTypeParameterProxy),
+                            Value.Value: string typeParamName
+                        } when usage.HasFlag(SerdeUsage.Deserialize):
+                        {
+                            return ResolveTypeParameterProxy(symbol, typeParamName, context);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// For generic types, finds the nested Ser/De type from the proxy container.
+    /// </summary>
+    private static INamedTypeSymbol? ResolveProxyForGenericType(
+        INamedTypeSymbol proxyType,
+        ITypeSymbol typeToWrap,
+        ISymbol symbol,
+        SerdeUsage usage,
+        GeneratorExecutionContext context)
+    {
+        // If the typeToWrap is a generic type, we should expect that the wrapper type
+        // is not listed directly, but instead a parent type is listed (possibly static) and
+        // the Serialize and Deserialize wrappers are nested below.
+        if (typeToWrap.OriginalDefinition is INamedTypeSymbol { Arity: > 0 } targetType)
+        {
+            var nestedName = GetSingletonImplName(usage);
+            var nestedTypes = proxyType.GetTypeMembers(nestedName);
+            if (nestedTypes is not [{ } elem])
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_CantFindNestedWrapper,
+                    symbol.Locations[0],
+                    nestedName,
+                    proxyType,
+                    targetType));
+                return null;
+            }
+            return elem;
+        }
+        return proxyType;
+    }
+
+    /// <summary>
+    /// Resolves a type parameter proxy by looking up the containing type hierarchy.
+    /// </summary>
+    private static ITypeSymbol? ResolveTypeParameterProxy(
+        ISymbol symbol,
+        string typeParamName,
+        GeneratorExecutionContext context)
+    {
+        var containing = symbol.ContainingType;
+        while (containing is not null)
+        {
+            foreach (var t in containing.TypeParameters)
+            {
+                if (t.Name == typeParamName)
+                {
+                    return t;
+                }
+            }
+            containing = containing.ContainingType;
+        }
+
+        // If we didn't find the type parameter, report an error
+        context.ReportDiagnostic(CreateDiagnostic(
+            DiagId.ERR_CantFindTypeParameter,
+            symbol.Locations[0],
+            typeParamName));
+        return null;
+    }
+
+    /// <summary>
     /// Implicit wrappers are:
     ///     1. Wrappers for primitive types
     ///     2. Wrappers for enums
-    ///     3. Compound wrappers for primitive types (e.g. List, Dictionary)
+    ///     3. Compound wrappers for types (e.g. List, Dictionary)
     /// </summary>
     internal static TypeWithProxy? TryGetImplicitWrapper(
         ITypeSymbol elemType,
@@ -309,180 +527,12 @@ sealed partial class {{proxyName}};
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
-        if (TryGetExplicitProxyType(member, usage, context) is {} proxyType)
+        // Check for explicit proxy on member or type (but not ImplementsSerde - that's handled by the caller)
+        if (TryGetExplicitProxy(member.Symbol, member.Type, usage, context) is { } proxyType)
         {
-            var memberType = member.Type;
-            if (proxyType is INamedTypeSymbol { IsGenericType: true } && proxyType.Equals(proxyType.OriginalDefinition, SymbolEqualityComparer.Default))
-            {
-                // If the wrapper type is an unconstructed generic type which we need to construct
-                // with the appropriate wrappers for the member type's type arguments.
-                var baseName = proxyType.ToDisplayString(s_baseNameFormat);
-                var typeArgs = memberType switch
-                {
-                    INamedTypeSymbol n => n.TypeArguments,
-                    _ => ImmutableArray<ITypeSymbol>.Empty
-                };
-                return MakeProxyType(baseName, typeArgs, context, usage, inProgress);
-            }
-
-            if (!SerdeImplRoslynGenerator.ImplementsSerde(proxyType, memberType, context, usage))
-            {
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_WrapperDoesntImplementInterface,
-                    member.Symbol.Locations[0],
-                    proxyType,
-                    memberType,
-                    usage.GetInterfaceName() + "Provider"));
-            }
-
-            return proxyType.ToDisplayString(s_fqnFormat);
+            return ResolveProxyString(proxyType, member.Type, context, usage, inProgress, member.Symbol);
         }
         return null;
-
-        // <summary>
-        // Looks to see if the given member or its type explicitly specifies a wrapper to use via
-        // the SerdeType or Member options. If so, returns the symbol of the wrapper type.
-        // </summary>
-        static ITypeSymbol? TryGetExplicitProxyType(DataMemberSymbol member, SerdeUsage usage, GeneratorExecutionContext context)
-        {
-            // Look first for a wrapper attribute on the member being serialized, and then for a
-            // wrapper attribute
-            var typeToWrap = member.Type;
-            return GetSerdeProxyType(member.Symbol, typeToWrap, usage, context)
-                ?? GetSerdeProxyType(member.Type, typeToWrap, usage, context);
-
-            static ITypeSymbol? GetSerdeProxyType(ISymbol symbol, ITypeSymbol typeToWrap, SerdeUsage usage, GeneratorExecutionContext context)
-            {
-                foreach (var attr in symbol.GetAttributes())
-                {
-                    if (attr is { AttributeClass.Name: nameof(SerdeMemberOptions) or nameof(SerdeTypeOptions), NamedArguments: { } named })
-                    {
-                        foreach (var arg in named)
-                        {
-                            switch (arg)
-                            {
-                                case { Key: nameof(SerdeTypeOptions.Proxy), Value.Value: INamedTypeSymbol proxyType }:
-                                {
-                                    // If the typeToWrap is a generic type, we should expect that the wrapper type
-                                    // is not listed directly, but instead a parent type is listed (possibly static) and
-                                    // the Serialize and Deserialize wrappers are nested below.
-                                    if (typeToWrap.OriginalDefinition is INamedTypeSymbol { Arity: > 0 } targetType)
-                                    {
-                                        var nestedName = GetSingletonImplName(usage);
-                                        var nestedTypes = proxyType.GetTypeMembers(nestedName);
-                                        if (nestedTypes is not [ {} elem ])
-                                        {
-                                            context.ReportDiagnostic(CreateDiagnostic(
-                                                DiagId.ERR_CantFindNestedWrapper,
-                                                symbol.Locations[0],
-                                                nestedName,
-                                                proxyType,
-                                                targetType));
-                                            return null;
-                                        }
-                                        return elem;
-                                    }
-                                    return proxyType;
-                                }
-                                case
-                                {
-                                    Key: nameof(SerdeMemberOptions.SerializeProxy),
-                                    Value.Value: INamedTypeSymbol wrapperType
-                                } when usage.HasFlag(SerdeUsage.Serialize):
-                                {
-                                    return wrapperType;
-                                }
-                                case
-                                {
-                                    Key: nameof(SerdeMemberOptions.DeserializeProxy),
-                                    Value.Value: INamedTypeSymbol wrapperType2
-                                } when usage.HasFlag(SerdeUsage.Deserialize):
-                                {
-                                    return wrapperType2;
-                                }
-
-                                case
-                                {
-                                    Key: nameof(SerdeMemberOptions.TypeParameterProxy),
-                                    Value.Value: string typeParamName
-                                }:
-                                {
-                                    var typeParam = FindContainingTypeParamWithName(symbol, typeParamName);
-                                    if (typeParam is not null)
-                                    {
-                                        return typeParam;
-                                    }
-                                    // If we didn't find the type parameter, report an error
-                                    context.ReportDiagnostic(CreateDiagnostic(
-                                        DiagId.ERR_CantFindTypeParameter,
-                                        symbol.Locations[0],
-                                        typeParamName));
-                                    break;
-                                }
-
-                                case
-                                {
-                                    Key: nameof(SerdeMemberOptions.SerializeTypeParameterProxy),
-                                    Value.Value: string typeParamName
-                                } when usage.HasFlag(SerdeUsage.Serialize):
-                                {
-                                    var typeParam = FindContainingTypeParamWithName(symbol, typeParamName);
-                                    if (typeParam is not null)
-                                    {
-                                        return typeParam;
-                                    }
-                                    // If we didn't find the type parameter, report an error
-                                    context.ReportDiagnostic(CreateDiagnostic(
-                                        DiagId.ERR_CantFindTypeParameter,
-                                        symbol.Locations[0],
-                                        typeParamName));
-                                    break;
-                                }
-
-                                case
-                                {
-                                    Key: nameof(SerdeMemberOptions.DeserializeTypeParameterProxy),
-                                    Value.Value: string typeParamName
-                                } when usage.HasFlag(SerdeUsage.Deserialize):
-                                {
-                                    var typeParam = FindContainingTypeParamWithName(symbol, typeParamName);
-                                    if (typeParam is not null)
-                                    {
-                                        return typeParam;
-                                    }
-                                    // If we didn't find the type parameter, report an error
-                                    context.ReportDiagnostic(CreateDiagnostic(
-                                        DiagId.ERR_CantFindTypeParameter,
-                                        symbol.Locations[0],
-                                        typeParamName));
-                                    break;
-                                }
-                            }
-
-                            // Walk up the containing types to find a type parameter with the given name.
-                            static ITypeSymbol? FindContainingTypeParamWithName(ISymbol current, string name)
-                            {
-                                var containing = current.ContainingType;
-                                while (containing is not null)
-                                {
-                                    var typeParams = containing.TypeParameters;
-                                    foreach (var t in typeParams)
-                                    {
-                                        if (t.Name == name)
-                                        {
-                                            return t;
-                                        }
-                                    }
-                                    containing = containing.ContainingType;
-                                }
-                                return null;
-                            }
-                        }
-                    }
-                }
-                return null;
-            }
-        }
     }
 
     [return: NotNullIfNotNull(nameof(wkOpt))]

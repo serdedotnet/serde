@@ -6,6 +6,65 @@ namespace Serde.Test;
 
 public class SerdeTests
 {
+    /// <summary>
+    /// EqArray is a sample custom type with a proxy that wraps ImmutableArray.
+    /// This is used to test that types with SerdeTypeOptions.Proxy are handled correctly
+    /// when used as type arguments in generic types like Dictionary.
+    /// </summary>
+    private const string EqArraySource = """
+[Serde.SerdeTypeOptions(Proxy = typeof(EqArrayProxy))]
+public readonly struct EqArray<T>(System.Collections.Immutable.ImmutableArray<T> value)
+{
+    public System.Collections.Immutable.ImmutableArray<T> Array => value;
+}
+
+public static class EqArrayProxy
+{
+    internal static class SerTypeInfo<T, TProvider>
+        where TProvider : Serde.ISerializeProvider<T>
+    {
+        public static readonly Serde.ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable("EqArray", TProvider.Instance.SerdeInfo);
+    }
+
+    internal static class DeTypeInfo<T, TProvider>
+        where TProvider : Serde.IDeserializeProvider<T>
+    {
+        public static readonly Serde.ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable("EqArray", TProvider.Instance.SerdeInfo);
+    }
+
+    public sealed class Ser<T, TProvider>
+        : Serde.ISerializeProvider<EqArray<T>>, Serde.ISerialize<EqArray<T>>
+        where TProvider : Serde.ISerializeProvider<T>
+    {
+        public static readonly Ser<T, TProvider> Instance = new();
+        static Serde.ISerialize<EqArray<T>> Serde.ISerializeProvider<EqArray<T>>.Instance => Instance;
+
+        public Serde.ISerdeInfo SerdeInfo => SerTypeInfo<T, TProvider>.Instance;
+
+        void Serde.ISerialize<EqArray<T>>.Serialize(EqArray<T> value, Serde.ISerializer serializer)
+        {
+            Serde.ImmutableArrayProxy.Ser<T, TProvider>.Instance.Serialize(
+                value.Array,
+                serializer
+            );
+        }
+    }
+
+    public sealed class De<T, TProvider> : Serde.IDeserializeProvider<EqArray<T>>, Serde.IDeserialize<EqArray<T>>
+        where TProvider : Serde.IDeserializeProvider<T>
+    {
+        public static readonly De<T, TProvider> Instance = new();
+        static Serde.IDeserialize<EqArray<T>> Serde.IDeserializeProvider<EqArray<T>>.Instance => Instance;
+
+        public Serde.ISerdeInfo SerdeInfo => DeTypeInfo<T, TProvider>.Instance;
+        EqArray<T> Serde.IDeserialize<EqArray<T>>.Deserialize(Serde.IDeserializer deserializer)
+        {
+            return new(Serde.ImmutableArrayProxy.De<T, TProvider>.Instance.Deserialize(deserializer));
+        }
+    }
+}
+""";
+
     [Fact]
     public Task CustomSerdeObj()
     {
@@ -126,5 +185,21 @@ public partial class InvalidProxyTest<T>
 }
 """;
         return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task DictionaryWithEqArrayKey()
+    {
+        var src = """
+using System.Collections.Generic;
+using Serde;
+
+[GenerateSerde]
+public partial class Test
+{
+    public required Dictionary<EqArray<int>, int> data;
+}
+""" + EqArraySource;
+        return VerifyMultiFile(src);
     }
 }

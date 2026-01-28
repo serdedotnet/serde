@@ -229,23 +229,6 @@ private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.M
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
-        string? wrapperName;
-        if (Proxies.TryGetExplicitWrapper(m, context, usage, inProgress) is { } explicitWrap)
-        {
-            wrapperName = explicitWrap.ToString();
-        }
-        else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, usage))
-        {
-            wrapperName = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-        }
-        else if (Proxies.TryGetImplicitWrapper(m.Type, context, usage, inProgress) is { Proxy: { } wrap })
-        {
-            wrapperName = wrap.ToString();
-        }
-        else
-        {
-            wrapperName = null;
-        }
-        return wrapperName;
+        return Proxies.TryGetProxyString(m.Symbol, m.Type, context, usage, inProgress);
     }
 }
