@@ -104,7 +104,7 @@ namespace Serde.Test
             {body}
         }}
     }}
-}}", path: "Driver.cs");
+}}", path: "Driver.cs", cancellationToken: TestContext.Current.CancellationToken);
 
             var allTypes = SyntaxTree(CompilationUnit(
                 externs: default,
@@ -131,15 +131,16 @@ namespace Serde.Test
 
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
-               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
-               references: (await s_net10Refs.ResolveAsync(null, default)).Concat(refs),
+               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs", cancellationToken: TestContext.Current.CancellationToken) },
+               references: (await s_net10Refs.ResolveAsync(null, TestContext.Current.CancellationToken)).Concat(refs),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
             var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });
             driver.RunGeneratorsAndUpdateCompilation(
                 comp,
                 out var newComp,
-                out var diagnostics);
+                out var diagnostics,
+                TestContext.Current.CancellationToken);
 
             Assert.True(diagnostics.Length == 0, string.Join(Environment.NewLine, diagnostics));
 
@@ -150,7 +151,7 @@ namespace Serde.Test
                 win32Resources: null,
                 manifestResources: null,
                 options: s_emitOptions,
-                cancellationToken: default);
+                cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.True(result.Success,
                 string.Join(Environment.NewLine, result.Diagnostics));
