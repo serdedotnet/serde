@@ -140,7 +140,7 @@ sealed partial class {{proxyName}};
         (string?, string?)? valueTypeAndProxy = type switch
         {
             { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } =>
-                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
                     $"Serde.NullableProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                     context,
@@ -158,7 +158,7 @@ sealed partial class {{proxyName}};
             // "T?") we must rely on the type parameter itself implementing ISerialize, and
             // therefore the substitution to provide the appropriate nullable wrapper.
             { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated} =>
-                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
                     $"Serde.NullableRefProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                     context,
@@ -166,7 +166,7 @@ sealed partial class {{proxyName}};
                     inProgress)),
 
             IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } =>
-                (type.ToDisplayString(s_fqnFormat), MakeProxyType(
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
                     $"Serde.ArrayProxy.{GetSingletonImplName(usage)}",
                     ImmutableArray.Create(elemType),
                     context,
@@ -174,7 +174,7 @@ sealed partial class {{proxyName}};
                     inProgress)),
 
             INamedTypeSymbol t when TryGetWrapperComponents(t, context, usage) is (var ConvertedType, var WrapperType, var Args)
-                => (ConvertedType, MakeProxyType(WrapperType, Args, context, usage, inProgress)),
+                => (ConvertedType, MakeProxyString(WrapperType, Args, context, usage, inProgress)),
 
             _ => null,
         };
@@ -210,7 +210,11 @@ sealed partial class {{proxyName}};
         return new(typeName, GetProxyName(typeName));
     }
 
-    private static string? MakeProxyType(
+    /// <summary>
+    /// Builds a generic proxy string like <c>DictProxy.Ser&lt;K, V, KProxy, VProxy&gt;</c> from a base wrapper name
+    /// and type arguments, recursively finding proxies for each type argument.
+    /// </summary>
+    private static string? MakeProxyString(
         string baseWrapperName,
         ImmutableArray<ITypeSymbol> elemTypes,
         GeneratorExecutionContext context,
@@ -262,7 +266,7 @@ sealed partial class {{proxyName}};
         // Check for explicit proxy (member first, then type)
         if (TryGetExplicitProxy(memberSymbol, type, usage, context) is { } proxyType)
         {
-            return ConstructProxyString(proxyType, type, context, usage, inProgress, memberSymbol);
+            return ResolveProxyString(proxyType, type, context, usage, inProgress, memberSymbol);
         }
 
         // Then check if the type directly implements serde
@@ -281,9 +285,10 @@ sealed partial class {{proxyName}};
     }
 
     /// <summary>
-    /// Constructs the proxy string from a proxy type symbol, handling generic types.
+    /// Converts an explicit proxy type symbol (from a <c>[Proxy = typeof(...)]</c> attribute) to a string.
+    /// For unconstructed generics, delegates to <see cref="MakeProxyString"/> to fill in type arguments.
     /// </summary>
-    private static string? ConstructProxyString(
+    private static string? ResolveProxyString(
         ITypeSymbol proxyType,
         ITypeSymbol targetType,
         GeneratorExecutionContext context,
@@ -301,7 +306,7 @@ sealed partial class {{proxyName}};
                 INamedTypeSymbol n => n.TypeArguments,
                 _ => ImmutableArray<ITypeSymbol>.Empty
             };
-            return MakeProxyType(baseName, typeArgs, context, usage, inProgress);
+            return MakeProxyString(baseName, typeArgs, context, usage, inProgress);
         }
 
         // Validate that the proxy implements the required interface
@@ -525,7 +530,7 @@ sealed partial class {{proxyName}};
         // Check for explicit proxy on member or type (but not ImplementsSerde - that's handled by the caller)
         if (TryGetExplicitProxy(member.Symbol, member.Type, usage, context) is { } proxyType)
         {
-            return ConstructProxyString(proxyType, member.Type, context, usage, inProgress, member.Symbol);
+            return ResolveProxyString(proxyType, member.Type, context, usage, inProgress, member.Symbol);
         }
         return null;
     }
