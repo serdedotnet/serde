@@ -1,10 +1,11 @@
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using static Serde.Diagnostics;
 using static Serde.WellKnownTypes;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Serde;
 
@@ -135,7 +136,8 @@ sealed partial class {{proxyName}};
         ITypeSymbol type,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext)
     {
         (string?, string?)? valueTypeAndProxy = type switch
         {
@@ -145,7 +147,8 @@ sealed partial class {{proxyName}};
                     ImmutableArray.Create(((INamedTypeSymbol)type).TypeArguments[0]),
                     context,
                     usage,
-                    inProgress)),
+                    inProgress,
+                    proxyContext)),
 
             // This is rather subtle. One might think that we would want to use a
             // NullableRefWrapper for any reference type that could contain null. In fact, we
@@ -163,7 +166,8 @@ sealed partial class {{proxyName}};
                     ImmutableArray.Create(type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)),
                     context,
                     usage,
-                    inProgress)),
+                    inProgress,
+                    proxyContext)),
 
             IArrayTypeSymbol and { IsSZArray: true, Rank: 1, ElementType: { } elemType } =>
                 (type.ToDisplayString(s_fqnFormat), MakeProxyString(
@@ -171,10 +175,11 @@ sealed partial class {{proxyName}};
                     ImmutableArray.Create(elemType),
                     context,
                     usage,
-                    inProgress)),
+                    inProgress,
+                    proxyContext)),
 
             INamedTypeSymbol t when TryGetWrapperComponents(t, context, usage) is (var ConvertedType, var WrapperType, var Args)
-                => (ConvertedType, MakeProxyString(WrapperType, Args, context, usage, inProgress)),
+                => (ConvertedType, MakeProxyString(WrapperType, Args, context, usage, inProgress, proxyContext)),
 
             _ => null,
         };
@@ -219,7 +224,8 @@ sealed partial class {{proxyName}};
         ImmutableArray<ITypeSymbol> elemTypes,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext)
     {
         if (elemTypes.Length == 0)
         {
@@ -235,7 +241,7 @@ sealed partial class {{proxyName}};
 
         foreach (var elemType in elemTypes)
         {
-            if (TryGetProxyString(memberSymbol: null, elemType, context, usage, inProgress) is { } proxy)
+            if (TryGetProxyString(memberSymbol: null, elemType, context, usage, inProgress, proxyContext) is { } proxy)
             {
                 typeArgs.Add(proxy);
             }
@@ -261,12 +267,13 @@ sealed partial class {{proxyName}};
         ITypeSymbol type,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext)
     {
         // Check for explicit proxy (member first, then type)
-        if (TryGetExplicitProxy(memberSymbol, type, usage, context) is { } proxyType)
+        if (TryGetExplicitProxy(memberSymbol, type, usage, context, proxyContext) is { } proxyType)
         {
-            return ResolveProxyString(proxyType, type, context, usage, inProgress, memberSymbol);
+            return ResolveProxyString(proxyType, type, context, usage, inProgress, memberSymbol, proxyContext);
         }
 
         // Then check if the type directly implements serde
@@ -276,7 +283,7 @@ sealed partial class {{proxyName}};
         }
 
         // Finally check implicit wrappers (primitives, enums, compound types)
-        if (TryGetImplicitWrapper(type, context, usage, inProgress) is { } wrapper)
+        if (TryGetImplicitWrapper(type, context, usage, inProgress, proxyContext) is { } wrapper)
         {
             return wrapper.Proxy;
         }
@@ -294,7 +301,8 @@ sealed partial class {{proxyName}};
         GeneratorExecutionContext context,
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
-        ISymbol? memberSymbol)
+        ISymbol? memberSymbol,
+        ProxyContext proxyContext)
     {
         // If the proxy is an unconstructed generic type, construct it with the target's type arguments
         if (proxyType is INamedTypeSymbol { IsGenericType: true } namedProxy &&
@@ -306,7 +314,7 @@ sealed partial class {{proxyName}};
                 INamedTypeSymbol n => n.TypeArguments,
                 _ => ImmutableArray<ITypeSymbol>.Empty
             };
-            return MakeProxyString(baseName, typeArgs, context, usage, inProgress);
+            return MakeProxyString(baseName, typeArgs, context, usage, inProgress, proxyContext);
         }
 
         // Validate that the proxy implements the required interface
@@ -331,15 +339,16 @@ sealed partial class {{proxyName}};
         ISymbol? memberSymbol,
         ITypeSymbol type,
         SerdeUsage usage,
-        GeneratorExecutionContext context)
+        GeneratorExecutionContext context,
+        ProxyContext proxyContext)
     {
         // Check member first, then type
-        if (memberSymbol != null && TryGetProxyFromSymbol(memberSymbol, type, usage, context) is { } memberProxy)
+        if (memberSymbol != null && TryGetProxyFromSymbol(memberSymbol, type, usage, context, proxyContext) is { } memberProxy)
         {
             return memberProxy;
         }
 
-        return TryGetProxyFromSymbol(type, type, usage, context);
+        return TryGetProxyFromSymbol(type, type, usage, context, proxyContext);
     }
 
     /// <summary>
@@ -350,8 +359,13 @@ sealed partial class {{proxyName}};
         ISymbol symbol,
         ITypeSymbol typeToWrap,
         SerdeUsage usage,
-        GeneratorExecutionContext context)
+        GeneratorExecutionContext context,
+        ProxyContext proxyContext)
     {
+        if (proxyContext.TryResolve(typeToWrap, usage, out var specifiedProxyType))
+        {
+            return ResolveProxyForGenericType(specifiedProxyType, typeToWrap, symbol, usage, context);
+        }
         foreach (var attr in symbol.GetAttributes())
         {
             if (attr is { AttributeClass.Name: nameof(SerdeMemberOptions) or nameof(SerdeTypeOptions), NamedArguments: { } named })
@@ -488,7 +502,8 @@ sealed partial class {{proxyName}};
         ITypeSymbol elemType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext)
     {
         // If we're in the process of generating a proxy type for the given underlying, return
         // the proxy type we're currently generating. This is to avoid infinite recursion.
@@ -504,7 +519,7 @@ sealed partial class {{proxyName}};
         }
         return TryGetPrimitiveProxy(elemType)
             ?? TryGetEnumProxy(elemType, usage)
-            ?? TryGetCompoundWrapper(elemType, context, usage, inProgress);
+            ?? TryGetCompoundWrapper(elemType, context, usage, inProgress, proxyContext);
     }
 
     private static readonly SymbolDisplayFormat s_baseNameFormat = new(
@@ -525,12 +540,13 @@ sealed partial class {{proxyName}};
         DataMemberSymbol member,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext)
     {
         // Check for explicit proxy on member or type (but not ImplementsSerde - that's handled by the caller)
-        if (TryGetExplicitProxy(member.Symbol, member.Type, usage, context) is { } proxyType)
+        if (TryGetExplicitProxy(member.Symbol, member.Type, usage, context, proxyContext) is { } proxyType)
         {
-            return ResolveProxyString(proxyType, member.Type, context, usage, inProgress, member.Symbol);
+            return ResolveProxyString(proxyType, member.Type, context, usage, inProgress, member.Symbol, proxyContext);
         }
         return null;
     }
@@ -589,4 +605,134 @@ internal static class SerdeUsageExt
         SerdeUsage.Both => "_SerdeObj",
         _ => throw ExceptionUtilities.Unreachable
     };
+}
+
+internal class ProxyMap
+{
+    public readonly Dictionary<SerdeUsage, Dictionary<INamedTypeSymbol, INamedTypeSymbol>> map = new()
+    {   
+        { SerdeUsage.Serialize, [] },
+        { SerdeUsage.Deserialize, [] },
+    };
+
+    private readonly bool isEmpty;
+
+    public ProxyMap()
+    {
+        isEmpty = true;
+    }
+
+    public ProxyMap(ISymbol symbol)
+    {
+        isEmpty = false;
+        foreach (var attr in symbol.GetAttributes())
+        {
+            if (attr.AttributeClass is null)
+            {
+                continue;
+            }
+            if (attr is { AttributeClass.Name: nameof(UseProxy), NamedArguments: { } namedArgs })
+            {
+                INamedTypeSymbol target = default!;
+                INamedTypeSymbol proxy = default!;
+                var usage = SerdeUsage.Both;
+                foreach (var arg in namedArgs)
+                {
+                    switch (arg)
+                    {
+                        case
+                        {
+                            Key: nameof(UseProxy.ForType),
+                            Value.Value: INamedTypeSymbol targetType
+                        }:
+                            {
+                                target = targetType.OriginalDefinition;
+                                break;
+                            }
+                        case
+                        {
+                            Key: nameof(UseProxy.Proxy),
+                            Value.Value: INamedTypeSymbol proxyType
+                        }:
+                            {
+                                proxy = proxyType;
+                                break;
+                            }
+                        case
+                        {
+                            Key: nameof(UseProxy.Usage),
+                            Value:
+                            {
+                                Kind: TypedConstantKind.Enum,
+                                Value: var rawUsage
+                            }
+                        } when rawUsage is not null:
+                            {
+                                var usageValue = Convert.ToUInt64(rawUsage);
+                                if ((usageValue & (byte)SerdeUsage.Both) == (byte)SerdeUsage.Both)
+                                {
+                                    usage = SerdeUsage.Both;
+                                }
+                                else if ((usageValue & (byte)SerdeUsage.Serialize) == (byte)SerdeUsage.Serialize)
+                                {
+                                    usage = SerdeUsage.Serialize; 
+                                }
+                                else if ((usageValue & (byte)SerdeUsage.Deserialize) == (byte)SerdeUsage.Deserialize)
+                                {
+                                    usage = SerdeUsage.Deserialize;
+                                }
+                                break;
+                            }
+                    }
+                }
+                if (usage.HasFlag(SerdeUsage.Serialize))
+                {
+                    map[SerdeUsage.Serialize][target] = proxy;
+                }
+                if (usage.HasFlag(SerdeUsage.Deserialize))
+                {
+                    map[SerdeUsage.Deserialize][target] = proxy;
+                }
+            }
+        }
+    }
+
+    public bool TryResolve(INamedTypeSymbol typeToWrap, SerdeUsage usage, out INamedTypeSymbol proxyType)
+    {
+        if (isEmpty)
+        {
+            proxyType = default!;
+            return false;
+        }
+        if (usage.HasFlag(SerdeUsage.Serialize))
+        {
+            return map[SerdeUsage.Serialize].TryGetValue(typeToWrap.OriginalDefinition, out proxyType);
+        }
+        if (usage.HasFlag(SerdeUsage.Deserialize))
+        {
+            return map[SerdeUsage.Deserialize].TryGetValue(typeToWrap.OriginalDefinition, out proxyType);
+        }
+        proxyType = default!;
+        return false;
+    }
+}
+
+internal class ProxyContext
+{
+    public required ProxyMap ClassScopeMap { get; init; }
+    public required ProxyMap MemberScopeMap { get; init; }
+
+    public bool TryResolve(ITypeSymbol typeToWrap, SerdeUsage usage, out INamedTypeSymbol proxyType)
+    {
+        if (typeToWrap is not INamedTypeSymbol namedType)
+        {
+            proxyType = default!;
+            return false;
+        }
+        if (MemberScopeMap.TryResolve(namedType, usage, out proxyType))
+        {
+            return true;
+        }
+        return ClassScopeMap.TryResolve(namedType, usage, out proxyType);
+    }
 }

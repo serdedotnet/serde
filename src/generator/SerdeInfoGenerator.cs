@@ -1,14 +1,12 @@
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Serde;
 
@@ -71,6 +69,8 @@ internal static class SerdeInfoGenerator
             typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
         }
 
+        var classScopeProxyMap = new ProxyMap(receiverType);
+
         var membersString = string.Join("," + Utilities.NewLine,
             SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
 
@@ -78,8 +78,14 @@ internal static class SerdeInfoGenerator
 
         if (isEnum)
         {
+            var proxyContext = new ProxyContext()
+            {
+                ClassScopeMap = classScopeProxyMap,
+                MemberScopeMap = new ProxyMap()
+            };
+
             string underlyingInfo;
-            if (Proxies.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress) is { Proxy: { } wrap })
+            if (Proxies.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress, proxyContext) is { Proxy: { } wrap })
             {
                 underlyingInfo = wrap.ToString();
             }
@@ -126,7 +132,13 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
 
             if (!isEnum)
             {
-                string? wrapperName = GetWrapperName(m, context, usage, inProgress);
+                var proxyContext = new ProxyContext()
+                {
+                    ClassScopeMap = classScopeProxyMap,
+                    MemberScopeMap = new ProxyMap(m.Symbol)
+                };
+
+                string? wrapperName = GetWrapperName(m, context, usage, inProgress, proxyContext);
                 if (wrapperName is null)
                 {
                     // This is an error, but it should have already been produced by the serialization
@@ -227,8 +239,9 @@ private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.M
         DataMemberSymbol m,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext)
     {
-        return Proxies.TryGetProxyString(m.Symbol, m.Type, context, usage, inProgress);
+        return Proxies.TryGetProxyString(m.Symbol, m.Type, context, usage, inProgress, proxyContext);
     }
 }

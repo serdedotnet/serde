@@ -1,12 +1,9 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 
 namespace Serde;
@@ -64,6 +61,8 @@ public partial class SerializeImplGen
         }
         else
         {
+            var classScopeProxyMap = new ProxyMap(receiverType);
+
             // `var _l_info = GetInfo(this);`
             statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
 
@@ -74,8 +73,14 @@ public partial class SerializeImplGen
             {
                 var m = fieldsAndProps[i];
 
+                var proxyContext = new ProxyContext()
+                {
+                    ClassScopeMap = classScopeProxyMap,
+                    MemberScopeMap = new ProxyMap(m.Symbol)
+                };
+
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
-                if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress) is { } proxy)
+                if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } proxy)
                 {
                     statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i));
                 }
@@ -97,7 +102,7 @@ public partial class SerializeImplGen
                     statements.AppendLine($"_l_type.Write{primName}(_l_info, {i}, value.{m.Name});");
                 }
                 // 4. A wrapper that implements ISerialize
-                else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress) is { } wrapper)
+                else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } wrapper)
                 {
                     statements.AppendLine(MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i));
                 }

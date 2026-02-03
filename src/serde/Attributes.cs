@@ -1,4 +1,4 @@
-
+using StaticCs;
 using System;
 using System.Diagnostics;
 
@@ -229,4 +229,32 @@ enum MemberFormat : byte
     /// "kebab-case"
     /// </summary>
     KebabCase,
+}
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class UseProxy : Attribute
+{
+    public required Type ForType { get; init; }
+    public required Type Proxy { get; init; }
+    public SerdeUsage Usage { get; init; } = SerdeUsage.Both;
+}
+
+[Flags]
+[Closed]
+#if !SRCGEN
+public
+#else
+internal
+#endif
+enum SerdeUsage : byte
+{
+    Serialize = 0b01,
+    Deserialize = 0b10,
+
+    Both = Serialize | Deserialize,
 }

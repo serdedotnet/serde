@@ -508,13 +508,3 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         return type.Name;
     }
 }
-
-[Flags]
-[Closed]
-internal enum SerdeUsage : byte
-{
-    Serialize = 0b01,
-    Deserialize = 0b10,
-
-    Both = Serialize | Deserialize,
-}
