@@ -205,8 +205,26 @@ partial class C
     public bool Flag = true;
     public string? Nullable = null;
 
-    // Unsafe initializers - should fall back to default!
+    // Initializers with predefined type static members
     public string FromMethod = string.Empty;
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task ExtensionMethodInitializer()
+        {
+            var src = """
+using Serde;
+using System.Collections.Immutable;
+using System.Linq;
+
+[GenerateDeserialize]
+partial class C
+{
+    // Extension method - should be rewritten to static call
+    public ImmutableArray<int> Arr = new[] { 1, 2, 3 }.ToImmutableArray();
 }
 """;
             return VerifyDeserialize(src);

@@ -24,7 +24,7 @@ partial class CommandResponse<TResult, TProxy>
         CommandResponse<TResult, TProxy> Serde.IDeserialize<CommandResponse<TResult, TProxy>>.Deserialize(IDeserializer deserializer)
         {
             int _l_status = default!;
-            string _l_message = default!;
+            string _l_message = string.Empty;
             System.Collections.Generic.List<ArgumentInfo>? _l_arguments = default!;
             TResult _l_results = default!;
             long _l_duration = default!;

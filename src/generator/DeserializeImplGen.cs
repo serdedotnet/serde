@@ -302,7 +302,7 @@ namespace Serde
                         readValueCall = $"ReadValue<{memberType}, {memberType}>";
                     }
                     var localName = GetLocalName(m);
-                    var initializer = m.GetInitializer() ?? "default!";
+                    var initializer = m.GetInitializer(context.Compilation) ?? "default!";
                     localsBuilder.AppendLine($"{memberType} {localName} = {initializer};");
 
                     var typeOptions = SymbolUtilities.GetTypeOptions(type);

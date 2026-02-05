@@ -16,7 +16,7 @@ partial class C
             int _l_num = 42;
             bool _l_flag = true;
             string? _l_nullable = null;
-            string _l_frommethod = default!;
+            string _l_frommethod = string.Empty;
 
             byte _r_assignedValid = 0;
 

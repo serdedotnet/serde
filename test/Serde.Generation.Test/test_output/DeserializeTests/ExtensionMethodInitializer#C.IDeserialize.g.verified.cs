@@ -1,18 +1,18 @@
-﻿//HintName: ArrayField.IDeserialize.g.cs
+﻿//HintName: C.IDeserialize.g.cs
 
 #nullable enable
 
 using System;
 using Serde;
-partial class ArrayField
+partial class C
 {
-    sealed partial class _DeObj : Serde.IDeserialize<ArrayField>
+    sealed partial class _DeObj : Serde.IDeserialize<C>
     {
-        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => ArrayField.s_serdeInfo;
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
 
-        ArrayField Serde.IDeserialize<ArrayField>.Deserialize(IDeserializer deserializer)
+        C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
-            int[] _l_intarr = default!;
+            System.Collections.Immutable.ImmutableArray<int> _l_arr = default!;
 
             byte _r_assignedValid = 0;
 
@@ -30,7 +30,7 @@ partial class ArrayField
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_intarr = typeDeserialize.ReadValue<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_arr = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
@@ -44,8 +44,8 @@ partial class ArrayField
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-            var newType = new ArrayField() {
-                IntArr = _l_intarr,
+            var newType = new C() {
+                Arr = _l_arr,
             };
 
             return newType;
