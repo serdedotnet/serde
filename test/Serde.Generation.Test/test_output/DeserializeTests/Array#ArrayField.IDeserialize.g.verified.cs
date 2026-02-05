@@ -12,7 +12,7 @@ partial class ArrayField
 
         ArrayField Serde.IDeserialize<ArrayField>.Deserialize(IDeserializer deserializer)
         {
-            int[] _l_intarr = default!;
+            int[] _l_intarr = new[] { 1, 2, 3 };
 
             byte _r_assignedValid = 0;
 

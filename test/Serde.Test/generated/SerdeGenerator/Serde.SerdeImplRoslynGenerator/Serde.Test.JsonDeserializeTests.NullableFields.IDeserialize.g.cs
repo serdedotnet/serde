@@ -16,7 +16,7 @@ partial class JsonDeserializeTests
 
             Serde.Test.JsonDeserializeTests.NullableFields Serde.IDeserialize<Serde.Test.JsonDeserializeTests.NullableFields>.Deserialize(IDeserializer deserializer)
             {
-                string? _l_s = default!;
+                string? _l_s = null;
                 System.Collections.Generic.Dictionary<string, string?> _l_dict = default!;
 
                 byte _r_assignedValid = 0;

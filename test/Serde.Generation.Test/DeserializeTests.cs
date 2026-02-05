@@ -192,6 +192,27 @@ partial class ArrayField
         }
 
         [Fact]
+        public Task FieldInitializers()
+        {
+            var src = """
+using Serde;
+[GenerateDeserialize]
+partial class C
+{
+    // Safe initializers - should be preserved
+    public string Str = "hello";
+    public int Num = 42;
+    public bool Flag = true;
+    public string? Nullable = null;
+
+    // Unsafe initializers - should fall back to default!
+    public string FromMethod = string.Empty;
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
         public Task EnumMember()
         {
             var src = @"

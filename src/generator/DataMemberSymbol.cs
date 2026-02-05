@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serde
 {
@@ -184,6 +185,55 @@ namespace Serde
                     wordBuilder.Clear();
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the initializer expression text for the field/property, or null if there is none.
+        /// Only returns initializers that are safe to use without additional using directives
+        /// (literals, null, default, array creation with literals).
+        /// </summary>
+        public string? GetInitializer()
+        {
+            foreach (var syntaxRef in Symbol.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxRef.GetSyntax();
+                EqualsValueClauseSyntax? initializer = syntax switch
+                {
+                    VariableDeclaratorSyntax v => v.Initializer,
+                    PropertyDeclarationSyntax p => p.Initializer,
+                    _ => null
+                };
+                if (initializer is not null && IsSafeInitializer(initializer.Value))
+                {
+                    return initializer.Value.ToString();
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Checks if an initializer expression is safe to copy without requiring additional context.
+        /// Safe expressions include: null, literals, default, and arrays of literals.
+        /// </summary>
+        private static bool IsSafeInitializer(ExpressionSyntax expr)
+        {
+            return expr switch
+            {
+                // null, numeric literals, string literals, etc.
+                LiteralExpressionSyntax => true,
+                // null!, "string"!, etc.
+                PostfixUnaryExpressionSyntax { Operand: LiteralExpressionSyntax } => true,
+                // default or default(T) where T is a predefined type
+                DefaultExpressionSyntax def => def.Type is null or PredefinedTypeSyntax,
+                // default!, default(int)!
+                PostfixUnaryExpressionSyntax { Operand: DefaultExpressionSyntax def } => def.Type is null or PredefinedTypeSyntax,
+                // new[] { ... } with safe elements
+                ImplicitArrayCreationExpressionSyntax arr => arr.Initializer.Expressions.All(IsSafeInitializer),
+                // new T[] { ... } with keyword type and safe elements
+                ArrayCreationExpressionSyntax { Type.ElementType: PredefinedTypeSyntax } arr
+                    => arr.Initializer?.Expressions.All(IsSafeInitializer) ?? true,
+                _ => false
+            };
         }
     }
 }
