@@ -1,10 +1,13 @@
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serde
 {
@@ -183,6 +186,293 @@ namespace Serde
                     resultBuilder.Add(wordBuilder.ToString());
                     wordBuilder.Clear();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Returns the initializer expression text for the field/property with all symbols fully qualified,
+        /// or null if there is no initializer or the initializer cannot be safely preserved.
+        /// </summary>
+        public string? GetInitializer(Compilation compilation)
+        {
+            foreach (var syntaxRef in Symbol.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxRef.GetSyntax();
+                EqualsValueClauseSyntax? initializer = syntax switch
+                {
+                    VariableDeclaratorSyntax v => v.Initializer,
+                    PropertyDeclarationSyntax p => p.Initializer,
+                    _ => null
+                };
+                if (initializer is not null)
+                {
+                    var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
+                    var qualifiedExpr = QualifyExpression(initializer.Value, semanticModel);
+                    // If the rewriter returned null, the expression can't be safely preserved
+                    if (qualifiedExpr is null)
+                    {
+                        return null;
+                    }
+                    return qualifiedExpr.ToFullString();
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Rewrites an expression to fully qualify all type references.
+        /// Returns null if the expression cannot be safely preserved.
+        /// </summary>
+        private static ExpressionSyntax? QualifyExpression(ExpressionSyntax expr, SemanticModel semanticModel)
+        {
+            var rewriter = new FullyQualifyingRewriter(semanticModel);
+            var result = rewriter.Visit(expr);
+            if (rewriter.Failed)
+            {
+                return null;
+            }
+            return (ExpressionSyntax?)result;
+        }
+
+        /// <summary>
+        /// Format for fully qualified symbol names with global:: prefix.
+        /// </summary>
+        private static readonly SymbolDisplayFormat s_fullyQualifiedFormat = SymbolDisplayFormat.FullyQualifiedFormat
+            .WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType);
+
+        /// <summary>
+        /// A syntax rewriter that fully qualifies all type and member references.
+        /// Sets Failed to true if the expression cannot be safely preserved.
+        /// </summary>
+        private sealed class FullyQualifyingRewriter : CSharpSyntaxRewriter
+        {
+            private readonly SemanticModel _semanticModel;
+
+            public bool Failed { get; private set; }
+
+            public FullyQualifyingRewriter(SemanticModel semanticModel)
+            {
+                _semanticModel = semanticModel;
+            }
+
+            public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
+            {
+                var symbolInfo = _semanticModel.GetSymbolInfo(node);
+                if (symbolInfo.Symbol is ITypeSymbol typeSymbol)
+                {
+                    var fqn = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    return SyntaxFactory.ParseTypeName(fqn).WithTriviaFrom(node);
+                }
+                return base.VisitIdentifierName(node);
+            }
+
+            public override SyntaxNode? VisitPredefinedType(PredefinedTypeSyntax node)
+            {
+                // Predefined types like 'string', 'int' are always in scope - no need to qualify
+                return base.VisitPredefinedType(node);
+            }
+
+            public override SyntaxNode? VisitMemberAccessExpression(MemberAccessExpressionSyntax node)
+            {
+                var symbolInfo = _semanticModel.GetSymbolInfo(node);
+                var symbol = symbolInfo.Symbol;
+
+                // Handle static field/property/method access like string.Empty or Console.WriteLine
+                if (symbol is IFieldSymbol { IsStatic: true } or
+                    IPropertySymbol { IsStatic: true } or
+                    IMethodSymbol { IsStatic: true })
+                {
+                    // Use ToDisplayString to get fully qualified member access
+                    var fqn = symbol.ToDisplayString(s_fullyQualifiedFormat);
+                    return SyntaxFactory.ParseExpression(fqn).WithTriviaFrom(node);
+                }
+
+                // For instance member access, just qualify the expression part
+                return base.VisitMemberAccessExpression(node);
+            }
+
+            public override SyntaxNode? VisitInvocationExpression(InvocationExpressionSyntax node)
+            {
+                var symbolInfo = _semanticModel.GetSymbolInfo(node);
+
+                // Check if this is an extension method call
+                if (symbolInfo.Symbol is IMethodSymbol { IsExtensionMethod: true } method)
+                {
+                    // Rewrite extension method call to explicit static call
+                    // e.g., list.ToImmutableArray() -> ImmutableArray.ToImmutableArray(list)
+                    var containingType = method.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var methodName = method.Name;
+
+                    // Get the receiver (the 'this' argument) from the member access
+                    ExpressionSyntax? receiver = null;
+                    if (node.Expression is MemberAccessExpressionSyntax memberAccess)
+                    {
+                        receiver = (ExpressionSyntax?)Visit(memberAccess.Expression);
+                    }
+
+                    // Build the argument list: receiver + original arguments
+                    var arguments = new List<ArgumentSyntax>();
+                    if (receiver is not null)
+                    {
+                        arguments.Add(SyntaxFactory.Argument(receiver));
+                    }
+                    foreach (var arg in node.ArgumentList.Arguments)
+                    {
+                        var visitedArg = (ArgumentSyntax?)Visit(arg) ?? arg;
+                        arguments.Add(visitedArg);
+                    }
+
+                    // Handle generic method type arguments
+                    SimpleNameSyntax methodNameSyntax;
+                    if (method.TypeArguments.Length > 0)
+                    {
+                        var typeArgs = method.TypeArguments
+                            .Select(t => SyntaxFactory.ParseTypeName(t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)))
+                            .ToArray();
+                        methodNameSyntax = SyntaxFactory.GenericName(
+                            SyntaxFactory.Identifier(methodName),
+                            SyntaxFactory.TypeArgumentList(SyntaxFactory.SeparatedList(typeArgs)));
+                    }
+                    else
+                    {
+                        methodNameSyntax = SyntaxFactory.IdentifierName(methodName);
+                    }
+
+                    // Build: ContainingType.MethodName(receiver, args...)
+                    var qualifiedMethod = SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        SyntaxFactory.ParseTypeName(containingType),
+                        methodNameSyntax);
+
+                    return SyntaxFactory.InvocationExpression(
+                        qualifiedMethod,
+                        SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments)))
+                        .WithTriviaFrom(node);
+                }
+
+                return base.VisitInvocationExpression(node);
+            }
+
+            public override SyntaxNode? VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+            {
+                // If there's a complex initializer (collection init, etc.), don't preserve
+                if (node.Initializer is not null)
+                {
+                    Failed = true;
+                    return node;
+                }
+
+                var typeInfo = _semanticModel.GetTypeInfo(node);
+                if (typeInfo.Type is INamedTypeSymbol namedType)
+                {
+                    // Only preserve object creation if:
+                    // 1. It has arguments (constructor with params)
+                    // 2. It's a value type (structs always have parameterless constructors)
+                    // 3. It has a parameterless constructor
+                    bool hasArgs = node.ArgumentList?.Arguments.Count > 0;
+                    bool isValueType = namedType.IsValueType;
+                    bool hasParameterlessCtor = namedType.InstanceConstructors
+                        .Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Accessibility.Public);
+
+                    if (!hasArgs && !isValueType && !hasParameterlessCtor)
+                    {
+                        // Can't safely preserve this - the type doesn't have a parameterless constructor
+                        Failed = true;
+                        return node;
+                    }
+
+                    var fqn = namedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var qualifiedType = SyntaxFactory.ParseTypeName(fqn)
+                        .WithLeadingTrivia(node.Type.GetLeadingTrivia());
+
+                    var newArgs = node.ArgumentList is not null
+                        ? (ArgumentListSyntax?)Visit(node.ArgumentList)
+                        : null;
+
+                    return SyntaxFactory.ObjectCreationExpression(
+                        node.NewKeyword,
+                        qualifiedType,
+                        newArgs,
+                        null);
+                }
+                return base.VisitObjectCreationExpression(node);
+            }
+
+            public override SyntaxNode? VisitImplicitObjectCreationExpression(ImplicitObjectCreationExpressionSyntax node)
+            {
+                // Target-typed new like: new() { ... } or new(args)
+                // These are complex to handle correctly - fail for now
+                Failed = true;
+                return node;
+            }
+
+            public override SyntaxNode? VisitImplicitArrayCreationExpression(ImplicitArrayCreationExpressionSyntax node)
+            {
+                // Implicit array like: new[] { 1, 2, 3 } is complex - don't preserve
+                Failed = true;
+                return node;
+            }
+
+            public override SyntaxNode? VisitGenericName(GenericNameSyntax node)
+            {
+                var symbolInfo = _semanticModel.GetSymbolInfo(node);
+                if (symbolInfo.Symbol is ITypeSymbol typeSymbol)
+                {
+                    var fqn = typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    return SyntaxFactory.ParseTypeName(fqn).WithTriviaFrom(node);
+                }
+                return base.VisitGenericName(node);
+            }
+
+            public override SyntaxNode? VisitArrayCreationExpression(ArrayCreationExpressionSyntax node)
+            {
+                // Array creation with initializer is complex - don't preserve
+                if (node.Initializer is not null)
+                {
+                    Failed = true;
+                    return node;
+                }
+                return base.VisitArrayCreationExpression(node);
+            }
+
+            public override SyntaxNode? VisitTypeOfExpression(TypeOfExpressionSyntax node)
+            {
+                var typeInfo = _semanticModel.GetTypeInfo(node.Type);
+                if (typeInfo.Type is not null)
+                {
+                    var fqn = typeInfo.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    return SyntaxFactory.TypeOfExpression(SyntaxFactory.ParseTypeName(fqn))
+                        .WithTriviaFrom(node);
+                }
+                return base.VisitTypeOfExpression(node);
+            }
+
+            public override SyntaxNode? VisitDefaultExpression(DefaultExpressionSyntax node)
+            {
+                if (node.Type is not null)
+                {
+                    var typeInfo = _semanticModel.GetTypeInfo(node.Type);
+                    if (typeInfo.Type is not null)
+                    {
+                        var fqn = typeInfo.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                        return SyntaxFactory.DefaultExpression(SyntaxFactory.ParseTypeName(fqn))
+                            .WithTriviaFrom(node);
+                    }
+                }
+                return base.VisitDefaultExpression(node);
+            }
+
+            public override SyntaxNode? VisitCastExpression(CastExpressionSyntax node)
+            {
+                var typeInfo = _semanticModel.GetTypeInfo(node.Type);
+                if (typeInfo.Type is not null)
+                {
+                    var fqn = typeInfo.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var newExpr = (ExpressionSyntax?)Visit(node.Expression) ?? node.Expression;
+                    return SyntaxFactory.CastExpression(SyntaxFactory.ParseTypeName(fqn), newExpr)
+                        .WithTriviaFrom(node);
+                }
+                return base.VisitCastExpression(node);
             }
         }
     }

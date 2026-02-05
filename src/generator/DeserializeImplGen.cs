@@ -302,7 +302,8 @@ namespace Serde
                         readValueCall = $"ReadValue<{memberType}, {memberType}>";
                     }
                     var localName = GetLocalName(m);
-                    localsBuilder.AppendLine($"{memberType} {localName} = default!;");
+                    var initializer = m.GetInitializer(context.Compilation) ?? "default!";
+                    localsBuilder.AppendLine($"{memberType} {localName} = {initializer};");
 
                     var typeOptions = SymbolUtilities.GetTypeOptions(type);
                     var duplicateKeyCheck = !typeOptions.AllowDuplicateKeys

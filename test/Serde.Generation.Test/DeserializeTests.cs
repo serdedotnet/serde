@@ -192,6 +192,45 @@ partial class ArrayField
         }
 
         [Fact]
+        public Task FieldInitializers()
+        {
+            var src = """
+using Serde;
+[GenerateDeserialize]
+partial class C
+{
+    // Safe initializers - should be preserved
+    public string Str = "hello";
+    public int Num = 42;
+    public bool Flag = true;
+    public string? Nullable = null;
+
+    // Initializers with predefined type static members
+    public string FromMethod = string.Empty;
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
+        public Task ExtensionMethodInitializer()
+        {
+            var src = """
+using Serde;
+using System.Collections.Immutable;
+using System.Linq;
+
+[GenerateDeserialize]
+partial class C
+{
+    // Extension method - should be rewritten to static call
+    public ImmutableArray<int> Arr = new[] { 1, 2, 3 }.ToImmutableArray();
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        [Fact]
         public Task EnumMember()
         {
             var src = @"
