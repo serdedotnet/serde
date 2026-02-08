@@ -12,7 +12,7 @@ partial class C
 
         C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
-            System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = new global::System.Runtime.InteropServices.ComTypes.BIND_OPTS();
+            System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = default!;
 
             byte _r_assignedValid = 0;
 
