@@ -17,7 +17,7 @@ partial class JsonDeserializeTests
             Serde.Test.JsonDeserializeTests.ThrowMissingFalse Serde.IDeserialize<Serde.Test.JsonDeserializeTests.ThrowMissingFalse>.Deserialize(IDeserializer deserializer)
             {
                 string _l_present = default!;
-                bool _l_missing = false;
+                bool _l_missing = default!;
 
                 byte _r_assignedValid = 0;
 

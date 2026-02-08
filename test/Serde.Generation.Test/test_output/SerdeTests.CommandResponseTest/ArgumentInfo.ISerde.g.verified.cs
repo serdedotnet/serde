@@ -20,8 +20,8 @@ partial class ArgumentInfo
         }
         ArgumentInfo Serde.IDeserialize<ArgumentInfo>.Deserialize(IDeserializer deserializer)
         {
-            string _l_name = string.Empty;
-            string _l_value = string.Empty;
+            string _l_name = default!;
+            string _l_value = default!;
 
             byte _r_assignedValid = 0;
 
