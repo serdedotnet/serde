@@ -379,5 +379,30 @@ public partial record Parent
 """;
             await VerifyMultiFile(src, new[] { comp.EmitToImageReference() });
         }
+
+        [Fact]
+        public Task SerdeMemberOptionsTakesPrecedenceOverUseProxy()
+        {
+            var src = """
+using System.Runtime.InteropServices.ComTypes;
+using Serde;
+
+[GenerateSerde(ForType = typeof(BIND_OPTS))]
+internal sealed partial class Proxy1 {}
+
+[GenerateSerde(ForType = typeof(BIND_OPTS))]
+internal sealed partial class Proxy2 {}
+
+[GenerateSerde]
+partial class C
+{
+    // SerdeMemberOptions takes precedence
+    [UseProxy(ForType = typeof(BIND_OPTS), Proxy = typeof(Proxy1))]
+    [SerdeMemberOptions(Proxy = typeof(Proxy2))]
+    public BIND_OPTS S = new BIND_OPTS();
+}
+""";
+            return VerifyMultiFile(src);
+        }
     }
 }

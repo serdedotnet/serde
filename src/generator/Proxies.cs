@@ -352,8 +352,9 @@ sealed partial class {{proxyName}};
     }
 
     /// <summary>
-    /// Checks a symbol's attributes for proxy specifications (both SerdeMemberOptions and SerdeTypeOptions).
+    /// Checks a symbol's attributes for proxy specifications (SerdeMemberOptions, SerdeTypeOptions, and UseProxy).
     /// For generic types, returns the nested Ser/De type from the proxy.
+    /// SerdeMember/TypeOptions takes precedence over UseProxy.
     /// </summary>
     private static ITypeSymbol? TryGetProxyFromSymbol(
         ISymbol symbol,
@@ -362,10 +363,6 @@ sealed partial class {{proxyName}};
         GeneratorExecutionContext context,
         ProxyContext proxyContext)
     {
-        if (proxyContext.TryResolve(typeToWrap, usage, out var specifiedProxyType))
-        {
-            return ResolveProxyForGenericType(specifiedProxyType, typeToWrap, symbol, usage, context);
-        }
         foreach (var attr in symbol.GetAttributes())
         {
             if (attr is { AttributeClass.Name: nameof(SerdeMemberOptions) or nameof(SerdeTypeOptions), NamedArguments: { } named })
@@ -428,6 +425,14 @@ sealed partial class {{proxyName}};
                 }
             }
         }
+
+        // Check if UseProxy also specifies a proxy for this type
+        if (proxyContext.TryGetProxy(typeToWrap, usage) is { } useProxyType)
+        {
+            // No SerdeMemberOptions proxy, use the UseProxy one
+            return ResolveProxyForGenericType(useProxyType, typeToWrap, symbol, usage, context);
+        }
+
         return null;
     }
 
@@ -607,24 +612,38 @@ internal static class SerdeUsageExt
     };
 }
 
-internal class ProxyMap
+internal readonly struct ProxyMap
 {
-    public readonly Dictionary<SerdeUsage, Dictionary<INamedTypeSymbol, INamedTypeSymbol>> map = new()
-    {   
-        { SerdeUsage.Serialize, [] },
-        { SerdeUsage.Deserialize, [] },
-    };
+    private readonly ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol> _serializeMap;
+    private readonly ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol> _deserializeMap;
 
-    private readonly bool isEmpty;
-
+    [Obsolete($"Use {nameof(Empty)} instead", error: true)]
     public ProxyMap()
     {
-        isEmpty = true;
+        _serializeMap = ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol>.Empty;
+        _deserializeMap = ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol>.Empty;
     }
 
-    public ProxyMap(ISymbol symbol)
+    private ProxyMap(
+        ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol> serializeMap,
+        ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol> deserializeMap)
     {
-        isEmpty = false;
+        _serializeMap = serializeMap;
+        _deserializeMap = deserializeMap;
+    }
+
+    public static readonly ProxyMap Empty =
+        new(
+            ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol>.Empty,
+            ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol>.Empty
+        );
+
+    public bool IsEmpty => _serializeMap.IsEmpty && _deserializeMap.IsEmpty;
+
+    public static ProxyMap FromSymbol(ISymbol symbol)
+    {
+        var serializeBuilder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, INamedTypeSymbol>(SymbolEqualityComparer.IncludeNullability);
+        var deserializeBuilder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, INamedTypeSymbol>(SymbolEqualityComparer.IncludeNullability);
         foreach (var attr in symbol.GetAttributes())
         {
             if (attr.AttributeClass is null)
@@ -633,9 +652,10 @@ internal class ProxyMap
             }
             if (attr is { AttributeClass.Name: nameof(UseProxy), NamedArguments: { } namedArgs })
             {
-                INamedTypeSymbol target = default!;
-                INamedTypeSymbol proxy = default!;
-                var usage = SerdeUsage.Both;
+                INamedTypeSymbol? target = null;
+                INamedTypeSymbol? proxy = null;
+                INamedTypeSymbol? serializeProxy = null;
+                INamedTypeSymbol? deserializeProxy = null;
                 foreach (var arg in namedArgs)
                 {
                     switch (arg)
@@ -660,79 +680,94 @@ internal class ProxyMap
                             }
                         case
                         {
-                            Key: nameof(UseProxy.Usage),
-                            Value:
+                            Key: nameof(UseProxy.SerializeProxy),
+                            Value.Value: INamedTypeSymbol proxyType
+                        }:
                             {
-                                Kind: TypedConstantKind.Enum,
-                                Value: var rawUsage
+                                serializeProxy = proxyType;
+                                break;
                             }
-                        } when rawUsage is not null:
+                        case
+                        {
+                            Key: nameof(UseProxy.DeserializeProxy),
+                            Value.Value: INamedTypeSymbol proxyType
+                        }:
                             {
-                                var usageValue = Convert.ToUInt64(rawUsage);
-                                if ((usageValue & (byte)SerdeUsage.Both) == (byte)SerdeUsage.Both)
-                                {
-                                    usage = SerdeUsage.Both;
-                                }
-                                else if ((usageValue & (byte)SerdeUsage.Serialize) == (byte)SerdeUsage.Serialize)
-                                {
-                                    usage = SerdeUsage.Serialize; 
-                                }
-                                else if ((usageValue & (byte)SerdeUsage.Deserialize) == (byte)SerdeUsage.Deserialize)
-                                {
-                                    usage = SerdeUsage.Deserialize;
-                                }
+                                deserializeProxy = proxyType;
                                 break;
                             }
                     }
                 }
-                if (usage.HasFlag(SerdeUsage.Serialize))
+                if (target is null)
                 {
-                    map[SerdeUsage.Serialize][target] = proxy;
+                    // TODO: report diagnostic for missing target
+                    continue;
                 }
-                if (usage.HasFlag(SerdeUsage.Deserialize))
+                if ((serializeProxy ?? proxy) is { } serProxy)
                 {
-                    map[SerdeUsage.Deserialize][target] = proxy;
+                    serializeBuilder[target] = serProxy;
+                }
+                if ((deserializeProxy ?? proxy) is { } deProxy)
+                {
+                    deserializeBuilder[target] = deProxy;
                 }
             }
         }
+        return new ProxyMap(serializeBuilder.ToImmutable(), deserializeBuilder.ToImmutable());
     }
 
-    public bool TryResolve(INamedTypeSymbol typeToWrap, SerdeUsage usage, out INamedTypeSymbol proxyType)
+    public INamedTypeSymbol? TryGetProxy(INamedTypeSymbol typeToWrap, SerdeUsage usage)
     {
-        if (isEmpty)
-        {
-            proxyType = default!;
-            return false;
-        }
         if (usage.HasFlag(SerdeUsage.Serialize))
         {
-            return map[SerdeUsage.Serialize].TryGetValue(typeToWrap.OriginalDefinition, out proxyType);
+            if (_serializeMap.TryGetValue(typeToWrap.OriginalDefinition, out var proxyType))
+            {
+                return proxyType;
+            }
         }
         if (usage.HasFlag(SerdeUsage.Deserialize))
         {
-            return map[SerdeUsage.Deserialize].TryGetValue(typeToWrap.OriginalDefinition, out proxyType);
+            if (_deserializeMap.TryGetValue(typeToWrap.OriginalDefinition, out var proxyType))
+            {
+                return proxyType;
+            }
         }
-        proxyType = default!;
-        return false;
+        return null;
     }
 }
 
-internal class ProxyContext
+internal sealed class ProxyContext
 {
-    public required ProxyMap ClassScopeMap { get; init; }
-    public required ProxyMap MemberScopeMap { get; init; }
+    public ProxyMap ClassScopeMap { get; }
+    public ProxyMap MemberScopeMap { get; }
 
-    public bool TryResolve(ITypeSymbol typeToWrap, SerdeUsage usage, out INamedTypeSymbol proxyType)
+    private ProxyContext(ProxyMap classScopeMap, ProxyMap memberScopeMap)
+    {
+        ClassScopeMap = classScopeMap;
+        MemberScopeMap = memberScopeMap;
+    }
+
+    public static ProxyContext Empty { get; } = new ProxyContext(ProxyMap.Empty, ProxyMap.Empty);
+
+    public static ProxyContext Create(ProxyMap classScopeMap, ProxyMap memberScopeMap)
+    {
+        if (classScopeMap.IsEmpty && memberScopeMap.IsEmpty)
+        {
+            return Empty;
+        }
+        return new ProxyContext(classScopeMap, memberScopeMap);
+    }
+
+    public INamedTypeSymbol? TryGetProxy(ITypeSymbol typeToWrap, SerdeUsage usage)
     {
         if (typeToWrap is not INamedTypeSymbol namedType)
         {
-            proxyType = default!;
-            return false;
+            return null;
         }
-        if (MemberScopeMap.TryResolve(namedType, usage, out proxyType))
+        if (MemberScopeMap.TryGetProxy(namedType, usage) is { } proxyType)
         {
-            return true;
+            return proxyType;
         }
-        return ClassScopeMap.TryResolve(namedType, usage, out proxyType);
+        return ClassScopeMap.TryGetProxy(namedType, usage);
     }
 }

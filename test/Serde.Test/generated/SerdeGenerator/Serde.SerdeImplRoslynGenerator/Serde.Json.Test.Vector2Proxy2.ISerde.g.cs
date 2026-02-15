@@ -65,9 +65,6 @@ partial class Vector2Proxy2
                 Y = _l_y,
             };
 
-
-            typeDeserialize.End(_l_serdeInfo);
-
             return newType;
         }
     }

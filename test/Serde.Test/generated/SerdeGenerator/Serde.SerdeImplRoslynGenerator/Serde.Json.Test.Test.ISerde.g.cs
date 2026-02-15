@@ -19,6 +19,7 @@ partial class Test
             _l_type.WriteBoxedValue<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>(_l_info, 0, value.v2);
             _l_type.WriteValue<System.Numerics.Vector2[][], Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>>>(_l_info, 1, value.vertices);
             _l_type.WriteValue<System.Numerics.Vector2[][], Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy2>>>(_l_info, 2, value.weights);
+            _l_type.WriteValue<System.Collections.Generic.Dictionary<System.Numerics.Vector3, System.Numerics.Vector2[][]>, Serde.DictProxy.Ser<System.Numerics.Vector3, System.Numerics.Vector2[][], Serde.Json.Test.Vector3Proxy, Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>>>>(_l_info, 3, value.points);
             _l_type.End(_l_info);
         }
         Serde.Json.Test.Test Serde.IDeserialize<Serde.Json.Test.Test>.Deserialize(IDeserializer deserializer)
@@ -26,6 +27,7 @@ partial class Test
             System.Numerics.Vector2 _l_v2 = default!;
             System.Numerics.Vector2[][] _l_vertices = default!;
             System.Numerics.Vector2[][] _l_weights = default!;
+            System.Collections.Generic.Dictionary<System.Numerics.Vector3, System.Numerics.Vector2[][]> _l_points = default!;
 
             byte _r_assignedValid = 0;
 
@@ -56,6 +58,11 @@ partial class Test
                         _l_weights = typeDeserialize.ReadValue<System.Numerics.Vector2[][], Serde.ArrayProxy.De<System.Numerics.Vector2[], Serde.ArrayProxy.De<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 2;
                         break;
+                    case 3:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 3, _l_serdeInfo);
+                        _l_points = typeDeserialize.ReadValue<System.Collections.Generic.Dictionary<System.Numerics.Vector3, System.Numerics.Vector2[][]>, Serde.DictProxy.De<System.Numerics.Vector3, System.Numerics.Vector2[][], Serde.Json.Test.Vector3Proxy, Serde.ArrayProxy.De<System.Numerics.Vector2[], Serde.ArrayProxy.De<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy2>>>>(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((byte)1) << 3;
+                        break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
@@ -63,7 +70,7 @@ partial class Test
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b111) != 0b111)
+            if ((_r_assignedValid & 0b1111) != 0b1111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
@@ -71,10 +78,8 @@ partial class Test
                 v2 = _l_v2,
                 vertices = _l_vertices,
                 weights = _l_weights,
+                points = _l_points,
             };
-
-
-            typeDeserialize.End(_l_serdeInfo);
 
             return newType;
         }

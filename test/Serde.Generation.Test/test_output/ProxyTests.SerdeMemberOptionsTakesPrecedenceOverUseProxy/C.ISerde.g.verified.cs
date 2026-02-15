@@ -1,29 +1,25 @@
+﻿//HintName: C.ISerde.g.cs
 
 #nullable enable
 
 using System;
 using Serde;
-
-namespace Serde.Json.Test;
-
-partial class Vector2Proxy
+partial class C
 {
-    sealed partial class _SerdeObj : global::Serde.ISerde<System.Numerics.Vector2>
+    sealed partial class _SerdeObj : global::Serde.ISerde<C>
     {
-        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Json.Test.Vector2Proxy.s_serdeInfo;
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
 
-        void global::Serde.ISerialize<System.Numerics.Vector2>.Serialize(System.Numerics.Vector2 value, global::Serde.ISerializer serializer)
+        void global::Serde.ISerialize<C>.Serialize(C value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteF32(_l_info, 0, value.X);
-            _l_type.WriteF32(_l_info, 1, value.Y);
+            _l_type.WriteBoxedValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, Proxy2>(_l_info, 0, value.S);
             _l_type.End(_l_info);
         }
-        System.Numerics.Vector2 Serde.IDeserialize<System.Numerics.Vector2>.Deserialize(IDeserializer deserializer)
+        C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
-            float _l_x = default!;
-            float _l_y = default!;
+            System.Runtime.InteropServices.ComTypes.BIND_OPTS _l_s = default!;
 
             byte _r_assignedValid = 0;
 
@@ -41,13 +37,8 @@ partial class Vector2Proxy
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_x = typeDeserialize.ReadF32(_l_serdeInfo, _l_index_);
+                        _l_s = typeDeserialize.ReadBoxedValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, Proxy2>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
-                        break;
-                    case 1:
-                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
-                        _l_y = typeDeserialize.ReadF32(_l_serdeInfo, _l_index_);
-                        _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -56,13 +47,12 @@ partial class Vector2Proxy
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b11) != 0b11)
+            if ((_r_assignedValid & 0b1) != 0b1)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-            var newType = new System.Numerics.Vector2() {
-                X = _l_x,
-                Y = _l_y,
+            var newType = new C() {
+                S = _l_s,
             };
 
             return newType;

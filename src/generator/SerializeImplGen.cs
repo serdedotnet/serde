@@ -61,7 +61,7 @@ public partial class SerializeImplGen
         }
         else
         {
-            var classScopeProxyMap = new ProxyMap(receiverType);
+            var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
 
             // `var _l_info = GetInfo(this);`
             statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
@@ -73,11 +73,7 @@ public partial class SerializeImplGen
             {
                 var m = fieldsAndProps[i];
 
-                var proxyContext = new ProxyContext()
-                {
-                    ClassScopeMap = classScopeProxyMap,
-                    MemberScopeMap = new ProxyMap(m.Symbol)
-                };
+                var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
 
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
                 if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } proxy)

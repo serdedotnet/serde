@@ -200,7 +200,7 @@ namespace Serde
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
 
-            var classScopeProxyMap = new ProxyMap(type);
+            var classScopeProxyMap = ProxyMap.FromSymbol(type);
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
             var typeFqn = typeSyntax.ToString();
@@ -270,11 +270,7 @@ namespace Serde
                         : "ReadBoxedValue";
                     string readValueCall;
 
-                    var proxyContext = new ProxyContext()
-                    {
-                        ClassScopeMap = classScopeProxyMap,
-                        MemberScopeMap = new ProxyMap(m.Symbol)
-                    };
+                    var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
 
                     if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress, proxyContext) is { } explicitWrap)
                     {

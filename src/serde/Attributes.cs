@@ -1,4 +1,3 @@
-using StaticCs;
 using System;
 using System.Diagnostics;
 
@@ -240,21 +239,19 @@ internal
 sealed class UseProxy : Attribute
 {
     public required Type ForType { get; init; }
-    public required Type Proxy { get; init; }
-    public SerdeUsage Usage { get; init; } = SerdeUsage.Both;
-}
 
-[Flags]
-[Closed]
-#if !SRCGEN
-public
-#else
-internal
-#endif
-enum SerdeUsage : byte
-{
-    Serialize = 0b01,
-    Deserialize = 0b10,
+    /// <summary>
+    /// Proxy type for both ISerialize and IDeserialize implementations.
+    /// </summary>
+    public Type? Proxy { get; init; }
 
-    Both = Serialize | Deserialize,
+    /// <summary>
+    /// Proxy type for the ISerialize implementation.
+    /// </summary>
+    public Type? SerializeProxy { get; init; }
+
+    /// <summary>
+    /// Proxy type for the IDeserialize implementation.
+    /// </summary>
+    public Type? DeserializeProxy { get; init; }
 }

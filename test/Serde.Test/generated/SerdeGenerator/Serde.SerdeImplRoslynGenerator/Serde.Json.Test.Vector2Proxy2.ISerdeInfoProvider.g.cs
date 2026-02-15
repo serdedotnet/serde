@@ -9,8 +9,8 @@ partial class Vector2Proxy2
         "Vector2",
     typeof(System.Numerics.Vector2).GetCustomAttributesData(),
     new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("X", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector2).GetField("X")),
-        ("Y", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector2).GetField("Y"))
+        ("x", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector2).GetField("X")),
+        ("y", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector2).GetField("Y"))
     }
     );
 }

@@ -69,7 +69,7 @@ internal static class SerdeInfoGenerator
             typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
         }
 
-        var classScopeProxyMap = new ProxyMap(receiverType);
+        var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
 
         var membersString = string.Join("," + Utilities.NewLine,
             SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
@@ -78,11 +78,7 @@ internal static class SerdeInfoGenerator
 
         if (isEnum)
         {
-            var proxyContext = new ProxyContext()
-            {
-                ClassScopeMap = classScopeProxyMap,
-                MemberScopeMap = new ProxyMap()
-            };
+            var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.Empty);
 
             string underlyingInfo;
             if (Proxies.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress, proxyContext) is { Proxy: { } wrap })
@@ -132,11 +128,7 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
 
             if (!isEnum)
             {
-                var proxyContext = new ProxyContext()
-                {
-                    ClassScopeMap = classScopeProxyMap,
-                    MemberScopeMap = new ProxyMap(m.Symbol)
-                };
+                var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
 
                 string? wrapperName = GetWrapperName(m, context, usage, inProgress, proxyContext);
                 if (wrapperName is null)
