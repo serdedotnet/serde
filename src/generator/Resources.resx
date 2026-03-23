@@ -145,7 +145,4 @@
   <data name="ERR_CantFindTypeParameter" xml:space="preserve">
     <value>Could not find type parameter named '{0}' in the current context.</value>
   </data>
-  <data name="WARN_UseProxyIgnored" xml:space="preserve">
-    <value>The UseProxy attribute specifying '{0}' for type '{1}' will be ignored because a more specific proxy '{2}' is specified via SerdeMemberOptions.</value>
-  </data>
 </root>
