@@ -1,24 +1,42 @@
 ﻿{
   Diagnostics: [
     {
-      Id: ERR_DoesntImplementInterface,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (8,14)-(8,16),
-      MessageFormat: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T1, or specify a proxy type.,
+      Location: /*
+    public int? FI;
+    public T1 F1;
+              ^^
+    public T2 F2;
+*/
+ : (8,14)-(8,16),
       Message: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T1, or specify a proxy type.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_DoesntImplementInterface,
+        Title: ,
+        MessageFormat: The member 'S<T1, T2, TSerialize>.F1's return type 'T1' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T1, or specify a proxy type.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     },
     {
-      Id: ERR_DoesntImplementInterface,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (9,14)-(9,16),
-      MessageFormat: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T2, or specify a proxy type.,
+      Location: /*
+    public T1 F1;
+    public T2 F2;
+              ^^
+    public TSerialize? F3;
+*/
+ : (9,14)-(9,16),
       Message: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T2, or specify a proxy type.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_DoesntImplementInterface,
+        Title: ,
+        MessageFormat: The member 'S<T1, T2, TSerialize>.F2's return type 'T2' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on T2, or specify a proxy type.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     }
   ]
 }

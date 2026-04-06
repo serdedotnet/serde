@@ -1,24 +1,41 @@
 ﻿{
   Diagnostics: [
     {
-      Id: ERR_TypeNotPartial,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (3,7)-(3,8),
-      MessageFormat: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+      Location: /*
+[GenerateSerialize]
+struct S { }
+       ^
+[GenerateSerialize]
+*/
+ : (3,7)-(3,8),
       Message: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_TypeNotPartial,
+        Title: ,
+        MessageFormat: The type 'S' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     },
     {
-      Id: ERR_TypeNotPartial,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (5,6)-(5,7),
-      MessageFormat: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+      Location: /*
+[GenerateSerialize]
+class C { }
+      ^
+*/
+ : (5,6)-(5,7),
       Message: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_TypeNotPartial,
+        Title: ,
+        MessageFormat: The type 'C' has the `[GenerateSerializeAttribute]` applied, but the implementation can't be generated unless the type is marked 'partial'.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     }
   ]
 }
