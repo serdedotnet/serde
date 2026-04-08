@@ -1,24 +1,42 @@
 ﻿{
   Diagnostics: [
     {
-      Id: ERR_CantFindNestedWrapper,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (36,18)-(36,19),
-      MessageFormat: Could not find nested type named 'Ser' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
+      Location: /*
+    [SerdeMemberOptions(Proxy = typeof(SWrap<,>))]
+    public S<int> S = new S<int>(5);
+                  ^
+}
+*/
+ : (36,18)-(36,19),
       Message: Could not find nested type named 'Ser' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CantFindNestedWrapper,
+        Title: ,
+        MessageFormat: Could not find nested type named 'Ser' inside type 'SWrap<,>'. The proxied type 'S<T>' is generic, so the expected proxy is a parent type with Serialize and Deserialize nested proxies.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     },
     {
-      Id: ERR_DoesntImplementInterface,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (36,18)-(36,19),
-      MessageFormat: The member 'C.S's return type 'S<int>' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on S<int>, or specify a proxy type.,
+      Location: /*
+    [SerdeMemberOptions(Proxy = typeof(SWrap<,>))]
+    public S<int> S = new S<int>(5);
+                  ^
+}
+*/
+ : (36,18)-(36,19),
       Message: The member 'C.S's return type 'S<int>' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on S<int>, or specify a proxy type.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_DoesntImplementInterface,
+        Title: ,
+        MessageFormat: The member 'C.S's return type 'S<int>' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on S<int>, or specify a proxy type.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     }
   ]
 }

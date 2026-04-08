@@ -1,14 +1,23 @@
 ﻿{
   Diagnostics: [
     {
-      Id: ERR_MissingPrimaryCtor,
-      Title: ,
-      Severity: Error,
-      WarningLevel: 0,
-      Location: : (2,14)-(2,15),
-      MessageFormat: Type must have either a primary constructor or a parameterless constructor.,
+      Location: /*
+[GenerateDeserialize]
+partial class C
+              ^
+{
+*/
+ : (2,14)-(2,15),
       Message: Type must have either a primary constructor or a parameterless constructor.,
-      Category: Serde
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_MissingPrimaryCtor,
+        Title: ,
+        MessageFormat: Type must have either a primary constructor or a parameterless constructor.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
     }
   ]
 }
