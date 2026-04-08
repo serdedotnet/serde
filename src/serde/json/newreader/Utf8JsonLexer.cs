@@ -254,14 +254,14 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
             Advance();
 
             peek = Peek();
-            if (peek is >= (short)'0' and <= (short)'9')
+            if (peek is (>= (short)'0' and <= (short)'9'))
             {
                 throw new JsonException("Leading zero not allowed");
             }
         }
         else
         {
-            if (b is not >= (byte)'1' and <= (byte)'9')
+            if (b is not (>= (byte)'1' and <= (byte)'9'))
             {
                 throw new InvalidOperationException("expected 1-9");
             }
@@ -287,7 +287,7 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
                 Advance();
 
                 b = PeekOrThrow();
-                if (b is not >= (byte)'0' and <= (byte)'9')
+                if (b is not (>= (byte)'0' and <= (byte)'9'))
                 {
                     throw new InvalidOperationException("expected 0-9");
                 }
@@ -317,7 +317,7 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
                 Advance();
                 b = PeekOrThrow();
             }
-            if (b is not >= (byte)'0' and <= (byte)'9')
+            if (b is not (>= (byte)'0' and <= (byte)'9'))
             {
                 throw new InvalidOperationException("expected 0-9");
             }
