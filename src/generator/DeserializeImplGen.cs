@@ -387,31 +387,16 @@ namespace Serde
             // type constructor to use for deserialization.
             if (proxyCtor is not null && type is INamedTypeSymbol namedForProxyCtor)
             {
+                var proxyParamNames = new HashSet<string>(
+                    proxyCtor.Parameters.Select(p => p.Name),
+                    StringComparer.OrdinalIgnoreCase);
                 foreach (var ctor in namedForProxyCtor.InstanceConstructors)
                 {
                     if (ctor.Parameters.Length != proxyCtor.Parameters.Length)
                     {
                         continue;
                     }
-                    bool allMatch = true;
-                    foreach (var ctorParam in ctor.Parameters)
-                    {
-                        bool found = false;
-                        foreach (var proxyParam in proxyCtor.Parameters)
-                        {
-                            if (string.Equals(ctorParam.Name, proxyParam.Name, StringComparison.OrdinalIgnoreCase))
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found)
-                        {
-                            allMatch = false;
-                            break;
-                        }
-                    }
-                    if (allMatch)
+                    if (ctor.Parameters.All(p => proxyParamNames.Contains(p.Name)))
                     {
                         primaryCtor = ctor;
                         break;
