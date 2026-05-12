@@ -404,5 +404,76 @@ partial class C
 """;
             return VerifyMultiFile(src);
         }
+
+        [Fact]
+        public Task ForeignTypeProxy_MissingCtor()
+        {
+            // MyForeignType has only a non-parameterless constructor, and the proxy is a plain
+            // struct with init properties. Because no matching constructor can be found, this
+            // should produce ERR_MissingPrimaryCtor on the proxy's deserialization.
+            var src = """
+using Serde;
+
+public readonly struct MyForeignType
+{
+    public readonly int MyInt { get; }
+    public readonly string MyString { get; }
+
+    public MyForeignType(int myInt, string myString)
+    {
+        MyInt = myInt;
+        MyString = myString;
+    }
+}
+
+[GenerateSerde(ForType = typeof(MyForeignType))]
+public readonly partial struct MyForeignTypeProxy
+{
+    public readonly int MyInt { get; init; }
+    public readonly string MyString { get; init; }
+}
+
+[GenerateSerde]
+public readonly partial struct ConstructedType
+{
+    [SerdeMemberOptions(Proxy = typeof(MyForeignTypeProxy))]
+    public MyForeignType ForeignType { get; init; }
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task ForeignTypeProxy_WithCtor()
+        {
+            // When the proxy is a positional record struct, its primary constructor parameters
+            // are used to find the matching constructor on the foreign type.
+            var src = """
+using Serde;
+
+public readonly struct MyForeignType
+{
+    public readonly int MyInt { get; }
+    public readonly string MyString { get; }
+
+    public MyForeignType(int myInt, string myString)
+    {
+        MyInt = myInt;
+        MyString = myString;
+    }
+}
+
+[GenerateSerde(ForType = typeof(MyForeignType))]
+public readonly partial record struct MyForeignTypeProxy(int MyInt, string MyString);
+
+[GenerateSerde]
+public readonly partial struct ConstructedType
+{
+    [SerdeMemberOptions(Proxy = typeof(MyForeignTypeProxy))]
+    public MyForeignType ForeignType { get; init; }
+}
+""";
+            return VerifyMultiFile(src);
+        }
     }
 }

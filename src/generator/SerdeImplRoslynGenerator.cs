@@ -197,7 +197,10 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         string serdeObjString;
         if (TryGetSerdeObj(attributeData) is not { Item1: { } serdeObj })
         {
-            GenerateInfoAndSerdeImpls(usage, generationContext, typeDeclContext, receiverType, inProgress);
+            // When ForType is used, typeSymbol is the wrapper/proxy type; pass it so the
+            // generator can use its primary constructor to resolve the foreign type's ctor.
+            var wrapperType = proxiedOpt.HasValue ? typeSymbol : null;
+            GenerateInfoAndSerdeImpls(usage, generationContext, typeDeclContext, receiverType, inProgress, wrapperType);
             serdeObjString = isEnum
                 ? typeDeclContext.GetFqn()
                 : $"{typeDeclContext.GetFqn()}.{usage.GetSerdeObjName()}";
@@ -278,7 +281,8 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         GeneratorExecutionContext generationContext,
         TypeDeclContext typeDeclContext,
         INamedTypeSymbol receiverType,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        INamedTypeSymbol? wrapperType = null)
     {
         SerdeInfoGenerator.GenerateSerdeInfo(
             typeDeclContext,
@@ -292,7 +296,8 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             typeDeclContext,
             receiverType,
             generationContext,
-            inProgress);
+            inProgress,
+            wrapperType);
     }
 
     /// <summary>
@@ -350,10 +355,33 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         TypeDeclContext typeDeclContext,
         ITypeSymbol receiverType,
         GeneratorExecutionContext context,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        INamedTypeSymbol? wrapperType = null)
     {
         string fullTypeName = typeDeclContext.GetFqn(includeTypeParameters: false);
         var fullTypeString = typeDeclContext.GetFqn();
+
+        // Extract the primary constructor from the wrapper type (proxy). This is used to find
+        // the matching constructor on the foreign type when the wrapper is a positional record.
+        IMethodSymbol? proxyCtor = null;
+        if (wrapperType is not null)
+        {
+            foreach (var ctor in wrapperType.InstanceConstructors)
+            {
+                foreach (var syntaxRef in ctor.DeclaringSyntaxReferences)
+                {
+                    if (syntaxRef.GetSyntax() is TypeDeclarationSyntax)
+                    {
+                        proxyCtor = ctor;
+                        break;
+                    }
+                }
+                if (proxyCtor is not null)
+                {
+                    break;
+                }
+            }
+        }
 
         // Generate statements for the implementation
         SourceBuilder implMembers;
@@ -365,12 +393,12 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                 baseList = $" : Serde.ISerialize<{receiverType.ToDisplayString()}>";
                 break;
             case SerdeUsage.Deserialize:
-                implMembers = DeserializeImplGen.GenDeserialize(context, receiverType, inProgress);
+                implMembers = DeserializeImplGen.GenDeserialize(context, receiverType, inProgress, proxyCtor);
                 baseList = $" : Serde.IDeserialize<{receiverType.ToDisplayString()}>";
                 break;
             case SerdeUsage.Both:
                 implMembers = SerializeImplGen.GenSerialize(context, receiverType, inProgress);
-                var deserializeMembers = DeserializeImplGen.GenDeserialize(context, receiverType, inProgress);
+                var deserializeMembers = DeserializeImplGen.GenDeserialize(context, receiverType, inProgress, proxyCtor);
                 implMembers.Append(deserializeMembers);
                 baseList = $" : global::Serde.ISerde<{receiverType.ToFqn()}>";
                 break;

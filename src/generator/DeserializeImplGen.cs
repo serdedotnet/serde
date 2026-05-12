@@ -19,7 +19,8 @@ namespace Serde
         internal static SourceBuilder GenDeserialize(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
-            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+            IMethodSymbol? proxyCtor = null)
         {
             var typeFqn = receiverType.ToDisplayString();
             TypeSyntax typeSyntax = ParseTypeName(typeFqn);
@@ -33,7 +34,7 @@ namespace Serde
             // Generate members for IDeserialize.Deserialize implementation
             var members = receiverType.TypeKind == TypeKind.Enum
                 ? GenerateEnumDeserializeMethod(receiverType, typeSyntax)
-                : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, inProgress);
+                : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, inProgress, proxyCtor);
             return members;
         }
 
@@ -196,7 +197,8 @@ namespace Serde
             GeneratorExecutionContext context,
             ITypeSymbol type,
             TypeSyntax typeSyntax,
-            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+            IMethodSymbol? proxyCtor = null)
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
 
@@ -212,7 +214,7 @@ namespace Serde
                 _ => throw new InvalidOperationException("Too many members in type")
             };
             var (cases, locals, requiredMask) = InitCasesAndLocals();
-            var typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
+            var typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask, proxyCtor);
 
             const string typeInfoLocalName = "_l_serdeInfo";
             const string indexLocalName = "_l_index_";
@@ -373,11 +375,51 @@ namespace Serde
             string typeName,
             ITypeSymbol type,
             List<DataMemberSymbol> members,
-            string assignedMask)
+            string assignedMask,
+            IMethodSymbol? proxyCtor = null)
         {
             IMethodSymbol? primaryCtor = null;
             IMethodSymbol? parameterlessCtor = null;
-            if (type is INamedTypeSymbol named)
+
+            // If a proxy constructor is provided, prefer it over the normal constructor search.
+            // Use its parameter names (case-insensitively) to find the matching constructor on
+            // the foreign type. This allows positional record proxies to "specify" which foreign
+            // type constructor to use for deserialization.
+            if (proxyCtor is not null && type is INamedTypeSymbol namedForProxyCtor)
+            {
+                foreach (var ctor in namedForProxyCtor.InstanceConstructors)
+                {
+                    if (ctor.Parameters.Length != proxyCtor.Parameters.Length)
+                    {
+                        continue;
+                    }
+                    bool allMatch = true;
+                    foreach (var ctorParam in ctor.Parameters)
+                    {
+                        bool found = false;
+                        foreach (var proxyParam in proxyCtor.Parameters)
+                        {
+                            if (string.Equals(ctorParam.Name, proxyParam.Name, StringComparison.OrdinalIgnoreCase))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            allMatch = false;
+                            break;
+                        }
+                    }
+                    if (allMatch)
+                    {
+                        primaryCtor = ctor;
+                        break;
+                    }
+                }
+            }
+
+            if (primaryCtor is null && type is INamedTypeSymbol named)
             {
                 foreach (var ctor in named.InstanceConstructors)
                 {
@@ -409,7 +451,7 @@ namespace Serde
             {
                 foreach (var p in primaryCtor.Parameters)
                 {
-                    var index = assignmentMembers.FindIndex(m => m.Name == p.Name);
+                    var index = assignmentMembers.FindIndex(m => string.Equals(m.Name, p.Name, StringComparison.OrdinalIgnoreCase));
                     if (parameters.Length != 0)
                     {
                         parameters.Append(", ");
