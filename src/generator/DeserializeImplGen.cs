@@ -410,6 +410,15 @@ namespace Serde
                 foreach (var p in primaryCtor.Parameters)
                 {
                     var index = assignmentMembers.FindIndex(m => m.Name == p.Name);
+                    if (index < 0)
+                    {
+                        context.ReportDiagnostic(CreateDiagnostic(
+                            DiagId.ERR_CtorParamMismatch,
+                            type.Locations[0],
+                            p.Name,
+                            type.ToDisplayString()));
+                        return new SourceBuilder($"var newType = new {typeName}();");
+                    }
                     if (parameters.Length != 0)
                     {
                         parameters.Append(", ");
