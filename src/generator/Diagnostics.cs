@@ -19,6 +19,7 @@ namespace Serde
         ERR_WrapperDoesntImplementInterface = 6,
         ERR_CantImplementAbstract = 7,
         ERR_CantFindTypeParameter = 8,
+        ERR_CtorParamMismatch = 9,
     }
 
     internal static class Diagnostics
@@ -33,6 +34,7 @@ namespace Serde
             ERR_WrapperDoesntImplementInterface => nameof(ERR_WrapperDoesntImplementInterface),
             ERR_CantImplementAbstract => nameof(ERR_CantImplementAbstract),
             ERR_CantFindTypeParameter => nameof(ERR_CantFindTypeParameter),
+            ERR_CtorParamMismatch => nameof(ERR_CtorParamMismatch),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)

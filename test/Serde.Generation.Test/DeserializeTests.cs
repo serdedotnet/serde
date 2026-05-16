@@ -362,5 +362,23 @@ abstract partial record Base
                 nameof(DeserializeTests),
                 caller,
                 multiFile: false);
+
+        [Fact]
+        public Task CtorParamMismatch()
+        {
+            var src = """
+using Serde;
+
+public readonly struct MyForeignType(int myInt, string myString)
+{
+    public readonly int MyInt { get; } = myInt;
+    public readonly string MyString { get; } = myString;
+}
+
+[GenerateSerde(ForType = typeof(MyForeignType))]
+public readonly partial struct MyForeignTypeProxy;
+""";
+            return VerifyMultiFile(src);
+        }
     }
 }

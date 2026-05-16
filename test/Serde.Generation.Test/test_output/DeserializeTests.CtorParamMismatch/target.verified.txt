@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+public readonly struct MyForeignType(int myInt, string myString)
+                       ^^^^^^^^^^^^^
+{
+*/
+ : (2,23)-(2,36),
+      Message: Constructor parameter 'myInt' on type 'MyForeignType' does not match any member by name. All constructor parameters must have a corresponding member with the same name.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CtorParamMismatch,
+        Title: ,
+        MessageFormat: Constructor parameter 'myInt' on type 'MyForeignType' does not match any member by name. All constructor parameters must have a corresponding member with the same name.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}
