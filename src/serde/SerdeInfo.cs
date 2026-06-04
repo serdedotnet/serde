@@ -22,7 +22,44 @@ public static class SerdeInfo
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
+    {
+        var converted = new (string, ISerdeInfo, IList<CustomAttributeData>)[fields.Length];
+        for (int i = 0; i < fields.Length; i++)
+        {
+            converted[i] = (
+                fields[i].SerializeName,
+                fields[i].SerdeInfo,
+                fields[i].MemberInfo?.GetCustomAttributesData()
+                    ?? (IList<CustomAttributeData>)Array.Empty<CustomAttributeData>());
+        }
+        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
+    }
+
+    /// <summary>
+    /// Create an <see cref="ISerdeInfo"/> for a custom type with explicit field attributes.
+    /// </summary>
+    public static ISerdeInfo MakeCustom(
+        string typeName,
+        IList<CustomAttributeData> typeAttributes,
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields)
         => TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, fields);
+
+    /// <summary>
+    /// Create an <see cref="ISerdeInfo"/> for a custom type without field attributes or MemberInfo.
+    /// Field attributes default to empty.
+    /// </summary>
+    public static ISerdeInfo MakeCustom(
+        string typeName,
+        IList<CustomAttributeData> typeAttributes,
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo)> fields)
+    {
+        var converted = new (string, ISerdeInfo, IList<CustomAttributeData>)[fields.Length];
+        for (int i = 0; i < fields.Length; i++)
+        {
+            converted[i] = (fields[i].SerializeName, fields[i].SerdeInfo, Array.Empty<CustomAttributeData>());
+        }
+        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
+    }
 
     public static ISerdeInfo MakeEnum(
         string typeName,
@@ -30,10 +67,14 @@ public static class SerdeInfo
         ISerdeInfo underlyingInfo,
         ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields)
     {
-        var fieldsWithInfo = new (string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)[fields.Length];
+        var fieldsWithInfo = new (string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
-            fieldsWithInfo[i] = (fields[i].SerializeName, underlyingInfo, fields[i].MemberInfo);
+            fieldsWithInfo[i] = (
+                fields[i].SerializeName,
+                underlyingInfo,
+                fields[i].MemberInfo?.GetCustomAttributesData()
+                    ?? (IList<CustomAttributeData>)Array.Empty<CustomAttributeData>());
         }
 
         return TypeWithFieldsInfo.Create(typeName, InfoKind.Enum, typeAttributes, fieldsWithInfo);
@@ -107,7 +148,11 @@ public static class SerdeInfo
         private ArgumentOutOfRangeException GetOOR(int index)
             => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has {TypeArgInfos.Length} type argument(s).");
     }
+}
 
+public static class SerdeInfoExtensions
+{
+    public static ISerdeInfo WithName(this ISerdeInfo @this, string newName) => new WrappingInfo(@this, newName);
 }
 
 /// <summary>
@@ -140,6 +185,28 @@ file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
 
     private ArgumentOutOfRangeException GetOOR(int index)
         => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has only one field.");
+}
+
+/// <summary>
+/// Wraps an existing <see cref="ISerdeInfo"/> with a new name.
+/// </summary>
+file sealed class WrappingInfo(ISerdeInfo underlying, string name) : ISerdeInfo
+{
+    public string Name => name;
+    public InfoKind Kind => underlying.Kind;
+    public PrimitiveKind? PrimitiveKind => underlying.PrimitiveKind;
+    public IList<CustomAttributeData> Attributes => underlying.Attributes;
+    public int FieldCount => underlying.FieldCount;
+
+    public Utf8Span GetFieldName(int index) => underlying.GetFieldName(index);
+    public string GetFieldStringName(int index) => underlying.GetFieldStringName(index);
+    public IList<CustomAttributeData> GetFieldAttributes(int index) => underlying.GetFieldAttributes(index);
+    public int TryGetIndex(Utf8Span fieldName) => underlying.TryGetIndex(fieldName);
+
+    [Experimental("SerdeExperimentalFieldInfo")]
+#pragma warning disable SerdeExperimentalFieldInfo
+    public ISerdeInfo GetFieldInfo(int index) => underlying.GetFieldInfo(index);
+#pragma warning restore SerdeExperimentalFieldInfo
 }
 
 
@@ -216,19 +283,19 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
         for (int index = 0; index < fields.Length; index++)
         {
-            var (serializeName, serdeInfo, memberInfo) = fields[index];
+            var (serializeName, serdeInfo, fieldAttributes) = fields[index];
 
             nameToIndexBuilder.Add((ISerdeInfo.UTF8Encoding.GetBytes(serializeName), index));
             var fieldInfo = new PrivateFieldInfo(
                 serializeName,
                 default,
-                memberInfo?.GetCustomAttributesData().ToImmutableArray() ?? ImmutableArray<CustomAttributeData>.Empty,
+                fieldAttributes,
                 serdeInfo);
             indexToInfoBuilder.Add(fieldInfo);
         }
