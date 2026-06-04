@@ -1,13 +1,13 @@
 
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 using static Serde.SerdeImplRoslynGenerator;
@@ -200,6 +200,8 @@ namespace Serde
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
 
+            var classScopeProxyMap = ProxyMap.FromSymbol(type);
+
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
             var typeFqn = typeSyntax.ToString();
             var assignedVarType = members.Count switch {
@@ -267,7 +269,10 @@ namespace Serde
                         ? "ReadValue"
                         : "ReadBoxedValue";
                     string readValueCall;
-                    if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress) is { } explicitWrap)
+
+                    var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
+
+                    if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress, proxyContext) is { } explicitWrap)
                     {
                         readValueCall = $"{readMethodName}<{memberType}, {explicitWrap}>";
                     }
@@ -279,7 +284,7 @@ namespace Serde
                     {
                         readValueCall = $"Read{primitiveName}";
                     }
-                    else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress) is { Proxy: { } wrap })
+                    else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress, proxyContext) is { Proxy: { } wrap })
                     {
                         if (wrap == "global::Serde.GuidProxy")
                         {
@@ -405,6 +410,15 @@ namespace Serde
                 foreach (var p in primaryCtor.Parameters)
                 {
                     var index = assignmentMembers.FindIndex(m => m.Name == p.Name);
+                    if (index < 0)
+                    {
+                        context.ReportDiagnostic(CreateDiagnostic(
+                            DiagId.ERR_CtorParamMismatch,
+                            type.Locations[0],
+                            p.Name,
+                            type.ToDisplayString()));
+                        return new SourceBuilder($"var newType = new {typeName}();");
+                    }
                     if (parameters.Length != 0)
                     {
                         parameters.Append(", ");

@@ -145,4 +145,7 @@
   <data name="ERR_CantFindTypeParameter" xml:space="preserve">
     <value>Could not find type parameter named '{0}' in the current context.</value>
   </data>
+  <data name="ERR_CtorParamMismatch" xml:space="preserve">
+    <value>Constructor parameter '{0}' on type '{1}' does not match any member by name. All constructor parameters must have a corresponding member with the same name.</value>
+  </data>
 </root>

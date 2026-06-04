@@ -1,4 +1,3 @@
-
 using System;
 using System.Diagnostics;
 
@@ -229,4 +228,30 @@ enum MemberFormat : byte
     /// "kebab-case"
     /// </summary>
     KebabCase,
+}
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
+#if !SRCGEN
+public
+#else
+internal
+#endif
+sealed class UseProxy : Attribute
+{
+    public required Type ForType { get; init; }
+
+    /// <summary>
+    /// Proxy type for both ISerialize and IDeserialize implementations.
+    /// </summary>
+    public Type? Proxy { get; init; }
+
+    /// <summary>
+    /// Proxy type for the ISerialize implementation.
+    /// </summary>
+    public Type? SerializeProxy { get; init; }
+
+    /// <summary>
+    /// Proxy type for the IDeserialize implementation.
+    /// </summary>
+    public Type? DeserializeProxy { get; init; }
 }
