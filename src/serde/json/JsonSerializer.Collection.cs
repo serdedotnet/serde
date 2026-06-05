@@ -69,6 +69,11 @@ partial class JsonSerializer
             serializer.WriteI128(i128);
         }
 
+        public void WriteF16(ISerdeInfo typeInfo, int index, Half h)
+        {
+            serializer.WriteF16(h);
+        }
+
         public void WriteF32(ISerdeInfo typeInfo, int index, float f)
         {
             serializer.WriteF32(f);
@@ -137,6 +142,7 @@ partial class JsonSerializer
         public void WriteI32(int i32) => throw new KeyNotStringException();
         public void WriteI64(long i64) => throw new KeyNotStringException();
         public void WriteI128(Int128 i128) => throw new KeyNotStringException();
+        public void WriteF16(Half h) => throw new KeyNotStringException();
         public void WriteF32(float f) => throw new KeyNotStringException();
         public void WriteF64(double d) => throw new KeyNotStringException();
         public void WriteDecimal(decimal d) => throw new KeyNotStringException();
@@ -169,6 +175,7 @@ partial class JsonSerializer
         public void WriteBool(ISerdeInfo typeInfo, int index, bool b) => GetSerializer(index).WriteBool(b);
         public void WriteChar(ISerdeInfo typeInfo, int index, char c) => GetSerializer(index).WriteChar(c);
         public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => GetSerializer(index).WriteDecimal(d);
+        public void WriteF16(ISerdeInfo typeInfo, int index, Half h) => GetSerializer(index).WriteF16(h);
         public void WriteF32(ISerdeInfo typeInfo, int index, float f) => GetSerializer(index).WriteF32(f);
         public void WriteF64(ISerdeInfo typeInfo, int index, double d) => GetSerializer(index).WriteF64(d);
         public void WriteI16(ISerdeInfo typeInfo, int index, short i16) => GetSerializer(index).WriteI16(i16);
