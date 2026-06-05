@@ -8,8 +8,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
-using FsCheck;
-using FsCheck.Fluent;
+using CsCheck;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -43,13 +42,15 @@ namespace Serde.Test
         [Fact]
         public async Task CheckPrimitiveEquivalentsAsync()
         {
-            // Generates test cases, each of which has multiple generated classes
-            var testCases = Gen.Sample(Gen.Sized(TestTypeGenerators.GenTypeDef), 4, 100);
+            var resolvedRefs = await s_net10Refs.ResolveAsync(null, TestContext.Current.CancellationToken);
+
+            TestTypeGenerators.GenTopLevelTypeDef.Array[100].Sample(testCases =>
+            {
             var wrappers = new MemberDeclarationSyntax[testCases.Length];
             int wrapperIndex = 0;
             foreach (var type in testCases)
             {
-                var classDecls = ToMembers((TestTypeDef)type);
+                var classDecls = ToMembers(type);
                 // Wrap the classes used by each test case in an outer class to
                 // prevent name collision
                 wrappers[wrapperIndex] = ClassDeclaration(
@@ -104,7 +105,7 @@ namespace Serde.Test
             {body}
         }}
     }}
-}}", path: "Driver.cs", cancellationToken: TestContext.Current.CancellationToken);
+}}", path: "Driver.cs");
 
             var allTypes = SyntaxTree(CompilationUnit(
                 externs: default,
@@ -131,16 +132,15 @@ namespace Serde.Test
 
             var comp = CSharpCompilation.Create(
                Guid.NewGuid().ToString("N"),
-               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs", cancellationToken: TestContext.Current.CancellationToken) },
-               references: (await s_net10Refs.ResolveAsync(null, TestContext.Current.CancellationToken)).Concat(refs),
+               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
+               references: resolvedRefs.Concat(refs),
                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
             var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });
             driver.RunGeneratorsAndUpdateCompilation(
                 comp,
                 out var newComp,
-                out var diagnostics,
-                TestContext.Current.CancellationToken);
+                out var diagnostics);
 
             Assert.True(diagnostics.Length == 0, string.Join(Environment.NewLine, diagnostics));
 
@@ -150,13 +150,13 @@ namespace Serde.Test
                 xmlDocumentationStream: null,
                 win32Resources: null,
                 manifestResources: null,
-                options: s_emitOptions,
-                cancellationToken: TestContext.Current.CancellationToken);
+                options: s_emitOptions);
 
             Assert.True(result.Success,
                 string.Join(Environment.NewLine, result.Diagnostics));
             var loaded = Assembly.Load(peStream.GetBuffer());
             loaded.GetType("Serde.Test.Runner")!.GetMethod("Run")!.Invoke(null, null);
+            }, iter: 1, threads: 1);
         }
 
         // Tuns a test type into a list of type declarations. The root type is always named
@@ -535,63 +535,58 @@ public static class DeepEquals
 
         public static class TestTypeGenerators
         {
-            public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf<TestType>(new[] {
-                    Gen.Constant<TestType>(new TestByte()),
-                    Gen.Constant<TestType>(new TestChar()),
-                    Gen.Constant<TestType>(new TestBool()),
-                    Gen.Constant<TestType>(new TestInt()),
-                    Gen.Constant<TestType>(new TestDouble()),
-                    Gen.Constant<TestType>(new TestDecimal()),
-                    Gen.Constant<TestType>(new TestInt128()),
-                    Gen.Constant<TestType>(new TestUInt128()),
-                    Gen.Constant<TestType>(new TestDateTimeOffset()),
-                    Gen.Constant<TestType>(new TestDateOnly()),
-                    Gen.Constant<TestType>(new TestTimeOnly()),
-                    Gen.Constant<TestType>(new TestHalf()),
-                });
+            public static Gen<TestType> GenPrimitive { get; } = Gen.OneOf<TestType>(
+                    Gen.Const<TestType>(new TestByte()),
+                    Gen.Const<TestType>(new TestChar()),
+                    Gen.Const<TestType>(new TestBool()),
+                    Gen.Const<TestType>(new TestInt()),
+                    Gen.Const<TestType>(new TestDouble()),
+                    Gen.Const<TestType>(new TestDecimal()),
+                    Gen.Const<TestType>(new TestInt128()),
+                    Gen.Const<TestType>(new TestUInt128()),
+                    Gen.Const<TestType>(new TestDateTimeOffset()),
+                    Gen.Const<TestType>(new TestDateOnly()),
+                    Gen.Const<TestType>(new TestTimeOnly()),
+                    Gen.Const<TestType>(new TestHalf())
+                );
 
-            public static Gen<TestType> GenType(int size)
+            public static Gen<TestType> GenType { get; } = Gen.Recursive<TestType>((depth, self) =>
             {
-                if (size == 0)
-                {
-                    return GenPrimitive;
-                }
-                else
-                {
-                    var genAny = Gen.OneOf<TestType>(new[] {
-                        GenPrimitive,
-                        GenTypeArray(size),
-                        GenTypeList(size),
-                        GenTypeDictionary(size),
-                        GenTypeDef(size),
-                    });
-                    return genAny;
-                }
+                if (depth >= 3) return GenPrimitive;
+                return Gen.OneOf<TestType>(
+                    GenPrimitive,
+                    GenTypeArray(self),
+                    GenTypeList(self),
+                    GenTypeDictionary(self),
+                    GenTypeDef(self)
+                );
+            });
+
+            public static Gen<(int Length, TestType ElementType)> GenListLike(Gen<TestType> self)
+                => Gen.Select(Gen.Int[0, 2], self);
+
+            public static Gen<TestType> GenTypeArray(Gen<TestType> self)
+                => GenListLike(self).Select(x => (TestType)new TestTypeArray(x.Length, x.ElementType));
+
+            public static Gen<TestType> GenTypeList(Gen<TestType> self)
+                => GenListLike(self).Select(x => (TestType)new TestTypeList(x.Length, x.ElementType));
+
+            public static Gen<TestType> GenTypeDictionary(Gen<TestType> self)
+                => GenListLike(self).Select(x => (TestType)new TestTypeDictionary(x.Length, x.ElementType));
+
+            public static Gen<TestType> GenTypeDef(Gen<TestType> self)
+            {
+                return Gen.Int[1, 3]
+                    .SelectMany(n => self.Array[n]
+                        .Select(types => (TestType)new TestTypeDef(types.ToImmutableArray())));
             }
 
-            public static Gen<(int Length, TestType ElementType)> GenListLike(int size)
-                // generate between 0 and 2 elements
-                => Gen.Choose(0, 2).Zip(GenType(size / 2), (l, t) => (l, t));
-
-            public static Gen<TestType> GenTypeArray(int size)
-                => GenListLike(size).Select(x => (TestType)new TestTypeArray(x.Length, x.ElementType));
-
-            public static Gen<TestType> GenTypeList(int size)
-                => GenListLike(size).Select(x => (TestType)new TestTypeList(x.Length, x.ElementType));
-
-            public static Gen<TestType> GenTypeDictionary(int size)
-                => GenListLike(size).Select(x => (TestType)new TestTypeDictionary(x.Length, x.ElementType));
-
-            public static Gen<TestType> GenTypeDef(int size)
-            {
-                // generate class with between 1 and 3 fields
-                return Gen.Choose(1, 3)
-                    .SelectMany(arraySize => ImmArrayOf<TestType>(arraySize, GenType(size / 2))
-                        .Select(types => ((TestType)new TestTypeDef(types))));
-            }
-
-            public static Gen<ImmutableArray<T>> ImmArrayOf<T>(int n, Gen<T> gen)
-                => Gen.ArrayOf(gen, n).Select(a => a.ToImmutableArray());
+            /// <summary>
+            /// Top-level generator that always produces a TestTypeDef (not just any TestType).
+            /// </summary>
+            public static Gen<TestTypeDef> GenTopLevelTypeDef { get; } = Gen.Int[1, 3]
+                .SelectMany(n => GenType.Array[n]
+                    .Select(types => new TestTypeDef(types.ToImmutableArray())));
         }
     }
 }
