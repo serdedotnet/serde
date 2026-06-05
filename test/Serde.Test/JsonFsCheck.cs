@@ -434,6 +434,13 @@ public static class DeepEquals
                 "new TimeOnly(14, 30, 45)"
             );
         }
+        public sealed record TestHalf : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("Half");
+            public override ExpressionSyntax Value(int typeIndex) => ParseExpression(
+                "(Half)1.5"
+            );
+        }
         public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType
         {
             public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName(TypeName(typeIndex));
@@ -540,6 +547,7 @@ public static class DeepEquals
                     Gen.Constant<TestType>(new TestDateTimeOffset()),
                     Gen.Constant<TestType>(new TestDateOnly()),
                     Gen.Constant<TestType>(new TestTimeOnly()),
+                    Gen.Constant<TestType>(new TestHalf()),
                 });
 
             public static Gen<TestType> GenType(int size)
