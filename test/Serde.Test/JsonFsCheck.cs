@@ -46,53 +46,53 @@ namespace Serde.Test
 
             TestTypeGenerators.GenTopLevelTypeDef.Array[100].Sample(testCases =>
             {
-            var wrappers = new MemberDeclarationSyntax[testCases.Length];
-            int wrapperIndex = 0;
-            foreach (var type in testCases)
-            {
-                var classDecls = ToMembers(type);
-                // Wrap the classes used by each test case in an outer class to
-                // prevent name collision
-                wrappers[wrapperIndex] = ClassDeclaration(
-                    attributeLists: default,
-                    modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
-                    identifier: Identifier("TestCase" + wrapperIndex),
-                    typeParameterList: null,
-                    baseList: null,
-                    constraintClauses: default,
-                    members: List(classDecls)).NormalizeWhitespace();
-                wrapperIndex++;
-            }
+                var wrappers = new MemberDeclarationSyntax[testCases.Length];
+                int wrapperIndex = 0;
+                foreach (var type in testCases)
+                {
+                    var classDecls = ToMembers(type);
+                    // Wrap the classes used by each test case in an outer class to
+                    // prevent name collision
+                    wrappers[wrapperIndex] = ClassDeclaration(
+                        attributeLists: default,
+                        modifiers: TokenList(Token(SyntaxKind.PartialKeyword)),
+                        identifier: Identifier("TestCase" + wrapperIndex),
+                        typeParameterList: null,
+                        baseList: null,
+                        constraintClauses: default,
+                        members: List(classDecls)).NormalizeWhitespace();
+                    wrapperIndex++;
+                }
 
-            var serializeStatements = new List<string>();
-            serializeStatements.Add(@"var options = new System.Text.Json.JsonSerializerOptions() {
+                var serializeStatements = new List<string>();
+                serializeStatements.Add(@"var options = new System.Text.Json.JsonSerializerOptions() {
                 IncludeFields = true,
                 PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
             };");
-            for (int i = 0; i < wrappers.Length; i++)
-            {
-                var localName = "t" + i;
-                var typeName = $"TestCase{i}.Type0";
-                serializeStatements.Add($"var {localName} = new {typeName}();");
-                var serName = $"{localName}Ser";
-                serializeStatements.Add($@"string {serName} =
+                for (int i = 0; i < wrappers.Length; i++)
+                {
+                    var localName = "t" + i;
+                    var typeName = $"TestCase{i}.Type0";
+                    serializeStatements.Add($"var {localName} = new {typeName}();");
+                    var serName = $"{localName}Ser";
+                    serializeStatements.Add($@"string {serName} =
 Serde.Json.JsonSerializer.Serialize({localName});");
-                var deName = $"{localName}De";
-                serializeStatements.Add($@"var {deName} =
+                    var deName = $"{localName}De";
+                    serializeStatements.Add($@"var {deName} =
 Serde.Json.JsonSerializer.Deserialize<{typeName}>({serName});");
-                serializeStatements.Add($@"if ({localName} != {deName})
+                    serializeStatements.Add($@"if ({localName} != {deName})
 {{
     throw new Exception(""De Expected: "" + {localName} + Environment.NewLine + ""Actual: "" + {deName});
 }}");
-                serializeStatements.Add($"var stj{i} = System.Text.Json.JsonSerializer.Serialize({localName}, options);");
-                serializeStatements.Add($@"if ({serName} != stj{i})
+                    serializeStatements.Add($"var stj{i} = System.Text.Json.JsonSerializer.Serialize({localName}, options);");
+                    serializeStatements.Add($@"if ({serName} != stj{i})
 {{
     throw new Exception(""Ser Expected: "" + stj{i} + Environment.NewLine + ""Actual: "" + {serName});
 }}");
-            }
+                }
 
-            var body = string.Join(Environment.NewLine, serializeStatements);
-            var mainTree = SyntaxFactory.ParseSyntaxTree($@"
+                var body = string.Join(Environment.NewLine, serializeStatements);
+                var mainTree = SyntaxFactory.ParseSyntaxTree($@"
 using System;
 using System.Collections.Generic;
 
@@ -107,55 +107,55 @@ namespace Serde.Test
     }}
 }}", path: "Driver.cs");
 
-            var allTypes = SyntaxTree(CompilationUnit(
-                externs: default,
-                usings: List(new [] {
+                var allTypes = SyntaxTree(CompilationUnit(
+                    externs: default,
+                    usings: List(new[] {
                     UsingDirective(IdentifierName("System")),
                     UsingDirective(QualifiedName(
                         QualifiedName(IdentifierName("System"), IdentifierName("Collections")),
                         IdentifierName("Generic"))),
                     UsingDirective(IdentifierName("Serde")),
-                    }),
-                attributeLists: default,
-                List(new MemberDeclarationSyntax[] {
+                        }),
+                    attributeLists: default,
+                    List(new MemberDeclarationSyntax[] {
                     NamespaceDeclaration(
                         QualifiedName(IdentifierName("Serde"), IdentifierName("Test")),
                         externs: default,
                         usings: default,
                         members: List(wrappers))
-                })).NormalizeWhitespace(),
-                path: "AllTypes.cs");
+                    })).NormalizeWhitespace(),
+                    path: "AllTypes.cs");
 
-            var refs = new[] {
+                var refs = new[] {
                 MetadataReference.CreateFromFile(typeof(Serde.ISerialize<>).Assembly.Location),
             };
 
-            var comp = CSharpCompilation.Create(
-               Guid.NewGuid().ToString("N"),
-               syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
-               references: resolvedRefs.Concat(refs),
-               new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
+                var comp = CSharpCompilation.Create(
+                   Guid.NewGuid().ToString("N"),
+                   syntaxTrees: new[] { mainTree, allTypes, SyntaxFactory.ParseSyntaxTree(DeepEquals, path: "DeepEquals.cs") },
+                   references: resolvedRefs.Concat(refs),
+                   new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Warn));
 
-            var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });
-            driver.RunGeneratorsAndUpdateCompilation(
-                comp,
-                out var newComp,
-                out var diagnostics);
+                var driver = CSharpGeneratorDriver.Create(new[] { new SerdeImplRoslynGenerator() });
+                driver.RunGeneratorsAndUpdateCompilation(
+                    comp,
+                    out var newComp,
+                    out var diagnostics);
 
-            Assert.True(diagnostics.Length == 0, string.Join(Environment.NewLine, diagnostics));
+                Assert.True(diagnostics.Length == 0, string.Join(Environment.NewLine, diagnostics));
 
-            var peStream = new MemoryStream();
-            var result = newComp.Emit(peStream,
-                pdbStream: null,
-                xmlDocumentationStream: null,
-                win32Resources: null,
-                manifestResources: null,
-                options: s_emitOptions);
+                var peStream = new MemoryStream();
+                var result = newComp.Emit(peStream,
+                    pdbStream: null,
+                    xmlDocumentationStream: null,
+                    win32Resources: null,
+                    manifestResources: null,
+                    options: s_emitOptions);
 
-            Assert.True(result.Success,
-                string.Join(Environment.NewLine, result.Diagnostics));
-            var loaded = Assembly.Load(peStream.GetBuffer());
-            loaded.GetType("Serde.Test.Runner")!.GetMethod("Run")!.Invoke(null, null);
+                Assert.True(result.Success,
+                    string.Join(Environment.NewLine, result.Diagnostics));
+                var loaded = Assembly.Load(peStream.GetBuffer());
+                loaded.GetType("Serde.Test.Runner")!.GetMethod("Run")!.Invoke(null, null);
             }, iter: 1, threads: 1);
         }
 
