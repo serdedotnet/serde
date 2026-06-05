@@ -2,5 +2,5 @@
 authors = ["Andy Gocke"]
 language = "en"
 multilingual = false
-src = "."
+src = "guide"
 title = "Serde.NET"
