@@ -21,6 +21,11 @@ public interface IDeserializer : IDisposable
     int ReadI32();
     long ReadI64();
     Int128 ReadI128();
+    Half ReadF16()
+    {
+        // Default implementation: read as float and narrow
+        return (Half)ReadF32();
+    }
     float ReadF32();
     double ReadF64();
     decimal ReadDecimal();
@@ -142,6 +147,11 @@ public interface ITypeDeserializer : IDisposable
     int ReadI32(ISerdeInfo info, int index);
     long ReadI64(ISerdeInfo info, int index);
     Int128 ReadI128(ISerdeInfo info, int index);
+    Half ReadF16(ISerdeInfo info, int index)
+    {
+        // Default implementation: read as float and narrow
+        return (Half)ReadF32(info, index);
+    }
     float ReadF32(ISerdeInfo info, int index);
     double ReadF64(ISerdeInfo info, int index);
     decimal ReadDecimal(ISerdeInfo info, int index);

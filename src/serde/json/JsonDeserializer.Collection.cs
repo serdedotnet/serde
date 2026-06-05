@@ -212,6 +212,13 @@ partial class JsonDeserializer<TReader>
             return v;
         }
 
+        public Half ReadF16(ISerdeInfo info, int index)
+        {
+            var v = _deserializer.ReadF16();
+            _index++;
+            return v;
+        }
+
         public float ReadF32(ISerdeInfo info, int index)
         {
             var v = _deserializer.ReadF32();

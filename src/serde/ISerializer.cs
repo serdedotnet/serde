@@ -17,6 +17,11 @@ public interface ISerializer
     void WriteI32(int i32);
     void WriteI64(long i64);
     void WriteI128(Int128 i128);
+    void WriteF16(Half h)
+    {
+        // Default implementation: promote to float
+        WriteF32((float)h);
+    }
     void WriteF32(float f);
     void WriteF64(double d);
     void WriteDecimal(decimal d);
@@ -114,6 +119,11 @@ public interface ITypeSerializer
     void WriteI32(ISerdeInfo typeInfo, int index, int i32);
     void WriteI64(ISerdeInfo typeInfo, int index, long i64);
     void WriteI128(ISerdeInfo typeInfo, int index, Int128 i128);
+    void WriteF16(ISerdeInfo typeInfo, int index, Half h)
+    {
+        // Default implementation: promote to float
+        WriteF32(typeInfo, index, (float)h);
+    }
     void WriteF32(ISerdeInfo typeInfo, int index, float f);
     void WriteF64(ISerdeInfo typeInfo, int index, double d);
     void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);

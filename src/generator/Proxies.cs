@@ -88,6 +88,13 @@ sealed partial class {{proxyName}};
         {
             return "U128";
         }
+        if (type is { Name: "Half",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "F16";
+        }
         return null;
     }
 

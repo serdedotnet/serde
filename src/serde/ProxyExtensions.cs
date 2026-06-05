@@ -1,5 +1,6 @@
 
 #if NET10_0_OR_GREATER
+using System;
 using System.Collections.Generic;
 
 namespace Serde;
@@ -109,6 +110,15 @@ public static class FloatExtensions
     {
         public static ISerialize<float> Serialize => F32Proxy.Instance;
         public static IDeserialize<float> Deserialize => F32Proxy.Instance;
+    }
+}
+
+public static class HalfExtensions
+{
+    extension(Half)
+    {
+        public static ISerialize<Half> Serialize => F16Proxy.Instance;
+        public static IDeserialize<Half> Deserialize => F16Proxy.Instance;
     }
 }
 

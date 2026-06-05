@@ -70,6 +70,8 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
         return Reader.GetBoolean();
     }
 
+    public Half ReadF16() => (Half)ReadF32();
+
     public float ReadF32() => Convert.ToSingle(ReadF64());
 
     public double ReadF64()

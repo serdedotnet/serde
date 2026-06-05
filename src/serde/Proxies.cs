@@ -268,6 +268,26 @@ public sealed class I128Proxy : ISerdePrimitive<I128Proxy, Int128>
         => deserializer.ReadI128(info, index);
 }
 
+public sealed class F16Proxy : ISerdePrimitive<F16Proxy, Half>
+{
+    public static F16Proxy Instance { get; } = new();
+    private F16Proxy() { }
+
+    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("half", PrimitiveKind.F16);
+    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
+
+    public void Serialize(Half value, ISerializer serializer)
+        => serializer.WriteF16(value);
+    public Half Deserialize(IDeserializer deserializer)
+        => deserializer.ReadF16();
+
+    void ITypeSerialize<Half>.Serialize(Half value, ITypeSerializer serializer, ISerdeInfo info, int index)
+        => serializer.WriteF16(info, index, value);
+
+    Half ITypeDeserialize<Half>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+        => deserializer.ReadF16(info, index);
+}
+
 public sealed class F32Proxy : ISerdePrimitive<F32Proxy, float>
 {
     public static F32Proxy Instance { get; } = new();

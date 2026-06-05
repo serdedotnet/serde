@@ -165,6 +165,11 @@ partial class JsonDeserializer<TReader>
             ReadColon();
             return _deserializer.ReadI128();
         }
+        Half ITypeDeserializer.ReadF16(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer.ReadF16();
+        }
         float ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
         {
             ReadColon();

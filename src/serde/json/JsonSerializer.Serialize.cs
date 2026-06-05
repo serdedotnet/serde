@@ -62,6 +62,7 @@ partial class JsonSerializer : ISerializer
         }
         _writer.WriteRawValue(buffer.Slice(0, written));
     }
+    public void WriteF16(Half h) => _writer.WriteNumberValue((float)h);
     public void WriteF32(float f) => _writer.WriteNumberValue(f);
     public void WriteF64(double d) => _writer.WriteNumberValue(d);
     public void WriteDecimal(decimal d) => _writer.WriteNumberValue(d);
@@ -131,6 +132,7 @@ partial class JsonSerializer : ISerializer
         public void WriteU8(ISerdeInfo typeInfo, int index, byte b) => WriteEnumName(typeInfo, index);
         public void WriteChar(ISerdeInfo typeInfo, int index, char c) => ThrowInvalidEnum();
         public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => ThrowInvalidEnum();
+        public void WriteF16(ISerdeInfo typeInfo, int index, Half h) => ThrowInvalidEnum();
         public void WriteF64(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize) where T : class? => ThrowInvalidEnum();
         public void WriteF32(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
@@ -240,6 +242,12 @@ partial class JsonSerializer : ITypeSerializer
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));
         WriteI128(i128);
+    }
+
+    void ITypeSerializer.WriteF16(ISerdeInfo typeInfo, int index, Half h)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteF16(h);
     }
 
     void ITypeSerializer.WriteF32(ISerdeInfo typeInfo, int index, float f)

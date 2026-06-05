@@ -100,6 +100,7 @@ public enum PrimitiveKind
     Bytes,
     DateOnly,
     TimeOnly,
+    F16,
 }
 
 /// <summary>
