@@ -9,7 +9,7 @@ Serde.NET is a serialization/deserialization framework for .NET, inspired by Rus
 - `src/serde/` — Core library: interfaces (`ISerializer`, `IDeserializer`, `ITypeSerializer`, `ITypeDeserializer`), proxies, JSON implementation, and `ISerdeInfo` metadata.
 - `src/generator/` — Roslyn source generator that auto-generates `ISerialize`/`IDeserialize` implementations from `[GenerateSerde]`.
 - `pack/` — NuGet packaging project (`Serde.Pkg`).
-- `test/Serde.Test/` — Unit tests including FsCheck property-based tests.
+- `test/Serde.Test/` — Unit tests including CsCheck property-based tests.
 - `test/Serde.Generation.Test/` — Source generator snapshot tests using Verify.
 
 ### Build and Test
@@ -30,7 +30,7 @@ When adding a new primitive type (e.g., `Half`/F16, `Int128`/I128):
 4. Add proxy extensions in `src/serde/ProxyExtensions.cs` (guarded by `#if NET10_0_OR_GREATER`).
 5. Update the JSON serializer/deserializer — all six files: `JsonSerializer.Serialize.cs` (ISerializer + ITypeSerializer + EnumSerializer), `JsonSerializer.Collection.cs` (EnumerableImpl, KeySerializer, DictImpl), `JsonDeserializer.cs`, `JsonDeserializer.Type.cs` (DeType), `JsonDeserializer.Collection.cs` (DeCollection).
 6. Update the source generator in `src/generator/Proxies.cs` — add the type to `TryGetPrimitiveName` (for types with a `SpecialType`, use the switch; otherwise use name/namespace matching like `Int128`, `Half`, `DateTime`).
-7. Add the type to the FsCheck generators in `test/Serde.Test/JsonFsCheck.cs`: add a `TestXxx` record and include it in `GenPrimitive`.
+7. Add the type to the CsCheck generators in `test/Serde.Test/JsonFsCheck.cs`: add a `TestXxx` record and include it in `GenPrimitive`.
 
 ## Releasing
 

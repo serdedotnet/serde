@@ -1,10 +1,8 @@
 using System.Collections.Immutable;
-using FsCheck;
-using FsCheck.Fluent;
+using CsCheck;
 using Serde.Json;
 using Xunit;
 using static Serde.Json.JsonValue;
-using static Serde.Test.JsonFsCheck;
 
 namespace Serde.Test
 {
@@ -13,62 +11,42 @@ namespace Serde.Test
         [Fact]
         public void GenTypes()
         {
-            var items = Gen.Sample(Gen.Sized(JsonValueGenerators.GenJsonValue), 10, 500);
-            foreach (var item in items)
+            JsonValueGenerators.GenJsonValue.Sample(item =>
             {
                 var serdeStr = JsonSerializer.Serialize(item);
                 var de = JsonSerializer.Deserialize<JsonValue>(serdeStr);
                 Assert.Equal(item, de);
-            }
+            }, iter: 500, threads: 1);
         }
     }
 
     internal static class JsonValueGenerators
     {
-        public static Gen<JsonValue> GenPrimitive { get; } = Gen.OneOf<JsonValue>(new[] {
-            ArbMap.Default.GeneratorFor<int>().Select(a => (JsonValue)new Number(a)),
-            ArbMap.Default.GeneratorFor<double>().Where(d => double.IsFinite(d) && !double.IsNaN(d)).Select(a => (JsonValue)new Number(a)),
-        });
+        public static Gen<JsonValue> GenPrimitive { get; } = Gen.OneOf<JsonValue>(
+            Gen.Int.Select(a => (JsonValue)new Number(a)),
+            Gen.Double.Where(d => double.IsFinite(d) && !double.IsNaN(d)).Select(a => (JsonValue)new Number(a))
+        );
 
-        public static Gen<JsonValue> GenJsonValue(int size)
+        public static Gen<JsonValue> GenJsonValue { get; } = Gen.Recursive<JsonValue>((depth, self) =>
         {
-            if (size == 0)
-            {
-                return GenPrimitive;
-            }
-            else
-            {
-                return Gen.OneOf<JsonValue>(new[] {
-                    GenPrimitive,
-                    GenArray(size),
-                    GenObject(size)
-                });
-            }
-        }
+            if (depth >= 4) return GenPrimitive;
 
-        public static Gen<JsonValue> GenArray(int size)
-        {
-            return Gen.Choose(1, 3)
-                .SelectMany(arraySize =>
-                    TestTypeGenerators.ImmArrayOf<JsonValue>(arraySize, GenJsonValue(size / 2))
-                    .Select(values => (JsonValue)new Array(values)));
-        }
+            var genArray = Gen.Int[1, 3].SelectMany(n =>
+                self.Array[n].Select(values => (JsonValue)new Array(values.ToImmutableArray())));
 
-        public static Gen<JsonValue> GenObject(int size)
-        {
-            return Gen.Choose(1, 3)
-                .SelectMany(arraySize =>
-                    Gen.ArrayOf(GenJsonValue(size / 2), arraySize)
-                    .Select(values =>
+            var genObject = Gen.Int[1, 3].SelectMany(n =>
+                self.Array[n].Select(values =>
+                {
+                    var builder = ImmutableDictionary.CreateBuilder<string, JsonValue>();
+                    int index = 0;
+                    foreach (var v in values)
                     {
-                        var builder = ImmutableDictionary.CreateBuilder<string, JsonValue>();
-                        int index = 0;
-                        foreach (var v in values)
-                        {
-                            builder.Add("item" + index++, v);
-                        }
-                        return (JsonValue)new Object(builder.ToImmutable());
-                    }));
-        }
+                        builder.Add("item" + index++, v);
+                    }
+                    return (JsonValue)new Object(builder.ToImmutable());
+                }));
+
+            return Gen.OneOf<JsonValue>(GenPrimitive, genArray, genObject);
+        });
     }
 }
