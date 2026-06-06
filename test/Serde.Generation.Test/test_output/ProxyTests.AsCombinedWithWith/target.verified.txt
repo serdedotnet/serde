@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(As = typeof(string), With = typeof(StringIdSerdeObj))]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+public readonly partial struct StringId
+*/
+ : (9,1)-(9,68),
+      Message: The 'As' option cannot be combined with the 'With' option.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsTypeWithOption,
+        Title: ,
+        MessageFormat: The 'As' option cannot be combined with the 'With' option.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

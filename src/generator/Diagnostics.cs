@@ -22,6 +22,12 @@ namespace Serde
         ERR_CtorParamMismatch = 9,
         ERR_MissingExplicitConversion = 10,
         ERR_MissingReverseConversion = 11,
+        ERR_AsTypeNoConversion = 12,
+        ERR_AsTypeNotNamed = 13,
+        ERR_AsTypeOnEnum = 14,
+        ERR_AsTypeWithOption = 15,
+        ERR_ForTypeUnsupported = 16,
+        ERR_WithTypeUnsupported = 17,
     }
 
     internal static class Diagnostics
@@ -39,6 +45,12 @@ namespace Serde
             ERR_CtorParamMismatch => nameof(ERR_CtorParamMismatch),
             ERR_MissingExplicitConversion => nameof(ERR_MissingExplicitConversion),
             ERR_MissingReverseConversion => nameof(ERR_MissingReverseConversion),
+            ERR_AsTypeNoConversion => nameof(ERR_AsTypeNoConversion),
+            ERR_AsTypeNotNamed => nameof(ERR_AsTypeNotNamed),
+            ERR_AsTypeOnEnum => nameof(ERR_AsTypeOnEnum),
+            ERR_AsTypeWithOption => nameof(ERR_AsTypeWithOption),
+            ERR_ForTypeUnsupported => nameof(ERR_ForTypeUnsupported),
+            ERR_WithTypeUnsupported => nameof(ERR_WithTypeUnsupported),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)

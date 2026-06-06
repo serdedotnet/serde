@@ -15,6 +15,29 @@ The `GenerateSerde`, `GenerateSerialize`, and `GenerateDeserialize` attributes h
 
   Used to override the generation of the serde object with the specified custom serde object. The target type needs to implement `ISerde<T>`.
 
+- `[GenerateSerde(As = typeof(...))]`
+
+  Serializes and deserializes the declaring type *as* the given type by going through user-defined
+  conversions. When serializing, the declaring type is converted to the target type and serialized
+  as that type; when deserializing, the target type is deserialized and converted back to the
+  declaring type. User-defined conversions (implicit or explicit) must exist in the directions
+  required by the usage: declaring type → target type for serialization, and target type →
+  declaring type for deserialization. This is useful when a type should be represented on
+  the wire as a primitive or another serializable type. `As` cannot be combined with `ForType` or
+  `With`, and cannot be applied to enums.
+
+  ```csharp
+  [GenerateSerde(As = typeof(string))]
+  public readonly partial struct Rgb
+  {
+      public readonly byte R, G, B;
+      public Rgb(byte r, byte g, byte b) => (R, G, B) = (r, g, b);
+
+      public static explicit operator string(Rgb c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
+      public static explicit operator Rgb(string s) => /* parse "#RRGGBB" */;
+  }
+  ```
+
 ## Type options
 
 To apply options to an entire type and all its members, use `[SerdeTypeOptions]`. To apply options to one member in particular, use `[SerdeMemberOptions]`.

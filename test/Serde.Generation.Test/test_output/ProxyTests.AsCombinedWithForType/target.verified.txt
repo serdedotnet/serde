@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(ForType = typeof(Point), As = typeof(string))]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+public partial struct BadCombo {}
+*/
+ : (4,1)-(4,60),
+      Message: The 'As' option cannot be combined with the 'ForType' option.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsTypeWithOption,
+        Title: ,
+        MessageFormat: The 'As' option cannot be combined with the 'ForType' option.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

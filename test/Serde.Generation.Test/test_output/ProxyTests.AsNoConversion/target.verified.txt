@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+[GenerateSerde(As = typeof(string))]
+public readonly partial struct NoConversionId
+                               ^^^^^^^^^^^^^^
+{
+*/
+ : (3,31)-(3,45),
+      Message: Cannot represent 'NoConversionId' as 'string' because no user-defined conversion from 'NoConversionId' to 'string' was found. Define an explicit or implicit conversion operator between the types.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsTypeNoConversion,
+        Title: ,
+        MessageFormat: Cannot represent 'NoConversionId' as 'string' because no user-defined conversion from 'NoConversionId' to 'string' was found. Define an explicit or implicit conversion operator between the types.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

@@ -94,5 +94,18 @@ namespace Serde
                 }
             }
         }
+
+        public static T? FirstOrNull<T>(this IEnumerable<T> en, Func<T, bool> predicate)
+            where T : struct
+        {
+            foreach (var item in en)
+            {
+                if (predicate(item))
+                {
+                    return item;
+                }
+            }
+            return null;
+        }
     }
 }

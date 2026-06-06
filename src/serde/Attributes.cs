@@ -23,6 +23,14 @@ sealed class GenerateSerialize : Attribute
     /// This is used to implement serialization and deserialization for a proxy type.
     /// </summary>
     public Type? ForType { get; init; }
+
+    /// <summary>
+    /// If non-null, serialize the declaring type <em>as</em> the given type by going through a
+    /// user-defined conversion. The generated implementation converts the declaring type to this
+    /// type and serializes the result. A user-defined conversion from the declaring type to this
+    /// type must exist.
+    /// </summary>
+    public Type? As { get; init; }
 }
 
 /// <summary>
@@ -42,6 +50,14 @@ sealed class GenerateDeserialize : Attribute
     /// This is used to implement serialization and deserialization for a proxy type.
     /// </summary>
     public Type? ForType { get; init; }
+
+    /// <summary>
+    /// If non-null, deserialize the declaring type <em>as</em> the given type by going through a
+    /// user-defined conversion. The generated implementation deserializes this type and converts
+    /// the result to the declaring type. A user-defined conversion from this type to the declaring
+    /// type must exist.
+    /// </summary>
+    public Type? As { get; init; }
 }
 
 /// <summary>
@@ -66,6 +82,14 @@ sealed class GenerateSerde : Attribute
     /// Override the generated <see cref="ISerde{T}"/> object with a custom one.
     /// </summary>
     public Type? With { get; init; }
+
+    /// <summary>
+    /// If non-null, serialize and deserialize the declaring type <em>as</em> the given type by
+    /// going through user-defined conversions. The generated implementation converts the declaring
+    /// type to this type when serializing and back when deserializing. User-defined conversions in
+    /// both directions between the declaring type and this type must exist.
+    /// </summary>
+    public Type? As { get; init; }
 }
 
 /// <summary>

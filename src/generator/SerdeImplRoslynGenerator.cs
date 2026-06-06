@@ -148,14 +148,75 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         var attributeData = attrCtx.Attributes.Single();
 
         INamedTypeSymbol receiverType = typeSymbol;
-        var proxiedOpt = TryGetProxiedType(attributeData);
         bool isEnum = typeDecl.IsKind(SyntaxKind.EnumDeclaration);
+
+        // If the `ForType` property is set then we are generating a proxy for the given type.
+        INamedTypeSymbol? proxiedType = null;
+        if (attributeData.NamedArguments.FirstOrNull(a => a.Key == nameof(GenerateSerialize.ForType)) is (_, { } forTypeArg))
+        {
+            proxiedType = TryGetProxiedType(attributeData, forTypeArg, typeSymbol, generationContext);
+            if (proxiedType is null)
+            {
+                // Error already reported
+                return;
+            }
+        }
+
+        // If the `With` property is set then a custom serde object is used for the type.
+        INamedTypeSymbol? serdeObj = null;
+        if (attributeData.NamedArguments.FirstOrNull(a => a.Key == nameof(GenerateSerde.With)) is (_, { } withArg))
+        {
+            serdeObj = TryGetSerdeObj(attributeData, withArg, typeSymbol, generationContext);
+            if (serdeObj is null)
+            {
+                // Error already reported
+                return;
+            }
+        }
+
         // foreignType is non-null only when we have a non-empty proxy with an explicit
         // conversion. It represents the target type for the interface signatures and the
         // final conversion step. The rest of the pipeline operates on receiverType (the proxy).
         INamedTypeSymbol? foreignType = null;
 
-        if (proxiedOpt is { } proxiedType)
+        // If the `As` property is set, the type is serialized/deserialized by converting to and
+        // from the given type. This is incompatible with `ForType`, `With`, and enums.
+        INamedTypeSymbol? asType = null;
+        if (attributeData.NamedArguments.FirstOrNull(a => a.Key == nameof(GenerateSerialize.As)) is (_, { } asArg))
+        {
+            asType = TryGetAsType(attributeData, asArg, typeSymbol, generationContext);
+            if (asType is null)
+            {
+                // Error already reported
+                return;
+            }
+            if (isEnum)
+            {
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_AsTypeOnEnum,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    typeSymbol));
+                return;
+            }
+            if (proxiedType is not null)
+            {
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_AsTypeWithOption,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    nameof(GenerateSerialize.ForType)));
+                return;
+            }
+            if (serdeObj is not null)
+            {
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_AsTypeWithOption,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    nameof(GenerateSerde.With)));
+                return;
+            }
+        }
+
+        if (proxiedType is not null)
         {
             if (proxiedType.SpecialType != SpecialType.None)
             {
@@ -227,7 +288,16 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             (receiverType.WithNullableAnnotation(NullableAnnotation.Annotated), typeSymbol));
 
         string serdeObjString;
-        if (TryGetSerdeObj(attributeData) is not { Item1: { } serdeObj })
+        if (asType is not null)
+        {
+            // Serialize/deserialize the type by converting to and from `asType`.
+            if (!GenAsSerdeObjImpl(usage, generationContext, typeDeclContext, receiverType, asType, inProgress))
+            {
+                return;
+            }
+            serdeObjString = $"{typeDeclContext.GetFqn()}.{usage.GetSerdeObjName()}";
+        }
+        else if (serdeObj is null)
         {
             GenerateInfoAndSerdeImpls(usage, generationContext, typeDeclContext, receiverType, foreignType, inProgress);
             serdeObjString = isEnum
@@ -345,22 +415,59 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
     /// the proxied type.
     /// </summary>
     /// <returns>
-    /// Returns null if there is no `ForType` property.
+    /// Returns null if the `ForType` value is not a named type (in which case an error has already
+    /// been reported). Otherwise returns the proxied type.
     /// </returns>
-    private static INamedTypeSymbol? TryGetProxiedType(AttributeData attributeData)
+    private static INamedTypeSymbol? TryGetProxiedType(
+        AttributeData attributeData,
+        TypedConstant namedArg,
+        ISymbol attributedType,
+        GeneratorExecutionContext generationContext)
     {
-        foreach (var namedArg in attributeData.NamedArguments)
+        if (namedArg is { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol })
         {
-            switch (namedArg)
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
-                case { Key: nameof(GenerateSerialize.ForType),
-                       Value: { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol } }:
-                    if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
-                    {
-                        // TODO: Error about bad type
-                        return null;
-                    }
-                    return namedTypeSymbol;
+                return namedTypeSymbol;
+            }
+            else
+            {
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_ForTypeUnsupported,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    attributedType));
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// If the type has an `As` property, then we are generating an implementation that serializes
+    /// and deserializes the type by converting to and from the given type.
+    /// </summary>
+    /// <returns>
+    /// Returns null if there is no `As` property or the `As` value is not a named type (in which
+    /// case an error has already been reported). Otherwise returns the `As` type.
+    /// </returns>
+    private static INamedTypeSymbol? TryGetAsType(
+        AttributeData attributeData,
+        TypedConstant namedArg,
+        ISymbol attributedType,
+        GeneratorExecutionContext generationContext)
+    {
+        if (namedArg is { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol })
+        {
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                return namedTypeSymbol;
+            }
+            else
+            {
+                // The `As` type wasn't a named type (e.g. an array, pointer, or type parameter).
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_AsTypeNotNamed,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    attributedType));
             }
         }
         return null;
@@ -370,20 +477,28 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
     /// Check if the generation attribute has a <see cref="GenerateSerde.With"/> property,
     /// which specifies a custom serde object to use for serialization or deserialization.
     /// </summary>
-    private static ValueTuple<INamedTypeSymbol?>? TryGetSerdeObj(AttributeData attributeData)
+    /// <returns>
+    /// Returns null if the `With` value is not a named type (in which case an error has already
+    /// been reported). Otherwise returns the serde object type.
+    /// </returns>
+    private static INamedTypeSymbol? TryGetSerdeObj(
+        AttributeData attributeData,
+        TypedConstant namedArg,
+        ISymbol attributedType,
+        GeneratorExecutionContext generationContext)
     {
-        foreach (var namedArg in attributeData.NamedArguments)
+        if (namedArg is { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol })
         {
-            switch (namedArg)
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
-                case { Key: nameof(GenerateSerde.With),
-                       Value: { Kind: TypedConstantKind.Type, Value: ITypeSymbol typeSymbol } }:
-                    if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
-                    {
-                        // TODO: Error about bad type
-                        return new(null);
-                    }
-                    return new(namedTypeSymbol);
+                return namedTypeSymbol;
+            }
+            else
+            {
+                generationContext.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_WithTypeUnsupported,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    attributedType));
             }
         }
         return null;
@@ -458,6 +573,125 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
 
         var srcName = fullTypeName + "." + usage.GetInterfaceName();
         context.AddSource(srcName, newType);
+    }
+
+    /// <summary>
+    /// Generates a serde object that serializes and deserializes <paramref name="receiverType"/> by
+    /// converting to and from <paramref name="asType"/> through user-defined conversions. The
+    /// generated object delegates the actual serialization to <paramref name="asType"/>'s proxy.
+    /// </summary>
+    /// <returns>True if generation succeeded; false if a diagnostic was reported.</returns>
+    internal static bool GenAsSerdeObjImpl(
+        SerdeUsage usage,
+        GeneratorExecutionContext context,
+        TypeDeclContext typeDeclContext,
+        INamedTypeSymbol receiverType,
+        INamedTypeSymbol asType,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+    {
+        string fullTypeName = typeDeclContext.GetFqn(includeTypeParameters: false);
+        var location = receiverType.Locations.Length > 0 ? receiverType.Locations[0] : Location.None;
+        var receiverDisplay = receiverType.ToDisplayString();
+        var asTypeFqn = asType.ToFqn();
+
+        string? serProxy = null;
+        string? deProxy = null;
+
+        if (usage.HasFlag(SerdeUsage.Serialize))
+        {
+            var conversion = context.Compilation.ClassifyConversion(receiverType, asType);
+            if (!conversion.Exists || !conversion.IsUserDefined)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_AsTypeNoConversion, location, receiverType, asType));
+                return false;
+            }
+            serProxy = Proxies.TryGetProxyString(null, asType, context, SerdeUsage.Serialize, inProgress, ProxyContext.Empty);
+            if (serProxy is null)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_DoesntImplementInterface, location, asType, asType, "Serde.ISerializeProvider<T>"));
+                return false;
+            }
+        }
+
+        if (usage.HasFlag(SerdeUsage.Deserialize))
+        {
+            var conversion = context.Compilation.ClassifyConversion(asType, receiverType);
+            if (!conversion.Exists || !conversion.IsUserDefined)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_AsTypeNoConversion, location, asType, receiverType));
+                return false;
+            }
+            deProxy = Proxies.TryGetProxyString(null, asType, context, SerdeUsage.Deserialize, inProgress, ProxyContext.Empty);
+            if (deProxy is null)
+            {
+                context.ReportDiagnostic(CreateDiagnostic(
+                    DiagId.ERR_DoesntImplementInterface, location, asType, asType, "Serde.IDeserializeProvider<T>"));
+                return false;
+            }
+        }
+
+        // The SerdeInfo delegates to the target type so the wire format matches, but overrides the
+        // name so it reflects the declaring type rather than the target type.
+        var targetInfoExpr = serProxy is not null
+            ? $"global::Serde.SerdeInfoProvider.GetSerializeInfo<{asTypeFqn}, {serProxy}>()"
+            : $"global::Serde.SerdeInfoProvider.GetDeserializeInfo<{asTypeFqn}, {deProxy}>()";
+        var serdeInfoExpr = $"global::Serde.SerdeInfoExtensions.WithName({targetInfoExpr}, \"{receiverType.Name}\")";
+
+        var implMembers = new SourceBuilder($"global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo {{ get; }} = {serdeInfoExpr};");
+        if (serProxy is not null)
+        {
+            implMembers.AppendLine("");
+            implMembers.AppendLine($$"""
+            void global::Serde.ISerialize<{{receiverDisplay}}>.Serialize({{receiverDisplay}} value, global::Serde.ISerializer serializer)
+            {
+                global::Serde.SerializeProvider.GetSerialize<{{asTypeFqn}}, {{serProxy}}>().Serialize(({{asTypeFqn}})value, serializer);
+            }
+            """);
+        }
+        if (deProxy is not null)
+        {
+            implMembers.AppendLine("");
+            implMembers.AppendLine($$"""
+            {{receiverDisplay}} global::Serde.IDeserialize<{{receiverDisplay}}>.Deserialize(global::Serde.IDeserializer deserializer)
+            {
+                return ({{receiverDisplay}})global::Serde.DeserializeProvider.GetDeserialize<{{asTypeFqn}}, {{deProxy}}>().Deserialize(deserializer);
+            }
+            """);
+        }
+
+        string baseList = usage switch
+        {
+            SerdeUsage.Serialize => $" : Serde.ISerialize<{receiverDisplay}>",
+            SerdeUsage.Deserialize => $" : Serde.IDeserialize<{receiverDisplay}>",
+            SerdeUsage.Both => $" : global::Serde.ISerde<{receiverType.ToFqn()}>",
+            _ => throw ExceptionUtilities.Unreachable
+        };
+
+        var newType = new SourceBuilder("""
+
+            #nullable enable
+
+            using System;
+            using Serde;
+
+            """
+        );
+
+        var objName = usage.GetSerdeObjName();
+        var proxyType = new SourceBuilder($$"""
+        sealed partial class {{objName}}{{baseList}}
+        {
+            {{implMembers}}
+        }
+        """);
+        typeDeclContext.AppendPartialDecl(newType, "", proxyType);
+
+        var srcName = fullTypeName + "." + usage.GetInterfaceName();
+        context.AddSource(srcName, newType);
+        return true;
     }
 
     internal static (string FileName, SourceBuilder Decl) MakePartialDecl(

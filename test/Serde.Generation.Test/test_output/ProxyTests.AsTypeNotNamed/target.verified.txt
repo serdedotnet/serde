@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(As = typeof(string[]))]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+public readonly partial struct ArrayAsId
+*/
+ : (2,1)-(2,37),
+      Message: The 'As' option cannot be applied to type 'ArrayAsId': the 'As' type must be a named type.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsTypeNotNamed,
+        Title: ,
+        MessageFormat: The 'As' option cannot be applied to type 'ArrayAsId': the 'As' type must be a named type.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}
