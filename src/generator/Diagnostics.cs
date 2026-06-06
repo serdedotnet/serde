@@ -20,6 +20,8 @@ namespace Serde
         ERR_CantImplementAbstract = 7,
         ERR_CantFindTypeParameter = 8,
         ERR_CtorParamMismatch = 9,
+        ERR_MissingExplicitConversion = 10,
+        ERR_MissingReverseConversion = 11,
     }
 
     internal static class Diagnostics
@@ -35,6 +37,8 @@ namespace Serde
             ERR_CantImplementAbstract => nameof(ERR_CantImplementAbstract),
             ERR_CantFindTypeParameter => nameof(ERR_CantFindTypeParameter),
             ERR_CtorParamMismatch => nameof(ERR_CtorParamMismatch),
+            ERR_MissingExplicitConversion => nameof(ERR_MissingExplicitConversion),
+            ERR_MissingReverseConversion => nameof(ERR_MissingReverseConversion),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)

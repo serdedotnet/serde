@@ -19,6 +19,7 @@ namespace Serde
         internal static SourceBuilder GenDeserialize(
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
+            INamedTypeSymbol? foreignType,
             ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
         {
             var typeFqn = receiverType.ToDisplayString();
@@ -33,7 +34,7 @@ namespace Serde
             // Generate members for IDeserialize.Deserialize implementation
             var members = receiverType.TypeKind == TypeKind.Enum
                 ? GenerateEnumDeserializeMethod(receiverType, typeSyntax)
-                : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, inProgress);
+                : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, foreignType, inProgress);
             return members;
         }
 
@@ -65,13 +66,6 @@ namespace Serde
 
             var members = SymbolUtilities.GetDUTypeMembers(type);
             var typeFqn = type.ToDisplayString();
-            var assignedVarType = members.Length switch {
-                (<= 8) => "byte",
-                (<= 16) => "ushort",
-                (<= 32) => "uint",
-                (<= 64) => "ulong",
-                _ => throw new InvalidOperationException("Too many members in type")
-            };
             var membersBuilder = new StringBuilder();
             for (int i = 0; i < members.Length; i++)
             {
@@ -196,6 +190,7 @@ namespace Serde
             GeneratorExecutionContext context,
             ITypeSymbol type,
             TypeSyntax typeSyntax,
+            INamedTypeSymbol? foreignType,
             ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
@@ -213,6 +208,7 @@ namespace Serde
             };
             var (cases, locals, requiredMask) = InitCasesAndLocals();
             var typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
+            string foreignTypeConversionOpt = foreignType is not null ? $"({foreignType.ToDisplayString()})" : "";
 
             const string typeInfoLocalName = "_l_serdeInfo";
             const string indexLocalName = "_l_index_";
@@ -222,8 +218,9 @@ namespace Serde
                 ? $"{IndexErrorName}"
                 : "_";
 
+            var interfaceString = (foreignType ?? type).ToDisplayString(SymbolUtilities.FqnFormat);
             var methodText = new SourceBuilder($$"""
-{{typeFqn}} Serde.IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
+{{interfaceString}} Serde.IDeserialize<{{interfaceString}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
     {{assignedVarType}} {{AssignedVarName}} = 0;
@@ -244,7 +241,7 @@ namespace Serde
         }
     }
     {{typeCreationExpr}}
-    return newType;
+    return {{foreignTypeConversionOpt}}newType;
 }
 """);
             return methodText;
@@ -365,8 +362,9 @@ namespace Serde
 
         /// <summary>
         /// If the type has a parameterless constructor then we will use that and just set
-        /// each member in the initializer. If there is no parameterlss constructor, there
-        /// must be a primary constructor.
+        /// each member in the initializer. If there is no parameterless constructor, there
+        /// must be a primary constructor. When foreignType is set, the proxy (type) is
+        /// constructed instead and converted to the foreign type via explicit conversion.
         /// </summary>
         private static SourceBuilder GenerateTypeCreation(
             GeneratorExecutionContext context,
@@ -449,6 +447,7 @@ namespace Serde
             }
             typeCreation.Dedent();
             typeCreation.AppendLine("};");
+
             return typeCreation;
         }
 

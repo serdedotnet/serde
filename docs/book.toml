@@ -1,6 +1,5 @@
 [book]
 authors = ["Andy Gocke"]
 language = "en"
-multilingual = false
 src = "guide"
 title = "Serde.NET"

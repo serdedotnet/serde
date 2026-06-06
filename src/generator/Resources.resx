@@ -148,4 +148,10 @@
   <data name="ERR_CtorParamMismatch" xml:space="preserve">
     <value>Constructor parameter '{0}' on type '{1}' does not match any member by name. All constructor parameters must have a corresponding member with the same name.</value>
   </data>
+  <data name="ERR_MissingExplicitConversion" xml:space="preserve">
+    <value>Proxy type '{0}' must be either empty or define a public explicit conversion operator to '{1}'. Add: public static explicit operator {1}({0} proxy)</value>
+  </data>
+  <data name="ERR_MissingReverseConversion" xml:space="preserve">
+    <value>Proxy type '{0}' must define a public explicit conversion operator from '{1}' in order to serialize it. Add: public static explicit operator {0}({1} value)</value>
+  </data>
 </root>

@@ -13,6 +13,7 @@ public partial class SerializeImplGen
     internal static SourceBuilder GenSerialize(
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
+        INamedTypeSymbol? foreignType,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         if (receiverType.IsAbstract)
@@ -63,6 +64,20 @@ public partial class SerializeImplGen
         {
             var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
 
+            // When serializing for a foreign type, convert the foreign value to the
+            // proxy via the explicit conversion operator and read members off the
+            // proxy. Otherwise read members directly off the value.
+            string receiverExpr;
+            if (foreignType is not null)
+            {
+                receiverExpr = "_l_self";
+                statements.AppendLine($"var _l_self = ({receiverType.ToDisplayString()})value;");
+            }
+            else
+            {
+                receiverExpr = "value";
+            }
+
             // `var _l_info = GetInfo(this);`
             statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
 
@@ -78,12 +93,12 @@ public partial class SerializeImplGen
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
                 if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } proxy)
                 {
-                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i));
+                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i, receiverExpr));
                 }
                 // 2. Check for a direct implementation of ISerialize
                 else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Serialize))
                 {
-                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), m.Type.ToDisplayString(), i));
+                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), m.Type.ToDisplayString(), i, receiverExpr));
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
                 //    method. Check using the non-null form (even if it's nullable), since nullable
@@ -95,12 +110,12 @@ public partial class SerializeImplGen
                         // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                         primName += "IfNotNull";
                     }
-                    statements.AppendLine($"_l_type.Write{primName}(_l_info, {i}, value.{m.Name});");
+                    statements.AppendLine($"_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});");
                 }
                 // 4. A wrapper that implements ISerialize
                 else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } wrapper)
                 {
-                    statements.AppendLine(MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i));
+                    statements.AppendLine(MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i, receiverExpr));
                 }
                 else
                 {
@@ -115,7 +130,7 @@ public partial class SerializeImplGen
                 }
             }
 
-            static string MakeWriteValueStmt(DataMemberSymbol m, string type, string proxy, int i)
+            static string MakeWriteValueStmt(DataMemberSymbol m, string type, string proxy, int i, string valueExpr)
             {
                 // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
                 string methodName = m.Type.IsReferenceType
@@ -126,18 +141,19 @@ public partial class SerializeImplGen
                 {
                     methodName += "IfNotNull";
                 }
-                return $"_l_type.{methodName}<{type}, {proxy}>(_l_info, {i}, value.{m.Name});";
+                return $"_l_type.{methodName}<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
             }
         }
         // `type.End();`
         statements.Append("_l_type.End(_l_info);");
 
-        var receiverSyntax = ((INamedTypeSymbol)receiverType).ToFqnSyntax();
-        var receiverString = receiverType.ToDisplayString();
+        // The interface type is the foreign type when present, otherwise the receiver.
+        var interfaceType = (ITypeSymbol?)foreignType ?? receiverType;
+        var interfaceString = interfaceType.ToDisplayString();
 
         // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
         var members = new SourceBuilder($$"""
-        void global::Serde.ISerialize<{{receiverSyntax}}>.Serialize({{receiverSyntax}} value, global::Serde.ISerializer serializer)
+        void global::Serde.ISerialize<{{interfaceString}}>.Serialize({{interfaceString}} value, global::Serde.ISerializer serializer)
         {
             {{statements}}
         }
