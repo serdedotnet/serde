@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(ForType = typeof(ForeignPoint))]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+partial struct ForeignPointProxy
+*/
+ : (9,1)-(9,46),
+      Message: Proxy type 'ForeignPointProxy' must define a public explicit conversion operator from 'ForeignPoint' in order to serialize it. Add: public static explicit operator ForeignPointProxy(ForeignPoint value),
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_MissingReverseConversion,
+        Title: ,
+        MessageFormat: Proxy type 'ForeignPointProxy' must define a public explicit conversion operator from 'ForeignPoint' in order to serialize it. Add: public static explicit operator ForeignPointProxy(ForeignPoint value),
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

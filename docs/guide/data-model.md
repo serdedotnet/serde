@@ -30,5 +30,5 @@ The Serde data model is as follows:
   - Sometimes referred to as "polymorphic types." C# does not yet have built-in support for discriminated unions, but the source generator will match a particular pattern anyway. To write a union type, use an abstract record type, with nested records that inherit from the parent record. The parent record must only have private constructors. For example,
 
 ```csharp
-{{#include ../samples/Unions.cs:union-def}}
+{{#include ../../samples/Unions.cs:union-def}}
 ```

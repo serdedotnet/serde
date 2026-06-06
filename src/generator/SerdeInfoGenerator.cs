@@ -31,9 +31,11 @@ internal static class SerdeInfoGenerator
     public static void GenerateSerdeInfo(
         TypeDeclContext typeDeclContext,
         INamedTypeSymbol receiverType,
+        INamedTypeSymbol? foreignType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
     {
         if (receiverType.IsAbstract)
         {
@@ -62,11 +64,13 @@ internal static class SerdeInfoGenerator
             fieldArrayType = "(string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[]";
         }
 
-        var typeString = receiverType.ToDisplayString();
-        if (typeString.IndexOf('<') is var index && index != -1)
+        // reflectionType is used for typeof() in reflection calls.
+        var reflectionType = receiverType;
+        var reflectionTypeString = reflectionType.ToDisplayString();
+        if (reflectionTypeString.IndexOf('<') is var index && index != -1)
         {
-            typeString = typeString[..index];
-            typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
+            reflectionTypeString = reflectionTypeString[..index];
+            reflectionTypeString = reflectionTypeString + "<" + new string(',', reflectionType is INamedTypeSymbol nts ? nts.TypeParameters.Length - 1 : 0) + ">";
         }
 
         var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
@@ -74,7 +78,19 @@ internal static class SerdeInfoGenerator
         var membersString = string.Join("," + Utilities.NewLine,
             SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
 
-        List<string> makeArgs = [ $"\"{receiverType.Name}\"", $"typeof({typeString}).GetCustomAttributesData()" ];
+        // Type identity: the SerdeInfo Name is the conceptual type being
+        // (de)serialized. For a non-empty conversion proxy that is the foreign
+        // type, not the proxy (which is an implementation detail). Type-level
+        // attributes and member reflection still come from the proxy, since
+        // that is where serde configuration and the mirrored members live.
+        var typeString = receiverType.ToDisplayString();
+        if (typeString.IndexOf('<') is var idx && idx != -1)
+        {
+            typeString = typeString[..idx];
+            typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
+        }
+        var identityName = (foreignType ?? receiverType).Name;
+        List<string> makeArgs = [ $"\"{identityName}\"", $"typeof({typeString}).GetCustomAttributesData()" ];
 
         if (isEnum)
         {
@@ -141,8 +157,9 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
                 elements.Add($"global::Serde.SerdeInfoProvider.Get{name}Info<{m.Type.ToDisplayString()}, {wrapperName}>()");
             }
 
+            // Member reflection points at the member source type (proxy when non-empty)
             var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
-            elements.Add($"typeof({typeString}).{getAccessor}(\"{m.Name}\")");
+            elements.Add($"typeof({reflectionTypeString}).{getAccessor}(\"{m.Name}\")");
 
             return $"""({string.Join(", ", elements)})""";
         }
@@ -173,9 +190,9 @@ partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}}
 }
 """));
             var newCtx = TypeDeclContext.FromFile(nestedType.ToString(), proxyName);
-            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, newCtx, m, inProgress.Add((m, receiverType)));
+            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, newCtx, m, foreignType: null, inProgress.Add((m, receiverType)));
             var serdeObjFqn = $"{newCtx.GetFqn()}.{usage.GetSerdeObjName()}";
-            SerdeImplRoslynGenerator.GenerateProviderImpls(usage, context, serdeObjFqn, newCtx, m);
+            SerdeImplRoslynGenerator.GenerateProviderImpls(usage, context, serdeObjFqn, newCtx, m, foreignType: null);
         }
 
         var bodies = new SourceBuilder($$"""

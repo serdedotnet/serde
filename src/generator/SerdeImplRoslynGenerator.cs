@@ -1,15 +1,12 @@
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using StaticCs;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 
 namespace Serde;
@@ -153,23 +150,58 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         INamedTypeSymbol receiverType = typeSymbol;
         var proxiedOpt = TryGetProxiedType(attributeData);
         bool isEnum = typeDecl.IsKind(SyntaxKind.EnumDeclaration);
-        // If the Through property is set, then we are implementing a wrapper type
-        if (proxiedOpt is { Item1: null })
-        {
-            // Error already reported
-            return;
-        }
-        else if (proxiedOpt is { Item1: { } proxiedType })
-        {
-            receiverType = proxiedType;
+        // foreignType is non-null only when we have a non-empty proxy with an explicit
+        // conversion. It represents the target type for the interface signatures and the
+        // final conversion step. The rest of the pipeline operates on receiverType (the proxy).
+        INamedTypeSymbol? foreignType = null;
 
-            if (receiverType.SpecialType != SpecialType.None)
+        if (proxiedOpt is { } proxiedType)
+        {
+            if (proxiedType.SpecialType != SpecialType.None)
             {
                 generationContext.ReportDiagnostic(CreateDiagnostic(
                     DiagId.ERR_CantWrapSpecialType,
                     attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
-                    receiverType));
+                    proxiedType));
                 return;
+            }
+
+            if (SymbolUtilities.GetDataMembers(typeSymbol, SerdeUsage.Both).Count != 0)
+            {
+                // Non-empty proxy: it is a representation (surrogate) of the foreign
+                // type. We deserialize the proxy and convert it to the foreign type,
+                // and convert the foreign type to the proxy to serialize. This requires
+                // explicit conversion operators in both directions (depending on usage).
+                foreignType = proxiedType;
+
+                var conversionLocation = attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation();
+
+                // Deserialize converts the deserialized proxy to the foreign type.
+                if ((usage & SerdeUsage.Deserialize) != 0
+                    && !HasExplicitConversion(typeSymbol, fromType: typeSymbol, toType: proxiedType))
+                {
+                    generationContext.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_MissingExplicitConversion,
+                        conversionLocation,
+                        typeSymbol, proxiedType));
+                    return;
+                }
+
+                // Serialize converts the foreign value to the proxy before writing.
+                if ((usage & SerdeUsage.Serialize) != 0
+                    && !HasExplicitConversion(typeSymbol, fromType: proxiedType, toType: typeSymbol))
+                {
+                    generationContext.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_MissingReverseConversion,
+                        conversionLocation,
+                        typeSymbol, proxiedType));
+                    return;
+                }
+            }
+            else
+            {
+                // Empty proxy: receiverType becomes the foreign type
+                receiverType = proxiedType;
             }
         }
         else if (!isEnum)
@@ -197,7 +229,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         string serdeObjString;
         if (TryGetSerdeObj(attributeData) is not { Item1: { } serdeObj })
         {
-            GenerateInfoAndSerdeImpls(usage, generationContext, typeDeclContext, receiverType, inProgress);
+            GenerateInfoAndSerdeImpls(usage, generationContext, typeDeclContext, receiverType, foreignType, inProgress);
             serdeObjString = isEnum
                 ? typeDeclContext.GetFqn()
                 : $"{typeDeclContext.GetFqn()}.{usage.GetSerdeObjName()}";
@@ -214,7 +246,8 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             generationContext,
             serdeObjString,
             typeDeclContext,
-            receiverType);
+            receiverType,
+            foreignType);
     }
 
     internal static void GenerateProviderImpls(
@@ -222,7 +255,8 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         GeneratorExecutionContext generationContext,
         string serdeObjName,
         TypeDeclContext typeDeclContext,
-        INamedTypeSymbol receiverType)
+        INamedTypeSymbol receiverType,
+        INamedTypeSymbol? foreignType)
     {
         string fullTypeName = typeDeclContext.GetFqn(includeTypeParameters: false);
 
@@ -233,17 +267,22 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         generationContext.AddSource(srcName, content);
 
         SourceBuilder GenProviderImplHelper(SerdeUsage usage)
-            => GenProviderImpl(usage, serdeObjName, typeDeclContext, receiverType);
+            => GenProviderImpl(usage, serdeObjName, typeDeclContext, receiverType, foreignType);
     }
 
     private static SourceBuilder GenProviderImpl(
         SerdeUsage usage,
         string serdeObjName,
         TypeDeclContext typeDeclContext,
-        ITypeSymbol receiverType
+        ITypeSymbol receiverType,
+        INamedTypeSymbol? foreignType
     )
     {
-        var receiverString = receiverType.ToDisplayString();
+        // The provided type (the `T` in ISerdeProvider/I{Serialize,Deserialize}Provider)
+        // is the type the SerdeObj actually implements serde for: the foreign type
+        // when present, otherwise the receiver (proxy).
+        var providedType = (ITypeSymbol?)foreignType ?? receiverType;
+        var receiverString = providedType.ToDisplayString();
         var containerString = typeDeclContext.GetFqn();
 
         string baseList;
@@ -259,9 +298,9 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         else
         {
             var interfaceName = $"{usage.GetInterfaceName()}Provider";
-            baseList = $" : Serde.{interfaceName}<{receiverType.ToFqn()}>";
+            baseList = $" : Serde.{interfaceName}<{providedType.ToFqn()}>";
             members = new SourceBuilder($$"""
-            static global::Serde.{{usage.GetInterfaceName()}}<{{receiverType.ToDisplayString()}}> global::Serde.{{interfaceName}}<{{receiverType.ToFqn()}}>.Instance { get; }
+            static global::Serde.{{usage.GetInterfaceName()}}<{{providedType.ToDisplayString()}}> global::Serde.{{interfaceName}}<{{providedType.ToFqn()}}>.Instance { get; }
                 = new {{serdeObjName}}();
             """);
 
@@ -278,32 +317,37 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         GeneratorExecutionContext generationContext,
         TypeDeclContext typeDeclContext,
         INamedTypeSymbol receiverType,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        INamedTypeSymbol? foreignType,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
     {
         SerdeInfoGenerator.GenerateSerdeInfo(
             typeDeclContext,
             receiverType,
+            foreignType,
             generationContext,
             usage,
-            inProgress);
+            inProgress
+        );
 
         GenSerdeObjImpl(
             usage,
             typeDeclContext,
             receiverType,
+            foreignType,
             generationContext,
-            inProgress);
+            inProgress
+        );
     }
 
     /// <summary>
-    /// If the type has a `Through` property then we are generating a proxy type and need to find
+    /// If the type has a `ForType` property then we are generating a proxy type and need to find
     /// the proxied type.
     /// </summary>
     /// <returns>
-    /// Returns null if there is no `Through` property. Returns ValueTuple(null) if there is an
-    /// error. Returns ValueTuple(ITypeSymbol) if there is a valid proxied type.
+    /// Returns null if there is no `ForType` property.
     /// </returns>
-    private static ValueTuple<INamedTypeSymbol?>? TryGetProxiedType(AttributeData attributeData)
+    private static INamedTypeSymbol? TryGetProxiedType(AttributeData attributeData)
     {
         foreach (var namedArg in attributeData.NamedArguments)
         {
@@ -314,9 +358,9 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                     if (typeSymbol is not INamedTypeSymbol namedTypeSymbol)
                     {
                         // TODO: Error about bad type
-                        return new(null);
+                        return null;
                     }
-                    return new(namedTypeSymbol);
+                    return namedTypeSymbol;
             }
         }
         return null;
@@ -349,11 +393,15 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         SerdeUsage usage,
         TypeDeclContext typeDeclContext,
         ITypeSymbol receiverType,
+        INamedTypeSymbol? foreignType,
         GeneratorExecutionContext context,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
     {
         string fullTypeName = typeDeclContext.GetFqn(includeTypeParameters: false);
         var fullTypeString = typeDeclContext.GetFqn();
+
+        // The interface type is the foreign type when present, otherwise the receiver.
+        var interfaceType = (ITypeSymbol?)foreignType ?? receiverType;
 
         // Generate statements for the implementation
         SourceBuilder implMembers;
@@ -361,18 +409,18 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         switch (usage)
         {
             case SerdeUsage.Serialize:
-                implMembers = SerializeImplGen.GenSerialize(context, receiverType, inProgress);
-                baseList = $" : Serde.ISerialize<{receiverType.ToDisplayString()}>";
+                implMembers = SerializeImplGen.GenSerialize(context, receiverType, foreignType, inProgress);
+                baseList = $" : Serde.ISerialize<{interfaceType.ToDisplayString()}>";
                 break;
             case SerdeUsage.Deserialize:
-                implMembers = DeserializeImplGen.GenDeserialize(context, receiverType, inProgress);
-                baseList = $" : Serde.IDeserialize<{receiverType.ToDisplayString()}>";
+                implMembers = DeserializeImplGen.GenDeserialize(context, receiverType, foreignType, inProgress);
+                baseList = $" : Serde.IDeserialize<{interfaceType.ToDisplayString()}>";
                 break;
             case SerdeUsage.Both:
-                implMembers = SerializeImplGen.GenSerialize(context, receiverType, inProgress);
-                var deserializeMembers = DeserializeImplGen.GenDeserialize(context, receiverType, inProgress);
+                implMembers = SerializeImplGen.GenSerialize(context, receiverType, foreignType, inProgress);
+                var deserializeMembers = DeserializeImplGen.GenDeserialize(context, receiverType, foreignType, inProgress);
                 implMembers.Append(deserializeMembers);
-                baseList = $" : global::Serde.ISerde<{receiverType.ToFqn()}>";
+                baseList = $" : global::Serde.ISerde<{interfaceType.ToFqn()}>";
                 break;
             default:
                 throw ExceptionUtilities.Unreachable;
@@ -506,6 +554,33 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             return rename;
         }
         return type.Name;
+    }
+
+    /// <summary>
+    /// Check if <paramref name="declaringType"/> declares a public static explicit
+    /// conversion operator that converts from <paramref name="fromType"/> to
+    /// <paramref name="toType"/>.
+    /// </summary>
+    internal static bool HasExplicitConversion(INamedTypeSymbol declaringType, ITypeSymbol fromType, ITypeSymbol toType)
+    {
+        foreach (var m in declaringType.GetMembers())
+        {
+            if (m is IMethodSymbol
+                {
+                    MethodKind: MethodKind.Conversion,
+                    Name: "op_Explicit",
+                    DeclaredAccessibility: Accessibility.Public,
+                    IsStatic: true,
+                    Parameters: [{ Type: var paramType }],
+                    ReturnType: var returnType,
+                }
+                && SymbolEqualityComparer.Default.Equals(paramType, fromType)
+                && SymbolEqualityComparer.Default.Equals(returnType, toType))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

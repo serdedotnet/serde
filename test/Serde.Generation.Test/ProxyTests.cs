@@ -404,5 +404,108 @@ partial class C
 """;
             return VerifyMultiFile(src);
         }
+
+        /// <summary>
+        /// A non-empty proxy with an explicit conversion operator should use the proxy's
+        /// members for serialization/deserialization, constructing the proxy on deserialize
+        /// and converting to the foreign type.
+        /// </summary>
+        [Fact]
+        public Task NonEmptyProxyWithExplicitConversion()
+        {
+            var src = """
+using Serde;
+
+class ForeignPoint
+{
+    public int X { get; }
+    public int Y { get; }
+    public ForeignPoint(int x, int y) { X = x; Y = y; }
+}
+
+[GenerateSerde(ForType = typeof(ForeignPoint))]
+partial struct ForeignPointProxy
+{
+    public int X;
+    public int Y;
+
+    public static explicit operator ForeignPoint(ForeignPointProxy p)
+        => new ForeignPoint(p.X, p.Y);
+
+    public static explicit operator ForeignPointProxy(ForeignPoint p)
+        => new ForeignPointProxy { X = p.X, Y = p.Y };
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        /// <summary>
+        /// A non-empty proxy used as a member proxy in another type.
+        /// </summary>
+        [Fact]
+        public Task NonEmptyProxyAsMemberProxy()
+        {
+            var src = """
+using Serde;
+
+class ForeignPoint
+{
+    public int X { get; }
+    public int Y { get; }
+    public ForeignPoint(int x, int y) { X = x; Y = y; }
+}
+
+[GenerateSerde(ForType = typeof(ForeignPoint))]
+partial struct ForeignPointProxy
+{
+    public int X;
+    public int Y;
+
+    public static explicit operator ForeignPoint(ForeignPointProxy p)
+        => new ForeignPoint(p.X, p.Y);
+
+    public static explicit operator ForeignPointProxy(ForeignPoint p)
+        => new ForeignPointProxy { X = p.X, Y = p.Y };
+}
+
+[GenerateSerde]
+partial class Container
+{
+    [SerdeMemberOptions(Proxy = typeof(ForeignPointProxy))]
+    public required ForeignPoint Point { get; init; }
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        /// <summary>
+        /// A non-empty proxy that is missing the reverse (foreign -> proxy) conversion
+        /// operator required for serialization should produce a diagnostic.
+        /// </summary>
+        [Fact]
+        public Task NonEmptyProxyMissingReverseConversion()
+        {
+            var src = """
+using Serde;
+
+class ForeignPoint
+{
+    public int X { get; }
+    public int Y { get; }
+    public ForeignPoint(int x, int y) { X = x; Y = y; }
+}
+
+[GenerateSerde(ForType = typeof(ForeignPoint))]
+partial struct ForeignPointProxy
+{
+    public int X;
+    public int Y;
+
+    public static explicit operator ForeignPoint(ForeignPointProxy p)
+        => new ForeignPoint(p.X, p.Y);
+}
+""";
+            return VerifyMultiFile(src);
+        }
     }
 }

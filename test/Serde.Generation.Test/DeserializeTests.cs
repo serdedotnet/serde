@@ -59,7 +59,7 @@ using System.Collections.Immutable;
 using System.Runtime.InteropServices.ComTypes;
 
 [GenerateDeserialize(ForType = typeof(BIND_OPTS))]
-readonly partial record struct OptsWrap(BIND_OPTS Value);
+readonly partial record struct OptsWrap;
 
 [GenerateDeserialize]
 partial struct S
@@ -80,7 +80,7 @@ using Serde;
 using System.Runtime.InteropServices.ComTypes;
 
 [GenerateDeserialize(ForType = typeof(BIND_OPTS))]
-readonly partial record struct Wrap(BIND_OPTS Value);
+readonly partial record struct Wrap;
 
 """;
             return VerifyDeserialize(src);
