@@ -31,3 +31,9 @@ Console.WriteLine();
 Console.WriteLine("As conversion sample:");
 Console.WriteLine("=========================");
 AsConversionSample.Sample.Run();
+
+// External type via a conversion-operator proxy (the `ForType` option)
+Console.WriteLine();
+Console.WriteLine("Conversion proxy sample:");
+Console.WriteLine("=========================");
+VersionProxySample.Sample.Run();

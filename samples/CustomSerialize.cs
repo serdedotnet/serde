@@ -14,7 +14,7 @@ partial record Color(int R, int G, int B);
 class ColorSerdeObj : ISerde<Color>
 {
     // Color is serialized as a hex string, so it looks just like a string in the serialized form.
-    public ISerdeInfo SerdeInfo => StringProxy.SerdeInfo;
+    public ISerdeInfo SerdeInfo { get; } = StringProxy.SerdeInfo.WithName("Color");
 
     public void Serialize(Color color, ISerializer serializer)
     {
