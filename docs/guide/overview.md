@@ -26,7 +26,7 @@ Supported formats:
 
 ## Getting started
 
-This full sample is also available in the [Github repo](https://github.com/agocke/serde/tree/main/samples/intro).
+This full sample is also available in the [Github repo](https://github.com/serdedotnet/serde/tree/main/samples).
 
 Steps to get started:
 

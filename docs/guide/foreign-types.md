@@ -27,7 +27,7 @@ compiler enforces that they exist: if you generate serialization you must supply
 `Proxy -> ExternalType`.
 
 ```csharp
-{{#include ../../samples/ConversionProxy.cs }}
+{{#include ../../samples/VersionProxy.cs }}
 ```
 
 Serializing a `Version` then produces JSON from the proxy's fields:
