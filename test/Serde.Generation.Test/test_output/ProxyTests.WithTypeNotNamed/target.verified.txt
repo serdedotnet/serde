@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(With = typeof(int[]))]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+public partial struct BadWith {}
+*/
+ : (2,1)-(2,36),
+      Message: The 'With' option cannot be applied to type 'BadWith': the serde object must be a named type.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_WithTypeUnsupported,
+        Title: ,
+        MessageFormat: The 'With' option cannot be applied to type 'BadWith': the serde object must be a named type.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

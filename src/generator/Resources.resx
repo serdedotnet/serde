@@ -154,4 +154,22 @@
   <data name="ERR_MissingReverseConversion" xml:space="preserve">
     <value>Proxy type '{0}' must define a public explicit conversion operator from '{1}' in order to serialize it. Add: public static explicit operator {0}({1} value)</value>
   </data>
+  <data name="ERR_AsTypeNoConversion" xml:space="preserve">
+    <value>Cannot represent '{0}' as '{1}' because no user-defined conversion from '{0}' to '{1}' was found. Define an explicit or implicit conversion operator between the types.</value>
+  </data>
+  <data name="ERR_AsTypeNotNamed" xml:space="preserve">
+    <value>The 'As' option cannot be applied to type '{0}': the 'As' type must be a named type.</value>
+  </data>
+  <data name="ERR_AsTypeOnEnum" xml:space="preserve">
+    <value>The 'As' option cannot be applied to type '{0}': enums cannot define user-defined conversions.</value>
+  </data>
+  <data name="ERR_AsTypeWithOption" xml:space="preserve">
+    <value>The 'As' option cannot be combined with the '{0}' option.</value>
+  </data>
+  <data name="ERR_ForTypeUnsupported" xml:space="preserve">
+    <value>The 'ForType' option cannot be applied to type '{0}': the proxied type must be a named type.</value>
+  </data>
+  <data name="ERR_WithTypeUnsupported" xml:space="preserve">
+    <value>The 'With' option cannot be applied to type '{0}': the serde object must be a named type.</value>
+  </data>
 </root>

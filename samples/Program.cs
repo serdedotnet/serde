@@ -25,3 +25,9 @@ ExternalTypesSample.Sample.Run();
 Console.WriteLine();
 Console.WriteLine("Generic types sample:");
 GenericTypeSample.Run();
+
+// Representing a type as another (the `As` option)
+Console.WriteLine();
+Console.WriteLine("As conversion sample:");
+Console.WriteLine("=========================");
+AsConversionSample.Sample.Run();

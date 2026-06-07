@@ -507,5 +507,173 @@ partial struct ForeignPointProxy
 """;
             return VerifyMultiFile(src);
         }
+
+        [Fact]
+        public Task AsString()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(As = typeof(string))]
+public readonly partial struct StringId
+{
+    public readonly string Value;
+    public StringId(string value) => Value = value;
+
+    public static explicit operator string(StringId id) => id.Value;
+    public static explicit operator StringId(string value) => new StringId(value);
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsGeneratedType()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde]
+public partial record Point(int X, int Y);
+
+[GenerateSerde(As = typeof(Point))]
+public readonly partial struct PointWrapper
+{
+    public readonly int X;
+    public readonly int Y;
+    public PointWrapper(int x, int y) { X = x; Y = y; }
+
+    public static implicit operator Point(PointWrapper p) => new Point(p.X, p.Y);
+    public static implicit operator PointWrapper(Point p) => new PointWrapper(p.X, p.Y);
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsSerializeOnly()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerialize(As = typeof(int))]
+public readonly partial struct SerOnlyId
+{
+    public readonly int Value;
+    public SerOnlyId(int value) => Value = value;
+
+    public static implicit operator int(SerOnlyId id) => id.Value;
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsNoConversion()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(As = typeof(string))]
+public readonly partial struct NoConversionId
+{
+    public readonly string Value;
+    public NoConversionId(string value) => Value = value;
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsCombinedWithForType()
+        {
+            var src = """
+using Serde;
+
+public partial record Point(int X, int Y);
+
+[GenerateSerde(ForType = typeof(Point), As = typeof(string))]
+public partial struct BadCombo {}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsTypeNotNamed()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(As = typeof(string[]))]
+public readonly partial struct ArrayAsId
+{
+    public readonly string Value;
+    public ArrayAsId(string value) => Value = value;
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsCombinedWithEnum()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(As = typeof(int))]
+public enum BadEnum { A, B }
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsCombinedWithWith()
+        {
+            var src = """
+using Serde;
+
+class StringIdSerdeObj : ISerde<StringId>
+{
+    public ISerdeInfo SerdeInfo => StringProxy.SerdeInfo;
+    public void Serialize(StringId value, ISerializer serializer) => serializer.WriteString(value.Value);
+    public StringId Deserialize(IDeserializer deserializer) => new StringId(deserializer.ReadString());
+}
+
+[GenerateSerde(As = typeof(string), With = typeof(StringIdSerdeObj))]
+public readonly partial struct StringId
+{
+    public readonly string Value;
+    public StringId(string value) => Value = value;
+
+    public static explicit operator string(StringId id) => id.Value;
+    public static explicit operator StringId(string value) => new StringId(value);
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task ForTypeNotNamed()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(ForType = typeof(int[]))]
+public partial struct BadForType {}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task WithTypeNotNamed()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(With = typeof(int[]))]
+public partial struct BadWith {}
+""";
+            return VerifyMultiFile(src);
+        }
     }
 }
