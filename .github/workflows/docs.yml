@@ -1,0 +1,41 @@
+name: docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: '0.5.1'
+
+      - name: Build book
+        run: mdbook build ./docs
+
+      # Publishes the rendered book to the gh-pages branch of the
+      # serdedotnet.github.io repo, which serves https://serdedotnet.github.io/.
+      # Requires the DOCS_DEPLOY_KEY secret (SSH private key whose public half is
+      # registered as a write-enabled deploy key on serdedotnet/serdedotnet.github.io).
+      - name: Deploy to serdedotnet.github.io
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.DOCS_DEPLOY_KEY }}
+          external_repository: serdedotnet/serdedotnet.github.io
+          publish_branch: gh-pages
+          publish_dir: ./docs/book
+          force_orphan: true
