@@ -20,11 +20,7 @@ conversion operators in both directions:
 - `Proxy -> ExternalType`, used when **deserializing**.
 
 Serde generates the serialization against the proxy's own fields and uses the
-operators to convert to and from the external type at the call site. The operators
-are the contract that the proxy faithfully represents the external type, and the
-compiler enforces that they exist: if you generate serialization you must supply
-`ExternalType -> Proxy`, and if you generate deserialization you must supply
-`Proxy -> ExternalType`.
+operators to convert to and from the external type at the call site.
 
 ```csharp
 {{#include ../../samples/VersionProxy.cs }}

@@ -13,6 +13,7 @@ The Serde data model is as follows:
     - `F32` and `F64` (`float` and `double`)
     - `decimal`
     - `string`
+    - `DateTimeOffset`
     - `DateTime`
 - **Contiguous array of bytes**
   - Serialization: `ReadOnlyMemory<byte>`
