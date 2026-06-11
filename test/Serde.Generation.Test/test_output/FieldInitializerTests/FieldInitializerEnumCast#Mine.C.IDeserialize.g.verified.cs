@@ -1,18 +1,22 @@
-﻿//HintName: Container.IDeserialize.g.cs
+﻿//HintName: Mine.C.IDeserialize.g.cs
 
 #nullable enable
 
 using System;
 using Serde;
-partial record Container
-{
-    sealed partial class _DeObj : Serde.IDeserialize<Container>
-    {
-        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Container.s_serdeInfo;
 
-        Container Serde.IDeserialize<Container>.Deserialize(IDeserializer deserializer)
+namespace Mine;
+
+partial class C
+{
+    sealed partial class _DeObj : Serde.IDeserialize<Mine.C>
+    {
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Mine.C.s_serdeInfo;
+
+        Mine.C Serde.IDeserialize<Mine.C>.Deserialize(IDeserializer deserializer)
         {
-            Original? _l_sdkdir = null;
+            Other.Color _l_field = (Other.Color)0;
+            int _l_y = default!;
 
             byte _r_assignedValid = 0;
 
@@ -30,8 +34,13 @@ partial record Container
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_sdkdir = typeDeserialize.ReadBoxedValue<Original?, Serde.NullableProxy.De<Original, Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_field = typeDeserialize.ReadBoxedValue<Other.Color, Other.ColorProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
+                        break;
+                    case 1:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
+                        _l_y = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((byte)1) << 1;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -40,12 +49,13 @@ partial record Container
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b0) != 0b0)
+            if ((_r_assignedValid & 0b11) != 0b11)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-            var newType = new Container() {
-                SdkDir = _l_sdkdir,
+            var newType = new Mine.C() {
+                Field = _l_field,
+                Y = _l_y,
             };
 
             return newType;

@@ -12,7 +12,7 @@ partial record Container
 
         Container Serde.IDeserialize<Container>.Deserialize(IDeserializer deserializer)
         {
-            Original? _l_sdkdir = default!;
+            Original? _l_sdkdir = null;
 
             byte _r_assignedValid = 0;
 
