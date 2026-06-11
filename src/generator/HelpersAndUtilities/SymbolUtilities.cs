@@ -213,6 +213,7 @@ namespace Serde
             SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining,
             SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
             SymbolDisplayGenericsOptions.IncludeTypeParameters,
+            SymbolDisplayMemberOptions.IncludeContainingType,
             miscellaneousOptions:
                 SymbolDisplayMiscellaneousOptions.UseSpecialTypes
                 | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers

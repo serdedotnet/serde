@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serde
 {
@@ -28,8 +30,9 @@ namespace Serde
             MemberOptions memberOptions)
         {
             Debug.Assert(symbol is
-                IFieldSymbol or
-                IPropertySymbol { Parameters.Length: 0 });
+                IFieldSymbol { ContainingType: { TypeKind: TypeKind.Enum}, IsStatic: true } or
+                IFieldSymbol { IsStatic: false } or
+                IPropertySymbol { IsStatic: false, Parameters.Length: 0 });
             Symbol = symbol;
             _typeOptions = typeOptions;
             _memberOptions = memberOptions;
@@ -184,6 +187,75 @@ namespace Serde
                     wordBuilder.Clear();
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns the initializer expression string for this member, or null if there is no
+        /// initializer or the initializer is not "constant". Constant here means either an
+        /// actual const, or a static member reference. This expression should be safe to emit
+        /// into methods inside the type.
+        /// </summary>
+        public string? GetConstInitializer(Compilation compilation)
+        {
+            foreach (var syntaxRef in Symbol.DeclaringSyntaxReferences)
+            {
+                var syntax = syntaxRef.GetSyntax();
+                EqualsValueClauseSyntax? initializer = syntax switch
+                {
+                    VariableDeclaratorSyntax v => v.Initializer,
+                    PropertyDeclarationSyntax p => p.Initializer,
+                    _ => null
+                };
+                if (initializer is null)
+                    continue;
+
+                var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
+
+                var expr = initializer.Value;
+                // Check if the expression resolves to a symbol we can safely fully-qualify.
+                var symbolInfo = semanticModel.GetSymbolInfo(expr);
+                if (symbolInfo.Symbol is IFieldSymbol { IsStatic: true } or
+                    IPropertySymbol { IsStatic: true })
+                {
+                    return symbolInfo.Symbol.ToDisplayString(SymbolUtilities.FqnFormat);
+                }
+
+                if (expr is InvocationExpressionSyntax)
+                {
+                    return null;
+                }
+
+                var constant = semanticModel.GetConstantValue(expr);
+                if (constant.HasValue)
+                {
+                    var val = constant.Value;
+                    // A null constant has no identifiers; preserve the original text so
+                    // that null-forgiving syntax (null!) is kept for non-nullable members.
+                    if (val is null)
+                    {
+                        return expr.ToString();
+                    }
+
+                    // Reconstruct the constant from its value rather than echoing the
+                    // source text, so that no unqualified identifiers (type names relying
+                    // on a using directive, or named constants) can leak into the
+                    // generated file. FormatPrimitive emits a self-contained literal.
+                    var literal = SymbolDisplay.FormatPrimitive(val, quoteStrings: true, useHexadecimalNumbers: false);
+                    if (literal is null)
+                    {
+                        return null;
+                    }
+
+                    // Enum constants (e.g. a cast like (Color)0 or a flags combination)
+                    // carry their underlying integral value; cast it back to the
+                    // fully-qualified enum type.
+                    var constType = semanticModel.GetTypeInfo(expr).Type;
+                    return constType is { TypeKind: TypeKind.Enum }
+                        ? $"({constType.ToFqn()}){literal}"
+                        : literal;
+                }
+            }
+            return null;
         }
     }
 }

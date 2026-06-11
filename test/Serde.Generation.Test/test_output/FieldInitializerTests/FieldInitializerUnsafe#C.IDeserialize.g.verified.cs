@@ -1,27 +1,20 @@
-﻿//HintName: ArgumentInfo.ISerde.g.cs
+﻿//HintName: C.IDeserialize.g.cs
 
 #nullable enable
 
 using System;
 using Serde;
-partial class ArgumentInfo
+partial class C
 {
-    sealed partial class _SerdeObj : global::Serde.ISerde<ArgumentInfo>
+    sealed partial class _DeObj : Serde.IDeserialize<C>
     {
-        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => ArgumentInfo.s_serdeInfo;
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
 
-        void global::Serde.ISerialize<ArgumentInfo>.Serialize(ArgumentInfo value, global::Serde.ISerializer serializer)
+        C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
-            var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteString(_l_info, 0, value.Name);
-            _l_type.WriteString(_l_info, 1, value.Value);
-            _l_type.End(_l_info);
-        }
-        ArgumentInfo Serde.IDeserialize<ArgumentInfo>.Deserialize(IDeserializer deserializer)
-        {
-            string _l_name = string.Empty;
-            string _l_value = string.Empty;
+            System.Collections.Generic.List<int> _l_items = default!;
+            int[] _l_arr = default!;
+            string _l_name = default!;
 
             byte _r_assignedValid = 0;
 
@@ -39,13 +32,18 @@ partial class ArgumentInfo
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_name = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_items = typeDeserialize.ReadValue<System.Collections.Generic.List<int>, Serde.ListProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
-                        _l_value = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _l_arr = typeDeserialize.ReadValue<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
+                        break;
+                    case 2:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 2, _l_serdeInfo);
+                        _l_name = typeDeserialize.ReadString(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -54,13 +52,14 @@ partial class ArgumentInfo
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b11) != 0b11)
+            if ((_r_assignedValid & 0b111) != 0b111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-            var newType = new ArgumentInfo() {
+            var newType = new C() {
+                Items = _l_items,
+                Arr = _l_arr,
                 Name = _l_name,
-                Value = _l_value,
             };
 
             return newType;

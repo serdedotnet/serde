@@ -1,18 +1,20 @@
-﻿//HintName: Container.IDeserialize.g.cs
+﻿//HintName: C.IDeserialize.g.cs
 
 #nullable enable
 
 using System;
 using Serde;
-partial record Container
+partial record C
 {
-    sealed partial class _DeObj : Serde.IDeserialize<Container>
+    sealed partial class _DeObj : Serde.IDeserialize<C>
     {
-        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Container.s_serdeInfo;
+        global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => C.s_serdeInfo;
 
-        Container Serde.IDeserialize<Container>.Deserialize(IDeserializer deserializer)
+        C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
         {
-            Original? _l_sdkdir = null;
+            int _l_x = default!;
+            int _l_extra = default!;
+            int _l_z = 100;
 
             byte _r_assignedValid = 0;
 
@@ -30,8 +32,18 @@ partial record Container
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_sdkdir = typeDeserialize.ReadBoxedValue<Original?, Serde.NullableProxy.De<Original, Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_x = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
+                        break;
+                    case 1:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
+                        _l_extra = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((byte)1) << 1;
+                        break;
+                    case 2:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 2, _l_serdeInfo);
+                        _l_z = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((byte)1) << 2;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
@@ -40,12 +52,13 @@ partial record Container
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
-            if ((_r_assignedValid & 0b0) != 0b0)
+            if ((_r_assignedValid & 0b111) != 0b111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }
-            var newType = new Container() {
-                SdkDir = _l_sdkdir,
+            var newType = new C(_l_x) {
+                Extra = _l_extra,
+                Z = _l_z,
             };
 
             return newType;

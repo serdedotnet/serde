@@ -27,17 +27,17 @@ partial record AllInOne
             int _l_intfield = default!;
             long _l_longfield = default!;
             System.Int128 _l_int128field = default!;
-            string _l_stringfield = default!;
+            string _l_stringfield = "StringValue";
             System.DateTimeOffset _l_datetimeoffsetfield = default!;
             System.DateTime _l_datetimefield = default!;
             System.DateOnly _l_dateonlyfield = default!;
             System.TimeOnly _l_timeonlyfield = default!;
             System.Guid _l_guidfield = default!;
             string _l_escapedstringfield = default!;
-            string? _l_nullstringfield = default!;
-            uint[] _l_uintarr = default!;
-            int[][] _l_nestedarr = default!;
-            byte[] _l_bytearr = default!;
+            string? _l_nullstringfield = null;
+            uint[] _l_uintarr = null!;
+            int[][] _l_nestedarr = null!;
+            byte[] _l_bytearr = null!;
             System.Collections.Immutable.ImmutableArray<int> _l_intimm = default!;
             Serde.Test.AllInOne.ColorEnum _l_color = default!;
 
