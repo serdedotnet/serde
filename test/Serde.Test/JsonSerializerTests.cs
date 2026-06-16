@@ -369,5 +369,37 @@ namespace Serde.Test
             {"tag":"B","y":"hello","z":"world"}
             """, Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(b));
         }
+
+        [GenerateSerialize]
+        private partial record BigData(List<int> Values);
+
+        [Fact]
+        public void ToMemoryMatchesSerialize()
+        {
+            var color = new Color { Red = 3, Green = 5, Blue = 7 };
+            var mem = Serde.Json.JsonSerializer.ToMemory(color);
+            Assert.Equal(Serde.Json.JsonSerializer.Serialize(color), Encoding.UTF8.GetString(mem.Span));
+        }
+
+        [Fact]
+        public void ToMemoryWithProvider()
+        {
+            var color = new Color { Red = 9, Green = 8, Blue = 7 };
+            var mem = Serde.Json.JsonSerializer.ToMemory<Color>(color);
+            Assert.Equal(Serde.Json.JsonSerializer.Serialize(color), Encoding.UTF8.GetString(mem.Span));
+        }
+
+        [Fact]
+        public void ToMemoryGrowsBufferForLargeOutput()
+        {
+            var values = new List<int>();
+            for (int i = 0; i < 5000; i++)
+            {
+                values.Add(i);
+            }
+            var data = new BigData(values);
+            var mem = Serde.Json.JsonSerializer.ToMemory(data);
+            Assert.Equal(Serde.Json.JsonSerializer.Serialize(data), Encoding.UTF8.GetString(mem.Span));
+        }
     }
 }
