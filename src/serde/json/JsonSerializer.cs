@@ -1,5 +1,6 @@
 
 using System;
+using System.Buffers;
 using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +13,31 @@ namespace Serde.Json
 
     public sealed partial class JsonSerializer : ISerializer
     {
+        /// <summary>
+        /// Serialize the given type as UTF-8 bytes and return them as a contiguous block of memory.
+        /// </summary>
+        public static ReadOnlyMemory<byte> ToBytes<T>(T provider, ISerialize<T> ser)
+        {
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
+            {
+                Indented = false,
+                SkipValidation = true
+            });
+            var serializer = new JsonSerializer(writer);
+            ser.Serialize(provider, serializer);
+            writer.Flush();
+            return bufferWriter.WrittenMemory;
+        }
+
+        public static ReadOnlyMemory<byte> ToBytes<T, TProvider>(T s)
+            where TProvider : ISerializeProvider<T>
+            => ToBytes(s, TProvider.Instance);
+
+        public static ReadOnlyMemory<byte> ToBytes<T>(T s)
+            where T : ISerializeProvider<T>
+            => ToBytes(s, T.Instance);
+
         /// <summary>
         /// Serialize the given type to a string.
         /// </summary>
