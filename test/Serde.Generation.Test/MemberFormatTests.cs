@@ -109,6 +109,22 @@ partial struct S
         }
 
         [Fact]
+        public Task SnakeCase()
+        {
+            var src = @"
+using Serde;
+
+[GenerateSerde]
+[SerdeTypeOptions(MemberFormat = MemberFormat.SnakeCase)]
+partial struct S
+{
+    public int One { get; set; }
+    public int TwoWord { get; set; }
+}";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
         public Task EnumFormat()
         {
             var src = """

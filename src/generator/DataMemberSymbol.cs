@@ -154,6 +154,9 @@ namespace Serde
                 case MemberFormat.KebabCase:
                     return string.Join("-", parts.Select(s => s.ToLowerInvariant()));
 
+                case MemberFormat.SnakeCase:
+                    return string.Join("_", parts.Select(s => s.ToLowerInvariant()));
+
                 default:
                     throw new InvalidOperationException("Invalid member format: " + _typeOptions.MemberFormat);
             }

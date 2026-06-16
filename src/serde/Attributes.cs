@@ -252,6 +252,10 @@ enum MemberFormat : byte
     /// "kebab-case"
     /// </summary>
     KebabCase,
+    /// <summary>
+    /// "snake_case"
+    /// </summary>
+    SnakeCase,
 }
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
