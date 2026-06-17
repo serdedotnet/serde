@@ -85,8 +85,6 @@ namespace Serde.Json
             return Deserialize_Unsafe<T>(bytes, d);
         }
 
-        public static T Deserialize<T>(byte[] utf8Bytes, IDeserialize<T> d) => Deserialize(utf8Bytes.AsMemory(), d);
-
         /// <summary>
         /// Deserialize from an array of UTF-8 bytes.
         /// </summary>
