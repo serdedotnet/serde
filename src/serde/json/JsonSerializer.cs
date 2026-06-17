@@ -88,12 +88,12 @@ namespace Serde.Json
         /// <summary>
         /// Deserialize from an array of UTF-8 bytes.
         /// </summary>
-        public static T Deserialize<T, D>(byte[] utf8Bytes, IDeserialize<T> d)
+        public static T Deserialize<T>(ReadOnlyMemory<byte> utf8Bytes, IDeserialize<T> d)
         {
             try
             {
                 // Checks for invalid UTF-8 as a side effect.
-                _ = Encoding.UTF8.GetCharCount(utf8Bytes);
+                _ = Encoding.UTF8.GetCharCount(utf8Bytes.Span);
             }
             catch
             {
@@ -105,10 +105,10 @@ namespace Serde.Json
         /// <summary>
         /// Assumes the input is valid UTF-8.
         /// </summary>
-        private static T Deserialize_Unsafe<T>(byte[] utf8Bytes, IDeserialize<T> d)
+        private static T Deserialize_Unsafe<T>(ReadOnlyMemory<byte> utf8Bytes, IDeserialize<T> d)
         {
 #if DEBUG
-            var reader = new System.Text.Json.Utf8JsonReader(utf8Bytes);
+            var reader = new System.Text.Json.Utf8JsonReader(utf8Bytes.Span);
             bool expectedSuccess = true;
             try
             {
