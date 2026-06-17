@@ -13,9 +13,9 @@ using static Serde.Json.ThrowHelpers;
 
 namespace Serde.IO;
 
-internal struct ArrayReader(byte[] bytes) : IByteReader
+internal struct MemoryReader(ReadOnlyMemory<byte> bytes) : IByteReader
 {
-    private readonly byte[] _bytes = bytes;
+    private readonly ReadOnlyMemory<byte> _bytes = bytes;
     private int _pos = 0;
 
     public short Next()
@@ -39,7 +39,7 @@ internal struct ArrayReader(byte[] bytes) : IByteReader
         {
             return IByteReader.EndOfStream;
         }
-        return _bytes[_pos];
+        return _bytes.Span[_pos];
     }
 
     public bool StartsWith(Utf8Span span)
@@ -48,12 +48,12 @@ internal struct ArrayReader(byte[] bytes) : IByteReader
         {
             return false;
         }
-        return span.SequenceEqual(_bytes.AsSpan(_pos, span.Length));
+        return span.SequenceEqual(_bytes.Span.Slice(_pos, span.Length));
     }
 
     public Utf8Span LexUtf8Span(bool skipOnly, ScratchBuffer? scratch)
     {
-        var span = _bytes.AsSpan();
+        var span = _bytes.Span;
         int start = _pos;
         while (true)
         {
@@ -110,7 +110,7 @@ internal struct ArrayReader(byte[] bytes) : IByteReader
 
     private void SkipToEscape()
     {
-        var span = _bytes.AsSpan(_pos);
+        var span = _bytes.Span.Slice(_pos);
         var offset = 0;
         while (offset < span.Length && !IsEscape(span[offset], includingControlChars: true))
         {
@@ -151,7 +151,7 @@ internal struct ArrayReader(byte[] bytes) : IByteReader
                 scratch.EnsureCapacity(reqLen);
                 var dest = scratch.BufferSpan[scratch.Count..];
                 int written = 0;
-                JsonReaderHelper.DecodeUnicodeEscape(_bytes, dest, ref _pos, ref written);
+                JsonReaderHelper.DecodeUnicodeEscape(_bytes.Span, dest, ref _pos, ref written);
                 scratch.Count += written;
                 break;
             }

@@ -13,7 +13,7 @@ namespace Serde.Json;
 
 internal static class JsonDeserializer
 {
-    public static JsonDeserializer<ArrayReader> FromString(string s)
+    public static JsonDeserializer<MemoryReader> FromString(string s)
     {
         return FromUtf8_Unsafe(Encoding.UTF8.GetBytes(s));
     }
@@ -21,10 +21,10 @@ internal static class JsonDeserializer
     /// <summary>
     /// Assumes that the input is valid UTF-8.
     /// </summary>
-    internal static JsonDeserializer<ArrayReader> FromUtf8_Unsafe(byte[] utf8Bytes)
+    internal static JsonDeserializer<MemoryReader> FromUtf8_Unsafe(ReadOnlyMemory<byte> utf8Bytes)
     {
-        var byteReader = new ArrayReader(utf8Bytes);
-        return new JsonDeserializer<ArrayReader>(byteReader);
+        var byteReader = new MemoryReader(utf8Bytes);
+        return new JsonDeserializer<MemoryReader>(byteReader);
     }
 }
 
