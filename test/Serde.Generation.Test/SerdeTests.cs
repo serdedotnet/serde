@@ -188,6 +188,32 @@ public partial class InvalidProxyTest<T>
     }
 
     [Fact]
+    public Task AsTupleOverSevenMembersReportsError()
+    {
+        // ValueTuple proxies only support arities up to 7, so an 8-tuple target has no proxy.
+        var src = """
+using Serde;
+
+[GenerateSerde(As = typeof((int, int, int, int, int, int, int, int)))]
+public partial record Holder(int A, int B, int C, int D, int E, int F, int G, int H);
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task AsPlainValueTupleReportsError()
+    {
+        // The non-generic ValueTuple isn't a tuple type and has no conversion from the record.
+        var src = """
+using Serde;
+
+[GenerateSerde(As = typeof(System.ValueTuple))]
+public partial record struct Holder();
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
     public Task DictionaryWithEqArrayKey()
     {
         var src = """

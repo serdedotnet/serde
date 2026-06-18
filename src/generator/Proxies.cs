@@ -185,6 +185,17 @@ sealed partial class {{proxyName}};
                     inProgress,
                     proxyContext)),
 
+            // ValueTuples (tuple syntax, arity 2-7) are encoded as fixed-length heterogeneous
+            // sequences. Longer tuples (which use a nested TRest) are not supported.
+            INamedTypeSymbol { IsTupleType: true, TupleElements: { Length: >= 2 and <= 7 } tupleElements } =>
+                (type.ToDisplayString(s_fqnFormat), MakeProxyString(
+                    $"Serde.TupleProxy.{GetSingletonImplName(usage)}",
+                    tupleElements.Select(e => e.Type).ToImmutableArray(),
+                    context,
+                    usage,
+                    inProgress,
+                    proxyContext)),
+
             INamedTypeSymbol t when TryGetWrapperComponents(t, context, usage) is (var ConvertedType, var WrapperType, var Args)
                 => (ConvertedType, MakeProxyString(WrapperType, Args, context, usage, inProgress, proxyContext)),
 

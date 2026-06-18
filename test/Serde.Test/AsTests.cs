@@ -82,4 +82,18 @@ public partial class AsTests
         var id = JsonSerializer.Deserialize<DeOnlyId, DeOnlyId>("\"42\"");
         Assert.Equal(42, id.Value);
     }
+
+    [GenerateSerde(As = typeof(System.ValueTuple<int, string>))]
+    public readonly partial record struct TupleWrapper(int Item1, string Item2);
+
+    [Fact]
+    public void RoundTripTupleWrapper()
+    {
+        var w = new TupleWrapper(1, "hello");
+        var json = JsonSerializer.Serialize(w);
+        Assert.Equal("""[1,"hello"]""", json);
+
+        var back = JsonSerializer.Deserialize<TupleWrapper>(json);
+        Assert.Equal(w, back);
+    }
 }

@@ -100,6 +100,9 @@ partial class JsonSerializer : ISerializer
             case InfoKind.List:
                 _writer.WriteStartArray();
                 return new EnumerableImpl(this);
+            case InfoKind.Tuple:
+                _writer.WriteStartArray();
+                return new EnumerableImpl(this);
             default:
                 throw new ArgumentException($"TypeKind is {info.Kind}, expected Enumerable or Dictionary");
         }

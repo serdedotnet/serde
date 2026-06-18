@@ -1,0 +1,22 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+[GenerateSerde(As = typeof((int, int, int, int, int, int, int, int)))]
+public partial record Holder(int A, int B, int C, int D, int E, int F, int G, int H);
+                      ^^^^^^
+*/
+ : (3,22)-(3,28),
+      Message: The member '(int, int, int, int, int, int, int, int)'s return type '(int, int, int, int, int, int, int, int)' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on (int, int, int, int, int, int, int, int), or specify a proxy type.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_DoesntImplementInterface,
+        Title: ,
+        MessageFormat: The member '(int, int, int, int, int, int, int, int)'s return type '(int, int, int, int, int, int, int, int)' doesn't implement Serde.ISerializeProvider<T>. Either implement 'Serde.ISerializeProvider<T>' on (int, int, int, int, int, int, int, int), or specify a proxy type.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}
