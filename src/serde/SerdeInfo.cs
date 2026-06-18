@@ -88,6 +88,37 @@ public static class SerdeInfo
         string typeName,
         ISerdeInfo elementInfo)
         => new CollectionInfo(typeName, InfoKind.List, [elementInfo]);
+
+    /// <summary>
+    /// Create an <see cref="ISerdeInfo"/> for a fixed-length, heterogeneous tuple. Each element
+    /// becomes a field named <c>Item1</c>, <c>Item2</c>, ... in order. The ordering corresponds to
+    /// the index returned by <see cref="ITypeDeserializer.TryReadIndex" />.
+    /// </summary>
+    public static ISerdeInfo MakeTuple(ReadOnlySpan<ISerdeInfo> itemInfos)
+    {
+        var sb = new System.Text.StringBuilder("ValueTuple<");
+        for (int i = 0; i < itemInfos.Length; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append(", ");
+            }
+            sb.Append(itemInfos[i].Name);
+        }
+        sb.Append('>');
+
+        var fields = new (string, ISerdeInfo, IList<CustomAttributeData>)[itemInfos.Length];
+        for (int i = 0; i < itemInfos.Length; i++)
+        {
+            fields[i] = ($"Item{i + 1}", itemInfos[i], Array.Empty<CustomAttributeData>());
+        }
+        return TypeWithFieldsInfo.Create(
+            sb.ToString(),
+            InfoKind.Tuple,
+            Array.Empty<CustomAttributeData>(),
+            fields);
+    }
+
     public static ISerdeInfo MakeDictionary(
         string typeName,
         ISerdeInfo keyInfo,

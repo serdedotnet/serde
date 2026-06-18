@@ -576,6 +576,48 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
     }
 
     /// <summary>
+    /// When <paramref name="asType"/> is a tuple and <paramref name="receiverType"/> is a record
+    /// (or record struct), the record's primary constructor and compiler-generated
+    /// <c>Deconstruct</c> method already provide a bridge between the two, so explicit conversion
+    /// operators are unnecessary. This checks whether such a bridge exists and, if so, returns the
+    /// tuple element types along with which directions are available.
+    /// </summary>
+    private static (ImmutableArray<ITypeSymbol> Elements, bool HasCtor, bool HasDeconstruct)? TryGetRecordTupleBridge(
+        INamedTypeSymbol receiverType,
+        INamedTypeSymbol asType)
+    {
+        if (!receiverType.IsRecord || !asType.IsTupleType)
+        {
+            return null;
+        }
+
+        var elements = asType.TupleElements.Select(e => e.Type).ToImmutableArray();
+
+        bool Matches(IMethodSymbol method, RefKind paramRefKind)
+            => method.DeclaredAccessibility == Accessibility.Public
+               && method.Parameters.Length == elements.Length
+               && method.Parameters.All(p => p.RefKind == paramRefKind)
+               && method.Parameters
+                   .Select((p, i) => SymbolEqualityComparer.Default.Equals(p.Type, elements[i]))
+                   .All(matched => matched);
+
+        // Constructor maps a tuple back into the record (deserialize direction).
+        var hasCtor = receiverType.InstanceConstructors.Any(c => Matches(c, RefKind.None));
+
+        // Deconstruct maps the record into a tuple (serialize direction).
+        var hasDeconstruct = receiverType.GetMembers("Deconstruct")
+            .OfType<IMethodSymbol>()
+            .Any(m => m.MethodKind == MethodKind.Ordinary && Matches(m, RefKind.Out));
+
+        if (!hasCtor && !hasDeconstruct)
+        {
+            return null;
+        }
+
+        return (elements, hasCtor, hasDeconstruct);
+    }
+
+    /// <summary>
     /// Generates a serde object that serializes and deserializes <paramref name="receiverType"/> by
     /// converting to and from <paramref name="asType"/> through user-defined conversions. The
     /// generated object delegates the actual serialization to <paramref name="asType"/>'s proxy.
@@ -597,14 +639,21 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         string? serProxy = null;
         string? deProxy = null;
 
+        // Records whose primary constructor matches the tuple's element types can convert via the
+        // constructor and Deconstruct, so they don't need explicit conversion operators.
+        var recordTupleBridge = TryGetRecordTupleBridge(receiverType, asType);
+
         if (usage.HasFlag(SerdeUsage.Serialize))
         {
-            var conversion = context.Compilation.ClassifyConversion(receiverType, asType);
-            if (!conversion.Exists || !conversion.IsUserDefined)
+            if (recordTupleBridge is not { HasDeconstruct: true })
             {
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_AsTypeNoConversion, location, receiverType, asType));
-                return false;
+                var conversion = context.Compilation.ClassifyConversion(receiverType, asType);
+                if (!conversion.Exists || !conversion.IsUserDefined)
+                {
+                    context.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_AsTypeNoConversion, location, receiverType, asType));
+                    return false;
+                }
             }
             serProxy = Proxies.TryGetProxyString(null, asType, context, SerdeUsage.Serialize, inProgress, ProxyContext.Empty);
             if (serProxy is null)
@@ -617,12 +666,15 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
 
         if (usage.HasFlag(SerdeUsage.Deserialize))
         {
-            var conversion = context.Compilation.ClassifyConversion(asType, receiverType);
-            if (!conversion.Exists || !conversion.IsUserDefined)
+            if (recordTupleBridge is not { HasCtor: true })
             {
-                context.ReportDiagnostic(CreateDiagnostic(
-                    DiagId.ERR_AsTypeNoConversion, location, asType, receiverType));
-                return false;
+                var conversion = context.Compilation.ClassifyConversion(asType, receiverType);
+                if (!conversion.Exists || !conversion.IsUserDefined)
+                {
+                    context.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_AsTypeNoConversion, location, asType, receiverType));
+                    return false;
+                }
             }
             deProxy = Proxies.TryGetProxyString(null, asType, context, SerdeUsage.Deserialize, inProgress, ProxyContext.Empty);
             if (deProxy is null)
@@ -644,22 +696,52 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         if (serProxy is not null)
         {
             implMembers.AppendLine("");
-            implMembers.AppendLine($$"""
-            void global::Serde.ISerialize<{{receiverDisplay}}>.Serialize({{receiverDisplay}} value, global::Serde.ISerializer serializer)
+            if (recordTupleBridge is { HasDeconstruct: true } serBridge)
             {
-                global::Serde.SerializeProvider.GetSerialize<{{asTypeFqn}}, {{serProxy}}>().Serialize(({{asTypeFqn}})value, serializer);
+                var count = serBridge.Elements.Length;
+                var outArgs = string.Join(", ", Enumerable.Range(0, count).Select(i => $"out var __e{i}"));
+                var tupleArgs = string.Join(", ", Enumerable.Range(0, count).Select(i => $"__e{i}"));
+                implMembers.AppendLine($$"""
+                void global::Serde.ISerialize<{{receiverDisplay}}>.Serialize({{receiverDisplay}} value, global::Serde.ISerializer serializer)
+                {
+                    value.Deconstruct({{outArgs}});
+                    global::Serde.SerializeProvider.GetSerialize<{{asTypeFqn}}, {{serProxy}}>().Serialize(({{tupleArgs}}), serializer);
+                }
+                """);
             }
-            """);
+            else
+            {
+                implMembers.AppendLine($$"""
+                void global::Serde.ISerialize<{{receiverDisplay}}>.Serialize({{receiverDisplay}} value, global::Serde.ISerializer serializer)
+                {
+                    global::Serde.SerializeProvider.GetSerialize<{{asTypeFqn}}, {{serProxy}}>().Serialize(({{asTypeFqn}})value, serializer);
+                }
+                """);
+            }
         }
         if (deProxy is not null)
         {
             implMembers.AppendLine("");
-            implMembers.AppendLine($$"""
-            {{receiverDisplay}} global::Serde.IDeserialize<{{receiverDisplay}}>.Deserialize(global::Serde.IDeserializer deserializer)
+            if (recordTupleBridge is { HasCtor: true } deBridge)
             {
-                return ({{receiverDisplay}})global::Serde.DeserializeProvider.GetDeserialize<{{asTypeFqn}}, {{deProxy}}>().Deserialize(deserializer);
+                var ctorArgs = string.Join(", ", Enumerable.Range(0, deBridge.Elements.Length).Select(i => $"__t.Item{i + 1}"));
+                implMembers.AppendLine($$"""
+                {{receiverDisplay}} global::Serde.IDeserialize<{{receiverDisplay}}>.Deserialize(global::Serde.IDeserializer deserializer)
+                {
+                    var __t = global::Serde.DeserializeProvider.GetDeserialize<{{asTypeFqn}}, {{deProxy}}>().Deserialize(deserializer);
+                    return new {{receiverDisplay}}({{ctorArgs}});
+                }
+                """);
             }
-            """);
+            else
+            {
+                implMembers.AppendLine($$"""
+                {{receiverDisplay}} global::Serde.IDeserialize<{{receiverDisplay}}>.Deserialize(global::Serde.IDeserializer deserializer)
+                {
+                    return ({{receiverDisplay}})global::Serde.DeserializeProvider.GetDeserialize<{{asTypeFqn}}, {{deProxy}}>().Deserialize(deserializer);
+                }
+                """);
+            }
         }
 
         string baseList = usage switch

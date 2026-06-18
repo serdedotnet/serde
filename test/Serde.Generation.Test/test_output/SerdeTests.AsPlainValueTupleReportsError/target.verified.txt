@@ -1,0 +1,22 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+[GenerateSerde(As = typeof(System.ValueTuple))]
+public partial record struct Holder();
+                             ^^^^^^
+*/
+ : (3,29)-(3,35),
+      Message: Cannot represent 'Holder' as 'System.ValueTuple' because no user-defined conversion from 'Holder' to 'System.ValueTuple' was found. Define an explicit or implicit conversion operator between the types.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsTypeNoConversion,
+        Title: ,
+        MessageFormat: Cannot represent 'Holder' as 'System.ValueTuple' because no user-defined conversion from 'Holder' to 'System.ValueTuple' was found. Define an explicit or implicit conversion operator between the types.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

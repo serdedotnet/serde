@@ -75,6 +75,12 @@ public enum InfoKind
     /// cref="ISerdeInfo.Kind"/> must also implement <see cref="IUnionSerdeInfo"/>.
     /// </summary>
     Union,
+    /// <summary>
+    /// Represents a fixed-length, heterogeneous sequence of values, e.g. a
+    /// <see cref="System.ValueTuple"/>. Unlike <see cref="List"/>, each element may have a
+    /// distinct type. On most formats this is encoded the same as a list (e.g. a JSON array).
+    /// </summary>
+    Tuple,
 }
 
 public enum PrimitiveKind

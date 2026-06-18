@@ -150,6 +150,7 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
             case InfoKind.Enum:
                 return new DeType(this);
             case InfoKind.List:
+            case InfoKind.Tuple:
             {
                 var peek = Reader.SkipWhitespace();
                 if (peek != (byte)'[')

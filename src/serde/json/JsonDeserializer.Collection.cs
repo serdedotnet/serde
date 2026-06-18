@@ -30,6 +30,7 @@ partial class JsonDeserializer<TReader>
             switch (info.Kind)
             {
                 case InfoKind.List:
+                case InfoKind.Tuple:
                     return (TryReadIndexEnumerable(out errorName), errorName);
                 case InfoKind.Dictionary:
                     return (TryReadIndexDictionary(out errorName), errorName);
