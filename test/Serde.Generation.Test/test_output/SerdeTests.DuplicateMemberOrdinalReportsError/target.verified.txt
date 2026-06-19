@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(Ordinal = 0)]
+    public int B { get; init; }
+               ^
+}
+*/
+ : (9,15)-(9,16),
+      Message: The explicit 'Ordinal' value '0' is assigned to multiple members ('A' and 'B').,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_DuplicateOrdinal,
+        Title: ,
+        MessageFormat: The explicit 'Ordinal' value '0' is assigned to multiple members ('A' and 'B').,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

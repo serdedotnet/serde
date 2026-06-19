@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+    public int B { get; init; }
+               ^
+}
+*/
+ : (8,15)-(8,16),
+      Message: Member 'B' must specify an explicit 'Ordinal' because another member of the type does. When any member sets an explicit ordinal, all members must set one.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_PartialMemberOrdinal,
+        Title: ,
+        MessageFormat: Member 'B' must specify an explicit 'Ordinal' because another member of the type does. When any member sets an explicit ordinal, all members must set one.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

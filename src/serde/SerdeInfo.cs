@@ -21,7 +21,8 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields,
+        ReadOnlySpan<int> fieldOrdinals = default)
     {
         var converted = new (string, ISerdeInfo, IList<CustomAttributeData>)[fields.Length];
         for (int i = 0; i < fields.Length; i++)
@@ -32,7 +33,7 @@ public static class SerdeInfo
                 fields[i].MemberInfo?.GetCustomAttributesData()
                     ?? (IList<CustomAttributeData>)Array.Empty<CustomAttributeData>());
         }
-        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
+        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted, fieldOrdinals);
     }
 
     /// <summary>
@@ -233,6 +234,8 @@ file sealed class WrappingInfo(ISerdeInfo underlying, string name) : ISerdeInfo
     public string GetFieldStringName(int index) => underlying.GetFieldStringName(index);
     public IList<CustomAttributeData> GetFieldAttributes(int index) => underlying.GetFieldAttributes(index);
     public int TryGetIndex(Utf8Span fieldName) => underlying.TryGetIndex(fieldName);
+    public int GetFieldOrdinal(int fieldPosition) => underlying.GetFieldOrdinal(fieldPosition);
+    public bool HasExplicitFieldOrdinals => underlying.HasExplicitFieldOrdinals;
 
     [Experimental("SerdeExperimentalFieldInfo")]
 #pragma warning disable SerdeExperimentalFieldInfo
@@ -273,6 +276,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
     // The field names are sorted by the Utf8 representation of the field name.
     private readonly ImmutableArray<(ReadOnlyMemory<byte> Utf8Name, int Index)> _nameToIndex;
     private readonly ImmutableArray<PrivateFieldInfo> _indexToInfo;
+    private readonly bool _hasExplicitOrdinals;
 
     /// <summary>
     /// Holds information for a field or property in the given type.
@@ -281,7 +285,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string StringName,
         ReadOnlyMemory<byte> Utf8Name,
         IList<CustomAttributeData> CustomAttributesData,
-        ISerdeInfo FieldSerdeInfo);
+        ISerdeInfo FieldSerdeInfo,
+        int Ordinal);
 
     public string Name { get; }
 
@@ -297,13 +302,15 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
         ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
-        ImmutableArray<PrivateFieldInfo> indexToInfo)
+        ImmutableArray<PrivateFieldInfo> indexToInfo,
+        bool hasExplicitOrdinals)
     {
         Name = typeName;
         Kind = typeKind;
         Attributes = typeAttributes;
         _nameToIndex = nameToIndex;
         _indexToInfo = indexToInfo;
+        _hasExplicitOrdinals = hasExplicitOrdinals;
     }
 
     /// <summary>
@@ -314,7 +321,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields)
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields,
+        ReadOnlySpan<int> fieldOrdinals = default)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
@@ -327,7 +335,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
                 serializeName,
                 default,
                 fieldAttributes,
-                serdeInfo);
+                serdeInfo,
+                fieldOrdinals.IsEmpty ? index : fieldOrdinals[index]);
             indexToInfoBuilder.Add(fieldInfo);
         }
 
@@ -345,7 +354,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             typeKind,
             typeAttributes,
             nameToIndexBuilder.ToImmutable(),
-            indexToInfoBuilder.ToImmutable());
+            indexToInfoBuilder.ToImmutable(),
+            !fieldOrdinals.IsEmpty);
     }
 
     /// <summary>
@@ -367,6 +377,10 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
 
     [Experimental("SerdeExperimentalFieldInfo")]
     public ISerdeInfo GetFieldInfo(int index) => _indexToInfo[index].FieldSerdeInfo;
+
+    public int GetFieldOrdinal(int fieldPosition) => _indexToInfo[fieldPosition].Ordinal;
+
+    public bool HasExplicitFieldOrdinals => _hasExplicitOrdinals;
 
     public IList<CustomAttributeData> GetFieldAttributes(int index)
     {

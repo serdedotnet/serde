@@ -59,6 +59,33 @@ public interface ISerdeInfo
     [Experimental("SerdeExperimentalFieldInfo")]
     ISerdeInfo GetFieldInfo(int index);
 
+    /// <summary>
+    /// Get the ordinal for the field at the given physical position. The physical position is the
+    /// dense index in <c>[0, <see cref="FieldCount"/>)</c> used by all the other <c>GetField*</c>
+    /// accessors. The ordinal is the stable identity of the field, which may be assigned explicitly
+    /// (e.g. via <c>[SerdeMemberOptions(Ordinal = N)]</c>) and may be sparse, i.e. larger than
+    /// <see cref="FieldCount"/> and with gaps between fields.
+    ///
+    /// By default the ordinal equals the physical position. Positional or tag-based formats (e.g. an
+    /// array/offset or protobuf-style encoding) use this to place each field at a stable position,
+    /// leaving holes where ordinals are skipped. Name-based formats (e.g. JSON) ignore it.
+    ///
+    /// Implementations guarantee that ordinals are strictly increasing in the physical position:
+    /// <c>GetFieldOrdinal(i) &lt; GetFieldOrdinal(i + 1)</c> for all valid <c>i</c>. Consumers may
+    /// therefore rely on the fields being laid out in ascending ordinal order.
+    /// </summary>
+    int GetFieldOrdinal(int fieldPosition) => fieldPosition;
+
+    /// <summary>
+    /// Whether the fields were assigned explicit, stable ordinals (e.g. via
+    /// <c>[SerdeMemberOptions(Ordinal = N)]</c>). When <c>false</c>, <see cref="GetFieldOrdinal"/>
+    /// still returns a value, but that value is the incidental physical position derived from
+    /// declaration order, which is <em>not</em> a stable identity and can change as the type is
+    /// edited. Positional or tag-based formats that encode by ordinal must check this first and
+    /// only treat the ordinals as meaningful when it is <c>true</c>.
+    /// </summary>
+    bool HasExplicitFieldOrdinals => false;
+
     internal static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 }
 

@@ -206,7 +206,7 @@ namespace Serde
             var preserveInitializers = containingType is not null
                 && SymbolEqualityComparer.Default.Equals(type, containingType);
 
-            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
+            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
             var assignedVarType = members.Count switch {
                 <= 8 => "byte",

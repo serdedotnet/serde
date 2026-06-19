@@ -22,7 +22,7 @@ public partial class SerializeImplGen
         }
 
         var statements = new SourceBuilder();
-        var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize);
+        var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize, context);
 
         // The generated body of ISerialize is
         // `var _l_info = GetInfo(this);

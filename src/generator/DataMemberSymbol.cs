@@ -102,6 +102,11 @@ namespace Serde
 
         public bool? ThrowIfMissing => _memberOptions.ThrowIfMissing;
 
+        /// <summary>
+        /// An explicit field ordinal for this member, or null if none was specified.
+        /// </summary>
+        public int? Ordinal => _memberOptions.Ordinal;
+
         public bool SerializeNull => _memberOptions.SerializeNull ?? _typeOptions.SerializeNull;
 
         public ImmutableArray<AttributeData> Attributes => Symbol.GetAttributes();

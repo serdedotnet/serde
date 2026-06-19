@@ -214,18 +214,123 @@ public partial record struct Holder();
     }
 
     [Fact]
-    public Task DictionaryWithEqArrayKey()
+    public Task ExplicitMemberOrdinal()
     {
         var src = """
-using System.Collections.Generic;
 using Serde;
 
 [GenerateSerde]
-public partial class Test
+[SerdeTypeOptions(MemberFormat = MemberFormat.None)]
+public partial record Reordered
 {
-    public required Dictionary<EqArray<int>, int> data;
+    [SerdeMemberOptions(Ordinal = 2)]
+    public int A { get; init; }
+
+    [SerdeMemberOptions(Ordinal = 0)]
+    public int B { get; init; }
+
+    [SerdeMemberOptions(Ordinal = 1)]
+    public int C { get; init; }
 }
-""" + EqArraySource;
+""";
         return VerifyMultiFile(src);
+    }
+
+    [Fact]
+    public Task SparseMemberOrdinals()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+[SerdeTypeOptions(MemberFormat = MemberFormat.None)]
+public partial record Sparse
+{
+    [SerdeMemberOptions(Ordinal = 5)]
+    public int A { get; init; }
+
+    [SerdeMemberOptions(Ordinal = 0)]
+    public int B { get; init; }
+
+    [SerdeMemberOptions(Ordinal = 2)]
+    public int C { get; init; }
+}
+""";
+        return VerifyMultiFile(src);
+    }
+
+    [Fact]
+    public Task DuplicateMemberOrdinalReportsError()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+public partial record Dupe
+{
+    [SerdeMemberOptions(Ordinal = 0)]
+    public int A { get; init; }
+
+    [SerdeMemberOptions(Ordinal = 0)]
+    public int B { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task PartialMemberOrdinalReportsError()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+public partial record Partial
+{
+    [SerdeMemberOptions(Ordinal = 0)]
+    public int A { get; init; }
+
+    public int B { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task OrdinalOnNonPublicMemberReportsError()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+public partial record NonPublic
+{
+    [SerdeMemberOptions(Ordinal = 0)]
+    internal int A { get; init; }
+
+    public int B { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task OrdinalOnEnumMemberReportsError()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+public enum Color
+{
+    Red,
+
+    [SerdeMemberOptions(Ordinal = 0)]
+    Green,
+
+    Blue,
+}
+""";
+        return VerifyDiagnostics(src);
     }
 }
