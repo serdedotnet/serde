@@ -21,8 +21,20 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
+        => MakeCustom(typeName, typeAttributes, fields, Array.Empty<int>());
+
+    /// <summary>
+    /// Create an <see cref="ISerdeInfo"/> for a custom type, assigning each field an explicit
+    /// ordinal (its stable logical identity, see <see cref="ISerdeInfo.GetFieldOrdinal"/>). The
+    /// ordinals are given in field order and may be sparse. Pass an empty span to leave the
+    /// ordinals implicit (equal to the physical position).
+    /// </summary>
+    public static ISerdeInfo MakeCustom(
+        string typeName,
+        IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields,
-        ReadOnlySpan<int> fieldOrdinals = default)
+        ReadOnlySpan<int> fieldOrdinals)
     {
         var converted = new (string, ISerdeInfo, IList<CustomAttributeData>)[fields.Length];
         for (int i = 0; i < fields.Length; i++)
@@ -321,8 +333,19 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields
+    ) => Create(typeName, typeKind, typeAttributes, fields, Array.Empty<int>());
+
+    /// <summary>
+    /// Create a new field mapping. The ordering of the fields is important -- it
+    /// corresponds to the index returned by <see cref="ITypeDeserializer.TryReadIndex" />.
+    /// </summary>
+    public static TypeWithFieldsInfo Create(
+        string typeName,
+        InfoKind typeKind,
+        IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields,
-        ReadOnlySpan<int> fieldOrdinals = default)
+        ReadOnlySpan<int> fieldOrdinals)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
