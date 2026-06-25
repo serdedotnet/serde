@@ -25,7 +25,7 @@ namespace Serde
         public static List<DataMemberSymbol> GetDataMembers(
             ITypeSymbol type,
             SerdeUsage usage,
-            GeneratorExecutionContext? context = null)
+            GeneratorExecutionContext context)
         {
             var members = new List<DataMemberSymbol>();
             var curType = type;
@@ -50,7 +50,7 @@ namespace Serde
                         // ignored.
                         if (GetMemberOptions(m).Ordinal is not null)
                         {
-                            context?.ReportDiagnostic(CreateDiagnostic(
+                            context.ReportDiagnostic(CreateDiagnostic(
                                 DiagId.ERR_OrdinalOnNonPublicMember, m.Locations[0], m.Name));
                         }
                         continue;
@@ -109,7 +109,7 @@ namespace Serde
         /// </summary>
         private static List<DataMemberSymbol> ReorderByExplicitOrdinal(
             List<DataMemberSymbol> members,
-            GeneratorExecutionContext? context)
+            GeneratorExecutionContext context)
         {
             var anyExplicit = false;
             var allExplicit = true;
@@ -137,7 +137,7 @@ namespace Serde
                 {
                     if (m.Ordinal is null)
                     {
-                        context?.ReportDiagnostic(CreateDiagnostic(
+                        context.ReportDiagnostic(CreateDiagnostic(
                             DiagId.ERR_PartialMemberOrdinal, m.Locations[0], m.Name));
                     }
                 }
@@ -154,7 +154,7 @@ namespace Serde
                 }
                 if (byOrdinal.TryGetValue(ord, out var existing))
                 {
-                    context?.ReportDiagnostic(CreateDiagnostic(
+                    context.ReportDiagnostic(CreateDiagnostic(
                         DiagId.ERR_DuplicateOrdinal, m.Locations[0], ord, existing.Name, m.Name));
                 }
                 else
