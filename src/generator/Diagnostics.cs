@@ -30,7 +30,7 @@ namespace Serde
         ERR_WithTypeUnsupported = 17,
         ERR_DuplicateOrdinal = 18,
         ERR_PartialMemberOrdinal = 19,
-        ERR_OrdinalOnNonPublicMember = 20,
+        ERR_OrdinalOnSkippedMember = 20,
         ERR_OrdinalOnEnumMember = 21,
     }
 
@@ -57,7 +57,7 @@ namespace Serde
             ERR_WithTypeUnsupported => nameof(ERR_WithTypeUnsupported),
             ERR_DuplicateOrdinal => nameof(ERR_DuplicateOrdinal),
             ERR_PartialMemberOrdinal => nameof(ERR_PartialMemberOrdinal),
-            ERR_OrdinalOnNonPublicMember => nameof(ERR_OrdinalOnNonPublicMember),
+            ERR_OrdinalOnSkippedMember => nameof(ERR_OrdinalOnSkippedMember),
             ERR_OrdinalOnEnumMember => nameof(ERR_OrdinalOnEnumMember),
         };
 

@@ -41,6 +41,7 @@ namespace Serde
                     if (m is IPropertySymbol { Parameters: { Length: > 0 } })
                     {
                         // Skip indexers
+                        CheckOrdinal(m);
                         continue;
                     }
                     if (m.DeclaredAccessibility != Accessibility.Public)
@@ -48,21 +49,19 @@ namespace Serde
                         // A non-public member is never serialized or deserialized. Report an
                         // explicit Ordinal on such a member, since it would otherwise be silently
                         // ignored.
-                        if (GetMemberOptions(m).Ordinal is not null)
-                        {
-                            context.ReportDiagnostic(CreateDiagnostic(
-                                DiagId.ERR_OrdinalOnNonPublicMember, m.Locations[0], m.Name));
-                        }
+                        CheckOrdinal(m);
                         continue;
                     }
                     if (members.FindIndex(m2 => m2.Symbol.Name == m.Name) != -1)
                     {
                         // If we already have a member with the same name, the derived type is
                         // hiding the base type member.
+                        CheckOrdinal(m);
                         continue;
                     }
                     if (curType.TypeKind != TypeKind.Enum && m.IsStatic)
                     {
+                        CheckOrdinal(m);
                         continue;
                     }
                     var memberOptions = GetMemberOptions(m);
@@ -70,6 +69,7 @@ namespace Serde
                         (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize) ||
                         (memberOptions.SkipDeserialize && usage == SerdeUsage.Deserialize))
                     {
+                        CheckOrdinal(m);
                         continue;
                     }
                     members.Add(new DataMemberSymbol(m, typeOptions, memberOptions));
@@ -95,6 +95,15 @@ namespace Serde
                 members = ReorderByExplicitOrdinal(members, context);
             }
             return members;
+
+            void CheckOrdinal(ISymbol m)
+            {
+                if (GetMemberOptions(m).Ordinal is not null)
+                {
+                    context.ReportDiagnostic(CreateDiagnostic(
+                        DiagId.ERR_OrdinalOnSkippedMember, m.Locations[0], m.Name));
+                }
+            }
         }
 
         /// <summary>

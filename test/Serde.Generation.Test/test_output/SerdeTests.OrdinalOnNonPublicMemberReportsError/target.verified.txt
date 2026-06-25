@@ -8,12 +8,12 @@
 
 */
  : (6,17)-(6,18),
-      Message: The 'Ordinal' option on member 'A' has no effect because the member is not public and will not be serialized or deserialized.,
+      Message: The 'Ordinal' option on member 'A' has no effect because the member will not be serialized or deserialized.,
       Severity: Error,
       Descriptor: {
-        Id: ERR_OrdinalOnNonPublicMember,
+        Id: ERR_OrdinalOnSkippedMember,
         Title: ,
-        MessageFormat: The 'Ordinal' option on member 'A' has no effect because the member is not public and will not be serialized or deserialized.,
+        MessageFormat: The 'Ordinal' option on member 'A' has no effect because the member will not be serialized or deserialized.,
         Category: Serde,
         DefaultSeverity: Error,
         IsEnabledByDefault: true
