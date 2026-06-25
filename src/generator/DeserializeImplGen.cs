@@ -33,7 +33,7 @@ namespace Serde
 
             // Generate members for IDeserialize.Deserialize implementation
             var members = receiverType.TypeKind == TypeKind.Enum
-                ? GenerateEnumDeserializeMethod(receiverType, typeSyntax)
+                ? GenerateEnumDeserializeMethod(context, receiverType, typeSyntax)
                 : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, foreignType, inProgress);
             return members;
         }
@@ -121,13 +121,14 @@ namespace Serde
         /// </code>
         /// </summary>
         private static SourceBuilder GenerateEnumDeserializeMethod(
+            GeneratorExecutionContext context,
             ITypeSymbol type,
             TypeSyntax typeSyntax)
         {
             Debug.Assert(type.TypeKind == TypeKind.Enum);
             var primName = Proxies.TryGetPrimitiveName(((INamedTypeSymbol)type).EnumUnderlyingType!);
 
-            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
+            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
             var assignedVarType = members.Count switch {
                 <= 8 => "byte",
@@ -206,7 +207,7 @@ namespace Serde
             var preserveInitializers = containingType is not null
                 && SymbolEqualityComparer.Default.Equals(type, containingType);
 
-            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both);
+            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
             var assignedVarType = members.Count switch {
                 <= 8 => "byte",

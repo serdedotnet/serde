@@ -162,6 +162,20 @@ sealed class SerdeMemberOptions : Attribute
     public string? Rename { get; init; } = null;
 
     /// <summary>
+    /// Set an explicit ordinal for this member. The ordinal is the stable logical identity of the
+    /// member, exposed as <see cref="Serde.ISerdeInfo.GetFieldOrdinal(int)"/>. Some formats (e.g. a
+    /// compact array/offset-based or protobuf-style encoding) use it to encode members by position
+    /// or tag rather than by name; name-based formats such as JSON ignore it.
+    ///
+    /// A negative value (the default) means no explicit ordinal is assigned. When any member of a
+    /// type specifies an explicit ordinal, every member must specify one. Ordinals must be
+    /// non-negative and unique, but they need not be contiguous: gaps ("holes") are allowed, which
+    /// lets an obsolete member's ordinal be retired without renumbering the others. Members are
+    /// ordered by ascending ordinal in the generated field layout.
+    /// </summary>
+    public int Ordinal { get; init; } = -1;
+
+    /// <summary>
     /// If true, the source generator will pass down the attributes from the member to the
     /// serializer.
     /// </summary>

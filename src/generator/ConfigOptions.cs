@@ -21,6 +21,9 @@ internal readonly record struct MemberOptions()
     /// <see cref="SerdeMemberOptions.Rename" />
     public string? Rename { get; init; } = null;
 
+    /// <see cref="SerdeMemberOptions.Ordinal" />
+    public int? Ordinal { get; init; } = null;
+
     /// <see cref="SerdeMemberOptions.ProvideAttributes" />
     public bool ProvideAttributes { get; init; } = false;
 

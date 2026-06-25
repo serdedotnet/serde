@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(Ordinal = 0)]
+    Green,
+    ^^^^^
+
+*/
+ : (8,4)-(8,9),
+      Message: The 'Ordinal' option on enum member 'Green' is not allowed. Enum members are mapped by their declared value, not by ordinal.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_OrdinalOnEnumMember,
+        Title: ,
+        MessageFormat: The 'Ordinal' option on enum member 'Green' is not allowed. Enum members are mapped by their declared value, not by ordinal.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

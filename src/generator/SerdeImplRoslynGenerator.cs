@@ -227,7 +227,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                 return;
             }
 
-            if (SymbolUtilities.GetDataMembers(typeSymbol, SerdeUsage.Both).Count != 0)
+            if (SymbolUtilities.GetDataMembers(typeSymbol, SerdeUsage.Both, generationContext).Count != 0)
             {
                 // Non-empty proxy: it is a representation (surrogate) of the foreign
                 // type. We deserialize the proxy and convert it to the foreign type,

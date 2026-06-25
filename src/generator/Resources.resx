@@ -172,4 +172,16 @@
   <data name="ERR_WithTypeUnsupported" xml:space="preserve">
     <value>The 'With' option cannot be applied to type '{0}': the serde object must be a named type.</value>
   </data>
+  <data name="ERR_DuplicateOrdinal" xml:space="preserve">
+    <value>The explicit 'Ordinal' value '{0}' is assigned to multiple members ('{1}' and '{2}').</value>
+  </data>
+  <data name="ERR_PartialMemberOrdinal" xml:space="preserve">
+    <value>Member '{0}' must specify an explicit 'Ordinal' because another member of the type does. When any member sets an explicit ordinal, all members must set one.</value>
+  </data>
+  <data name="ERR_OrdinalOnSkippedMember" xml:space="preserve">
+    <value>The 'Ordinal' option on member '{0}' has no effect because the member will not be serialized or deserialized.</value>
+  </data>
+  <data name="ERR_OrdinalOnEnumMember" xml:space="preserve">
+    <value>The 'Ordinal' option on enum member '{0}' is not allowed. Enum members are mapped by their declared value, not by ordinal.</value>
+  </data>
 </root>

@@ -75,8 +75,21 @@ internal static class SerdeInfoGenerator
 
         var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
 
-        var membersString = string.Join("," + Utilities.NewLine,
-            SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both).SelectNotNull(GetMemberEntry));
+        // Materialize the (member, entry) pairs once so the emitted field array and the parallel
+        // ordinal array stay aligned, and so GetMemberEntry's diagnostics fire only once per member.
+        var dataMembers = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both, context);
+        var emittedMembers = new List<DataMemberSymbol>();
+        var memberEntries = new List<string>();
+        foreach (var m in dataMembers)
+        {
+            if (GetMemberEntry(m) is { } entry)
+            {
+                emittedMembers.Add(m);
+                memberEntries.Add(entry);
+            }
+        }
+
+        var membersString = string.Join("," + Utilities.NewLine, memberEntries);
 
         // Type identity: the SerdeInfo Name is the conceptual type being
         // (de)serialized. For a non-empty conversion proxy that is the foreign
@@ -115,6 +128,31 @@ new {{fieldArrayType}} {
     {{membersString}}
 }
 """).ToString());
+
+        // When every member has an explicit ordinal, emit the ordinals (in physical/field-array
+        // order). Their presence is what makes the generated ISerdeInfo report
+        // HasExplicitFieldOrdinals == true, so the array is emitted even when the ordinals happen to
+        // equal the default 0..n sequence: that presence distinguishes "explicitly assigned" (a
+        // stable identity) from "incidental physical position". The partial case (some but not all)
+        // is a reported error and is skipped here to avoid emitting bogus data.
+        if (!isEnum && emittedMembers.Count > 0)
+        {
+            var ordinals = new List<int>(emittedMembers.Count);
+            var allExplicit = true;
+            foreach (var m in emittedMembers)
+            {
+                if (m.Ordinal is not int ord)
+                {
+                    allExplicit = false;
+                    break;
+                }
+                ordinals.Add(ord);
+            }
+            if (allExplicit)
+            {
+                makeArgs.Add($"new int[] {{ {string.Join(", ", ordinals)} }}");
+            }
+        }
 
         var argsString = string.Join("," + Utilities.NewLine, makeArgs);
 

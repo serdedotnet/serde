@@ -28,6 +28,10 @@ namespace Serde
         ERR_AsTypeWithOption = 15,
         ERR_ForTypeUnsupported = 16,
         ERR_WithTypeUnsupported = 17,
+        ERR_DuplicateOrdinal = 18,
+        ERR_PartialMemberOrdinal = 19,
+        ERR_OrdinalOnSkippedMember = 20,
+        ERR_OrdinalOnEnumMember = 21,
     }
 
     internal static class Diagnostics
@@ -51,6 +55,10 @@ namespace Serde
             ERR_AsTypeWithOption => nameof(ERR_AsTypeWithOption),
             ERR_ForTypeUnsupported => nameof(ERR_ForTypeUnsupported),
             ERR_WithTypeUnsupported => nameof(ERR_WithTypeUnsupported),
+            ERR_DuplicateOrdinal => nameof(ERR_DuplicateOrdinal),
+            ERR_PartialMemberOrdinal => nameof(ERR_PartialMemberOrdinal),
+            ERR_OrdinalOnSkippedMember => nameof(ERR_OrdinalOnSkippedMember),
+            ERR_OrdinalOnEnumMember => nameof(ERR_OrdinalOnEnumMember),
         };
 
         public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)

@@ -73,3 +73,11 @@ Note that these options only apply to the target type, not the type of nested me
 - `[SerdeMemberOptions(Rename = "name")]`
 
   `null` by default. When not null, renames the current member to the given argument.
+
+- `[SerdeMemberOptions(Ordinal = 0)]`
+
+  Negative (unset) by default. When set to a non-negative value, assigns the member an explicit *ordinal* — its stable logical identity, exposed at runtime as `ISerdeInfo.GetFieldOrdinal(int)`. Some formats (for example, a compact array/offset-based or protobuf-style encoding) use the ordinal to encode members by position or tag rather than by name; name-based formats such as JSON ignore it.
+
+  When any member of a type specifies an explicit ordinal, every member must specify one. Ordinals must be non-negative and unique, but they need **not** be contiguous: gaps ("holes") are allowed, so an obsolete member's ordinal can be retired without renumbering the others. Members are laid out in ascending ordinal order, and `GetFieldOrdinal` is guaranteed to be strictly increasing across the field positions. Like all member options, `Ordinal` only applies to public fields and properties; placing it on any other member is an error. It is also not allowed on enum members, which are mapped by their declared value rather than by ordinal.
+
+  When no member declares an ordinal, `ISerdeInfo.GetFieldOrdinal` still returns a value, but it is just the incidental physical position (declaration order), which is not a stable identity. Use `ISerdeInfo.HasExplicitFieldOrdinals` to tell the two cases apart: a positional or tag-based format should only rely on ordinals for its wire layout when that flag is `true`.
