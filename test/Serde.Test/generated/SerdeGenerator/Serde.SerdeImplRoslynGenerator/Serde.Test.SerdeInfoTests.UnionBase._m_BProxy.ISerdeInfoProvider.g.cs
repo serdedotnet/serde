@@ -11,10 +11,9 @@ partial class SerdeInfoTests
         {
             private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                 "B",
-            typeof(Serde.Test.SerdeInfoTests.UnionBase.B).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-
-            }
+                typeof(Serde.Test.SerdeInfoTests.UnionBase.B).GetCustomAttributesData(),
+                new global::Serde.SerdeInfo.FieldInfo[] {
+                }
             );
         }
     }

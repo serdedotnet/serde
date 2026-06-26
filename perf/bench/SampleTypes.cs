@@ -66,15 +66,15 @@ public partial record LocationWrap : IDeserialize<Location>, IDeserializeProvide
         "Location",
         typeof(Location).GetCustomAttributesData(),
         [
-            ("id", I32Proxy.SerdeInfo, typeof(Location).GetProperty("Id")),
-            ("address1", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address1")),
-            ("address2", StringProxy.SerdeInfo, typeof(Location).GetProperty("Address2")),
-            ("city", StringProxy.SerdeInfo, typeof(Location).GetProperty("City")),
-            ("state", StringProxy.SerdeInfo, typeof(Location).GetProperty("State")),
-            ("postalCode", StringProxy.SerdeInfo, typeof(Location).GetProperty("PostalCode")),
-            ("name", StringProxy.SerdeInfo, typeof(Location).GetProperty("Name")),
-            ("phoneNumber", StringProxy.SerdeInfo, typeof(Location).GetProperty("PhoneNumber")),
-            ("country", StringProxy.SerdeInfo, typeof(Location).GetProperty("Country"))
+            new Serde.SerdeInfo.FieldInfo("id", I32Proxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("address1", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("address2", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("city", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("state", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("postalCode", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("name", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("phoneNumber", StringProxy.SerdeInfo),
+            new Serde.SerdeInfo.FieldInfo("country", StringProxy.SerdeInfo)
         ]);
 
     Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)

@@ -8,12 +8,12 @@ partial class C
 {
     private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "C",
-    typeof(Some.Nested.Namespace.C).GetCustomAttributesData(),
-    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("colorInt", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorInt, Some.Nested.Namespace.ColorIntProxy>(), typeof(Some.Nested.Namespace.C).GetField("ColorInt")),
-        ("colorByte", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorByte, Some.Nested.Namespace.ColorByteProxy>(), typeof(Some.Nested.Namespace.C).GetField("ColorByte")),
-        ("colorLong", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorLong, Some.Nested.Namespace.ColorLongProxy>(), typeof(Some.Nested.Namespace.C).GetField("ColorLong")),
-        ("colorULong", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorULong, Some.Nested.Namespace.ColorULongProxy>(), typeof(Some.Nested.Namespace.C).GetField("ColorULong"))
-    }
+        typeof(Some.Nested.Namespace.C).GetCustomAttributesData(),
+        new global::Serde.SerdeInfo.FieldInfo[] {
+            new("colorInt", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorInt, Some.Nested.Namespace.ColorIntProxy>()),
+            new("colorByte", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorByte, Some.Nested.Namespace.ColorByteProxy>()),
+            new("colorLong", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorLong, Some.Nested.Namespace.ColorLongProxy>()),
+            new("colorULong", global::Serde.SerdeInfoProvider.GetSerializeInfo<Some.Nested.Namespace.ColorULong, Some.Nested.Namespace.ColorULongProxy>())
+        }
     );
 }

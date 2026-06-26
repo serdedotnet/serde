@@ -14,38 +14,93 @@ namespace Serde;
 /// </summary>
 public static class SerdeInfo
 {
+    public readonly record struct FieldInfo(string Name, ISerdeInfo SerdeInfo)
+    {
+        private readonly IList<CustomAttributeData> _attributes = Array.Empty<CustomAttributeData>();
+        private readonly MemberInfo? _memberInfo;
+
+        /// <summary>
+        /// The attributes for the field. This list may be modified from the original set of
+        /// attributes. If <see cref="MemberInfo"/> is set instead, the attributes are derived from
+        /// it lazily. Setting both <see cref="Attributes"/> and <see cref="MemberInfo"/> is invalid
+        /// and throws an <see cref="InvalidOperationException"/> when the attributes are read.
+        /// <see cref="ISerdeInfo.GetFieldAttributes"/>
+        /// </summary>
+        public IList<CustomAttributeData> Attributes
+        {
+            get => _attributes;
+            init
+            {
+                if (MemberInfo is not null)
+                {
+                    throw new InvalidOperationException("Cannot set both Attributes and MemberInfo.");
+                }
+                _attributes = value;
+            }
+        }
+
+        /// <summary>
+        /// The reflection <see cref="System.Reflection.MemberInfo"/> backing this field, if
+        /// available. When set, <see cref="Attributes"/> is derived from it lazily rather than
+        /// being materialized eagerly. Setting both this and <see cref="Attributes"/> is invalid.
+        /// </summary>
+        public MemberInfo? MemberInfo
+        {
+            get => _memberInfo;
+            init
+            {
+                if (_attributes.Count > 0)
+                {
+                    throw new InvalidOperationException("Cannot set both Attributes and MemberInfo.");
+                }
+                _memberInfo = value;
+            }
+        }
+
+        /// <summary>
+        /// The ordinal of the field, if explicitly specified. If not specified, this will be -1.
+        /// <see cref="ISerdeInfo.GetFieldOrdinal"/>
+        /// </summary>
+        public int Ordinal { get; init; } = -1;
+    }
+
     /// <summary>
-    /// Create an <see cref="ISerdeInfo"/> for a custom type. The ordering of the fields is
-    /// important: it corresponds to the index returned by <see cref="ITypeDeserializer.TryReadIndex" />.
+    /// Create an <see cref="ISerdeInfo"/> for a custom type with the given fields. The ordering of the
+    /// fields is important -- it corresponds to the index returned by <see cref="ITypeDeserializer.TryReadIndex" />,
+    /// unless the fields have explicit ordinals, in which case the ordinals are used to determine the index.
     /// </summary>
+    public static ISerdeInfo MakeCustom(
+        string typeName,
+        IList<CustomAttributeData> typeAttributes,
+        ReadOnlySpan<FieldInfo> fields)
+    {
+        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, fields);
+    }
+
+    [Obsolete("Use MakeCustom with ReadOnlySpan<FieldInfo> instead.")]
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
         => MakeCustom(typeName, typeAttributes, fields, Array.Empty<int>());
 
-    /// <summary>
-    /// Create an <see cref="ISerdeInfo"/> for a custom type, assigning each field an explicit
-    /// ordinal (its stable logical identity, see <see cref="ISerdeInfo.GetFieldOrdinal"/>). The
-    /// ordinals are given in field order and may be sparse. Pass an empty span to leave the
-    /// ordinals implicit (equal to the physical position).
-    /// </summary>
+    [Obsolete("Use MakeCustom with ReadOnlySpan<FieldInfo> instead.")]
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields,
         ReadOnlySpan<int> fieldOrdinals)
     {
-        var converted = new (string, ISerdeInfo, IList<CustomAttributeData>)[fields.Length];
+        var converted = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
-            converted[i] = (
-                fields[i].SerializeName,
-                fields[i].SerdeInfo,
-                fields[i].MemberInfo?.GetCustomAttributesData()
-                    ?? (IList<CustomAttributeData>)Array.Empty<CustomAttributeData>());
+            converted[i] = new(fields[i].SerializeName, fields[i].SerdeInfo)
+            {
+                MemberInfo = fields[i].MemberInfo,
+                Ordinal = fieldOrdinals.IsEmpty ? -1 : fieldOrdinals[i]
+            };
         }
-        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted, fieldOrdinals);
+        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
     }
 
     /// <summary>
@@ -55,21 +110,28 @@ public static class SerdeInfo
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields)
-        => TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, fields);
+    {
+        var converted = new FieldInfo[fields.Length];
+        for (int i = 0; i < fields.Length; i++)
+        {
+            converted[i] = new(fields[i].SerializeName, fields[i].SerdeInfo)
+            {
+                Attributes = fields[i].FieldAttributes
+            };
+        }
+        return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
+    }
 
-    /// <summary>
-    /// Create an <see cref="ISerdeInfo"/> for a custom type without field attributes or MemberInfo.
-    /// Field attributes default to empty.
-    /// </summary>
+    [Obsolete("Use MakeCustom with ReadOnlySpan<FieldInfo> instead.")]
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo)> fields)
     {
-        var converted = new (string, ISerdeInfo, IList<CustomAttributeData>)[fields.Length];
+        var converted = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
-            converted[i] = (fields[i].SerializeName, fields[i].SerdeInfo, Array.Empty<CustomAttributeData>());
+            converted[i] = new(fields[i].SerializeName, fields[i].SerdeInfo);
         }
         return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
     }
@@ -80,14 +142,13 @@ public static class SerdeInfo
         ISerdeInfo underlyingInfo,
         ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields)
     {
-        var fieldsWithInfo = new (string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)[fields.Length];
+        var fieldsWithInfo = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
-            fieldsWithInfo[i] = (
-                fields[i].SerializeName,
-                underlyingInfo,
-                fields[i].MemberInfo?.GetCustomAttributesData()
-                    ?? (IList<CustomAttributeData>)Array.Empty<CustomAttributeData>());
+            fieldsWithInfo[i] = new(fields[i].SerializeName, underlyingInfo)
+            {
+                MemberInfo = fields[i].MemberInfo
+            };
         }
 
         return TypeWithFieldsInfo.Create(typeName, InfoKind.Enum, typeAttributes, fieldsWithInfo);
@@ -120,10 +181,10 @@ public static class SerdeInfo
         }
         sb.Append('>');
 
-        var fields = new (string, ISerdeInfo, IList<CustomAttributeData>)[itemInfos.Length];
+        var fields = new FieldInfo[itemInfos.Length];
         for (int i = 0; i < itemInfos.Length; i++)
         {
-            fields[i] = ($"Item{i + 1}", itemInfos[i], Array.Empty<CustomAttributeData>());
+            fields[i] = new($"Item{i + 1}", itemInfos[i]);
         }
         return TypeWithFieldsInfo.Create(
             sb.ToString(),
@@ -333,33 +394,26 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields
-    ) => Create(typeName, typeKind, typeAttributes, fields, Array.Empty<int>());
-
-    /// <summary>
-    /// Create a new field mapping. The ordering of the fields is important -- it
-    /// corresponds to the index returned by <see cref="ITypeDeserializer.TryReadIndex" />.
-    /// </summary>
-    public static TypeWithFieldsInfo Create(
-        string typeName,
-        InfoKind typeKind,
-        IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields,
-        ReadOnlySpan<int> fieldOrdinals)
+        ReadOnlySpan<SerdeInfo.FieldInfo> fields)
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
+        bool hasExplicitOrdinals = false;
         for (int index = 0; index < fields.Length; index++)
         {
-            var (serializeName, serdeInfo, fieldAttributes) = fields[index];
+            var field = fields[index];
+            if (field.Ordinal >= 0)
+            {
+                hasExplicitOrdinals = true;
+            }
 
-            nameToIndexBuilder.Add((ISerdeInfo.UTF8Encoding.GetBytes(serializeName), index));
+            nameToIndexBuilder.Add((ISerdeInfo.UTF8Encoding.GetBytes(field.Name), index));
             var fieldInfo = new PrivateFieldInfo(
-                serializeName,
+                field.Name,
                 default,
-                fieldAttributes,
-                serdeInfo,
-                fieldOrdinals.IsEmpty ? index : fieldOrdinals[index]);
+                field.Attributes,
+                field.SerdeInfo,
+                field.Ordinal >= 0 ? field.Ordinal : index);
             indexToInfoBuilder.Add(fieldInfo);
         }
 
@@ -378,7 +432,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             typeAttributes,
             nameToIndexBuilder.ToImmutable(),
             indexToInfoBuilder.ToImmutable(),
-            !fieldOrdinals.IsEmpty);
+            hasExplicitOrdinals);
     }
 
     /// <summary>

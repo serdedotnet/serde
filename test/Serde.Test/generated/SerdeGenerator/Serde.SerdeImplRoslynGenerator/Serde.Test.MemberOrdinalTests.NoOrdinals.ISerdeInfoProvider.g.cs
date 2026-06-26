@@ -9,11 +9,11 @@ partial class MemberOrdinalTests
     {
         private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "NoOrdinals",
-        typeof(Serde.Test.MemberOrdinalTests.NoOrdinals).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("A", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(Serde.Test.MemberOrdinalTests.NoOrdinals).GetProperty("A")),
-            ("B", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>(), typeof(Serde.Test.MemberOrdinalTests.NoOrdinals).GetProperty("B"))
-        }
+            typeof(Serde.Test.MemberOrdinalTests.NoOrdinals).GetCustomAttributesData(),
+            new global::Serde.SerdeInfo.FieldInfo[] {
+                new("A", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>()),
+                new("B", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>())
+            }
         );
     }
 }

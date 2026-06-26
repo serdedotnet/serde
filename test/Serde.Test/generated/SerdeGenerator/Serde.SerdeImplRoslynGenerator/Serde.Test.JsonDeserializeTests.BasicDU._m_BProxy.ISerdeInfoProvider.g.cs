@@ -11,10 +11,10 @@ partial class JsonDeserializeTests
         {
             private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                 "B",
-            typeof(Serde.Test.JsonDeserializeTests.BasicDU.B).GetCustomAttributesData(),
-            new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                ("y", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>(), typeof(Serde.Test.JsonDeserializeTests.BasicDU.B).GetProperty("Y"))
-            }
+                typeof(Serde.Test.JsonDeserializeTests.BasicDU.B).GetCustomAttributesData(),
+                new global::Serde.SerdeInfo.FieldInfo[] {
+                    new("y", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>())
+                }
             );
         }
     }

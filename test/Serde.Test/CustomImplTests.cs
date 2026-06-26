@@ -16,9 +16,9 @@ public sealed partial class CustomImplTests
             "RgbWithFieldMap",
             typeof(RgbWithFieldMap).GetCustomAttributesData(),
             [
-                ("red", I32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Red")),
-                ("green", I32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Green")),
-                ("blue", I32Proxy.SerdeInfo, typeof(RgbWithFieldMap).GetField("Blue"))
+                new Serde.SerdeInfo.FieldInfo("red", I32Proxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("green", I32Proxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("blue", I32Proxy.SerdeInfo)
             ]);
 
         static IDeserialize<RgbWithFieldMap> IDeserializeProvider<RgbWithFieldMap>.Instance { get; }

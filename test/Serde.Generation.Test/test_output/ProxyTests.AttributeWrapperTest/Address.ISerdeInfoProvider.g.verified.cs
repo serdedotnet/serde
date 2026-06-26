@@ -5,13 +5,19 @@ partial class Address
 {
     private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Address",
-    typeof(Address).GetCustomAttributesData(),
-    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("name", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Address).GetField("Name")),
-        ("line1", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Address).GetField("Line1")),
-        ("city", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Address).GetField("City")),
-        ("state", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Address).GetField("State")),
-        ("zip", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>(), typeof(Address).GetField("Zip"))
-    }
+        typeof(Address).GetCustomAttributesData(),
+        new global::Serde.SerdeInfo.FieldInfo[] {
+            new("name", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+            {
+                MemberInfo = typeof(Address).GetField("Name"),
+            },
+            new("line1", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
+            new("city", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+            {
+                MemberInfo = typeof(Address).GetField("City"),
+            },
+            new("state", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
+            new("zip", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+        }
     );
 }

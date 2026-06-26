@@ -1,0 +1,13 @@
+﻿[
+  {
+    "Id": "CS0618",
+    "Title": "Type or member is obsolete",
+    "Severity": "Warning",
+    "WarningLevel": "2",
+    "Location": ": (18,43)-(22,99)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0618)",
+    "MessageFormat": "'{0}' is obsolete: '{1}'",
+    "Message": "'SerdeInfo.MakeCustom(string, IList<CustomAttributeData>, ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)>)' is obsolete: 'Use MakeCustom with ReadOnlySpan<FieldInfo> instead.'",
+    "Category": "Compiler"
+  }
+]

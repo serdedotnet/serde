@@ -9,11 +9,11 @@ partial class DuplicateKeyTests
     {
         private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
             "SimpleTypeAllowDuplicates",
-        typeof(Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates).GetCustomAttributesData(),
-        new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-            ("name", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>(), typeof(Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates).GetProperty("Name")),
-            ("value", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>(), typeof(Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates).GetProperty("Value"))
-        }
+            typeof(Serde.Test.DuplicateKeyTests.SimpleTypeAllowDuplicates).GetCustomAttributesData(),
+            new global::Serde.SerdeInfo.FieldInfo[] {
+                new("name", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>()),
+                new("value", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>())
+            }
         );
     }
 }

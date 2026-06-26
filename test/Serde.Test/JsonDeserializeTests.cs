@@ -501,8 +501,8 @@ namespace Serde.Test
                     "A",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("w", I32Proxy.SerdeInfo, typeof(A).GetProperty("W")),
-                        ("x", I32Proxy.SerdeInfo, typeof(A).GetProperty("X")),
+                        new Serde.SerdeInfo.FieldInfo("w", I32Proxy.SerdeInfo),
+                        new Serde.SerdeInfo.FieldInfo("x", I32Proxy.SerdeInfo),
                     ]);
 
                 public A Deserialize(ITypeDeserializer typeDeserialize)
@@ -553,8 +553,8 @@ namespace Serde.Test
                     "B",
                     System.Array.Empty<CustomAttributeData>(),
                     [
-                        ("y", StringProxy.SerdeInfo, typeof(B).GetProperty("Y")),
-                        ("z", StringProxy.SerdeInfo, typeof(B).GetProperty("Z")),
+                        new Serde.SerdeInfo.FieldInfo("y", StringProxy.SerdeInfo),
+                        new Serde.SerdeInfo.FieldInfo("z", StringProxy.SerdeInfo),
                     ]);
                 public B Deserialize(ITypeDeserializer d)
                 {
