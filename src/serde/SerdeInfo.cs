@@ -35,6 +35,7 @@ public static class SerdeInfo
                 {
                     throw new InvalidOperationException("Cannot set both Attributes and MemberInfo.");
                 }
+                _attributes = value;
             }
         }
 
