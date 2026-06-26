@@ -3,7 +3,7 @@
     <metadata>
       <id>Serde</id>
       <authors>Serde.NET</authors>
-      <description>Serde.NET is a multi-format serialization library.</description>
+      <description>Serde.NET is a multi-format serialization library inspired by Rust's serde crate.</description>
       <readme>docs/README.Serde.md</readme>
       <version>$SerdePkgVersion$</version>
       <license type="expression">BSD-3-Clause</license>
