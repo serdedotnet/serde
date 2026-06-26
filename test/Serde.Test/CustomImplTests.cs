@@ -56,6 +56,7 @@ public sealed partial class CustomImplTests
                 }
             }
 
+            deType.End(fieldMap);
             return new RgbWithFieldMap { Red = red, Green = green, Blue = blue };
         }
     }

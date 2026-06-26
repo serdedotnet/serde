@@ -222,9 +222,9 @@ partial class JsonDeserializer<TReader>
             _deserializer.Reader.Skip();
         }
 
-        void IDisposable.Dispose()
+        void ITypeDeserializer.End(ISerdeInfo info)
         {
-            // Nothing to dispose
+            // Nothing to do; the closing delimiter is consumed when the end of the type is reached.
         }
     }
 }

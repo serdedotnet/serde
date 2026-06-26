@@ -72,6 +72,7 @@ public abstract class DeListBase<
             {
                 FixAdd(builder, _de.Deserialize(deCollection, info, i));
             }
+            deCollection.End(info);
             return FromFix(builder);
         }
         else
@@ -88,6 +89,7 @@ public abstract class DeListBase<
 
                 VarAdd(builder, _de.Deserialize(deCollection, info, index));
             }
+            deCollection.End(info);
             return FromVar(builder);
         }
     }

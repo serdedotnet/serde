@@ -23,22 +23,28 @@ partial class ColorEnumProxy : Serde.ISerde<ColorEnum>
     ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-        using var de = deserializer.ReadType(serdeInfo);
+        var de = deserializer.ReadType(serdeInfo);
         var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
         if (index == ITypeDeserializer.IndexNotFound)
         {
             throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
         }
+        ColorEnum _l_result;
         if (index == ITypeDeserializer.EndOfType)
         {
             // Assume we want to read the underlying value
-            return (ColorEnum)de.ReadI32(serdeInfo, index);
+            _l_result = (ColorEnum)de.ReadI32(serdeInfo, index);
         }
-        return index switch {
-            0 => ColorEnum.Red,
-            1 => ColorEnum.Green,
-            2 => ColorEnum.Blue,
-            _ => throw new InvalidOperationException($"Unexpected index: {index}")
-        };
+        else
+        {
+            _l_result = index switch {
+                0 => ColorEnum.Red,
+                1 => ColorEnum.Green,
+                2 => ColorEnum.Blue,
+                _ => throw new InvalidOperationException($"Unexpected index: {index}")
+            };
+        }
+        de.End(serdeInfo);
+        return _l_result;
     }
 }

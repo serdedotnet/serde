@@ -61,7 +61,7 @@ public static class IDeserializerExt
         => deserializer.ReadValue<T, T>();
 }
 
-public interface ITypeDeserializer : IDisposable
+public interface ITypeDeserializer
 {
     public const int EndOfType = -1;
     public const int IndexNotFound = -2;
@@ -172,7 +172,13 @@ public interface ITypeDeserializer : IDisposable
     }
     void ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
 
-    void IDisposable.Dispose() { }
+    /// <summary>
+    /// Finish deserializing the type. This method should be called when the type is fully
+    /// deserialized, after the end of the type has been reached (i.e. <see cref="TryReadIndex" />
+    /// has returned <see cref="EndOfType" />). After this method is called, the <see
+    /// cref="ITypeDeserializer" /> should not be used again.
+    /// </summary>
+    void End(ISerdeInfo info) { }
 }
 
 public static class ITypeDeserializerExt

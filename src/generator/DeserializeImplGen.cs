@@ -77,7 +77,7 @@ namespace Serde
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-    using var de = deserializer.ReadType(_l_serdeInfo);
+    var de = deserializer.ReadType(_l_serdeInfo);
     var (index, errorName) = de.TryReadIndexWithName(_l_serdeInfo);
     if (index == ITypeDeserializer.IndexNotFound)
     {
@@ -92,6 +92,7 @@ namespace Serde
     {
         throw Serde.DeserializeException.ExpectedEndOfType(index);
     }
+    de.End(_l_serdeInfo);
     return _l_result;
 }
 """);
@@ -141,22 +142,28 @@ namespace Serde
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-    using var de = deserializer.ReadType(serdeInfo);
+    var de = deserializer.ReadType(serdeInfo);
     var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
     if (index == ITypeDeserializer.IndexNotFound)
     {
         throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
     }
+    {{typeFqn}} _l_result;
     if (index == ITypeDeserializer.EndOfType)
     {
         // Assume we want to read the underlying value
-        return ({{typeFqn}})de.Read{{primName}}(serdeInfo, index);
+        _l_result = ({{typeFqn}})de.Read{{primName}}(serdeInfo, index);
     }
-    return index switch {
-        {{string.Join("," + Utilities.NewLine, members
-            .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}")) }},
-        _ => throw new InvalidOperationException($"Unexpected index: {index}")
-    };
+    else
+    {
+        _l_result = index switch {
+            {{string.Join("," + Utilities.NewLine, members
+                .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}")) }},
+            _ => throw new InvalidOperationException($"Unexpected index: {index}")
+        };
+    }
+    de.End(serdeInfo);
+    return _l_result;
 }
 """);
             return src;
@@ -250,6 +257,7 @@ namespace Serde
             {{cases}}
         }
     }
+    typeDeserialize.End({{typeInfoLocalName}});
     {{typeCreationExpr}}
     return {{foreignTypeConversionOpt}}newType;
 }

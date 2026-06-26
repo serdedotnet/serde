@@ -31,7 +31,7 @@ partial record Base
         }Some.Nested.Namespace.Base IDeserialize<Some.Nested.Namespace.Base>.Deserialize(IDeserializer deserializer)
         {
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-            using var de = deserializer.ReadType(_l_serdeInfo);
+            var de = deserializer.ReadType(_l_serdeInfo);
             var (index, errorName) = de.TryReadIndexWithName(_l_serdeInfo);
             if (index == ITypeDeserializer.IndexNotFound)
             {
@@ -48,6 +48,7 @@ partial record Base
             {
                 throw Serde.DeserializeException.ExpectedEndOfType(index);
             }
+            de.End(_l_serdeInfo);
             return _l_result;
         }
     }

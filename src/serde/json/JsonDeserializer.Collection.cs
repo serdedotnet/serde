@@ -281,5 +281,10 @@ partial class JsonDeserializer<TReader>
             _deserializer.ReadBytes(writer);
             _index++;
         }
+
+        public void End(ISerdeInfo info)
+        {
+            // Nothing to do; the closing delimiter is consumed when the end of the type is reached.
+        }
     }
 }
