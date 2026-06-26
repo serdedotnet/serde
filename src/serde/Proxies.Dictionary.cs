@@ -94,6 +94,7 @@ public abstract class DeDictBase<
         {
             throw new DeserializeException($"Expected {size} items, found {builder.Count}");
         }
+        deCollection.End(typeInfo);
         return Create(builder);
     }
 

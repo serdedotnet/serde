@@ -44,6 +44,7 @@ partial class JsonDeserializeTests
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
                     }
                 }
+                typeDeserialize.End(_l_serdeInfo);
                 if ((_r_assignedValid & 0b1) != 0b1)
                 {
                     throw Serde.DeserializeException.UnassignedMember();

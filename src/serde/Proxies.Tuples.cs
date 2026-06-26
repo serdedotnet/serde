@@ -53,7 +53,7 @@ public static class TupleProxy
             public ValueTuple<T1> Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 byte _r_assigned = 0;
                 while (true)
@@ -80,6 +80,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return new ValueTuple<T1>(_l_item1);
             }
         }
@@ -133,7 +134,7 @@ public static class TupleProxy
             public (T1, T2) Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 T2 _l_item2 = default!;
                 byte _r_assigned = 0;
@@ -165,6 +166,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return (_l_item1, _l_item2);
             }
         }
@@ -225,7 +227,7 @@ public static class TupleProxy
             public (T1, T2, T3) Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 T2 _l_item2 = default!;
                 T3 _l_item3 = default!;
@@ -262,6 +264,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return (_l_item1, _l_item2, _l_item3);
             }
         }
@@ -329,7 +332,7 @@ public static class TupleProxy
             public (T1, T2, T3, T4) Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 T2 _l_item2 = default!;
                 T3 _l_item3 = default!;
@@ -371,6 +374,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return (_l_item1, _l_item2, _l_item3, _l_item4);
             }
         }
@@ -445,7 +449,7 @@ public static class TupleProxy
             public (T1, T2, T3, T4, T5) Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 T2 _l_item2 = default!;
                 T3 _l_item3 = default!;
@@ -492,6 +496,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return (_l_item1, _l_item2, _l_item3, _l_item4, _l_item5);
             }
         }
@@ -573,7 +578,7 @@ public static class TupleProxy
             public (T1, T2, T3, T4, T5, T6) Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 T2 _l_item2 = default!;
                 T3 _l_item3 = default!;
@@ -625,6 +630,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return (_l_item1, _l_item2, _l_item3, _l_item4, _l_item5, _l_item6);
             }
         }
@@ -713,7 +719,7 @@ public static class TupleProxy
             public (T1, T2, T3, T4, T5, T6, T7) Deserialize(IDeserializer deserializer)
             {
                 var _l_info = SerdeInfo;
-                using var _l_type = deserializer.ReadType(_l_info);
+                var _l_type = deserializer.ReadType(_l_info);
                 T1 _l_item1 = default!;
                 T2 _l_item2 = default!;
                 T3 _l_item3 = default!;
@@ -770,6 +776,7 @@ public static class TupleProxy
                 {
                     throw DeserializeException.UnassignedMember();
                 }
+                _l_type.End(_l_info);
                 return (_l_item1, _l_item2, _l_item3, _l_item4, _l_item5, _l_item6, _l_item7);
             }
         }

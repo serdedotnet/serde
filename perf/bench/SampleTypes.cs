@@ -150,6 +150,7 @@ public partial record LocationWrap : IDeserialize<Location>, IDeserializeProvide
             throw Serde.DeserializeException.UnassignedMember();
         }
 
+        typeDeserialize.End(_l_serdeInfo);
         var newType = new Benchmarks.Location()
         {
             Id = _l_id,

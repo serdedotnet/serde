@@ -40,6 +40,7 @@ partial class C
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
+            typeDeserialize.End(_l_serdeInfo);
             var newType = new C();
             return newType;
         }

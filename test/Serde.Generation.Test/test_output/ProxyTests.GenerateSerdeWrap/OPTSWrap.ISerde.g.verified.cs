@@ -68,6 +68,7 @@ partial record struct OPTSWrap
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
+            typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b1111) != 0b1111)
             {
                 throw Serde.DeserializeException.UnassignedMember();

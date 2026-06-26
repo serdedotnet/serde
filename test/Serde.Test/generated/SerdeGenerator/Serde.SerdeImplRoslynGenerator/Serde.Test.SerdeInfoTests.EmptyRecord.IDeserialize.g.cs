@@ -38,6 +38,7 @@ partial class SerdeInfoTests
                             throw new InvalidOperationException("Unexpected index: " + _l_index_);
                     }
                 }
+                typeDeserialize.End(_l_serdeInfo);
                 if ((_r_assignedValid & 0b0) != 0b0)
                 {
                     throw Serde.DeserializeException.UnassignedMember();

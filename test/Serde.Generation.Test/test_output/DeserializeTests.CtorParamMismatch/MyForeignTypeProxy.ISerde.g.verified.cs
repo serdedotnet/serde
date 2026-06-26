@@ -54,6 +54,7 @@ partial struct MyForeignTypeProxy
                         throw new InvalidOperationException("Unexpected index: " + _l_index_);
                 }
             }
+            typeDeserialize.End(_l_serdeInfo);
             var newType = new MyForeignType();
             return newType;
         }
