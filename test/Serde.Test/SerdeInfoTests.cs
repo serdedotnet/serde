@@ -209,6 +209,8 @@ public sealed partial class SerdeInfoTests
     [Fact]
     public void MakeCustom_NoMemberInfo_SimpleOverload()
     {
+        // Intentionally exercises the obsolete (string, ISerdeInfo) overload to verify backward compatibility.
+#pragma warning disable CS0618
         var info = SerdeInfo.MakeCustom(
             "SimpleType",
             System.Array.Empty<System.Reflection.CustomAttributeData>(),
@@ -216,6 +218,7 @@ public sealed partial class SerdeInfoTests
                 ("x", I32Proxy.SerdeInfo),
                 ("y", StringProxy.SerdeInfo)
             });
+#pragma warning restore CS0618
 
         Assert.Equal("SimpleType", info.Name);
         Assert.Equal(InfoKind.CustomType, info.Kind);

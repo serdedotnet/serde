@@ -8,9 +8,12 @@ partial record Parent
 {
     private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Parent",
-    typeof(Test.Parent).GetCustomAttributesData(),
-    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("r", global::Serde.SerdeInfoProvider.GetSerializeInfo<Recursive, Test.RecursiveWrap>(), typeof(Test.Parent).GetProperty("R"))
-    }
+        typeof(Test.Parent).GetCustomAttributesData(),
+        new global::Serde.SerdeInfo.FieldInfo[] {
+            new("r", global::Serde.SerdeInfoProvider.GetSerializeInfo<Recursive, Test.RecursiveWrap>())
+            {
+                MemberInfo = typeof(Test.Parent).GetProperty("R"),
+            }
+        }
     );
 }

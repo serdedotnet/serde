@@ -11,10 +11,10 @@ partial class A
             {
                 private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
                     "D",
-                typeof(A.B.C.D).GetCustomAttributesData(),
-                new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-                    ("field", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>(), typeof(A.B.C.D).GetField("Field"))
-                }
+                    typeof(A.B.C.D).GetCustomAttributesData(),
+                    new global::Serde.SerdeInfo.FieldInfo[] {
+                        new("field", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>())
+                    }
                 );
             }
         }

@@ -5,12 +5,12 @@ partial class ColorProxy : global::Serde.ISerdeInfoProvider
 {
     global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
         "Color",
-    typeof(Color).GetCustomAttributesData(),
-    global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>(),
-    new (string, System.Reflection.MemberInfo?)[] {
-        ("red", typeof(Color).GetField("Red")),
-        ("green", typeof(Color).GetField("Green")),
-        ("blue", typeof(Color).GetField("Blue"))
-    }
+        typeof(Color).GetCustomAttributesData(),
+        global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>(),
+        new (string, System.Reflection.MemberInfo?)[] {
+            ("red", typeof(Color).GetField("Red")),
+            ("green", typeof(Color).GetField("Green")),
+            ("blue", typeof(Color).GetField("Blue"))
+        }
     );
 }

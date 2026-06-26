@@ -5,9 +5,9 @@ partial class C
 {
     private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "C",
-    typeof(C).GetCustomAttributesData(),
-    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("intArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>(), typeof(C).GetField("IntArr"))
-    }
+        typeof(C).GetCustomAttributesData(),
+        new global::Serde.SerdeInfo.FieldInfo[] {
+            new("intArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>())
+        }
     );
 }

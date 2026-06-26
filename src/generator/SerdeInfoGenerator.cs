@@ -22,7 +22,10 @@ internal static class SerdeInfoGenerator
     ///         {typeName},
     ///         typeof({typeName}).GetCustomAttributesData(),
     ///         [
-    ///             ("{{fieldName}}", SerdeInfoProvider.GetInfo&lt;{wrapperName}&gt;typeof({typeName}).GetField("{fieldName}")),
+    ///             new("{{fieldName}}", SerdeInfoProvider.GetInfo&lt;{wrapperName}&gt;())
+    ///             {
+    ///                 MemberInfo = typeof({typeName}).GetField("{fieldName}"),
+    ///             },
     ///             ...
     ///         ]);
     /// }
@@ -61,7 +64,7 @@ internal static class SerdeInfoGenerator
         else
         {
             makeFuncSuffix = "Custom";
-            fieldArrayType = "(string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[]";
+            fieldArrayType = "global::Serde.SerdeInfo.FieldInfo[]";
         }
 
         // reflectionType is used for typeof() in reflection calls.
@@ -75,21 +78,44 @@ internal static class SerdeInfoGenerator
 
         var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
 
-        // Materialize the (member, entry) pairs once so the emitted field array and the parallel
-        // ordinal array stay aligned, and so GetMemberEntry's diagnostics fire only once per member.
+        // Materialize the (member, wrapper) pairs once so the emitted field array stays aligned, and
+        // so GetWrapperName's diagnostics fire only once per member.
         var dataMembers = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Both, context);
-        var emittedMembers = new List<DataMemberSymbol>();
-        var memberEntries = new List<string>();
+        var emittedMembers = new List<(DataMemberSymbol Member, string? Wrapper)>();
         foreach (var m in dataMembers)
         {
-            if (GetMemberEntry(m) is { } entry)
+            if (isEnum)
             {
-                emittedMembers.Add(m);
-                memberEntries.Add(entry);
+                emittedMembers.Add((m, null));
+                continue;
             }
+
+            var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
+            var wrapperName = GetWrapperName(m, context, usage, inProgress, proxyContext);
+            if (wrapperName is null)
+            {
+                // This is an error, but it should have already been produced by the serialization
+                // or deserialization generator.
+                continue;
+            }
+            emittedMembers.Add((m, wrapperName));
         }
 
-        var membersString = string.Join("," + Utilities.NewLine, memberEntries);
+        // When every member has an explicit ordinal, emit the ordinals (in physical/field-array
+        // order). Their presence is what makes the generated ISerdeInfo report
+        // HasExplicitFieldOrdinals == true, so the ordinals are emitted even when they happen to
+        // equal the default 0..n sequence: that presence distinguishes "explicitly assigned" (a
+        // stable identity) from "incidental physical position". The partial case (some but not all)
+        // is a reported error and is skipped here to avoid emitting bogus data.
+        var allExplicit = !isEnum
+            && emittedMembers.Count > 0
+            && emittedMembers.All(e => e.Member.Ordinal is int);
+
+        var memberEntries = new List<string>(emittedMembers.Count);
+        foreach (var (m, wrapper) in emittedMembers)
+        {
+            memberEntries.Add(GetMemberEntry(m, wrapper, allExplicit));
+        }
 
         // Type identity: the SerdeInfo Name is the conceptual type being
         // (de)serialized. For a non-empty conversion proxy that is the foreign
@@ -123,50 +149,37 @@ internal static class SerdeInfoGenerator
             makeArgs.Add($"global::Serde.SerdeInfoProvider.Get{name}Info<{receiverType.EnumUnderlyingType}, {underlyingInfo}>()");
         }
 
-        makeArgs.Add(new SourceBuilder($$"""
-new {{fieldArrayType}} {
-    {{membersString}}
-}
-""").ToString());
-
-        // When every member has an explicit ordinal, emit the ordinals (in physical/field-array
-        // order). Their presence is what makes the generated ISerdeInfo report
-        // HasExplicitFieldOrdinals == true, so the array is emitted even when the ordinals happen to
-        // equal the default 0..n sequence: that presence distinguishes "explicitly assigned" (a
-        // stable identity) from "incidental physical position". The partial case (some but not all)
-        // is a reported error and is skipped here to avoid emitting bogus data.
-        if (!isEnum && emittedMembers.Count > 0)
+        // Build the field array argument with explicit, self-consistent indentation so each
+        // FieldInfo block nests cleanly under the array initializer.
+        var arrayBuilder = new SourceBuilder();
+        arrayBuilder.AppendLine($"new {fieldArrayType} {{");
+        arrayBuilder.Indent();
+        for (int i = 0; i < memberEntries.Count; i++)
         {
-            var ordinals = new List<int>(emittedMembers.Count);
-            var allExplicit = true;
-            foreach (var m in emittedMembers)
-            {
-                if (m.Ordinal is not int ord)
-                {
-                    allExplicit = false;
-                    break;
-                }
-                ordinals.Add(ord);
-            }
-            if (allExplicit)
-            {
-                makeArgs.Add($"new int[] {{ {string.Join(", ", ordinals)} }}");
-            }
+            var trailing = i < memberEntries.Count - 1 ? "," : "";
+            arrayBuilder.AppendLine(memberEntries[i] + trailing);
         }
+        arrayBuilder.Dedent();
+        arrayBuilder.Append("}");
+        makeArgs.Add(arrayBuilder.ToString());
 
-        var argsString = string.Join("," + Utilities.NewLine, makeArgs);
+        // Assemble the MakeXxx(...) call. Each argument is appended on its own line at a single
+        // indent level; multi-line arguments (the field array) are indented uniformly so the type
+        // name, attributes, and field array all line up.
+        var openLine = isEnum
+            ? $"global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo {{ get; }} = Serde.SerdeInfo.Make{makeFuncSuffix}("
+            : $"private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{makeFuncSuffix}(";
 
-        var body = new SourceBuilder(
-            isEnum ? $$"""
-global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
-    {{argsString}}
-);
-"""
-            : $$"""
-private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{makeFuncSuffix}}(
-    {{argsString}}
-);
-""");
+        var body = new SourceBuilder();
+        body.AppendLine(openLine);
+        body.Indent();
+        for (int i = 0; i < makeArgs.Count; i++)
+        {
+            var trailing = i < makeArgs.Count - 1 ? "," : "";
+            body.AppendLine(makeArgs[i] + trailing);
+        }
+        body.Dedent();
+        body.Append(");");
         var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
             typeDeclContext,
             baseList: isEnum ? " : global::Serde.ISerdeInfoProvider" : null,
@@ -175,31 +188,43 @@ private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.Make{{make
 
         context.AddSource(fileName, newType);
 
-        // Returns a string that represents a single member in the custom SerdeInfo member list.
-        string? GetMemberEntry(DataMemberSymbol m)
+        // Returns a string that represents a single member in the custom/enum SerdeInfo member list.
+        // For enums this is the (string, MemberInfo?) tuple consumed by MakeEnum; for custom types
+        // this is a Serde.SerdeInfo.FieldInfo object initializer consumed by MakeCustom.
+        string GetMemberEntry(DataMemberSymbol m, string? wrapperName, bool emitOrdinal)
         {
-            List<string> elements = [ $"\"{m.GetFormattedName()}\"" ];
+            var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
+            // Member reflection points at the member source type (proxy when non-empty).
+            var memberInfoExpr = $"typeof({reflectionTypeString}).{getAccessor}(\"{m.Name}\")";
 
-            if (!isEnum)
+            if (isEnum)
             {
-                var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
-
-                string? wrapperName = GetWrapperName(m, context, usage, inProgress, proxyContext);
-                if (wrapperName is null)
-                {
-                    // This is an error, but it should have already been produced by the serialization
-                    // or deserialization generator
-                    return null;
-                }
-                string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
-                elements.Add($"global::Serde.SerdeInfoProvider.Get{name}Info<{m.Type.ToDisplayString()}, {wrapperName}>()");
+                return $"(\"{m.GetFormattedName()}\", {memberInfoExpr})";
             }
 
-            // Member reflection points at the member source type (proxy when non-empty)
-            var getAccessor = m.Symbol.Kind == SymbolKind.Field ? "GetField" : "GetProperty";
-            elements.Add($"typeof({reflectionTypeString}).{getAccessor}(\"{m.Name}\")");
+            string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
+            var infoExpr = $"global::Serde.SerdeInfoProvider.Get{name}Info<{m.Type.ToDisplayString()}, {wrapperName}>()";
 
-            return $"""({string.Join(", ", elements)})""";
+            // MemberInfo only exists to lazily supply the field's custom attributes. If the member
+            // has no attributes, skip it entirely so the runtime never does the reflection lookup.
+            var emitMemberInfo = !m.Attributes.IsEmpty;
+
+            var sb = new StringBuilder();
+            sb.Append($"new(\"{m.GetFormattedName()}\", {infoExpr})");
+            if (emitMemberInfo || emitOrdinal)
+            {
+                sb.Append(Utilities.NewLine).Append("{").Append(Utilities.NewLine);
+                if (emitMemberInfo)
+                {
+                    sb.Append($"    MemberInfo = {memberInfoExpr},").Append(Utilities.NewLine);
+                }
+                if (emitOrdinal)
+                {
+                    sb.Append($"    Ordinal = {(int)m.Ordinal!},").Append(Utilities.NewLine);
+                }
+                sb.Append("}");
+            }
+            return sb.ToString();
         }
     }
 

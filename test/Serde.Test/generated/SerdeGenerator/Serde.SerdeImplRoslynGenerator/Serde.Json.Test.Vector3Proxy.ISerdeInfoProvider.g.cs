@@ -7,11 +7,11 @@ partial class Vector3Proxy
 {
     private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "Vector3",
-    typeof(System.Numerics.Vector3).GetCustomAttributesData(),
-    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("x", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector3).GetField("X")),
-        ("y", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector3).GetField("Y")),
-        ("z", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>(), typeof(System.Numerics.Vector3).GetField("Z"))
-    }
+        typeof(System.Numerics.Vector3).GetCustomAttributesData(),
+        new global::Serde.SerdeInfo.FieldInfo[] {
+            new("x", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>()),
+            new("y", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>()),
+            new("z", global::Serde.SerdeInfoProvider.GetSerializeInfo<float, global::Serde.F32Proxy>())
+        }
     );
 }

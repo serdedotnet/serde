@@ -5,9 +5,12 @@ partial class C
 {
     private static global::Serde.ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
         "C",
-    typeof(C).GetCustomAttributesData(),
-    new (string, global::Serde.ISerdeInfo, System.Reflection.MemberInfo?)[] {
-        ("s", global::Serde.SerdeInfoProvider.GetSerializeInfo<S, SWrap>(), typeof(C).GetField("S"))
-    }
+        typeof(C).GetCustomAttributesData(),
+        new global::Serde.SerdeInfo.FieldInfo[] {
+            new("s", global::Serde.SerdeInfoProvider.GetSerializeInfo<S, SWrap>())
+            {
+                MemberInfo = typeof(C).GetField("S"),
+            }
+        }
     );
 }
