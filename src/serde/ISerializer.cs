@@ -148,8 +148,14 @@ public interface ITypeSerializer
     /// used directly. For value types, <see cref="ITypeSerializerExt.WriteBoxedValue{T,
     /// TProvider}(ITypeSerializer, ISerdeInfo, int, T)"/> should be used instead.
     /// </summary>
+    /// <remarks>
+    /// This method only accepts reference types to avoid code size explosion in AOT. For value types,
+    /// use <see cref="ITypeDeserializerExt.ReadBoxedValue{T}(ITypeDeserializer, ISerdeInfo, int, IDeserialize{T})" />
+    /// or <see cref="ITypeDeserializerExt.ReadBoxedValue{T, TProvider}(ITypeDeserializer, ISerdeInfo, int)" />.
+    /// </remarks>
     void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
         where T : class?;
+
     void SkipValue(ISerdeInfo typeInfo, int index) { }
     void End(ISerdeInfo info);
 }
@@ -209,6 +215,18 @@ public static class ITypeSerializerExt
         where TProvider : ISerializeProvider<T>
         => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 
+    public static void WriteBoxedValue<T>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo serdeInfo,
+        int index,
+        T value,
+        ISerialize<T> proxy
+    )
+        where T : struct
+    {
+        serializeType.WriteValue(serdeInfo, index, value, new BoxProxy.Ser<T>(proxy));
+    }
+
     public static void WriteBoxedValue<T, TProvider>(
         this ITypeSerializer serializeType,
         ISerdeInfo serdeInfo,
@@ -235,4 +253,21 @@ public static class ITypeSerializerExt
             serializeType.WriteBoxedValue<T, TProvider>(typeInfo, index, value);
         }
     }
+
+    public static void WriteValue<T>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo serdeInfo,
+        int index,
+        T value,
+        ITypeSerialize<T> proxy
+    )
+        => proxy.Serialize(value, serializeType, serdeInfo, index);
+
+    public static void WriteGuid(
+        this ITypeSerializer typeSerializer,
+        ISerdeInfo serdeInfo,
+        int index,
+        Guid value
+    )
+        => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
 }

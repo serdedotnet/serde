@@ -1,10 +1,6 @@
 // Contains implementations of data interfaces for core types
 
 using System;
-using System.Buffers;
-using System.Buffers.Binary;
-using System.Diagnostics;
-using System.Threading;
 
 namespace Serde;
 
@@ -371,14 +367,14 @@ public sealed class StringProxy : ISerdePrimitive<StringProxy, string>
 
 public static class BoxProxy
 {
-    public sealed class Ser<T, TProvider> : ISerialize<object?>, ITypeSerialize<T>
-        where TProvider : ISerializeProvider<T>
+    public sealed class Ser<T> : ISerialize<object?>, ITypeSerialize<T>
     {
-        private readonly ISerialize<T> _underlying = TProvider.Instance;
+        private readonly ISerialize<T> _underlying;
+        public Ser(ISerialize<T> underlying)
+        {
+            _underlying = underlying;
+        }
 
-        public static readonly Ser<T, TProvider> Instance = new();
-
-        private Ser() {}
         public ISerdeInfo SerdeInfo => _underlying.SerdeInfo;
 
         public void Serialize(object? value, ISerializer serializer)
@@ -389,6 +385,12 @@ public static class BoxProxy
         {
             serializer.WriteValue(info, index, value, this);
         }
+    }
+
+    public sealed class Ser<T, TProvider>
+        where TProvider : ISerializeProvider<T>
+    {
+        public static readonly Ser<T> Instance = new Ser<T>(TProvider.Instance);
     }
 
     public sealed class De<T>(IDeserialize<T> _underlying) : IDeserialize<object?>, ITypeDeserialize<T>
@@ -495,42 +497,25 @@ public static class NullableRefProxy
 }
 
 public sealed class GuidProxy
-    : ISerdePrimitive<GuidProxy, Guid>,
-    IDeserialize<UInt128>,
-    IDeserializeProvider<UInt128>
+    : ISerdePrimitive<GuidProxy, Guid>
 {
     public static GuidProxy Instance { get; } = new();
-    static IDeserialize<UInt128> IDeserializeProvider<UInt128>.Instance => Instance;
     private GuidProxy() { }
 
     public static ISerdeInfo SerdeInfo { get; }
         = Serde.SerdeInfo.MakePrimitive("System.Guid", PrimitiveKind.String);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
-    void ISerialize<Guid>.Serialize(Guid value, ISerializer serializer)
+    public void Serialize(Guid value, ISerializer serializer)
     {
         var bytes = value.ToString();
         serializer.WriteString(bytes);
     }
 
-    Guid IDeserialize<Guid>.Deserialize(IDeserializer deserializer)
+    public Guid Deserialize(IDeserializer deserializer)
     {
         var bytes = deserializer.ReadString();
         return Guid.Parse(bytes);
-    }
-
-    UInt128 IDeserialize<UInt128>.Deserialize(IDeserializer deserializer)
-    {
-        var str = deserializer.ReadString();
-        var guid = Guid.Parse(str);
-        Span<byte> guidBytes = stackalloc byte[16];
-        if (!guid.TryWriteBytes(guidBytes, bigEndian: !BitConverter.IsLittleEndian, out int written) || written != 16)
-        {
-            throw new InvalidOperationException("Couldn't write GUID bytes");
-        }
-        return BitConverter.IsLittleEndian
-            ? BinaryPrimitives.ReadUInt128LittleEndian(guidBytes)
-            : BinaryPrimitives.ReadUInt128BigEndian(guidBytes);
     }
 
     void ITypeSerialize<Guid>.Serialize(Guid value, ITypeSerializer serializer, ISerdeInfo info, int index)
@@ -543,131 +528,5 @@ public sealed class GuidProxy
     {
         var bytes = deserializer.ReadString(info, index);
         return Guid.Parse(bytes);
-    }
-}
-
-public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
-{
-    private sealed class ArrayWriter : IBufferWriter<byte>
-    {
-        public byte[]? _buffer;
-        public int _written = 0;
-
-        public void Advance(int count)
-        {
-            if (_buffer is null)
-            {
-                throw new InvalidOperationException("Buffer is null");
-            }
-            _written = count;
-        }
-
-        public Memory<byte> GetMemory(int sizeHint = 0)
-        {
-            if (sizeHint == 0)
-            {
-                sizeHint = 1;
-            }
-            if (_buffer == null || _buffer.Length < sizeHint)
-            {
-                _buffer = new byte[sizeHint];
-            }
-            return _buffer;
-        }
-
-        public Span<byte> GetSpan(int sizeHint = 0) => GetMemory(sizeHint).Span;
-
-        public void Clear()
-        {
-            _written = 0;
-            _buffer = null;
-        }
-
-        public byte[] GetArray()
-        {
-            var buffer = _buffer;
-            if (buffer is null)
-            {
-                Debug.Assert(_written == 0);
-                return Array.Empty<byte>();
-            }
-            if (_written != buffer.Length)
-            {
-                var newBuffer = new byte[_written];
-                Array.Copy(buffer, newBuffer, _written);
-                return newBuffer;
-            }
-            return buffer;
-        }
-    }
-    private ArrayWriter? _bufferWriter = new();
-
-    private (ArrayWriter, bool Owned) BorrowBufferWriter()
-    {
-        var bufferWriter = Interlocked.Exchange(ref _bufferWriter, null);
-        if (bufferWriter is null)
-        {
-            return (new ArrayWriter(), false);
-        }
-        return (bufferWriter, true);
-    }
-
-    private void ReturnBufferWriter(ArrayWriter bufferWriter)
-    {
-        bufferWriter.Clear();
-        if (Interlocked.Exchange(ref _bufferWriter, bufferWriter) is not null)
-        {
-            throw new InvalidOperationException("Buffer writer released twice");
-        }
-    }
-
-    public static ByteArrayProxy Instance { get; } = new();
-    private ByteArrayProxy() { }
-
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("byte[]", PrimitiveKind.Bytes);
-    ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
-
-    void ISerialize<byte[]>.Serialize(byte[] value, ISerializer serializer)
-        => serializer.WriteBytes(value);
-
-    byte[] IDeserialize<byte[]>.Deserialize(IDeserializer deserializer)
-    {
-        // Take ownership of the buffer writer
-        var (bufferWriter, owned) = BorrowBufferWriter();
-        try
-        {
-            deserializer.ReadBytes(bufferWriter);
-            return bufferWriter.GetArray();
-        }
-        finally
-        {
-            if (owned)
-            {
-                ReturnBufferWriter(bufferWriter);
-            }
-        }
-    }
-
-    public void Serialize(byte[] value, ITypeSerializer serializer, ISerdeInfo info, int index)
-    {
-        serializer.WriteBytes(info, index, value);
-    }
-
-    byte[] ITypeDeserialize<byte[]>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
-    {
-        // Take ownership of the buffer writer
-        var (bufferWriter, owned) = BorrowBufferWriter();
-        try
-        {
-            deserializer.ReadBytes(info, index, bufferWriter);
-            return bufferWriter.GetArray();
-        }
-        finally
-        {
-            if (owned)
-            {
-                ReturnBufferWriter(bufferWriter);
-            }
-        }
     }
 }

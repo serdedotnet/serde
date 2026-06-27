@@ -33,32 +33,7 @@ public partial class SerializeImplGen
         // If the type is an enum, we only want to serialize one field (the enum value), not all fields
         if (receiverType.TypeKind == TypeKind.Enum)
         {
-            // `var _l_info = GetInfo(this);`
-            statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
-            // `var _l_type = serializer.WriteType(_l_info);`
-            statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
-
-            // ```
-            // var index = value switch
-            // {
-            //   Enum.Case1 => 0,
-            //   Enum.Case2 => 1,
-            //   var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{TypeName}'");
-            // };
-            // serializer.SerializeEnumValue("Enum", name, (Underlying)value, default(Underlying));
-            var enumType = (INamedTypeSymbol)receiverType;
-            var underlying = enumType.EnumUnderlyingType!;
-            statements.AppendLine($$"""
-                var index = value switch
-                {
-                    {{string.Join("," + Utilities.NewLine, fieldsAndProps
-                        .Select((m, i) => $"{enumType.ToDisplayString()}.{m.Name} => {i}"))}},
-                    var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
-                };
-                """
-            );
-            var methodName = Proxies.TryGetPrimitiveName(underlying).NotNull();
-            statements.AppendLine($"_l_type.Write{methodName}(_l_info, index, ({underlying.ToDisplayString()})value);");
+            GenEnumSerialize(receiverType, statements, fieldsAndProps);
         }
         else
         {
@@ -160,6 +135,36 @@ public partial class SerializeImplGen
 
         """);
         return members;
+    }
+
+    private static void GenEnumSerialize(ITypeSymbol receiverType, SourceBuilder statements, List<DataMemberSymbol> fieldsAndProps)
+    {
+        // `var _l_info = GetInfo(this);`
+        statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
+        // `var _l_type = serializer.WriteType(_l_info);`
+        statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
+
+        // ```
+        // var index = value switch
+        // {
+        //   Enum.Case1 => 0,
+        //   Enum.Case2 => 1,
+        //   var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{TypeName}'");
+        // };
+        // serializer.SerializeEnumValue("Enum", name, (Underlying)value, default(Underlying));
+        var enumType = (INamedTypeSymbol)receiverType;
+        var underlying = enumType.EnumUnderlyingType!;
+        statements.AppendLine($$"""
+                var index = value switch
+                {
+                    {{string.Join("," + Utilities.NewLine, fieldsAndProps
+                    .Select((m, i) => $"{enumType.ToDisplayString()}.{m.Name} => {i}"))}},
+                    var v => throw new InvalidOperationException($"Cannot serialize unnamed enum value '{v}' of enum '{{enumType.Name}}'"),
+                };
+                """
+        );
+        var methodName = Proxies.TryGetPrimitiveName(underlying).NotNull();
+        statements.AppendLine($"_l_type.Write{methodName}(_l_info, index, ({underlying.ToDisplayString()})value);");
     }
 
     /// <summary>

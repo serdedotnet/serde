@@ -121,7 +121,7 @@ partial record AllInOne
                         break;
                     case 13:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 13, _l_serdeInfo);
-                        _l_datetimeoffsetfield = typeDeserialize.ReadBoxedValue<System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>(_l_serdeInfo, _l_index_);
+                        _l_datetimeoffsetfield = typeDeserialize.ReadDateTimeOffset(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 13;
                         break;
                     case 14:
@@ -131,17 +131,17 @@ partial record AllInOne
                         break;
                     case 15:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 15, _l_serdeInfo);
-                        _l_dateonlyfield = typeDeserialize.ReadBoxedValue<System.DateOnly, global::Serde.DateOnlyProxy>(_l_serdeInfo, _l_index_);
+                        _l_dateonlyfield = typeDeserialize.ReadDateOnly(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 15;
                         break;
                     case 16:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 16, _l_serdeInfo);
-                        _l_timeonlyfield = typeDeserialize.ReadBoxedValue<System.TimeOnly, global::Serde.TimeOnlyProxy>(_l_serdeInfo, _l_index_);
+                        _l_timeonlyfield = typeDeserialize.ReadTimeOnly(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 16;
                         break;
                     case 17:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 17, _l_serdeInfo);
-                        _l_guidfield = typeDeserialize.ReadGuid<global::Serde.GuidProxy>(_l_serdeInfo, _l_index_);
+                        _l_guidfield = typeDeserialize.ReadGuid(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 17;
                         break;
                     case 18:

@@ -301,14 +301,7 @@ namespace Serde
                     }
                     else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress, proxyContext) is { Proxy: { } wrap })
                     {
-                        if (wrap == "global::Serde.GuidProxy")
-                        {
-                            readValueCall = $"ReadGuid<{wrap}>";
-                        }
-                        else
-                        {
-                            readValueCall = $"{readMethodName}<{memberType}, {wrap}>";
-                        }
+                        readValueCall = $"{readMethodName}<{memberType}, {wrap}>";
                     }
                     else
                     {
