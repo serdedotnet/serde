@@ -15,17 +15,17 @@ public sealed class DateTimeProxy : ISerdePrimitive<DateTimeProxy, DateTime>
     void ISerialize<DateTime>.Serialize(DateTime value, ISerializer serializer) =>
         serializer.WriteDateTime(value);
 
-    void ITypeSerialize<DateTime>.Serialize(
-        DateTime value,
+    void ISerialize<DateTime>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        DateTime value
     ) => serializer.WriteDateTime(info, index, value);
 
     DateTime IDeserialize<DateTime>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDateTime();
 
-    DateTime ITypeDeserialize<DateTime>.Deserialize(
+    DateTime IDeserialize<DateTime>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -48,14 +48,14 @@ public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, D
     DateTimeOffset IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDateTimeOffset();
 
-    void ITypeSerialize<DateTimeOffset>.Serialize(
-        DateTimeOffset value,
+    void ISerialize<DateTimeOffset>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        DateTimeOffset value
     ) => serializer.WriteDateTimeOffset(info, index, value);
 
-    DateTimeOffset ITypeDeserialize<DateTimeOffset>.Deserialize(
+    DateTimeOffset IDeserialize<DateTimeOffset>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -75,17 +75,17 @@ public sealed class DateOnlyProxy : ISerdePrimitive<DateOnlyProxy, DateOnly>
     void ISerialize<DateOnly>.Serialize(DateOnly value, ISerializer serializer) =>
         serializer.WriteDateOnly(value);
 
-    void ITypeSerialize<DateOnly>.Serialize(
-        DateOnly value,
+    void ISerialize<DateOnly>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        DateOnly value
     ) => serializer.WriteDateOnly(info, index, value);
 
     DateOnly IDeserialize<DateOnly>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDateOnly();
 
-    DateOnly ITypeDeserialize<DateOnly>.Deserialize(
+    DateOnly IDeserialize<DateOnly>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -105,17 +105,17 @@ public sealed class TimeOnlyProxy : ISerdePrimitive<TimeOnlyProxy, TimeOnly>
     void ISerialize<TimeOnly>.Serialize(TimeOnly value, ISerializer serializer) =>
         serializer.WriteTimeOnly(value);
 
-    void ITypeSerialize<TimeOnly>.Serialize(
-        TimeOnly value,
+    void ISerialize<TimeOnly>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        TimeOnly value
     ) => serializer.WriteTimeOnly(info, index, value);
 
     TimeOnly IDeserialize<TimeOnly>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadTimeOnly();
 
-    TimeOnly ITypeDeserialize<TimeOnly>.Deserialize(
+    TimeOnly IDeserialize<TimeOnly>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index

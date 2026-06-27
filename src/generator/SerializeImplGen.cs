@@ -73,6 +73,12 @@ public partial class SerializeImplGen
                     ProxyMap.FromSymbol(m.Symbol)
                 );
 
+                var notNullTypeName = (
+                    m.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                        ? ((INamedTypeSymbol)m.Type).TypeArguments[0]
+                        : m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)
+                ).ToDisplayString();
+
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
                 if (
                     Proxies.TryGetExplicitWrapper(
@@ -86,7 +92,7 @@ public partial class SerializeImplGen
                 )
                 {
                     statements.AppendLine(
-                        MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i, receiverExpr)
+                        MakeWriteValueStmt(m, notNullTypeName, proxy, i, receiverExpr)
                     );
                 }
                 // 2. Check for a direct implementation of ISerialize
@@ -100,13 +106,7 @@ public partial class SerializeImplGen
                 )
                 {
                     statements.AppendLine(
-                        MakeWriteValueStmt(
-                            m,
-                            m.Type.ToDisplayString(),
-                            m.Type.ToDisplayString(),
-                            i,
-                            receiverExpr
-                        )
+                        MakeWriteValueStmt(m, notNullTypeName, notNullTypeName, i, receiverExpr)
                     );
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
@@ -141,7 +141,7 @@ public partial class SerializeImplGen
                 )
                 {
                     statements.AppendLine(
-                        MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i, receiverExpr)
+                        MakeWriteValueStmt(m, notNullTypeName, wrapper.Proxy, i, receiverExpr)
                     );
                 }
                 else
@@ -169,13 +169,19 @@ public partial class SerializeImplGen
             )
             {
                 // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
-                string methodName = m.Type.IsReferenceType ? "WriteValue" : "WriteBoxedValue";
-                // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
+                // Use WriteValueIfNotNull if it's not been disabled and the field is nullable. In that
+                // case the generic argument is the non-null inner type, because the IfNotNull overloads
+                // accept a `T?` value and a provider of the nullable type.
                 if (m.IsNullable && !m.SerializeNull)
                 {
-                    methodName += "IfNotNull";
+                    return $"_l_type.WriteValueIfNotNull<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
                 }
-                return $"_l_type.{methodName}<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+                // Plain WriteValue: the generic type argument must match the static type of the value
+                // expression and the provider. For a nullable member (e.g. `int?` serialized via
+                // NullableProxy when SerializeNull is set) that is the full nullable type, not the
+                // unwrapped inner type.
+                var typeArg = m.IsNullable ? m.Type.ToDisplayString() : type;
+                return $"_l_type.WriteValue<{typeArg}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
             }
         }
         // `type.End();`

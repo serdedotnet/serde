@@ -255,44 +255,25 @@ namespace Serde.Test
                             var field = typeDef.FieldTypes[fieldIndex];
                             var fieldTypeName = field.TypeSyntax(nextIndex);
                             ExpressionSyntax initializer = field.Value(nextIndex);
-                            SyntaxList<AttributeListSyntax> attributes = default;
+                            // For nullable fields, exercise BOTH serde null-handling behaviors and
+                            // keep System.Text.Json in lockstep on a per-field basis:
+                            //   - SerializeNull == true  -> serde EMITS "field":null ([SerdeMemberOptions]);
+                            //                               STJ also emits null by default (no attribute).
+                            //   - SerializeNull == false -> serde OMITS the null field (default);
+                            //                               STJ omits via [JsonIgnore(WhenWritingNull)].
+                            var attribute = field switch
+                            {
+                                TestNullable { SerializeNull: true } =>
+                                    "[Serde.SerdeMemberOptions(SerializeNull = true)]\n",
+                                TestNullable =>
+                                    "[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]\n",
+                                _ => "",
+                            };
 
                             members.Add(
-                                PropertyDeclaration(
-                                    attributeLists: attributes,
-                                    modifiers: TokenList(Token(SyntaxKind.PublicKeyword)),
-                                    type: fieldTypeName,
-                                    explicitInterfaceSpecifier: null,
-                                    identifier: Identifier("Field" + fieldIndex),
-                                    accessorList: AccessorList(
-                                        List(
-                                            new[]
-                                            {
-                                                AccessorDeclaration(
-                                                    SyntaxKind.GetAccessorDeclaration,
-                                                    attributeLists: default,
-                                                    modifiers: default,
-                                                    keyword: Token(SyntaxKind.GetKeyword),
-                                                    body: null,
-                                                    expressionBody: null,
-                                                    semicolonToken: Token(SyntaxKind.SemicolonToken)
-                                                ),
-                                                AccessorDeclaration(
-                                                    SyntaxKind.SetAccessorDeclaration,
-                                                    attributeLists: default,
-                                                    modifiers: default,
-                                                    keyword: Token(SyntaxKind.SetKeyword),
-                                                    body: null,
-                                                    expressionBody: null,
-                                                    semicolonToken: Token(SyntaxKind.SemicolonToken)
-                                                ),
-                                            }
-                                        )
-                                    ),
-                                    expressionBody: null,
-                                    initializer: EqualsValueClause(initializer),
-                                    semicolonToken: Token(SyntaxKind.SemicolonToken)
-                                )
+                                SyntaxFactory.ParseMemberDeclaration(
+                                    $"{attribute}public {fieldTypeName.NormalizeWhitespace()} Field{fieldIndex} {{ get; set; }} = {initializer.NormalizeWhitespace()};"
+                                )!
                             );
                             nextIndex = VisitType(field, nextIndex, types);
                         }
@@ -406,9 +387,11 @@ public static class DeepEquals
 {
     public static new bool Equals(object? left, object? right) => (left, right) switch
     {
+        (null, null) => true,
+        (null, _) or (_, null) => false,
         (IDictionary d1, IDictionary d2) => DictEquals(d1, d2),
         (IEnumerable e1, IEnumerable e2) => SequenceEquals(e1, e2),
-        _ => left?.Equals(right) == true
+        _ => left.Equals(right)
     };
 
     private static bool DictEquals(IDictionary left, IDictionary right)
@@ -419,8 +402,7 @@ public static class DeepEquals
         }
         foreach (DictionaryEntry e in left)
         {
-            var itemRight = right[e.Key];
-            if (itemRight is null || !Equals(e.Value, itemRight))
+            if (!right.Contains(e.Key) || !Equals(e.Value, right[e.Key]))
             {
                 return false;
             }
@@ -579,6 +561,26 @@ public static class DeepEquals
             public override TypeSyntax TypeSyntax(int typeIndex) => IdentifierName("Half");
 
             public override ExpressionSyntax Value(int typeIndex) => ParseExpression("(Half)1.5");
+        }
+
+        /// <summary>
+        /// Wraps a value type as a nullable value type (e.g. <c>int?</c>). When <paramref name="IsNull"/>
+        /// is true the field value is <c>null</c>. <paramref name="SerializeNull"/> picks which serde
+        /// null-handling behavior to exercise: when true the field is annotated with
+        /// <c>[SerdeMemberOptions(SerializeNull = true)]</c> so serde EMITS <c>"field":null</c>; when
+        /// false serde OMITS the null field (the default). The matching System.Text.Json behavior is
+        /// applied per-field via <c>[JsonIgnore]</c> so the two outputs stay equivalent (see VisitType).
+        /// </summary>
+        public sealed record TestNullable(TestType ElementType, bool IsNull, bool SerializeNull)
+            : TestType
+        {
+            public override TypeSyntax TypeSyntax(int typeIndex) =>
+                NullableType(ElementType.TypeSyntax(typeIndex));
+
+            public override ExpressionSyntax Value(int typeIndex) =>
+                IsNull
+                    ? LiteralExpression(SyntaxKind.NullLiteralExpression)
+                    : ElementType.Value(typeIndex);
         }
 
         public record TestTypeDef(ImmutableArray<TestType> FieldTypes) : TestType
@@ -741,6 +743,21 @@ public static class DeepEquals
                     Gen.Const<TestType>(new TestHalf())
                 );
 
+            /// <summary>
+            /// Generates a nullable value type by wrapping a (value-type) primitive, e.g. <c>int?</c>.
+            /// Wraps <see cref="GenPrimitive"/> directly so nullables never nest. The value is null
+            /// roughly 50% of the time, and the field independently uses serde's emit-null vs
+            /// omit-null behavior roughly 50% of the time.
+            /// </summary>
+            public static Gen<TestType> GenNullable { get; } =
+                Gen.Select(
+                    GenPrimitive,
+                    Gen.Bool,
+                    Gen.Bool,
+                    (p, isNull, serializeNull) =>
+                        (TestType)new TestNullable(p, isNull, serializeNull)
+                );
+
             public static Gen<TestType> GenType { get; } =
                 Gen.Recursive<TestType>(
                     (depth, self) =>
@@ -749,6 +766,7 @@ public static class DeepEquals
                             return GenPrimitive;
                         return Gen.OneOf<TestType>(
                             GenPrimitive,
+                            GenNullable,
                             GenTypeArray(self),
                             GenTypeList(self),
                             GenTypeDictionary(self),

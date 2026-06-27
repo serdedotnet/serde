@@ -11,14 +11,25 @@
     "Category": "Compiler"
   },
   {
+    "Id": "CS0452",
+    "Title": "",
+    "Severity": "Error",
+    "WarningLevel": "0",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/S.ISerialize.g.cs: (17,20)-(17,47)",
+    "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS0452)",
+    "MessageFormat": "The type '{2}' must be a reference type in order to use it as parameter '{1}' in the generic type or method '{0}'",
+    "Message": "The type 'T2' must be a reference type in order to use it as parameter 'T' in the generic type or method 'ITypeSerializerExt.WriteValueIfNotNull<T, TProvider>(ITypeSerializer, ISerdeInfo, int, T?)'",
+    "Category": "Compiler"
+  },
+  {
     "Id": "CS8631",
     "Title": "The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match constraint type.",
     "Severity": "Warning",
     "WarningLevel": "1",
-    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/S.ISerialize.g.cs: (17,12)-(17,52)",
+    "Location": "SerdeGenerator/Serde.SerdeImplRoslynGenerator/S.ISerialize.g.cs: (19,12)-(19,47)",
     "HelpLink": "https://msdn.microsoft.com/query/roslyn.query?appId=roslyn&k=k(CS8631)",
     "MessageFormat": "The type '{3}' cannot be used as type parameter '{2}' in the generic type or method '{0}'. Nullability of type argument '{3}' doesn't match constraint type '{1}'.",
-    "Message": "The type 'T2' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeSerializerExt.WriteBoxedValueIfNotNull<T, TProvider>(ITypeSerializer, ISerdeInfo, int, T)'. Nullability of type argument 'T2' doesn't match constraint type 'Serde.ISerializeProvider<T2>'.",
+    "Message": "The type 'T4' cannot be used as type parameter 'TProvider' in the generic type or method 'ITypeSerializerExt.WriteValueIfNotNull<T, TProvider>(ITypeSerializer, ISerdeInfo, int, T?)'. Nullability of type argument 'T4' doesn't match constraint type 'Serde.ISerializeProvider<T4?>'.",
     "Category": "Compiler"
   }
 ]

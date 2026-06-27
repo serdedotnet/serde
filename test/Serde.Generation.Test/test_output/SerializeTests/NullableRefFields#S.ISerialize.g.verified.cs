@@ -15,9 +15,9 @@ partial struct S<T1, T2, T3, T4, T5>
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteStringIfNotNull(_l_info, 0, value.FS);
-            _l_type.WriteBoxedValue<T1, T1>(_l_info, 1, value.F1);
-            _l_type.WriteBoxedValueIfNotNull<T2, T2>(_l_info, 2, value.F2);
-            _l_type.WriteValueIfNotNull<T3?, Serde.NullableRefProxy.Ser<T3, T3>>(_l_info, 3, value.F3);
+            _l_type.WriteValue<T1, T1>(_l_info, 1, value.F1);
+            _l_type.WriteValueIfNotNull<T2, T2>(_l_info, 2, value.F2);
+            _l_type.WriteValueIfNotNull<T3, Serde.NullableRefProxy.Ser<T3, T3>>(_l_info, 3, value.F3);
             _l_type.WriteValueIfNotNull<T4, T4>(_l_info, 4, value.F4);
             _l_type.End(_l_info);
         }

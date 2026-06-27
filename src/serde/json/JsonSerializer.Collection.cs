@@ -6,6 +6,16 @@ partial class JsonSerializer
 {
     private sealed class EnumerableImpl(JsonSerializer serializer) : ITypeSerializer
     {
+        public ISerializer WriteFieldStart(ISerdeInfo typeInfo, int fieldIndex)
+        {
+            return serializer;
+        }
+
+        public void WriteFieldEnd(ISerdeInfo typeInfo, int fieldIndex, ISerializer serializer)
+        {
+            // noop
+        }
+
         public void End(ISerdeInfo info)
         {
             serializer._writer.WriteEndArray();
@@ -194,6 +204,16 @@ partial class JsonSerializer
 
     private sealed class DictImpl(JsonSerializer serializer) : ITypeSerializer
     {
+        public ISerializer WriteFieldStart(ISerdeInfo info, int index)
+        {
+            return GetSerializer(index);
+        }
+
+        public void WriteFieldEnd(ISerdeInfo info, int index, ISerializer serializer)
+        {
+            // No-op for JSON
+        }
+
         public void End(ISerdeInfo info)
         {
             serializer._writer.WriteEndObject();

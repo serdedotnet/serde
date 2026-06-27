@@ -44,6 +44,7 @@ partial class JsonDeserializer<TReader>
                 if (peek == (byte)'}')
                 {
                     _deserializer.Reader.Advance();
+                    _deserializer._first = false;
                     return (ITypeDeserializer.EndOfType, null);
                 }
                 if (!_deserializer._first)
@@ -69,6 +70,17 @@ partial class JsonDeserializer<TReader>
             var errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
             _deserializer._first = false;
             return (localIndex, errorName);
+        }
+
+        IDeserializer ITypeDeserializer.ReadFieldStart(ISerdeInfo info, int index)
+        {
+            ReadColon();
+            return _deserializer;
+        }
+
+        void ITypeDeserializer.ReadFieldEnd(ISerdeInfo info, int index, IDeserializer deserializer)
+        {
+            // noop
         }
 
         T ITypeDeserializer.ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)

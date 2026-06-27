@@ -149,6 +149,16 @@ partial class JsonSerializer : ISerializer
 
     private sealed class EnumSerializer(JsonSerializer _parent) : ITypeSerializer
     {
+        public ISerializer WriteFieldStart(ISerdeInfo typeInfo, int fieldIndex)
+        {
+            return _parent;
+        }
+
+        public void WriteFieldEnd(ISerdeInfo typeInfo, int fieldIndex, ISerializer serializer)
+        {
+            // noop
+        }
+
         private void WriteEnumName(ISerdeInfo typeInfo, int index)
         {
             _parent._writer.WriteStringValue(typeInfo.GetFieldName(index));
@@ -230,6 +240,17 @@ partial class JsonSerializer : ISerializer
 /// </summary>
 partial class JsonSerializer : ITypeSerializer
 {
+    public ISerializer WriteFieldStart(ISerdeInfo typeInfo, int fieldIndex)
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(fieldIndex));
+        return this;
+    }
+
+    public void WriteFieldEnd(ISerdeInfo typeInfo, int fieldIndex, ISerializer serializer)
+    {
+        // No-op for JSON
+    }
+
     void ITypeSerializer.WriteValue<T>(
         ISerdeInfo typeInfo,
         int fieldIndex,

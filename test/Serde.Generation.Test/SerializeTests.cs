@@ -442,7 +442,7 @@ public static class SWrap
         {
             var _l_serdeInfo = SerdeInfoProvider.GetInfo(this);
             var type = serializer.WriteType(_l_serdeInfo);
-            type.WriteBoxedValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
+            type.WriteValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
             type.End(_l_serdeInfo);
         }
     }
@@ -488,7 +488,7 @@ public sealed class SWrap<T, TWrap> : ISerialize<S<T>>, ISerializeProvider<S<T>>
     {
         var _l_serdeInfo = SerdeInfo;
         var type = serializer.WriteType(_l_serdeInfo);
-        type.WriteBoxedValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
+        type.WriteValue<T, TWrap>(_l_serdeInfo, 0, value.Field);
         type.End(_l_serdeInfo);
     }
 }

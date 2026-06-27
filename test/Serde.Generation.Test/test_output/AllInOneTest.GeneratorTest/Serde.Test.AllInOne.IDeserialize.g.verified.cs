@@ -172,12 +172,12 @@ partial record AllInOne
                         break;
                     case 23:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 23, _l_serdeInfo);
-                        _l_intimm = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
+                        _l_intimm = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 23;
                         break;
                     case 24:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 24, _l_serdeInfo);
-                        _l_color = typeDeserialize.ReadBoxedValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
+                        _l_color = typeDeserialize.ReadValue<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((uint)1) << 24;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:

@@ -14,7 +14,7 @@ partial struct S
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteBoxedValue<ColorEnum, ColorEnumProxy>(_l_info, 0, value.E);
+            _l_type.WriteValue<ColorEnum, ColorEnumProxy>(_l_info, 0, value.E);
             _l_type.End(_l_info);
         }
 

@@ -1,3 +1,5 @@
+using System;
+
 namespace Serde;
 
 /// <summary>
@@ -10,6 +12,13 @@ namespace Serde;
 public interface IDeserialize<T> : ISerdeInfoProvider
 {
     T Deserialize(IDeserializer deserializer);
+    T DeserializeAsField(ITypeDeserializer typeDeserializer, ISerdeInfo serdeInfo, int index)
+    {
+        var d = typeDeserializer.ReadFieldStart(serdeInfo, index);
+        var r = Deserialize(d);
+        typeDeserializer.ReadFieldEnd(serdeInfo, index, d);
+        return r;
+    }
 }
 
 /// <summary>
@@ -35,18 +44,15 @@ public static class DeserializeProvider
 /// This is a perf optimization. It allows primitive types (and only primitive types) to be
 /// deserialized without boxing. It is only useful for deserializing collections.
 /// </summary>
-public interface ITypeDeserialize<T>
+[Obsolete("Use IDeserialize<T>.DeserializeAsField instead")]
+public interface ITypeDeserialize<T> : IDeserialize<T>
 {
     T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index);
 }
 
 public static class TypeDeserialize
 {
-    /// <summary>
-    /// Checks if the <typeparamref name="TProvider"/> produces a type that implements <see
-    /// cref="ITypeSerialize{T}" />. If it does, it returns that type. Otherwise, it returns a <see
-    /// cref="BoxProxy.De{T, TProvider}"/>.
-    /// </summary>
+    [Obsolete("Use IDeserialize<T>.DeserializeAsField instead")]
     public static ITypeDeserialize<T> GetOrBox<T, TProvider>()
         where TProvider : IDeserializeProvider<T>
     {

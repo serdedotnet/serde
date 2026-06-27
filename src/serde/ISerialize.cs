@@ -26,24 +26,28 @@ namespace Serde;
 public interface ISerialize<T> : ISerdeInfoProvider
 {
     void Serialize(T value, ISerializer serializer);
+
+    /// <summary>
+    /// Serialize a value as a field (or element) of a type.
+    /// </summary>
+    void SerializeAsField(ITypeSerializer typeSerializer, ISerdeInfo serdeInfo, int index, T value)
+    {
+        var s = typeSerializer.WriteFieldStart(serdeInfo, index);
+        Serialize(value, s);
+        typeSerializer.WriteFieldEnd(serdeInfo, index, s);
+    }
 }
 
-/// <summary>
-/// This is a perf optimization. It allows primitive types (and only primitive types) to be
-/// serialized without boxing. It is only useful for serializing collections.
-/// </summary>
-public interface ITypeSerialize<T>
+[Obsolete("Use ISerialize<T>.SerializeAsField instead")]
+public interface ITypeSerialize<T> : ISerialize<T>
 {
-    void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index);
+    void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index) =>
+        SerializeAsField(serializer, info, index, value);
 }
 
 public static class TypeSerialize
 {
-    /// <summary>
-    /// Checks if the <typeparamref name="TProvider"/> produces a type that implements <see
-    /// cref="ITypeSerialize{T}" />. If it does, it returns that type. Otherwise, it returns a <see
-    /// cref="BoxProxy.Ser{T, TProvider}"/>.
-    /// </summary>
+    [Obsolete("Use ISerialize<T>.SerializeAsField instead")]
     public static ITypeSerialize<T> GetOrBox<T, TProvider>()
         where TProvider : ISerializeProvider<T>
     {
@@ -51,9 +55,26 @@ public static class TypeSerialize
         return ser switch
         {
             ITypeSerialize<T> typeSer => typeSer,
-            _ => BoxProxy.Ser<T, TProvider>.Instance,
+            _ => new TypeSerializeAdapter<T>(ser),
         };
     }
+
+#pragma warning disable CS0618 // ITypeSerialize is obsolete
+    private sealed class TypeSerializeAdapter<T>(ISerialize<T> underlying) : ITypeSerialize<T>
+    {
+        public ISerdeInfo SerdeInfo => underlying.SerdeInfo;
+
+        public void Serialize(T value, ISerializer serializer) =>
+            underlying.Serialize(value, serializer);
+
+        public void SerializeAsField(
+            ITypeSerializer typeSerializer,
+            ISerdeInfo serdeInfo,
+            int index,
+            T value
+        ) => underlying.SerializeAsField(typeSerializer, serdeInfo, index, value);
+    }
+#pragma warning restore CS0618
 }
 
 public interface ISerializeProvider<T>
