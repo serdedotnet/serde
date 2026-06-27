@@ -74,6 +74,27 @@ sealed partial class {{proxyName}};
         {
             return "DateTime";
         }
+        if (type is { Name: "DateTimeOffset",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "DateTimeOffset";
+        }
+        if (type is { Name: "DateOnly",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "DateOnly";
+        }
+        if (type is { Name: "TimeOnly",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "TimeOnly";
+        }
         if (type is { Name: "Int128",
                       ContainingNamespace: {
                         Name: "System",
@@ -94,6 +115,13 @@ sealed partial class {{proxyName}};
                         ContainingNamespace: { IsGlobalNamespace: true } } })
         {
             return "F16";
+        }
+        if (type is { Name: "Guid",
+                      ContainingNamespace: {
+                        Name: "System",
+                        ContainingNamespace: { IsGlobalNamespace: true } } })
+        {
+            return "Guid";
         }
         return null;
     }
@@ -118,21 +146,6 @@ sealed partial class {{proxyName}};
                 Name: "System",
                 ContainingNamespace: { IsGlobalNamespace: true } } }
             => new("global::System.Guid", "global::Serde.GuidProxy"),
-            { Name: "DateTimeOffset",
-              ContainingNamespace: {
-                Name: "System",
-                ContainingNamespace: { IsGlobalNamespace: true } } }
-            => new("global::System.DateTimeOffset", "global::Serde.DateTimeOffsetProxy"),
-            { Name: "DateOnly",
-              ContainingNamespace: {
-                Name: "System",
-                ContainingNamespace: { IsGlobalNamespace: true } } }
-            => new("global::System.DateOnly", "global::Serde.DateOnlyProxy"),
-            { Name: "TimeOnly",
-              ContainingNamespace: {
-                Name: "System",
-                ContainingNamespace: { IsGlobalNamespace: true } } }
-            => new("global::System.TimeOnly", "global::Serde.TimeOnlyProxy"),
             IArrayTypeSymbol { ElementType: { SpecialType: SpecialType.System_Byte } }
             => new("global::System.Byte[]", "global::Serde.ByteArrayProxy"),
             _ => null

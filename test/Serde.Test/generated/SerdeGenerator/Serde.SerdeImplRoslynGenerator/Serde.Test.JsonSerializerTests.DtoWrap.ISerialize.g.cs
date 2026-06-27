@@ -18,7 +18,7 @@ partial class JsonSerializerTests
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var _l_type = serializer.WriteType(_l_info);
-                _l_type.WriteBoxedValue<global::System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>(_l_info, 0, value.Value);
+                _l_type.WriteDateTimeOffset(_l_info, 0, value.Value);
                 _l_type.End(_l_info);
             }
 

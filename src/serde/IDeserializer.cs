@@ -1,7 +1,6 @@
 
 using System;
 using System.Buffers;
-using System.Buffers.Binary;
 
 namespace Serde;
 
@@ -92,47 +91,13 @@ public interface ITypeDeserializer : IDisposable
     /// <summary>
     /// Read a value of type T using the provided deserializer.
     /// </summary>
+    /// <remarks>
+    /// This method only accepts reference types to avoid code size explosion in AOT. For value types,
+    /// use <see cref="ITypeDeserializerExt.ReadBoxedValue{T}(ITypeDeserializer, ISerdeInfo, int, IDeserialize{T})" />
+    /// or <see cref="ITypeDeserializerExt.ReadBoxedValue{T, TProvider}(ITypeDeserializer, ISerdeInfo, int)" />.
+    /// </remarks>
     T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> deserialize)
         where T : class?;
-
-    /// <summary>
-    /// Read a value that can be represented as a 32-bit integer.
-    /// </summary>
-    /// <remarks>
-    /// Must be implemented by deserializers to avoid boxing.
-    ///
-    /// Useful for deserializing structs/enums without boxing. Unlike <see cref="ReadValue{T}"/> ,
-    /// this method does not require T to be a reference type. And unlike <see cref="ReadU32" />
-    /// there is no requirement that the serialized representation is exactly a 32-bit integer.
-    /// </remarks>
-    UInt32 ReadValue32(ISerdeInfo info, int index, IDeserialize<UInt32> deserialize)
-        => this.ReadBoxedValue(info, index, deserialize);
-
-    /// <summary>
-    /// Read a value that can be represented as a 64-bit integer.
-    /// </summary>
-    /// <remarks>
-    /// Must be implemented by deserializers to avoid boxing.
-    ///
-    /// Useful for deserializing structs/enums without boxing. Unlike <see cref="ReadValue{T}"/> ,
-    /// this method does not require T to be a reference type. And unlike <see cref="ReadU32" />
-    /// there is no requirement that the serialized representation is exactly a 32-bit integer.
-    /// </remarks>
-    UInt64 ReadValue64(ISerdeInfo info, int index, IDeserialize<UInt64> deserialize)
-        => this.ReadBoxedValue(info, index, deserialize);
-
-    /// <summary>
-    /// Read a value that can be represented as a 128-bit integer.
-    /// </summary>
-    /// <remarks>
-    /// Must be implemented by deserializers to avoid boxing.
-    ///
-    /// Useful for deserializing structs/enums without boxing. Unlike <see cref="ReadValue{T}"/> ,
-    /// this method does not require T to be a reference type. And unlike <see cref="ReadU32" />
-    /// there is no requirement that the serialized representation is exactly a 32-bit integer.
-    /// </remarks>
-    UInt128 ReadValue128(ISerdeInfo info, int index, IDeserialize<UInt128> deserialize)
-        => this.ReadBoxedValue(info, index, deserialize);
 
     void SkipValue(ISerdeInfo info, int index);
     bool ReadBool(ISerdeInfo info, int index);
@@ -196,19 +161,11 @@ public static class ITypeDeserializerExt
         return (T)deserializeType.ReadValue(info, index, BoxProxy.De<T, TProvider>.Instance)!;
     }
 
-    public static Guid ReadGuid<TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
-        where TProvider : IDeserializeProvider<UInt128>
+    public static T ReadValue<T>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index, ITypeDeserialize<T> d)
     {
-        var u128 = deserializeType.ReadValue128(info, index, TProvider.Instance);
-        Span<byte> bytes = stackalloc byte[16];
-        if (BitConverter.IsLittleEndian)
-        {
-            BinaryPrimitives.WriteUInt128LittleEndian(bytes, u128);
-        }
-        else
-        {
-            BinaryPrimitives.WriteUInt128BigEndian(bytes, u128);
-        }
-        return new Guid(bytes, !BitConverter.IsLittleEndian);
+        return d.Deserialize(deserializeType, info, index);
     }
+
+    public static Guid ReadGuid(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
+        => ReadValue(deserializeType, info, index, GuidProxy.Instance);
 }
