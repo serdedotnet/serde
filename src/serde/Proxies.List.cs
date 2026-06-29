@@ -29,14 +29,12 @@ public static class EnumerableHelpers
 
     [Obsolete("Use the ISerialize<T> overload instead")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable CS0618 // ITypeSerialize is obsolete
     public static void SerializeSpan<T>(
         ISerdeInfo typeInfo,
         ReadOnlySpan<T> arr,
         ITypeSerialize<T> serializeImpl,
         ISerializer serializer
     ) => SerializeSpan(typeInfo, arr, (ISerialize<T>)serializeImpl, serializer);
-#pragma warning restore CS0618
 }
 
 public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList>

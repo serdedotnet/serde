@@ -59,7 +59,7 @@ public static class TypeSerialize
         };
     }
 
-#pragma warning disable CS0618 // ITypeSerialize is obsolete
+    [Obsolete("Use ISerialize<T> instead")]
     private sealed class TypeSerializeAdapter<T>(ISerialize<T> underlying) : ITypeSerialize<T>
     {
         public ISerdeInfo SerdeInfo => underlying.SerdeInfo;
@@ -74,7 +74,6 @@ public static class TypeSerialize
             T value
         ) => underlying.SerializeAsField(typeSerializer, serdeInfo, index, value);
     }
-#pragma warning restore CS0618
 }
 
 public interface ISerializeProvider<T>
