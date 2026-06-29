@@ -12,6 +12,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>$(SerdeAssemblyVersion)</Version>
+    <EnableCsSigAnalyzer Condition="'$(TargetFramework)'=='net8.0'">false</EnableCsSigAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,7 @@
     <PackageReference Include="StaticCs">
       <Pack>false</Pack>
     </PackageReference>
+    <PackageReference Include="StaticCS.CsSig" />
   </ItemGroup>
 
 </Project>
