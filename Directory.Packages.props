@@ -13,6 +13,7 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="1.1.4" />
     <PackageVersion Include="Newtonsoft.JSON" Version="13.0.4" />
+    <PackageVersion Include="StaticCS.CsSig" Version="0.3.2" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
