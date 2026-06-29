@@ -1,0 +1,1026 @@
+namespace Serde
+{
+    public static class ArrayIntExtensions
+    {
+        extension(int[])
+        {
+            public static Serde.IDeserialize<int[]> Deserialize { get; }
+        }
+        extension(int[])
+        {
+            public static Serde.ISerialize<int[]> Serialize { get; }
+        }
+    }
+    public static class ArrayProxy
+    {
+        public static Serde.ISerdeInfo GetSerdeInfo<T>(Serde.ISerdeInfo elementInfo);
+        public sealed class De<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+            public sealed class ArrayBuilder(int size)
+            {
+                public T[] ToArray();
+                public void Add(T item);
+            }
+        }
+        public class Ser<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>
+        {
+            protected override System.ReadOnlySpan<T> GetSpan(T[] value);
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+    }
+    public static class ArrayStringExtensions
+    {
+        extension(string[])
+        {
+            public static Serde.IDeserialize<string[]> Deserialize { get; }
+        }
+        extension(string[])
+        {
+            public static Serde.ISerialize<string[]> Serialize { get; }
+        }
+    }
+    public static class ArrayTExtensions
+    {
+        extension<T>(T[])
+        {
+            public static Serde.IDeserialize<T[]> Deserialize { get; }
+        }
+        extension<T>(T[])
+        {
+            public static Serde.ISerialize<T[]> Serialize { get; }
+        }
+    }
+    public static class BoolExtensions
+    {
+        extension(bool)
+        {
+            public static Serde.IDeserialize<bool> Deserialize { get; }
+            public static Serde.ISerialize<bool> Serialize { get; }
+        }
+    }
+    public sealed class BoolProxy
+    {
+        public static Serde.BoolProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public static class BoxProxy
+    {
+        public static class De<T, TProvider> where TProvider : Serde.IDeserializeProvider<T>
+        {
+            public static readonly Serde.BoxProxy.De<T> Instance;
+        }
+        public sealed class De<T>(Serde.IDeserialize<T> _underlying)
+        {
+            public Serde.ISerdeInfo SerdeInfo { get; }
+            public T Deserialize(Serde.ITypeDeserializer deserializer, Serde.ISerdeInfo info, int index);
+            public object? Deserialize(Serde.IDeserializer deserializer);
+        }
+        public sealed class Ser<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>
+        {
+            public static readonly Serde.BoxProxy.Ser<T> Instance;
+        }
+        public sealed class Ser<T>
+        {
+            public Ser(Serde.ISerialize<T> underlying);
+            public Serde.ISerdeInfo SerdeInfo { get; }
+            public void Serialize(T value, Serde.ITypeSerializer serializer, Serde.ISerdeInfo info, int index);
+            public void Serialize(object? value, Serde.ISerializer serializer);
+        }
+    }
+    public sealed class ByteArrayProxy
+    {
+        public static Serde.ByteArrayProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public void Serialize(byte[] value, Serde.ITypeSerializer serializer, Serde.ISerdeInfo info, int index);
+    }
+    public static class ByteExtensions
+    {
+        extension(byte)
+        {
+            public static Serde.IDeserialize<byte> Deserialize { get; }
+            public static Serde.ISerialize<byte> Serialize { get; }
+        }
+    }
+    public static class CharExtensions
+    {
+        extension(char)
+        {
+            public static Serde.IDeserialize<char> Deserialize { get; }
+            public static Serde.ISerialize<char> Serialize { get; }
+        }
+    }
+    public sealed class CharProxy
+    {
+        public static Serde.CharProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class DateOnlyProxy
+    {
+        public static Serde.DateOnlyProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class DateTimeOffsetProxy
+    {
+        public static Serde.DateTimeOffsetProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class DateTimeProxy
+    {
+        public static Serde.DateTimeProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public abstract class DeDictBase<TSelf, TKey, TValue, TDict, TBuilder, TKProvider, TVProvider> where TSelf : Serde.IDeserialize<TDict>, new() where TKey : notnull where TBuilder : System.Collections.ICollection where TKProvider : Serde.IDeserializeProvider<TKey> where TVProvider : Serde.IDeserializeProvider<TValue>
+    {
+        protected DeDictBase();
+        protected abstract TBuilder GetBuilder(int? sizeOpt);
+        protected abstract TDict Create(TBuilder builder);
+        protected abstract void Add(TBuilder builder, TKey key, TValue value);
+        public TDict Deserialize(Serde.IDeserializer deserializer);
+        public abstract Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.IDeserialize<TDict> Instance { get; }
+    }
+    public abstract class DeListBase<TSelf, T, TList, TBuilder, TProvider> where TSelf : Serde.IDeserialize<TList>, new() where TBuilder : class where TProvider : Serde.IDeserializeProvider<T>
+    {
+        protected DeListBase();
+        protected abstract TBuilder GetBuilder(int? sizeOpt);
+        protected abstract TList ToList(TBuilder builder);
+        protected abstract void Add(TBuilder builder, T item);
+        protected override sealed TBuilder GetFixBuilder(int size);
+        protected override sealed TBuilder GetVarBuilder();
+        protected override sealed TList FromFix(TBuilder builder);
+        protected override sealed TList FromVar(TBuilder builder);
+        protected override sealed void FixAdd(TBuilder builder, T item);
+        protected override sealed void VarAdd(TBuilder builder, T item);
+    }
+    public abstract class DeListBase<TSelf, T, TList, TFixBuilder, TVarBuilder, TProvider> where TSelf : Serde.IDeserialize<TList>, new() where TFixBuilder : class where TVarBuilder : class where TProvider : Serde.IDeserializeProvider<T>
+    {
+        protected DeListBase();
+        protected abstract TFixBuilder GetFixBuilder(int size);
+        protected abstract TList FromFix(TFixBuilder builder);
+        protected abstract TList FromVar(TVarBuilder builder);
+        protected abstract TVarBuilder GetVarBuilder();
+        protected abstract void FixAdd(TFixBuilder builder, T item);
+        protected abstract void VarAdd(TVarBuilder builder, T item);
+        public TList Deserialize(Serde.IDeserializer deserializer);
+        public abstract Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.IDeserialize<TList> Instance { get; }
+    }
+    public static class DecimalExtensions
+    {
+        extension(decimal)
+        {
+            public static Serde.IDeserialize<decimal> Deserialize { get; }
+            public static Serde.ISerialize<decimal> Serialize { get; }
+        }
+    }
+    public sealed class DecimalProxy
+    {
+        public static Serde.DecimalProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public class DeserializeException(string msg)
+    {
+        public static Serde.DeserializeException DuplicateKey(string propertyName, Serde.ISerdeInfo info);
+        public static Serde.DeserializeException ExpectedEndOfType(int index);
+        public static Serde.DeserializeException UnassignedMember();
+        public static Serde.DeserializeException UnknownMember(string name, Serde.ISerdeInfo info);
+        public static Serde.DeserializeException WrongItemCount(int expected, int actual);
+        public static void ThrowIfDuplicate(byte assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
+        public static void ThrowIfDuplicate(uint assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
+        public static void ThrowIfDuplicate(ulong assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
+        public static void ThrowIfDuplicate(ushort assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
+    }
+    public static class DeserializeProvider
+    {
+        public static Serde.IDeserialize<T> GetDeserialize<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>;
+        public static Serde.IDeserialize<T> GetDeserialize<T>() where T : Serde.IDeserializeProvider<T>;
+    }
+    public static class DictProxy
+    {
+        public static Serde.ISerdeInfo GetSerdeInfo<TKey, TValue>(Serde.ISerdeInfo keyInfo, Serde.ISerdeInfo valueInfo) where TKey : notnull;
+        public sealed class De<TKey, TValue, TKProvider, TVProvider>() where TKey : notnull where TKProvider : Serde.IDeserializeProvider<TKey> where TVProvider : Serde.IDeserializeProvider<TValue>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+        public sealed class Ser<TKey, TValue, TKeyProvider, TValueProvider>() where TKey : notnull where TKeyProvider : Serde.ISerializeProvider<TKey> where TValueProvider : Serde.ISerializeProvider<TValue>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+    }
+    public static class DictStringIntExtensions
+    {
+        extension(System.Collections.Generic.Dictionary<string, int>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.Dictionary<string, int>> Deserialize { get; }
+        }
+        extension(System.Collections.Generic.Dictionary<string, int>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.Dictionary<string, int>> Serialize { get; }
+        }
+    }
+    public static class DictStringNullableStringExtensions
+    {
+        extension(System.Collections.Generic.Dictionary<string, string>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.Dictionary<string, string>> Deserialize { get; }
+        }
+        extension(System.Collections.Generic.Dictionary<string, string?>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.Dictionary<string, string?>> Serialize { get; }
+        }
+    }
+    public static class DictStringStringExtensions
+    {
+        extension(System.Collections.Generic.Dictionary<string, string?>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.Dictionary<string, string?>> Deserialize { get; }
+        }
+        extension(System.Collections.Generic.Dictionary<string, string?>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.Dictionary<string, string>> Serialize { get; }
+        }
+    }
+    public static class DictStringTExtensions
+    {
+        extension<T>(System.Collections.Generic.Dictionary<string, T>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.Dictionary<string, T>> Deserialize { get; }
+        }
+        extension<T>(System.Collections.Generic.Dictionary<string, T>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.Dictionary<string, T>> Serialize { get; }
+        }
+    }
+    public static class DoubleExtensions
+    {
+        extension(double)
+        {
+            public static Serde.IDeserialize<double> Deserialize { get; }
+            public static Serde.ISerialize<double> Serialize { get; }
+        }
+    }
+    public static class EnumerableHelpers
+    {
+        public static void SerializeSpan<T>(Serde.ISerdeInfo typeInfo, System.ReadOnlySpan<T> arr, Serde.ITypeSerialize<T> serializeImpl, Serde.ISerializer serializer);
+    }
+    public sealed class F16Proxy
+    {
+        public System.Half Deserialize(Serde.IDeserializer deserializer);
+        public static Serde.F16Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public void Serialize(System.Half value, Serde.ISerializer serializer);
+    }
+    public sealed class F32Proxy
+    {
+        public float Deserialize(Serde.IDeserializer deserializer);
+        public static Serde.F32Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public void Serialize(float value, Serde.ISerializer serializer);
+    }
+    public sealed class F64Proxy
+    {
+        public static Serde.F64Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public static class FloatExtensions
+    {
+        extension(float)
+        {
+            public static Serde.IDeserialize<float> Deserialize { get; }
+            public static Serde.ISerialize<float> Serialize { get; }
+        }
+    }
+    public sealed class GenerateDeserialize()
+    {
+        public System.Type? As { get; init; }
+        public System.Type? ForType { get; init; }
+    }
+    public sealed class GenerateSerde()
+    {
+        public System.Type? As { get; init; }
+        public System.Type? ForType { get; init; }
+        public System.Type? With { get; init; }
+    }
+    public sealed class GenerateSerialize()
+    {
+        public System.Type? As { get; init; }
+        public System.Type? ForType { get; init; }
+    }
+    public sealed class GuidProxy
+    {
+        public System.Guid Deserialize(Serde.IDeserializer deserializer);
+        public static Serde.GuidProxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public void Serialize(System.Guid value, Serde.ISerializer serializer);
+    }
+    public static class HalfExtensions
+    {
+        extension(System.Half)
+        {
+            public static Serde.IDeserialize<System.Half> Deserialize { get; }
+            public static Serde.ISerialize<System.Half> Serialize { get; }
+        }
+    }
+    public sealed class I128Proxy
+    {
+        public static Serde.I128Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class I16Proxy
+    {
+        public static Serde.I16Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class I32Proxy
+    {
+        public static Serde.I32Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class I64Proxy
+    {
+        public static Serde.I64Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public sealed class I8Proxy
+    {
+        public static Serde.I8Proxy Instance { get; }
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public interface IDeserialize<T>
+    {
+        T Deserialize(Serde.IDeserializer deserializer);
+    }
+    public interface IDeserializeProvider<T>
+    {
+        static Serde.IDeserialize<T> Instance { get; }
+    }
+    public interface IDeserializer
+    {
+        Serde.ITypeDeserializer ReadType(Serde.ISerdeInfo typeInfo);
+        System.DateOnly ReadDateOnly();
+        System.DateTime ReadDateTime();
+        System.DateTimeOffset ReadDateTimeOffset();
+        System.Half ReadF16();
+        System.Int128 ReadI128();
+        System.TimeOnly ReadTimeOnly();
+        System.UInt128 ReadU128();
+        T? ReadNullableRef<T>(Serde.IDeserialize<T> deserialize) where T : class;
+        bool ReadBool();
+        byte ReadU8();
+        char ReadChar();
+        decimal ReadDecimal();
+        double ReadF64();
+        float ReadF32();
+        int ReadI32();
+        long ReadI64();
+        sbyte ReadI8();
+        short ReadI16();
+        string ReadString();
+        uint ReadU32();
+        ulong ReadU64();
+        ushort ReadU16();
+        void ReadBytes(System.Buffers.IBufferWriter<byte> writer);
+    }
+    public static class IDeserializerExt
+    {
+        public static T ReadValue<T, TProvider>(this Serde.IDeserializer deserializer) where TProvider : Serde.IDeserializeProvider<T>;
+        public static T ReadValue<T>(this Serde.IDeserializer deserializer) where T : Serde.IDeserializeProvider<T>;
+    }
+    public interface ISerde<T>
+    {
+    }
+    public interface ISerdeInfo
+    {
+        Serde.ISerdeInfo GetFieldInfo(int index);
+        Serde.InfoKind Kind { get; }
+        Serde.PrimitiveKind? PrimitiveKind { get; }
+        System.Collections.Generic.IList<System.Reflection.CustomAttributeData> Attributes { get; }
+        System.Collections.Generic.IList<System.Reflection.CustomAttributeData> GetFieldAttributes(int index);
+        System.ReadOnlySpan<byte> GetFieldName(int index);
+        bool HasExplicitFieldOrdinals { get; }
+        int FieldCount { get; }
+        int GetFieldOrdinal(int fieldPosition);
+        int TryGetIndex(System.ReadOnlySpan<byte> fieldName);
+        string GetFieldStringName(int index);
+        string Name { get; }
+    }
+    public interface ISerdeInfoProvider
+    {
+        Serde.ISerdeInfo SerdeInfo { get; }
+    }
+    public interface ISerdeProvider<T>
+    {
+    }
+    public interface ISerdeProvider<TSelf, T> where TSelf : Serde.ISerdeProvider<TSelf, T>, Serde.ISerde<T>
+    {
+    }
+    public interface ISerdeProvider<TSelf, TSerde, T> where TSelf : Serde.ISerdeProvider<TSelf, TSerde, T> where TSerde : Serde.ISerde<T>
+    {
+        static TSerde Instance { get; }
+    }
+    public interface ISerialize<T>
+    {
+        void Serialize(T value, Serde.ISerializer serializer);
+    }
+    public static class ISerializeExt
+    {
+        public static void WriteValue<T, TProvider>(this Serde.ISerializer serializer, T value) where TProvider : Serde.ISerializeProvider<T>;
+        public static void WriteValue<T>(this Serde.ISerializer serializer, T value) where T : Serde.ISerializeProvider<T>;
+    }
+    public interface ISerializeProvider<T>
+    {
+        static Serde.ISerialize<T> Instance { get; }
+    }
+    public interface ISerializer
+    {
+        Serde.ITypeSerializer WriteCollection(Serde.ISerdeInfo info, int? count);
+        Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info);
+        void WriteBool(bool b);
+        void WriteBytes(System.ReadOnlyMemory<byte> bytes);
+        void WriteChar(char c);
+        void WriteDateOnly(System.DateOnly d);
+        void WriteDateTime(System.DateTime dt);
+        void WriteDateTimeOffset(System.DateTimeOffset dt);
+        void WriteDecimal(decimal d);
+        void WriteF16(System.Half h);
+        void WriteF32(float f);
+        void WriteF64(double d);
+        void WriteI128(System.Int128 i128);
+        void WriteI16(short i16);
+        void WriteI32(int i32);
+        void WriteI64(long i64);
+        void WriteI8(sbyte b);
+        void WriteNull();
+        void WriteString(string s);
+        void WriteTimeOnly(System.TimeOnly t);
+        void WriteU128(System.UInt128 u128);
+        void WriteU16(ushort u16);
+        void WriteU32(uint u32);
+        void WriteU64(ulong u64);
+        void WriteU8(byte b);
+    }
+    public interface ITypeDeserialize<T>
+    {
+        T Deserialize(Serde.ITypeDeserializer deserializer, Serde.ISerdeInfo info, int index);
+    }
+    public interface ITypeDeserializer
+    {
+        (int, string? errorName) TryReadIndexWithName(Serde.ISerdeInfo info);
+        System.DateOnly ReadDateOnly(Serde.ISerdeInfo info, int index);
+        System.DateTime ReadDateTime(Serde.ISerdeInfo info, int index);
+        System.DateTimeOffset ReadDateTimeOffset(Serde.ISerdeInfo info, int index);
+        System.Half ReadF16(Serde.ISerdeInfo info, int index);
+        System.Int128 ReadI128(Serde.ISerdeInfo info, int index);
+        System.TimeOnly ReadTimeOnly(Serde.ISerdeInfo info, int index);
+        System.UInt128 ReadU128(Serde.ISerdeInfo info, int index);
+        T ReadValue<T>(Serde.ISerdeInfo info, int index, Serde.IDeserialize<T> deserialize) where T : class?;
+        bool ReadBool(Serde.ISerdeInfo info, int index);
+        byte ReadU8(Serde.ISerdeInfo info, int index);
+        char ReadChar(Serde.ISerdeInfo info, int index);
+        static const int EndOfType = -1;
+        static const int IndexNotFound = -2;
+        decimal ReadDecimal(Serde.ISerdeInfo info, int index);
+        double ReadF64(Serde.ISerdeInfo info, int index);
+        float ReadF32(Serde.ISerdeInfo info, int index);
+        int ReadI32(Serde.ISerdeInfo info, int index);
+        int TryReadIndex(Serde.ISerdeInfo info);
+        int? SizeOpt { get; }
+        long ReadI64(Serde.ISerdeInfo info, int index);
+        sbyte ReadI8(Serde.ISerdeInfo info, int index);
+        short ReadI16(Serde.ISerdeInfo info, int index);
+        string ReadString(Serde.ISerdeInfo info, int index);
+        uint ReadU32(Serde.ISerdeInfo info, int index);
+        ulong ReadU64(Serde.ISerdeInfo info, int index);
+        ushort ReadU16(Serde.ISerdeInfo info, int index);
+        void End(Serde.ISerdeInfo info);
+        void ReadBytes(Serde.ISerdeInfo info, int index, System.Buffers.IBufferWriter<byte> writer);
+        void SkipValue(Serde.ISerdeInfo info, int index);
+    }
+    public static class ITypeDeserializerExt
+    {
+        public static System.Guid ReadGuid(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index);
+        public static T ReadBoxedValue<T, TProvider>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index) where TProvider : Serde.IDeserializeProvider<T>;
+        public static T ReadBoxedValue<T>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index, Serde.IDeserialize<T> d) where T : struct;
+        public static T ReadValue<T, TProvider>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index) where T : class? where TProvider : Serde.IDeserializeProvider<T>;
+        public static T ReadValue<T>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index, Serde.ITypeDeserialize<T> d);
+    }
+    public interface ITypeSerialize<T>
+    {
+        void Serialize(T value, Serde.ITypeSerializer serializer, Serde.ISerdeInfo info, int index);
+    }
+    public interface ITypeSerializer
+    {
+        void End(Serde.ISerdeInfo info);
+        void SkipValue(Serde.ISerdeInfo typeInfo, int index);
+        void WriteBool(Serde.ISerdeInfo typeInfo, int index, bool b);
+        void WriteBytes(Serde.ISerdeInfo typeInfo, int index, System.ReadOnlyMemory<byte> bytes);
+        void WriteChar(Serde.ISerdeInfo typeInfo, int index, char c);
+        void WriteDateOnly(Serde.ISerdeInfo typeInfo, int index, System.DateOnly d);
+        void WriteDateTime(Serde.ISerdeInfo typeInfo, int index, System.DateTime dt);
+        void WriteDateTimeOffset(Serde.ISerdeInfo typeInfo, int index, System.DateTimeOffset dt);
+        void WriteDecimal(Serde.ISerdeInfo typeInfo, int index, decimal d);
+        void WriteF16(Serde.ISerdeInfo typeInfo, int index, System.Half h);
+        void WriteF32(Serde.ISerdeInfo typeInfo, int index, float f);
+        void WriteF64(Serde.ISerdeInfo typeInfo, int index, double d);
+        void WriteI128(Serde.ISerdeInfo typeInfo, int index, System.Int128 i128);
+        void WriteI16(Serde.ISerdeInfo typeInfo, int index, short i16);
+        void WriteI32(Serde.ISerdeInfo typeInfo, int index, int i32);
+        void WriteI64(Serde.ISerdeInfo typeInfo, int index, long i64);
+        void WriteI8(Serde.ISerdeInfo typeInfo, int index, sbyte b);
+        void WriteNull(Serde.ISerdeInfo typeInfo, int index);
+        void WriteString(Serde.ISerdeInfo typeInfo, int index, string s);
+        void WriteTimeOnly(Serde.ISerdeInfo typeInfo, int index, System.TimeOnly t);
+        void WriteU128(Serde.ISerdeInfo typeInfo, int index, System.UInt128 u128);
+        void WriteU16(Serde.ISerdeInfo typeInfo, int index, ushort u16);
+        void WriteU32(Serde.ISerdeInfo typeInfo, int index, uint u32);
+        void WriteU64(Serde.ISerdeInfo typeInfo, int index, ulong u64);
+        void WriteU8(Serde.ISerdeInfo typeInfo, int index, byte b);
+        void WriteValue<T>(Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> serialize) where T : class?;
+    }
+    public static class ITypeSerializerExt
+    {
+        public static void WriteBoxedValue<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo serdeInfo, int index, T value) where TProvider : Serde.ISerializeProvider<T>;
+        public static void WriteBoxedValue<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo serdeInfo, int index, T value, Serde.ISerialize<T> proxy) where T : struct;
+        public static void WriteBoxedValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value) where TProvider : Serde.ISerializeProvider<T>;
+        public static void WriteGuid(this Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo serdeInfo, int index, System.Guid value);
+        public static void WriteStringIfNotNull(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, string? value);
+        public static void WriteValue<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value) where T : class? where TProvider : Serde.ISerializeProvider<T>;
+        public static void WriteValue<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo serdeInfo, int index, T value, Serde.ITypeSerialize<T> proxy);
+        public static void WriteValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value) where T : class? where TProvider : Serde.ISerializeProvider<T>;
+        public static void WriteValueIfNotNull<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> proxy) where T : class?;
+    }
+    public interface IUnionSerdeInfo
+    {
+        System.Collections.Immutable.ImmutableArray<Serde.ISerdeInfo> CaseInfos { get; }
+    }
+    public static class ImmutableArrayProxy
+    {
+        public static Serde.ISerdeInfo GetSerdeInfo<T>(Serde.ISerdeInfo elementInfo);
+        public sealed class De<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+        public sealed class Ser<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+    }
+    public enum InfoKind
+    {
+        Primitive = 0,
+        Nullable = 1,
+        CustomType = 2,
+        List = 3,
+        Dictionary = 4,
+        Enum = 5,
+        Union = 6,
+        Tuple = 7,
+    }
+    public static class Int16Extensions
+    {
+        extension(short)
+        {
+            public static Serde.IDeserialize<short> Deserialize { get; }
+            public static Serde.ISerialize<short> Serialize { get; }
+        }
+    }
+    public static class Int32Extensions
+    {
+        extension(int)
+        {
+            public static Serde.IDeserialize<int> Deserialize { get; }
+            public static Serde.ISerialize<int> Serialize { get; }
+        }
+    }
+    public static class Int64Extensions
+    {
+        extension(long)
+        {
+            public static Serde.IDeserialize<long> Deserialize { get; }
+            public static Serde.ISerialize<long> Serialize { get; }
+        }
+    }
+    public static class ListIntExtensions
+    {
+        extension(System.Collections.Generic.List<int>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.List<int>> Deserialize { get; }
+        }
+        extension(System.Collections.Generic.List<int>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.List<int>> Serialize { get; }
+        }
+    }
+    public static class ListProxy
+    {
+        public static Serde.ISerdeInfo GetSerdeInfo<T>(Serde.ISerdeInfo elementInfo);
+        public sealed class De<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+        public sealed class Ser<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>
+        {
+            public override Serde.ISerdeInfo SerdeInfo { get; }
+        }
+    }
+    public static class ListStringExtensions
+    {
+        extension(System.Collections.Generic.List<string>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.List<string>> Deserialize { get; }
+        }
+        extension(System.Collections.Generic.List<string>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.List<string>> Serialize { get; }
+        }
+    }
+    public static class ListTExtensions
+    {
+        extension<T>(System.Collections.Generic.List<T>)
+        {
+            public static Serde.IDeserialize<System.Collections.Generic.List<T>> Deserialize { get; }
+        }
+        extension<T>(System.Collections.Generic.List<T>)
+        {
+            public static Serde.ISerialize<System.Collections.Generic.List<T>> Serialize { get; }
+        }
+    }
+    public enum MemberFormat
+    {
+        CamelCase = 0,
+        None = 1,
+        PascalCase = 2,
+        KebabCase = 3,
+        SnakeCase = 4,
+    }
+    public static class NullableProxy
+    {
+        public sealed class De<T, TProvider> where T : struct where TProvider : Serde.IDeserializeProvider<T>
+        {
+            public Serde.ISerdeInfo SerdeInfo { get; }
+            public T? Deserialize(Serde.IDeserializer deserializer);
+            public static Serde.NullableProxy.De<T, TProvider> Instance { get; }
+        }
+        public sealed class Ser<T, TProvider> where T : struct where TProvider : Serde.ISerializeProvider<T>
+        {
+            public Serde.ISerdeInfo SerdeInfo { get; }
+            public static Serde.NullableProxy.Ser<T, TProvider> Instance { get; }
+        }
+    }
+    public static class NullableRefProxy
+    {
+        public sealed class De<T, TProvider> where T : class where TProvider : Serde.IDeserializeProvider<T>
+        {
+            public Serde.ISerdeInfo SerdeInfo { get; }
+            public T? Deserialize(Serde.IDeserializer deserializer);
+            public static Serde.NullableRefProxy.De<T, TProvider> Instance { get; }
+        }
+        public sealed class Ser<T, TProvider> where T : class? where TProvider : Serde.ISerializeProvider<T>
+        {
+            public Serde.ISerdeInfo SerdeInfo { get; }
+            public static Serde.NullableRefProxy.Ser<T, TProvider> Instance { get; }
+        }
+    }
+    public enum PrimitiveKind
+    {
+        Null = 0,
+        Bool = 1,
+        Char = 2,
+        U8 = 3,
+        U16 = 4,
+        U32 = 5,
+        U64 = 6,
+        U128 = 7,
+        I8 = 8,
+        I16 = 9,
+        I32 = 10,
+        I64 = 11,
+        I128 = 12,
+        F32 = 13,
+        F64 = 14,
+        Decimal = 15,
+        String = 16,
+        DateTime = 17,
+        Bytes = 18,
+        DateOnly = 19,
+        TimeOnly = 20,
+        F16 = 21,
+    }
+    public static class SByteExtensions
+    {
+        extension(sbyte)
+        {
+            public static Serde.IDeserialize<sbyte> Deserialize { get; }
+            public static Serde.ISerialize<sbyte> Serialize { get; }
+        }
+    }
+    public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider> where TSelf : Serde.ISerialize<TDict>, new() where TK : notnull where TDict : System.Collections.Generic.IReadOnlyDictionary<TK, TV> where TKProvider : Serde.ISerializeProvider<TK> where TVProvider : Serde.ISerializeProvider<TV>
+    {
+        protected SerDictBase();
+        public abstract Serde.ISerdeInfo SerdeInfo { get; }
+        public static TSelf Instance { get; }
+    }
+    public abstract class SerListBase<TSelf, T, TList, TProvider> where TSelf : Serde.ISerialize<TList>, Serde.ISerializeProvider<TList>, new() where TProvider : Serde.ISerializeProvider<T>
+    {
+        protected SerListBase();
+        protected abstract System.ReadOnlySpan<T> GetSpan(TList value);
+        public abstract Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.ISerialize<TList> Instance { get; }
+    }
+    public static class SerdeInfo
+    {
+        public static Serde.ISerdeInfo MakeCustom(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.ReadOnlySpan<(string SerializeName, Serde.ISerdeInfo SerdeInfo)> fields);
+        public static Serde.ISerdeInfo MakeCustom(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.ReadOnlySpan<(string SerializeName, Serde.ISerdeInfo SerdeInfo, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> FieldAttributes)> fields);
+        public static Serde.ISerdeInfo MakeCustom(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.ReadOnlySpan<(string SerializeName, Serde.ISerdeInfo SerdeInfo, System.Reflection.MemberInfo? MemberInfo)> fields);
+        public static Serde.ISerdeInfo MakeCustom(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.ReadOnlySpan<(string SerializeName, Serde.ISerdeInfo SerdeInfo, System.Reflection.MemberInfo? MemberInfo)> fields, System.ReadOnlySpan<int> fieldOrdinals);
+        public static Serde.ISerdeInfo MakeCustom(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.ReadOnlySpan<Serde.SerdeInfo.FieldInfo> fields);
+        public static Serde.ISerdeInfo MakeDictionary(string typeName, Serde.ISerdeInfo keyInfo, Serde.ISerdeInfo valueInfo);
+        public static Serde.ISerdeInfo MakeEnum(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, Serde.ISerdeInfo underlyingInfo, System.ReadOnlySpan<(string SerializeName, System.Reflection.MemberInfo? MemberInfo)> fields);
+        public static Serde.ISerdeInfo MakeEnumerable(string typeName, Serde.ISerdeInfo elementInfo);
+        public static Serde.ISerdeInfo MakeNullable(Serde.ISerdeInfo underlying);
+        public static Serde.ISerdeInfo MakePrimitive(string name, Serde.PrimitiveKind kind);
+        public static Serde.ISerdeInfo MakeTuple(System.ReadOnlySpan<Serde.ISerdeInfo> itemInfos);
+        public static Serde.IUnionSerdeInfo MakeUnion(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.Collections.Immutable.ImmutableArray<Serde.ISerdeInfo> caseInfos);
+        public record struct FieldInfo(string Name, Serde.ISerdeInfo SerdeInfo) : System.ValueType
+        {
+            public System.Collections.Generic.IList<System.Reflection.CustomAttributeData> Attributes { get; init; }
+            public System.Reflection.MemberInfo? MemberInfo { get; init; }
+            public int Ordinal { get; init; }
+        }
+    }
+    public static class SerdeInfoExtensions
+    {
+        public static Serde.ISerdeInfo WithName(this Serde.ISerdeInfo @this, string newName);
+    }
+    public static class SerdeInfoProvider
+    {
+        public static Serde.ISerdeInfo GetDeserializeInfo<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>;
+        public static Serde.ISerdeInfo GetDeserializeInfo<T>() where T : Serde.IDeserializeProvider<T>;
+        public static Serde.ISerdeInfo GetInfo<TProvider>(TProvider provider) where TProvider : Serde.ISerdeInfoProvider;
+        public static Serde.ISerdeInfo GetSerializeInfo<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>;
+        public static Serde.ISerdeInfo GetSerializeInfo<T>() where T : Serde.ISerializeProvider<T>;
+    }
+    public sealed class SerdeMemberOptions()
+    {
+        public System.Type? DeserializeProxy { get; init; }
+        public System.Type? Proxy { get; init; }
+        public System.Type? SerializeProxy { get; init; }
+        public bool ProvideAttributes { get; init; }
+        public bool SerializeNull { get; init; }
+        public bool Skip { get; init; }
+        public bool SkipDeserialize { get; init; }
+        public bool SkipSerialize { get; init; }
+        public bool ThrowIfMissing { get; init; }
+        public int Ordinal { get; init; }
+        public string? DeserializeTypeParameterProxy { get; init; }
+        public string? Rename { get; init; }
+        public string? SerializeTypeParameterProxy { get; init; }
+        public string? TypeParameterProxy { get; init; }
+    }
+    public sealed class SerdeTypeOptions()
+    {
+        public Serde.MemberFormat MemberFormat { get; init; }
+        public System.Type? Proxy { get; init; }
+        public bool AllowDuplicateKeys { get; init; }
+        public bool DenyUnknownMembers { get; init; }
+        public bool SerializeNull { get; init; }
+        public string? Rename { get; init; }
+    }
+    public static class SerializeProvider
+    {
+        public static Serde.ISerialize<T> GetSerialize<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>;
+        public static Serde.ISerialize<T> GetSerialize<T>() where T : Serde.ISerializeProvider<T>;
+    }
+    public static class StringExtensions
+    {
+        extension(string)
+        {
+            public static Serde.IDeserialize<string> Deserialize { get; }
+            public static Serde.ISerialize<string> Serialize { get; }
+        }
+    }
+    public sealed class StringProxy
+    {
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.StringProxy Instance { get; }
+        public string Deserialize(Serde.IDeserializer deserializer);
+    }
+    public sealed class TimeOnlyProxy
+    {
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.TimeOnlyProxy Instance { get; }
+    }
+    public static class TupleProxy
+    {
+        public class De<T1, T2, T3, T4, T5, T6, T7, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6, TProvider7>() where TProvider1 : Serde.IDeserializeProvider<T1> where TProvider2 : Serde.IDeserializeProvider<T2> where TProvider3 : Serde.IDeserializeProvider<T3> where TProvider4 : Serde.IDeserializeProvider<T4> where TProvider5 : Serde.IDeserializeProvider<T5> where TProvider6 : Serde.IDeserializeProvider<T6> where TProvider7 : Serde.IDeserializeProvider<T7>
+        {
+            public static Serde.IDeserialize<(T1, T2, T3, T4, T5, T6, T7)> Instance { get; }
+        }
+        public class De<T1, T2, T3, T4, T5, T6, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6>() where TProvider1 : Serde.IDeserializeProvider<T1> where TProvider2 : Serde.IDeserializeProvider<T2> where TProvider3 : Serde.IDeserializeProvider<T3> where TProvider4 : Serde.IDeserializeProvider<T4> where TProvider5 : Serde.IDeserializeProvider<T5> where TProvider6 : Serde.IDeserializeProvider<T6>
+        {
+            public static Serde.IDeserialize<(T1, T2, T3, T4, T5, T6)> Instance { get; }
+        }
+        public class De<T1, T2, T3, T4, T5, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5>() where TProvider1 : Serde.IDeserializeProvider<T1> where TProvider2 : Serde.IDeserializeProvider<T2> where TProvider3 : Serde.IDeserializeProvider<T3> where TProvider4 : Serde.IDeserializeProvider<T4> where TProvider5 : Serde.IDeserializeProvider<T5>
+        {
+            public static Serde.IDeserialize<(T1, T2, T3, T4, T5)> Instance { get; }
+        }
+        public class De<T1, T2, T3, T4, TProvider1, TProvider2, TProvider3, TProvider4>() where TProvider1 : Serde.IDeserializeProvider<T1> where TProvider2 : Serde.IDeserializeProvider<T2> where TProvider3 : Serde.IDeserializeProvider<T3> where TProvider4 : Serde.IDeserializeProvider<T4>
+        {
+            public static Serde.IDeserialize<(T1, T2, T3, T4)> Instance { get; }
+        }
+        public class De<T1, T2, T3, TProvider1, TProvider2, TProvider3>() where TProvider1 : Serde.IDeserializeProvider<T1> where TProvider2 : Serde.IDeserializeProvider<T2> where TProvider3 : Serde.IDeserializeProvider<T3>
+        {
+            public static Serde.IDeserialize<(T1, T2, T3)> Instance { get; }
+        }
+        public class De<T1, T2, TProvider1, TProvider2>() where TProvider1 : Serde.IDeserializeProvider<T1> where TProvider2 : Serde.IDeserializeProvider<T2>
+        {
+            public static Serde.IDeserialize<(T1, T2)> Instance { get; }
+        }
+        public class De<T1, TProvider1>() where TProvider1 : Serde.IDeserializeProvider<T1>
+        {
+            public static Serde.IDeserialize<System.ValueTuple<T1>> Instance { get; }
+        }
+        public class Ser<T1, T2, T3, T4, T5, T6, T7, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6, TProvider7>() where TProvider1 : Serde.ISerializeProvider<T1> where TProvider2 : Serde.ISerializeProvider<T2> where TProvider3 : Serde.ISerializeProvider<T3> where TProvider4 : Serde.ISerializeProvider<T4> where TProvider5 : Serde.ISerializeProvider<T5> where TProvider6 : Serde.ISerializeProvider<T6> where TProvider7 : Serde.ISerializeProvider<T7>
+        {
+            public static Serde.ISerialize<(T1, T2, T3, T4, T5, T6, T7)> Instance { get; }
+        }
+        public class Ser<T1, T2, T3, T4, T5, T6, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6>() where TProvider1 : Serde.ISerializeProvider<T1> where TProvider2 : Serde.ISerializeProvider<T2> where TProvider3 : Serde.ISerializeProvider<T3> where TProvider4 : Serde.ISerializeProvider<T4> where TProvider5 : Serde.ISerializeProvider<T5> where TProvider6 : Serde.ISerializeProvider<T6>
+        {
+            public static Serde.ISerialize<(T1, T2, T3, T4, T5, T6)> Instance { get; }
+        }
+        public class Ser<T1, T2, T3, T4, T5, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5>() where TProvider1 : Serde.ISerializeProvider<T1> where TProvider2 : Serde.ISerializeProvider<T2> where TProvider3 : Serde.ISerializeProvider<T3> where TProvider4 : Serde.ISerializeProvider<T4> where TProvider5 : Serde.ISerializeProvider<T5>
+        {
+            public static Serde.ISerialize<(T1, T2, T3, T4, T5)> Instance { get; }
+        }
+        public class Ser<T1, T2, T3, T4, TProvider1, TProvider2, TProvider3, TProvider4>() where TProvider1 : Serde.ISerializeProvider<T1> where TProvider2 : Serde.ISerializeProvider<T2> where TProvider3 : Serde.ISerializeProvider<T3> where TProvider4 : Serde.ISerializeProvider<T4>
+        {
+            public static Serde.ISerialize<(T1, T2, T3, T4)> Instance { get; }
+        }
+        public class Ser<T1, T2, T3, TProvider1, TProvider2, TProvider3>() where TProvider1 : Serde.ISerializeProvider<T1> where TProvider2 : Serde.ISerializeProvider<T2> where TProvider3 : Serde.ISerializeProvider<T3>
+        {
+            public static Serde.ISerialize<(T1, T2, T3)> Instance { get; }
+        }
+        public class Ser<T1, T2, TProvider1, TProvider2>() where TProvider1 : Serde.ISerializeProvider<T1> where TProvider2 : Serde.ISerializeProvider<T2>
+        {
+            public static Serde.ISerialize<(T1, T2)> Instance { get; }
+        }
+        public class Ser<T1, TProvider1>() where TProvider1 : Serde.ISerializeProvider<T1>
+        {
+            public static Serde.ISerialize<System.ValueTuple<T1>> Instance { get; }
+        }
+    }
+    public static class TypeDeserialize
+    {
+        public static Serde.ITypeDeserialize<T> GetOrBox<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>;
+    }
+    public static class TypeSerialize
+    {
+        public static Serde.ITypeSerialize<T> GetOrBox<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>;
+    }
+    public sealed class U128Proxy
+    {
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.U128Proxy Instance { get; }
+    }
+    public sealed class U16Proxy
+    {
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.U16Proxy Instance { get; }
+    }
+    public sealed class U32Proxy
+    {
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.U32Proxy Instance { get; }
+    }
+    public sealed class U64Proxy
+    {
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.U64Proxy Instance { get; }
+    }
+    public sealed class U8Proxy
+    {
+        public byte Deserialize(Serde.IDeserializer deserializer);
+        public static Serde.ISerdeInfo SerdeInfo { get; }
+        public static Serde.U8Proxy Instance { get; }
+        public void Serialize(byte value, Serde.ISerializer serializer);
+    }
+    public static class UInt16Extensions
+    {
+        extension(ushort)
+        {
+            public static Serde.IDeserialize<ushort> Deserialize { get; }
+            public static Serde.ISerialize<ushort> Serialize { get; }
+        }
+    }
+    public static class UInt32Extensions
+    {
+        extension(uint)
+        {
+            public static Serde.IDeserialize<uint> Deserialize { get; }
+            public static Serde.ISerialize<uint> Serialize { get; }
+        }
+    }
+    public static class UInt64Extensions
+    {
+        extension(ulong)
+        {
+            public static Serde.IDeserialize<ulong> Deserialize { get; }
+            public static Serde.ISerialize<ulong> Serialize { get; }
+        }
+    }
+    public sealed class UseProxy()
+    {
+        public System.Type? DeserializeProxy { get; init; }
+        public System.Type? Proxy { get; init; }
+        public System.Type? SerializeProxy { get; init; }
+        public System.Type ForType { get; init; }
+    }
+}
+
+namespace Serde.Json
+{
+    public sealed class JsonException
+    {
+    }
+    public sealed class JsonSerializer
+    {
+        public static Serde.Json.JsonValue DeserializeJsonValue(string source);
+        public static System.Collections.Generic.List<T> DeserializeList<T>(string source) where T : Serde.IDeserializeProvider<T>;
+        public static System.ReadOnlyMemory<byte> ToBytes<T, TProvider>(T s) where TProvider : Serde.ISerializeProvider<T>;
+        public static System.ReadOnlyMemory<byte> ToBytes<T>(T provider, Serde.ISerialize<T> ser);
+        public static System.ReadOnlyMemory<byte> ToBytes<T>(T s) where T : Serde.ISerializeProvider<T>;
+        public static T Deserialize<T, TProvider>(string source) where TProvider : Serde.IDeserializeProvider<T>;
+        public static T Deserialize<T>(System.ReadOnlyMemory<byte> utf8Bytes, Serde.IDeserialize<T> d);
+        public static T Deserialize<T>(string source) where T : Serde.IDeserializeProvider<T>;
+        public static T Deserialize<T>(string source, Serde.IDeserialize<T> d);
+        public static string Serialize<T, TProvider>(T s) where TProvider : Serde.ISerializeProvider<T>;
+        public static string Serialize<T>(T provider, Serde.ISerialize<T> ser);
+        public static string Serialize<T>(T s) where T : Serde.ISerializeProvider<T>;
+        public void WriteBool(bool b);
+        public void WriteBytes(System.ReadOnlyMemory<byte> bytes);
+        public void WriteChar(char c);
+        public void WriteDateOnly(System.DateOnly d);
+        public void WriteDateTime(System.DateTime dt);
+        public void WriteDateTimeOffset(System.DateTimeOffset dt);
+        public void WriteDecimal(decimal d);
+        public void WriteF16(System.Half h);
+        public void WriteF32(float f);
+        public void WriteF64(double d);
+        public void WriteI128(System.Int128 i128);
+        public void WriteI16(short i16);
+        public void WriteI32(int i32);
+        public void WriteI64(long i64);
+        public void WriteI8(sbyte b);
+        public void WriteNull();
+        public void WriteString(string s);
+        public void WriteTimeOnly(System.TimeOnly t);
+        public void WriteU128(System.UInt128 u128);
+        public void WriteU16(ushort u16);
+        public void WriteU32(uint u32);
+        public void WriteU64(ulong u64);
+        public void WriteU8(byte b);
+    }
+    public abstract record JsonValue
+    {
+        public static implicit operator Serde.Json.JsonValue(System.Collections.Generic.Dictionary<string, Serde.Json.JsonValue> d);
+        public static implicit operator Serde.Json.JsonValue(System.Collections.Generic.List<Serde.Json.JsonValue> a);
+        public static implicit operator Serde.Json.JsonValue(bool b);
+        public static implicit operator Serde.Json.JsonValue(double d);
+        public static implicit operator Serde.Json.JsonValue(int i);
+        public static implicit operator Serde.Json.JsonValue(long l);
+        public static implicit operator Serde.Json.JsonValue(string? s);
+        public sealed record Array(System.Collections.Immutable.ImmutableArray<Serde.Json.JsonValue> Elements) : Serde.Json.JsonValue
+        {
+            public Array(System.Collections.Generic.IEnumerable<Serde.Json.JsonValue> elements);
+            public bool Equals(Serde.Json.JsonValue.Array? other);
+            public override int GetHashCode();
+            public override string ToString();
+            public static readonly Serde.Json.JsonValue.Array Empty;
+        }
+        public sealed record Bool(bool Value) : Serde.Json.JsonValue
+        {
+            public override string ToString();
+        }
+        public sealed record Null : Serde.Json.JsonValue
+        {
+            public static readonly Serde.Json.JsonValue.Null Instance;
+        }
+        public sealed record Number(double Value) : Serde.Json.JsonValue
+        {
+            public override string ToString();
+        }
+        public sealed record Object(System.Collections.Immutable.ImmutableDictionary<string, Serde.Json.JsonValue> Members) : Serde.Json.JsonValue
+        {
+            public Object((string FieldName, Serde.Json.JsonValue Value)[] members);
+            public Object(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Serde.Json.JsonValue>> members);
+            public bool Equals(Serde.Json.JsonValue.Object? other);
+            public override int GetHashCode();
+            public override string ToString();
+        }
+        public sealed record String(string Value) : Serde.Json.JsonValue
+        {
+            public override string ToString();
+        }
+    }
+}
