@@ -16,9 +16,15 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentException_DuplicateKey(string paramName, string propertyName)
+        public static void ThrowArgumentException_DuplicateKey(
+            string paramName,
+            string propertyName
+        )
         {
-            throw new ArgumentException(string.Format(SR.NodeDuplicateKey, propertyName), paramName);
+            throw new ArgumentException(
+                string.Format(SR.NodeDuplicateKey, propertyName),
+                paramName
+            );
         }
 
         [DoesNotReturn]

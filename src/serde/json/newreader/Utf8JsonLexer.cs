@@ -1,4 +1,3 @@
-
 using System;
 using System.Buffers.Text;
 using System.Diagnostics;
@@ -39,8 +38,10 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
     {
         CheckNumber();
         var span = LexNumber(skipOnly: false, scratch);
-        if (!Utf8Parser.TryParse(span, out decimal result, out var bytesConsumed)
-            || span.Length != bytesConsumed)
+        if (
+            !Utf8Parser.TryParse(span, out decimal result, out var bytesConsumed)
+            || span.Length != bytesConsumed
+        )
         {
             throw new InvalidOperationException("Invalid decimal value");
         }
@@ -51,8 +52,10 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
     {
         CheckNumber();
         var span = LexNumber(skipOnly: false, scratch);
-        if (!Utf8Parser.TryParse(span, out double result, out var bytesConsumed)
-            || span.Length != bytesConsumed)
+        if (
+            !Utf8Parser.TryParse(span, out double result, out var bytesConsumed)
+            || span.Length != bytesConsumed
+        )
         {
             throw new InvalidOperationException("Invalid double value");
         }
@@ -76,7 +79,9 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
         var span = LexNumber(skipOnly: false, scratch);
         if (!Int128.TryParse(span, CultureInfo.InvariantCulture, out var result))
         {
-            throw new JsonException("Expected Int128 value, found: " + Encoding.UTF8.GetString(span));
+            throw new JsonException(
+                "Expected Int128 value, found: " + Encoding.UTF8.GetString(span)
+            );
         }
         return result;
     }
@@ -89,16 +94,21 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
         var span = LexNumber(skipOnly: false, scratch);
         if (!UInt128.TryParse(span, CultureInfo.InvariantCulture, out var result))
         {
-            throw new JsonException("Expected UInt128 value, found: " + Encoding.UTF8.GetString(span));
+            throw new JsonException(
+                "Expected UInt128 value, found: " + Encoding.UTF8.GetString(span)
+            );
         }
         return result;
     }
 
     public void Skip()
     {
-        var peek = SkipWhitespace() switch {
-            IByteReader.EndOfStream => throw new InvalidOperationException("Unexpected end of stream"),
-            var s => (byte)s
+        var peek = SkipWhitespace() switch
+        {
+            IByteReader.EndOfStream => throw new InvalidOperationException(
+                "Unexpected end of stream"
+            ),
+            var s => (byte)s,
         };
         switch (peek)
         {
@@ -324,7 +334,7 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
             LexDigits(skipOnly, scratch);
         }
 
-    ReturnSpan:
+        ReturnSpan:
         if (skipOnly)
         {
             return default;
@@ -363,12 +373,14 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
         scratch!.Add(b);
     }
 
-    private byte PeekOrThrow() => Peek() switch
-    {
-        IByteReader.EndOfStream => throw new InvalidOperationException("Unexpected end of stream"),
-        var s => (byte)s
-    };
-
+    private byte PeekOrThrow() =>
+        Peek() switch
+        {
+            IByteReader.EndOfStream => throw new InvalidOperationException(
+                "Unexpected end of stream"
+            ),
+            var s => (byte)s,
+        };
 
     public Utf8Span LexUtf8Span(ScratchBuffer scratch)
     {

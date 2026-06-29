@@ -1,4 +1,3 @@
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -14,7 +13,7 @@ namespace System.Text.Json
 {
     internal sealed class PooledByteBufferWriter : IBufferWriter<byte>, IDisposable
     {
-        private readonly static ArrayPool<byte> s_arrayPool = ArrayPool<byte>.Create();
+        private static readonly ArrayPool<byte> s_arrayPool = ArrayPool<byte>.Create();
         private byte[] _rentedBuffer;
         private int _index;
 
@@ -114,7 +113,10 @@ namespace System.Text.Json
         }
 
 #if BUILDING_INBOX_LIBRARY
-        internal ValueTask WriteToStreamAsync(Stream destination, CancellationToken cancellationToken)
+        internal ValueTask WriteToStreamAsync(
+            Stream destination,
+            CancellationToken cancellationToken
+        )
         {
             return destination.WriteAsync(WrittenMemory, cancellationToken);
         }
@@ -149,7 +151,9 @@ namespace System.Text.Json
                     newSize = currentLength + sizeHint;
                     if ((uint)newSize > int.MaxValue)
                     {
-                        ThrowHelper.ThrowOutOfMemoryException_BufferMaximumSizeExceeded((uint)newSize);
+                        ThrowHelper.ThrowOutOfMemoryException_BufferMaximumSizeExceeded(
+                            (uint)newSize
+                        );
                     }
                 }
 

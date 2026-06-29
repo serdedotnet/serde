@@ -9,7 +9,11 @@ namespace Serde;
 /// <summary>
 /// Generates an implementation of <see cref="Serde.ISerialize" />.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum,
+    AllowMultiple = false,
+    Inherited = false
+)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
 #if !SRCGEN
 public
@@ -36,7 +40,11 @@ sealed class GenerateSerialize : Attribute
 /// <summary>
 /// Generates an implementation of <see cref="Serde.IDeserialize" />.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum,
+    AllowMultiple = false,
+    Inherited = false
+)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
 #if !SRCGEN
 public
@@ -63,7 +71,11 @@ sealed class GenerateDeserialize : Attribute
 /// <summary>
 /// Generates an implementation of both <see cref="Serde.ISerialize" /> and <see cref="Serde.IDeserialize" />.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum,
+    AllowMultiple = false,
+    Inherited = false
+)]
 [Conditional("EMIT_GENERATE_SERDE_ATTRIBUTE")]
 #if !SRCGEN
 public
@@ -95,7 +107,11 @@ sealed class GenerateSerde : Attribute
 /// <summary>
 /// Set options for the Serde source generator for the current type.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum,
+    AllowMultiple = false,
+    Inherited = false
+)]
 #if !SRCGEN
 public
 #else
@@ -141,7 +157,11 @@ sealed class SerdeTypeOptions : Attribute
 /// <summary>
 /// Set options for the Serde source generator specific to the current member.
 /// </summary>
-[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Field | AttributeTargets.Property,
+    AllowMultiple = false,
+    Inherited = false
+)]
 #if !SRCGEN
 public
 #else
@@ -254,25 +274,36 @@ enum MemberFormat : byte
     /// "camelCase"
     /// </summary>
     CamelCase,
+
     /// <summary>
     /// Use the original name of the member.
     /// </summary>
     None,
+
     /// <summary>
     /// "PascalCase"
     /// </summary>
     PascalCase,
+
     /// <summary>
     /// "kebab-case"
     /// </summary>
     KebabCase,
+
     /// <summary>
     /// "snake_case"
     /// </summary>
     SnakeCase,
 }
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true, Inherited = false)]
+[AttributeUsage(
+    AttributeTargets.Class
+        | AttributeTargets.Struct
+        | AttributeTargets.Property
+        | AttributeTargets.Field,
+    AllowMultiple = true,
+    Inherited = false
+)]
 #if !SRCGEN
 public
 #else

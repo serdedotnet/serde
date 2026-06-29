@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,11 +6,11 @@ using System.Linq;
 
 namespace Serde.Test
 {
-
     public partial class GenericType<T>
     {
         public int Field;
     }
+
     [GenerateSerialize]
     [GenerateDeserialize]
     public sealed partial record AllInOne
@@ -54,40 +53,40 @@ namespace Serde.Test
         {
             Red = 1,
             Blue = 3,
-            Green = 5
+            Green = 5,
         }
 
         // implement Equals to do deep equals for the collections
         public bool Equals(AllInOne? other)
         {
-            return other is not null &&
-                BoolField == other.BoolField &&
-                CharField == other.CharField &&
-                ByteField == other.ByteField &&
-                UShortField == other.UShortField &&
-                UIntField == other.UIntField &&
-                ULongField == other.ULongField &&
-                UInt128Field == other.UInt128Field &&
-                SByteField == other.SByteField &&
-                ShortField == other.ShortField &&
-                IntField == other.IntField &&
-                LongField == other.LongField &&
-                Int128Field == other.Int128Field &&
-                StringField == other.StringField &&
-                DateTimeOffsetField == other.DateTimeOffsetField &&
-                DateTimeField == other.DateTimeField &&
-                DateOnlyField == other.DateOnlyField &&
-                TimeOnlyField == other.TimeOnlyField &&
-                EscapedStringField == other.EscapedStringField &&
-                GuidField.Equals(other.GuidField) &&
-                NullStringField == other.NullStringField &&
-                UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan()) &&
-                NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(),
-                    new Comparer()) &&
-                ByteArr.AsSpan().SequenceEqual(other.ByteArr.AsSpan()) &&
-                IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan()) &&
-                Color == other.Color;
+            return other is not null
+                && BoolField == other.BoolField
+                && CharField == other.CharField
+                && ByteField == other.ByteField
+                && UShortField == other.UShortField
+                && UIntField == other.UIntField
+                && ULongField == other.ULongField
+                && UInt128Field == other.UInt128Field
+                && SByteField == other.SByteField
+                && ShortField == other.ShortField
+                && IntField == other.IntField
+                && LongField == other.LongField
+                && Int128Field == other.Int128Field
+                && StringField == other.StringField
+                && DateTimeOffsetField == other.DateTimeOffsetField
+                && DateTimeField == other.DateTimeField
+                && DateOnlyField == other.DateOnlyField
+                && TimeOnlyField == other.TimeOnlyField
+                && EscapedStringField == other.EscapedStringField
+                && GuidField.Equals(other.GuidField)
+                && NullStringField == other.NullStringField
+                && UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan())
+                && NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(), new Comparer())
+                && ByteArr.AsSpan().SequenceEqual(other.ByteArr.AsSpan())
+                && IntImm.AsSpan().SequenceEqual(other.IntImm.AsSpan())
+                && Color == other.Color;
         }
+
         private sealed class Comparer : IEqualityComparer<int[]>
         {
             public bool Equals(int[]? x, int[]? y)
@@ -126,12 +125,27 @@ namespace Serde.Test
             DateTimeField = new DateTime(2040, 1, 1, 1, 1, 1, DateTimeKind.Utc),
             DateOnlyField = new DateOnly(2040, 6, 15),
             TimeOnlyField = new TimeOnly(14, 30, 45),
-            GuidField = new Guid(new byte[] {
-                0x01, 0x02, 0x03, 0x04,
-                0x05, 0x06, 0x07, 0x08,
-                0x09, 0x0A, 0x0B, 0x0C,
-                0x0D, 0x0E, 0x0F, 0x10,
-            }),
+            GuidField = new Guid(
+                new byte[]
+                {
+                    0x01,
+                    0x02,
+                    0x03,
+                    0x04,
+                    0x05,
+                    0x06,
+                    0x07,
+                    0x08,
+                    0x09,
+                    0x0A,
+                    0x0B,
+                    0x0C,
+                    0x0D,
+                    0x0E,
+                    0x0F,
+                    0x10,
+                }
+            ),
 
             EscapedStringField = "+0 11 222 333 44",
 
@@ -141,7 +155,7 @@ namespace Serde.Test
 
             IntImm = ImmutableArray.Create<int>(1, 2),
 
-            Color = ColorEnum.Blue
+            Color = ColorEnum.Blue,
         };
 
         public const string SampleSerialized = """
@@ -186,6 +200,5 @@ namespace Serde.Test
   "color": "blue"
 }
 """;
-
     }
 }

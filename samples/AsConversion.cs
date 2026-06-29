@@ -22,7 +22,8 @@ partial record struct Rgb(byte R, byte G, byte B)
         return new Rgb(
             byte.Parse(hex[..2], NumberStyles.HexNumber),
             byte.Parse(hex[2..4], NumberStyles.HexNumber),
-            byte.Parse(hex[4..6], NumberStyles.HexNumber));
+            byte.Parse(hex[4..6], NumberStyles.HexNumber)
+        );
     }
 }
 

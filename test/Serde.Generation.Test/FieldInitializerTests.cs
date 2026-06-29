@@ -184,12 +184,7 @@ partial struct TargetProxy { }
             return VerifyDeserialize(src);
         }
 
-        private static Task VerifyDeserialize(
-            string src,
-            [CallerMemberName] string caller = "")
-            => VerifyGeneratedCode(src,
-                nameof(FieldInitializerTests),
-                caller,
-                multiFile: false);
+        private static Task VerifyDeserialize(string src, [CallerMemberName] string caller = "") =>
+            VerifyGeneratedCode(src, nameof(FieldInitializerTests), caller, multiFile: false);
     }
 }

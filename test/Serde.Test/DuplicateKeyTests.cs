@@ -27,8 +27,9 @@ namespace Serde.Test
             // Test that duplicate keys now throw an exception by default
             var json = @"{ ""name"": ""first"", ""value"": 42, ""name"": ""second"" }";
 
-            var exception = Assert.Throws<DeserializeException>(() => 
-                JsonSerializer.Deserialize<SimpleType>(json));
+            var exception = Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<SimpleType>(json)
+            );
 
             Assert.Contains("Duplicate key", exception.Message);
             Assert.Contains("name", exception.Message);
@@ -52,8 +53,9 @@ namespace Serde.Test
             // Test with different casing - should still throw exception
             var json = @"{ ""name"": ""first"", ""value"": 42, ""name"": ""second"" }";
 
-            var exception = Assert.Throws<DeserializeException>(() => 
-                JsonSerializer.Deserialize<SimpleType>(json));
+            var exception = Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<SimpleType>(json)
+            );
 
             Assert.Contains("Duplicate key", exception.Message);
             Assert.Contains("name", exception.Message);
@@ -63,10 +65,12 @@ namespace Serde.Test
         public void MultipleDuplicateKeysThrowsException()
         {
             // Test with multiple duplicate keys - should throw on the first duplicate
-            var json = @"{ ""name"": ""first"", ""value"": 10, ""name"": ""second"", ""value"": 20, ""name"": ""third"" }";
+            var json =
+                @"{ ""name"": ""first"", ""value"": 10, ""name"": ""second"", ""value"": 20, ""name"": ""third"" }";
 
-            var exception = Assert.Throws<DeserializeException>(() => 
-                JsonSerializer.Deserialize<SimpleType>(json));
+            var exception = Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<SimpleType>(json)
+            );
 
             Assert.Contains("Duplicate key", exception.Message);
             Assert.Contains("name", exception.Message);

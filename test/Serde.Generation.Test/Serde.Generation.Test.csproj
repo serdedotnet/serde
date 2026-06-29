@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>$(TestTfm)</TargetFramework>
     <Nullable>enable</Nullable>
@@ -24,5 +23,4 @@
     <ProjectReference Include="../../src/serde/Serde.csproj" />
     <ProjectReference Include="../../src/generator/SerdeGenerator.csproj" />
   </ItemGroup>
-
 </Project>

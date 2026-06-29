@@ -9,9 +9,11 @@ public partial class AsTests
     public readonly partial struct StringId
     {
         public readonly string Value;
+
         public StringId(string value) => Value = value;
 
         public static explicit operator string(StringId id) => id.Value;
+
         public static explicit operator StringId(string value) => new StringId(value);
     }
 
@@ -34,6 +36,7 @@ public partial class AsTests
     {
         public readonly int X;
         public readonly int Y;
+
         public PointWrapper(int x, int y)
         {
             X = x;
@@ -41,6 +44,7 @@ public partial class AsTests
         }
 
         public static implicit operator Point(PointWrapper p) => new Point(p.X, p.Y);
+
         public static implicit operator PointWrapper(Point p) => new PointWrapper(p.X, p.Y);
     }
 

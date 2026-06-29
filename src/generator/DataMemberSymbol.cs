@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -27,12 +26,15 @@ namespace Serde
         public DataMemberSymbol(
             ISymbol symbol,
             TypeOptions typeOptions,
-            MemberOptions memberOptions)
+            MemberOptions memberOptions
+        )
         {
-            Debug.Assert(symbol is
-                IFieldSymbol { ContainingType: { TypeKind: TypeKind.Enum}, IsStatic: true } or
-                IFieldSymbol { IsStatic: false } or
-                IPropertySymbol { IsStatic: false, Parameters.Length: 0 });
+            Debug.Assert(
+                symbol
+                    is IFieldSymbol { ContainingType: { TypeKind: TypeKind.Enum }, IsStatic: true }
+                        or IFieldSymbol { IsStatic: false }
+                        or IPropertySymbol { IsStatic: false, Parameters.Length: 0 }
+            );
             Symbol = symbol;
             _typeOptions = typeOptions;
             _memberOptions = memberOptions;
@@ -43,8 +45,10 @@ namespace Serde
             static bool IsNullable(ISymbol symbol)
             {
                 var type = GetType(symbol);
-                if (type.NullableAnnotation == NullableAnnotation.Annotated ||
-                    type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                if (
+                    type.NullableAnnotation == NullableAnnotation.Annotated
+                    || type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T
+                )
                 {
                     return true;
                 }
@@ -67,7 +71,10 @@ namespace Serde
                             return true;
                         }
                     }
-                    if (param.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated)
+                    if (
+                        param.ReferenceTypeConstraintNullableAnnotation
+                        == NullableAnnotation.Annotated
+                    )
                     {
                         return true;
                     }
@@ -78,19 +85,21 @@ namespace Serde
 
         public ITypeSymbol Type => GetType(Symbol);
 
-        private static ITypeSymbol GetType(ISymbol symbol) => symbol switch
-        {
-            IFieldSymbol f => f.Type,
-            IPropertySymbol p => p.Type,
-            _ => throw ExceptionUtilities.Unreachable
-        };
+        private static ITypeSymbol GetType(ISymbol symbol) =>
+            symbol switch
+            {
+                IFieldSymbol f => f.Type,
+                IPropertySymbol p => p.Type,
+                _ => throw ExceptionUtilities.Unreachable,
+            };
 
-        public NullableAnnotation NullableAnnotation => Symbol switch
-        {
-            IFieldSymbol f => f.NullableAnnotation,
-            IPropertySymbol p => p.NullableAnnotation,
-            _ => throw ExceptionUtilities.Unreachable
-        };
+        public NullableAnnotation NullableAnnotation =>
+            Symbol switch
+            {
+                IFieldSymbol f => f.NullableAnnotation,
+                IPropertySymbol p => p.NullableAnnotation,
+                _ => throw ExceptionUtilities.Unreachable,
+            };
 
         public ImmutableArray<Location> Locations => Symbol.Locations;
 
@@ -128,34 +137,34 @@ namespace Serde
             switch (_typeOptions.MemberFormat)
             {
                 case MemberFormat.CamelCase:
+                {
+                    var builder = new StringBuilder();
+                    bool first = true;
+                    foreach (var part in parts)
                     {
-                        var builder = new StringBuilder();
-                        bool first = true;
-                        foreach (var part in parts)
+                        if (first)
                         {
-                            if (first)
-                            {
-                                builder.Append(char.ToLowerInvariant(part[0]));
-                                first = false;
-                            }
-                            else
-                            {
-                                builder.Append(char.ToUpperInvariant(part[0]));
-                            }
-                            builder.Append(part.Substring(1).ToLowerInvariant());
+                            builder.Append(char.ToLowerInvariant(part[0]));
+                            first = false;
                         }
-                        return builder.ToString();
-                    }
-                case MemberFormat.PascalCase:
-                    {
-                        var builder = new StringBuilder();
-                        foreach (var part in parts)
+                        else
                         {
                             builder.Append(char.ToUpperInvariant(part[0]));
-                            builder.Append(part.Substring(1).ToLowerInvariant());
                         }
-                        return builder.ToString();
+                        builder.Append(part.Substring(1).ToLowerInvariant());
                     }
+                    return builder.ToString();
+                }
+                case MemberFormat.PascalCase:
+                {
+                    var builder = new StringBuilder();
+                    foreach (var part in parts)
+                    {
+                        builder.Append(char.ToUpperInvariant(part[0]));
+                        builder.Append(part.Substring(1).ToLowerInvariant());
+                    }
+                    return builder.ToString();
+                }
                 case MemberFormat.KebabCase:
                     return string.Join("-", parts.Select(s => s.ToLowerInvariant()));
 
@@ -163,7 +172,9 @@ namespace Serde
                     return string.Join("_", parts.Select(s => s.ToLowerInvariant()));
 
                 default:
-                    throw new InvalidOperationException("Invalid member format: " + _typeOptions.MemberFormat);
+                    throw new InvalidOperationException(
+                        "Invalid member format: " + _typeOptions.MemberFormat
+                    );
             }
         }
 
@@ -212,7 +223,7 @@ namespace Serde
                 {
                     VariableDeclaratorSyntax v => v.Initializer,
                     PropertyDeclarationSyntax p => p.Initializer,
-                    _ => null
+                    _ => null,
                 };
                 if (initializer is null)
                     continue;
@@ -222,8 +233,11 @@ namespace Serde
                 var expr = initializer.Value;
                 // Check if the expression resolves to a symbol we can safely fully-qualify.
                 var symbolInfo = semanticModel.GetSymbolInfo(expr);
-                if (symbolInfo.Symbol is IFieldSymbol { IsStatic: true } or
-                    IPropertySymbol { IsStatic: true })
+                if (
+                    symbolInfo.Symbol
+                    is IFieldSymbol { IsStatic: true }
+                        or IPropertySymbol { IsStatic: true }
+                )
                 {
                     return symbolInfo.Symbol.ToDisplayString(SymbolUtilities.FqnFormat);
                 }
@@ -248,7 +262,11 @@ namespace Serde
                     // source text, so that no unqualified identifiers (type names relying
                     // on a using directive, or named constants) can leak into the
                     // generated file. FormatPrimitive emits a self-contained literal.
-                    var literal = SymbolDisplay.FormatPrimitive(val, quoteStrings: true, useHexadecimalNumbers: false);
+                    var literal = SymbolDisplay.FormatPrimitive(
+                        val,
+                        quoteStrings: true,
+                        useHexadecimalNumbers: false
+                    );
                     if (literal is null)
                     {
                         return null;

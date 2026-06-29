@@ -51,23 +51,21 @@ public static class TypeSerialize
         return ser switch
         {
             ITypeSerialize<T> typeSer => typeSer,
-            _ => BoxProxy.Ser<T, TProvider>.Instance
+            _ => BoxProxy.Ser<T, TProvider>.Instance,
         };
     }
 }
 
-
 public interface ISerializeProvider<T>
 {
-    abstract static ISerialize<T> Instance { get; }
+    static abstract ISerialize<T> Instance { get; }
 }
 
 public static class SerializeProvider
 {
-    public static ISerialize<T> GetSerialize<T>() where T : ISerializeProvider<T> => T.Instance;
+    public static ISerialize<T> GetSerialize<T>()
+        where T : ISerializeProvider<T> => T.Instance;
+
     public static ISerialize<T> GetSerialize<T, TProvider>()
-        where TProvider : ISerializeProvider<T>
-        => TProvider.Instance;
+        where TProvider : ISerializeProvider<T> => TProvider.Instance;
 }
-
-

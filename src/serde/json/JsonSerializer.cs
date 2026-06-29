@@ -1,4 +1,3 @@
-
 using System;
 using System.Buffers;
 using System.Buffers.Text;
@@ -10,7 +9,6 @@ using System.Text.Json;
 
 namespace Serde.Json
 {
-
     public sealed partial class JsonSerializer : ISerializer
     {
         /// <summary>
@@ -19,11 +17,10 @@ namespace Serde.Json
         public static ReadOnlyMemory<byte> ToBytes<T>(T provider, ISerialize<T> ser)
         {
             var bufferWriter = new ArrayBufferWriter<byte>();
-            using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
-            {
-                Indented = false,
-                SkipValidation = true
-            });
+            using var writer = new Utf8JsonWriter(
+                bufferWriter,
+                new JsonWriterOptions { Indented = false, SkipValidation = true }
+            );
             var serializer = new JsonSerializer(writer);
             ser.Serialize(provider, serializer);
             writer.Flush();
@@ -31,12 +28,10 @@ namespace Serde.Json
         }
 
         public static ReadOnlyMemory<byte> ToBytes<T, TProvider>(T s)
-            where TProvider : ISerializeProvider<T>
-            => ToBytes(s, TProvider.Instance);
+            where TProvider : ISerializeProvider<T> => ToBytes(s, TProvider.Instance);
 
         public static ReadOnlyMemory<byte> ToBytes<T>(T s)
-            where T : ISerializeProvider<T>
-            => ToBytes(s, T.Instance);
+            where T : ISerializeProvider<T> => ToBytes(s, T.Instance);
 
         /// <summary>
         /// Serialize the given type to a string.
@@ -44,11 +39,10 @@ namespace Serde.Json
         public static string Serialize<T>(T provider, ISerialize<T> ser)
         {
             using var bufferWriter = new PooledByteBufferWriter(16 * 1024);
-            using var writer = new Utf8JsonWriter(bufferWriter, new JsonWriterOptions
-            {
-                Indented = false,
-                SkipValidation = true
-            });
+            using var writer = new Utf8JsonWriter(
+                bufferWriter,
+                new JsonWriterOptions { Indented = false, SkipValidation = true }
+            );
             var serializer = new JsonSerializer(writer);
             ser.Serialize(provider, serializer);
             writer.Flush();
@@ -56,16 +50,13 @@ namespace Serde.Json
         }
 
         public static string Serialize<T, TProvider>(T s)
-            where TProvider : ISerializeProvider<T>
-            => Serialize(s, TProvider.Instance);
+            where TProvider : ISerializeProvider<T> => Serialize(s, TProvider.Instance);
 
         public static string Serialize<T>(T s)
-            where T : ISerializeProvider<T>
-            => Serialize(s, T.Instance);
+            where T : ISerializeProvider<T> => Serialize(s, T.Instance);
 
         public static T Deserialize<T>(string source)
-            where T : IDeserializeProvider<T>
-            => Deserialize<T, T>(source);
+            where T : IDeserializeProvider<T> => Deserialize<T, T>(source);
 
         public static List<T> DeserializeList<T>(string source)
             where T : IDeserializeProvider<T>
@@ -76,8 +67,7 @@ namespace Serde.Json
 #endif
 
         public static T Deserialize<T, TProvider>(string source)
-            where TProvider : IDeserializeProvider<T>
-            => Deserialize(source, TProvider.Instance);
+            where TProvider : IDeserializeProvider<T> => Deserialize(source, TProvider.Instance);
 
         public static T Deserialize<T>(string source, IDeserialize<T> d)
         {

@@ -44,10 +44,32 @@ namespace Serde.Json
         public static ReadOnlySpan<byte> NegativeInfinityValue => "-Infinity"u8;
 
         // Used to search for the end of a number
-        public static ReadOnlySpan<byte> Delimiters => new byte[] { ListSeparator, CloseBrace, CloseBracket, Space, LineFeed, CarriageReturn, Tab, Slash };
+        public static ReadOnlySpan<byte> Delimiters =>
+            new byte[]
+            {
+                ListSeparator,
+                CloseBrace,
+                CloseBracket,
+                Space,
+                LineFeed,
+                CarriageReturn,
+                Tab,
+                Slash,
+            };
 
         // Explicitly skipping ReverseSolidus since that is handled separately
-        public static ReadOnlySpan<byte> EscapableChars => new byte[] { Quote, (byte)'n', (byte)'r', (byte)'t', Slash, (byte)'u', (byte)'b', (byte)'f' };
+        public static ReadOnlySpan<byte> EscapableChars =>
+            new byte[]
+            {
+                Quote,
+                (byte)'n',
+                (byte)'r',
+                (byte)'t',
+                Slash,
+                (byte)'u',
+                (byte)'b',
+                (byte)'f',
+            };
 
         public const int SpacesPerIndent = 2;
         public const int RemoveFlagsBitMask = 0x7FFFFFFF;
@@ -73,29 +95,36 @@ namespace Serde.Json
         // be safely transcoded to UTF-8 and fit within an integer-length span, given the max expansion factor of a single character (3).
         public const int MaxUtf16RawValueLength = int.MaxValue / MaxExpansionFactorWhileTranscoding;
 
-        public const int MaxEscapedTokenSize = 1_000_000_000;   // Max size for already escaped value.
-        public const int MaxUnescapedTokenSize = MaxEscapedTokenSize / MaxExpansionFactorWhileEscaping;  // 166_666_666 bytes
-        public const int MaxBase64ValueTokenSize = (MaxEscapedTokenSize >> 2) * 3 / MaxExpansionFactorWhileEscaping;  // 125_000_000 bytes
-        public const int MaxCharacterTokenSize = MaxEscapedTokenSize / MaxExpansionFactorWhileEscaping; // 166_666_666 characters
+        public const int MaxEscapedTokenSize = 1_000_000_000; // Max size for already escaped value.
+        public const int MaxUnescapedTokenSize =
+            MaxEscapedTokenSize / MaxExpansionFactorWhileEscaping; // 166_666_666 bytes
+        public const int MaxBase64ValueTokenSize =
+            (MaxEscapedTokenSize >> 2) * 3 / MaxExpansionFactorWhileEscaping; // 125_000_000 bytes
+        public const int MaxCharacterTokenSize =
+            MaxEscapedTokenSize / MaxExpansionFactorWhileEscaping; // 166_666_666 characters
 
         public const int MaximumFormatBooleanLength = 5;
-        public const int MaximumFormatInt64Length = 20;   // 19 + sign (i.e. -9223372036854775808)
-        public const int MaximumFormatUInt64Length = 20;  // i.e. 18446744073709551615
-        public const int MaximumFormatDoubleLength = 128;  // default (i.e. 'G'), using 128 (rather than say 32) to be future-proof.
-        public const int MaximumFormatSingleLength = 128;  // default (i.e. 'G'), using 128 (rather than say 32) to be future-proof.
+        public const int MaximumFormatInt64Length = 20; // 19 + sign (i.e. -9223372036854775808)
+        public const int MaximumFormatUInt64Length = 20; // i.e. 18446744073709551615
+        public const int MaximumFormatDoubleLength = 128; // default (i.e. 'G'), using 128 (rather than say 32) to be future-proof.
+        public const int MaximumFormatSingleLength = 128; // default (i.e. 'G'), using 128 (rather than say 32) to be future-proof.
         public const int MaximumFormatDecimalLength = 31; // default (i.e. 'G')
-        public const int MaximumFormatGuidLength = 36;    // default (i.e. 'D'), 8 + 4 + 4 + 4 + 12 + 4 for the hyphens (e.g. 094ffa0a-0442-494d-b452-04003fa755cc)
-        public const int MaximumEscapedGuidLength = MaxExpansionFactorWhileEscaping * MaximumFormatGuidLength;
-        public const int MaximumFormatDateTimeLength = 27;    // StandardFormat 'O', e.g. 2017-06-12T05:30:45.7680000
-        public const int MaximumFormatDateTimeOffsetLength = 33;  // StandardFormat 'O', e.g. 2017-06-12T05:30:45.7680000-07:00
+        public const int MaximumFormatGuidLength = 36; // default (i.e. 'D'), 8 + 4 + 4 + 4 + 12 + 4 for the hyphens (e.g. 094ffa0a-0442-494d-b452-04003fa755cc)
+        public const int MaximumEscapedGuidLength =
+            MaxExpansionFactorWhileEscaping * MaximumFormatGuidLength;
+        public const int MaximumFormatDateTimeLength = 27; // StandardFormat 'O', e.g. 2017-06-12T05:30:45.7680000
+        public const int MaximumFormatDateTimeOffsetLength = 33; // StandardFormat 'O', e.g. 2017-06-12T05:30:45.7680000-07:00
         public const int MaxDateTimeUtcOffsetHours = 14; // The UTC offset portion of a TimeSpan or DateTime can be no more than 14 hours and no less than -14 hours.
-        public const int DateTimeNumFractionDigits = 7;  // TimeSpan and DateTime formats allow exactly up to many digits for specifying the fraction after the seconds.
-        public const int MaxDateTimeFraction = 9_999_999;  // The largest fraction expressible by TimeSpan and DateTime formats
+        public const int DateTimeNumFractionDigits = 7; // TimeSpan and DateTime formats allow exactly up to many digits for specifying the fraction after the seconds.
+        public const int MaxDateTimeFraction = 9_999_999; // The largest fraction expressible by TimeSpan and DateTime formats
         public const int DateTimeParseNumFractionDigits = 16; // The maximum number of fraction digits the Json DateTime parser allows
-        public const int MaximumDateTimeOffsetParseLength = (MaximumFormatDateTimeOffsetLength +
-            (DateTimeParseNumFractionDigits - DateTimeNumFractionDigits)); // Like StandardFormat 'O' for DateTimeOffset, but allowing 9 additional (up to 16) fraction digits.
+        public const int MaximumDateTimeOffsetParseLength = (
+            MaximumFormatDateTimeOffsetLength
+            + (DateTimeParseNumFractionDigits - DateTimeNumFractionDigits)
+        ); // Like StandardFormat 'O' for DateTimeOffset, but allowing 9 additional (up to 16) fraction digits.
         public const int MinimumDateTimeParseLength = 10; // YYYY-MM-DD
-        public const int MaximumEscapedDateTimeOffsetParseLength = MaxExpansionFactorWhileEscaping * MaximumDateTimeOffsetParseLength;
+        public const int MaximumEscapedDateTimeOffsetParseLength =
+            MaxExpansionFactorWhileEscaping * MaximumDateTimeOffsetParseLength;
 
         public const int MaximumLiteralLength = 5; // Must be able to fit null, true, & false.
 

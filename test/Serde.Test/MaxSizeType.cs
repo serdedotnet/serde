@@ -1,4 +1,3 @@
-
 namespace Serde.Test;
 
 // Serde currently only supports types with <= 64 fields

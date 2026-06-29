@@ -8,7 +8,8 @@ using Microsoft.Win32;
 namespace Serde;
 
 public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
-    : ISerialize<TDict>, ISerializeProvider<TDict>
+    : ISerialize<TDict>,
+        ISerializeProvider<TDict>
     where TK : notnull
     where TSelf : ISerialize<TDict>, new()
     where TDict : IReadOnlyDictionary<TK, TV>
@@ -42,16 +43,9 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
     }
 }
 
-public abstract class DeDictBase<
-        TSelf,
-        TKey,
-        TValue,
-        TDict,
-        TBuilder,
-        TKProvider,
-        TVProvider>
+public abstract class DeDictBase<TSelf, TKey, TValue, TDict, TBuilder, TKProvider, TVProvider>
     : IDeserialize<TDict>,
-      IDeserializeProvider<TDict>
+        IDeserializeProvider<TDict>
     where TSelf : IDeserialize<TDict>, new()
     where TBuilder : ICollection
     where TKey : notnull
@@ -62,7 +56,10 @@ public abstract class DeDictBase<
     public abstract ISerdeInfo SerdeInfo { get; }
 
     private readonly ITypeDeserialize<TKey> _keyDe = TypeDeserialize.GetOrBox<TKey, TKProvider>();
-    private readonly ITypeDeserialize<TValue> _valueDe = TypeDeserialize.GetOrBox<TValue, TVProvider>();
+    private readonly ITypeDeserialize<TValue> _valueDe = TypeDeserialize.GetOrBox<
+        TValue,
+        TVProvider
+    >();
 
     protected DeDictBase() { }
 
@@ -117,8 +114,8 @@ public abstract class DeDictBase<
 public static class DictProxy
 {
     public static ISerdeInfo GetSerdeInfo<TKey, TValue>(ISerdeInfo keyInfo, ISerdeInfo valueInfo)
-        where TKey : notnull
-        => SerdeInfo.MakeDictionary(typeof(Dictionary<TKey, TValue>).ToString(), keyInfo, valueInfo);
+        where TKey : notnull =>
+        SerdeInfo.MakeDictionary(typeof(Dictionary<TKey, TValue>).ToString(), keyInfo, valueInfo);
 
     public sealed class Ser<TKey, TValue, TKeyProvider, TValueProvider>()
         : SerDictBase<
@@ -128,15 +125,16 @@ public static class DictProxy
             Dictionary<TKey, TValue>,
             TKeyProvider,
             TValueProvider
-          >,
-          ISerializeProvider<Dictionary<TKey, TValue>>
+        >,
+            ISerializeProvider<Dictionary<TKey, TValue>>
         where TKey : notnull
         where TKeyProvider : ISerializeProvider<TKey>
         where TValueProvider : ISerializeProvider<TValue>
     {
         private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<TKey, TValue>(
             TKeyProvider.Instance.SerdeInfo,
-            TValueProvider.Instance.SerdeInfo);
+            TValueProvider.Instance.SerdeInfo
+        );
         public override ISerdeInfo SerdeInfo => s_serdeInfo;
     }
 
@@ -149,20 +147,23 @@ public static class DictProxy
             Dictionary<TKey, TValue>,
             TKProvider,
             TVProvider
-          >,
-          IDeserializeProvider<Dictionary<TKey, TValue>>
+        >,
+            IDeserializeProvider<Dictionary<TKey, TValue>>
         where TKey : notnull
         where TKProvider : IDeserializeProvider<TKey>
         where TVProvider : IDeserializeProvider<TValue>
     {
         private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<TKey, TValue>(
             TKProvider.Instance.SerdeInfo,
-            TVProvider.Instance.SerdeInfo);
+            TVProvider.Instance.SerdeInfo
+        );
         public override ISerdeInfo SerdeInfo => s_serdeInfo;
 
-        protected override void Add(Dictionary<TKey, TValue> builder, TKey key, TValue value) => builder.Add(key, value);
+        protected override void Add(Dictionary<TKey, TValue> builder, TKey key, TValue value) =>
+            builder.Add(key, value);
 
-        protected override Dictionary<TKey, TValue> Create(Dictionary<TKey, TValue> builder) => builder;
+        protected override Dictionary<TKey, TValue> Create(Dictionary<TKey, TValue> builder) =>
+            builder;
 
         protected override Dictionary<TKey, TValue> GetBuilder(int? sizeOpt)
         {

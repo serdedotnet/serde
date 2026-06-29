@@ -166,7 +166,8 @@ partial struct Rgb
         [Fact]
         public Task Rgb()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerialize]
 partial struct Rgb
@@ -179,7 +180,8 @@ partial struct Rgb
         [Fact]
         public Task NullableRefFields()
         {
-            var src = @"
+            var src =
+                @"
 using System;
 using Serde;
 
@@ -222,7 +224,8 @@ partial struct S<T1, T2, TSerialize>
         [Fact]
         public Task TypeDoesntImplementISerialize()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerialize]
 partial struct S1
@@ -236,7 +239,8 @@ struct S2 { }";
         [Fact]
         public Task TypeNotPartial()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerialize]
 struct S { }
@@ -248,7 +252,8 @@ class C { }";
         [Fact]
         public Task TypeWithArray()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerialize]
 partial class C
@@ -261,7 +266,8 @@ partial class C
         [Fact]
         public Task NestedArray()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerialize]
 partial class C
@@ -274,7 +280,8 @@ partial class C
         [Fact]
         public Task NestedArray2()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerialize]
 partial class C
@@ -287,7 +294,8 @@ partial class C
         [Fact]
         public Task ArrayOfGenerateSerialize()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 partial class TestCase15
@@ -313,7 +321,8 @@ partial class TestCase15
         [Fact]
         public Task DictionaryGenerate()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 using System.Collections.Generic;
 
@@ -333,7 +342,8 @@ partial class C
         [Fact]
         public Task DictionaryGenerate2()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 using System.Collections.Generic;
 
@@ -356,7 +366,8 @@ partial class C2
         [Fact]
         public Task ExplicitWrapper()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 public struct S
@@ -400,7 +411,8 @@ partial class C
         [Fact]
         public Task ExplicitGenericWrapper()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 public struct S<T>
@@ -447,7 +459,8 @@ partial class C
         [Fact]
         public Task WrongGenericWrapperForm()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 public struct S<T>
@@ -491,7 +504,8 @@ partial class C
         [Fact]
         public Task EnumMember()
         {
-            var src = @"
+            var src =
+                @"
 namespace Some.Nested.Namespace;
 
 [Serde.GenerateSerialize]
@@ -633,7 +647,8 @@ abstract partial record Base
 
         private static Task VerifySerialize(
             string src,
-            [CallerMemberName] string? callerName = null)
+            [CallerMemberName] string? callerName = null
+        )
         {
             Assert.NotNull(callerName);
             return VerifyGeneratedCode(src, nameof(SerializeTests), callerName, multiFile: false);

@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -31,14 +30,18 @@ internal sealed class GeneratorExecutionContext
     public void ReportDiagnostic(Diagnostic diagnostic)
     {
         if (_frozen)
-            throw new InvalidOperationException("Cannot add diagnostics after GetDiagnostics() has been called.");
+            throw new InvalidOperationException(
+                "Cannot add diagnostics after GetDiagnostics() has been called."
+            );
         _diagnostics.Add(diagnostic);
     }
 
     internal void AddSource(string fileName, SourceBuilder content)
     {
         if (_frozen)
-            throw new InvalidOperationException("Cannot add sources after GetSources() has been called.");
+            throw new InvalidOperationException(
+                "Cannot add sources after GetSources() has been called."
+            );
         _sources.Add((fileName, content));
     }
 }

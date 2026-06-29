@@ -1,4 +1,3 @@
-
 using System;
 using System.Buffers;
 using System.Buffers.Text;
@@ -66,44 +65,44 @@ internal struct MemoryReader(ReadOnlyMemory<byte> bytes) : IByteReader
             switch (b)
             {
                 case (byte)'"':
+                {
+                    if (skipOnly)
                     {
-                        if (skipOnly)
-                        {
-                            Advance();
-                            return Utf8Span.Empty;
-                        }
+                        Advance();
+                        return Utf8Span.Empty;
+                    }
 
-                        Debug.Assert(scratch is not null);
-                        var curSpan = span[start.._pos];
-                        Utf8Span strSpan;
-                        if (scratch.Count == 0)
-                        {
-                            strSpan = curSpan;
-                        }
-                        else
-                        {
-                            scratch.AddRange(curSpan);
-                            strSpan = scratch.Span;
-                        }
-                        Advance();
-                        return strSpan;
+                    Debug.Assert(scratch is not null);
+                    var curSpan = span[start.._pos];
+                    Utf8Span strSpan;
+                    if (scratch.Count == 0)
+                    {
+                        strSpan = curSpan;
                     }
+                    else
+                    {
+                        scratch.AddRange(curSpan);
+                        strSpan = scratch.Span;
+                    }
+                    Advance();
+                    return strSpan;
+                }
                 case (byte)'\\':
+                {
+                    if (!skipOnly)
                     {
-                        if (!skipOnly)
-                        {
-                            scratch!.AddRange(span[start.._pos]);
-                        }
-                        Advance();
-                        LexEscape(skipOnly, scratch);
-                        start = _pos;
-                        break;
+                        scratch!.AddRange(span[start.._pos]);
                     }
+                    Advance();
+                    LexEscape(skipOnly, scratch);
+                    start = _pos;
+                    break;
+                }
                 default:
-                    {
-                        Advance();
-                        throw new InvalidOperationException("Invalid control character");
-                    }
+                {
+                    Advance();
+                    throw new InvalidOperationException("Invalid control character");
+                }
             }
         }
     }
@@ -131,14 +130,30 @@ internal struct MemoryReader(ReadOnlyMemory<byte> bytes) : IByteReader
         ThrowIfEos(s);
         switch ((byte)s)
         {
-            case (byte)'"': AddOrSkip('"', skipOnly, scratch); break;
-            case (byte)'\\': AddOrSkip('\\', skipOnly, scratch); break;
-            case (byte)'/': AddOrSkip('/', skipOnly, scratch); break;
-            case (byte)'b': AddOrSkip('\b', skipOnly, scratch); break;
-            case (byte)'f': AddOrSkip('\f', skipOnly, scratch); break;
-            case (byte)'n': AddOrSkip('\n', skipOnly, scratch); break;
-            case (byte)'r': AddOrSkip('\r', skipOnly, scratch); break;
-            case (byte)'t': AddOrSkip('\t', skipOnly, scratch); break;
+            case (byte)'"':
+                AddOrSkip('"', skipOnly, scratch);
+                break;
+            case (byte)'\\':
+                AddOrSkip('\\', skipOnly, scratch);
+                break;
+            case (byte)'/':
+                AddOrSkip('/', skipOnly, scratch);
+                break;
+            case (byte)'b':
+                AddOrSkip('\b', skipOnly, scratch);
+                break;
+            case (byte)'f':
+                AddOrSkip('\f', skipOnly, scratch);
+                break;
+            case (byte)'n':
+                AddOrSkip('\n', skipOnly, scratch);
+                break;
+            case (byte)'r':
+                AddOrSkip('\r', skipOnly, scratch);
+                break;
+            case (byte)'t':
+                AddOrSkip('\t', skipOnly, scratch);
+                break;
             case (byte)'u':
             {
                 if (skipOnly)
@@ -173,8 +188,6 @@ internal struct MemoryReader(ReadOnlyMemory<byte> bytes) : IByteReader
 
     private static bool IsEscape(byte b, bool includingControlChars)
     {
-        return b == (byte)'"' ||
-            b == (byte)'\\' ||
-            (includingControlChars && (b < 0x20));
+        return b == (byte)'"' || b == (byte)'\\' || (includingControlChars && (b < 0x20));
     }
 }

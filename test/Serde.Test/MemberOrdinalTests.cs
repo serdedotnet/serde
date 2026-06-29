@@ -38,7 +38,12 @@ public sealed partial class MemberOrdinalTests
     [Fact]
     public void ExplicitOrdinalControlsSerializationOrder()
     {
-        var value = new Reordered { A = 1, B = 2, C = 3 };
+        var value = new Reordered
+        {
+            A = 1,
+            B = 2,
+            C = 3,
+        };
         var json = JsonSerializer.Serialize(value);
         Assert.Equal("""{"B":2,"C":3,"A":1}""", json);
 
@@ -72,7 +77,13 @@ public sealed partial class MemberOrdinalTests
         Assert.Equal("C", info.GetFieldStringName(2));
         Assert.Equal("A", info.GetFieldStringName(3));
 
-        var value = new FullyOrdered { A = 1, B = 2, C = 3, D = 4 };
+        var value = new FullyOrdered
+        {
+            A = 1,
+            B = 2,
+            C = 3,
+            D = 4,
+        };
         var json = JsonSerializer.Serialize(value);
         Assert.Equal("""{"B":2,"D":4,"C":3,"A":1}""", json);
 
@@ -112,7 +123,12 @@ public sealed partial class MemberOrdinalTests
         Assert.Equal(5, info.GetFieldOrdinal(2));
 
         // JSON ignores ordinals (it keys by name), so holes are irrelevant to the wire form.
-        var value = new SparseOrdinals { A = 1, B = 2, C = 3 };
+        var value = new SparseOrdinals
+        {
+            A = 1,
+            B = 2,
+            C = 3,
+        };
         var json = JsonSerializer.Serialize(value);
         Assert.Equal("""{"B":2,"C":3,"A":1}""", json);
 
@@ -162,7 +178,12 @@ public sealed partial class MemberOrdinalTests
         Assert.Equal("B", info.GetFieldStringName(0));
         Assert.Equal("A", info.GetFieldStringName(1));
 
-        var value = new OrderedWithSkip { A = 1, Ignored = 99, B = 2 };
+        var value = new OrderedWithSkip
+        {
+            A = 1,
+            Ignored = 99,
+            B = 2,
+        };
         var json = JsonSerializer.Serialize(value);
         Assert.Equal("""{"B":2,"A":1}""", json);
 

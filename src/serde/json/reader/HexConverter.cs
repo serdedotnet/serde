@@ -67,10 +67,16 @@ namespace System
         // writing to a span of known length (or the caller has already checked the bounds of the
         // furthest access).
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ToBytesBuffer(byte value, Span<byte> buffer, int startingIndex = 0, Casing casing = Casing.Upper)
+        public static void ToBytesBuffer(
+            byte value,
+            Span<byte> buffer,
+            int startingIndex = 0,
+            Casing casing = Casing.Upper
+        )
         {
             uint difference = (((uint)value & 0xF0U) << 4) + ((uint)value & 0x0FU) - 0x8989U;
-            uint packedResult = ((((uint)(-(int)difference) & 0x7070U) >> 4) + difference + 0xB9B9U) | (uint)casing;
+            uint packedResult =
+                ((((uint)(-(int)difference) & 0x7070U) >> 4) + difference + 0xB9B9U) | (uint)casing;
 
             buffer[startingIndex + 1] = (byte)packedResult;
             buffer[startingIndex] = (byte)(packedResult >> 8);
@@ -80,31 +86,85 @@ namespace System
         [System.Security.SecuritySafeCriticalAttribute]
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ToCharsBuffer(byte value, Span<char> buffer, int startingIndex = 0, Casing casing = Casing.Upper)
+        public static void ToCharsBuffer(
+            byte value,
+            Span<char> buffer,
+            int startingIndex = 0,
+            Casing casing = Casing.Upper
+        )
         {
             uint difference = (((uint)value & 0xF0U) << 4) + ((uint)value & 0x0FU) - 0x8989U;
-            uint packedResult = ((((uint)(-(int)difference) & 0x7070U) >> 4) + difference + 0xB9B9U) | (uint)casing;
+            uint packedResult =
+                ((((uint)(-(int)difference) & 0x7070U) >> 4) + difference + 0xB9B9U) | (uint)casing;
 
             buffer[startingIndex + 1] = (char)(packedResult & 0xFF);
             buffer[startingIndex] = (char)(packedResult >> 8);
         }
 
 #if SYSTEM_PRIVATE_CORELIB
-        private static void EncodeToUtf16_Vector128(ReadOnlySpan<byte> bytes, Span<char> chars, Casing casing)
+        private static void EncodeToUtf16_Vector128(
+            ReadOnlySpan<byte> bytes,
+            Span<char> chars,
+            Casing casing
+        )
         {
             Vector128<byte> shuffleMask = Vector128.Create(
-                0xFF, 0xFF, 0, 0xFF, 0xFF, 0xFF, 1, 0xFF,
-                0xFF, 0xFF, 2, 0xFF, 0xFF, 0xFF, 3, 0xFF);
+                0xFF,
+                0xFF,
+                0,
+                0xFF,
+                0xFF,
+                0xFF,
+                1,
+                0xFF,
+                0xFF,
+                0xFF,
+                2,
+                0xFF,
+                0xFF,
+                0xFF,
+                3,
+                0xFF
+            );
 
-            Vector128<byte> asciiTable = (casing == Casing.Upper) ?
-                Vector128.Create((byte)'0', (byte)'1', (byte)'2', (byte)'3',
-                                 (byte)'4', (byte)'5', (byte)'6', (byte)'7',
-                                 (byte)'8', (byte)'9', (byte)'A', (byte)'B',
-                                 (byte)'C', (byte)'D', (byte)'E', (byte)'F') :
-                Vector128.Create((byte)'0', (byte)'1', (byte)'2', (byte)'3',
-                                 (byte)'4', (byte)'5', (byte)'6', (byte)'7',
-                                 (byte)'8', (byte)'9', (byte)'a', (byte)'b',
-                                 (byte)'c', (byte)'d', (byte)'e', (byte)'f');
+            Vector128<byte> asciiTable =
+                (casing == Casing.Upper)
+                    ? Vector128.Create(
+                        (byte)'0',
+                        (byte)'1',
+                        (byte)'2',
+                        (byte)'3',
+                        (byte)'4',
+                        (byte)'5',
+                        (byte)'6',
+                        (byte)'7',
+                        (byte)'8',
+                        (byte)'9',
+                        (byte)'A',
+                        (byte)'B',
+                        (byte)'C',
+                        (byte)'D',
+                        (byte)'E',
+                        (byte)'F'
+                    )
+                    : Vector128.Create(
+                        (byte)'0',
+                        (byte)'1',
+                        (byte)'2',
+                        (byte)'3',
+                        (byte)'4',
+                        (byte)'5',
+                        (byte)'6',
+                        (byte)'7',
+                        (byte)'8',
+                        (byte)'9',
+                        (byte)'a',
+                        (byte)'b',
+                        (byte)'c',
+                        (byte)'d',
+                        (byte)'e',
+                        (byte)'f'
+                    );
 
             nuint pos = 0;
             Debug.Assert(bytes.Length >= 4);
@@ -118,7 +178,8 @@ namespace System
             {
                 // Read 32bits from "bytes" span at "pos" offset
                 uint block = Unsafe.ReadUnaligned<uint>(
-                    ref Unsafe.Add(ref MemoryMarshal.GetReference(bytes), pos));
+                    ref Unsafe.Add(ref MemoryMarshal.GetReference(bytes), pos)
+                );
 
                 // TODO: Remove once cross-platform Shuffle is landed
                 // https://github.com/dotnet/runtime/issues/63331
@@ -138,15 +199,19 @@ namespace System
 
                 // Calculate nibbles
                 Vector128<byte> lowNibbles = Shuffle(
-                    Vector128.CreateScalarUnsafe(block).AsByte(), shuffleMask);
+                    Vector128.CreateScalarUnsafe(block).AsByte(),
+                    shuffleMask
+                );
 
                 // ExtractVector128 is not entirely the same as ShiftRightLogical128BitLane, but it works here since
                 // first two bytes in lowNibbles are guaranteed to be zeros
-                Vector128<byte> shifted = Sse2.IsSupported ?
-                    Sse2.ShiftRightLogical128BitLane(lowNibbles, 2) :
-                    AdvSimd.ExtractVector128(lowNibbles, lowNibbles, 2);
+                Vector128<byte> shifted = Sse2.IsSupported
+                    ? Sse2.ShiftRightLogical128BitLane(lowNibbles, 2)
+                    : AdvSimd.ExtractVector128(lowNibbles, lowNibbles, 2);
 
-                Vector128<byte> highNibbles = Vector128.ShiftRightLogical(shifted.AsInt32(), 4).AsByte();
+                Vector128<byte> highNibbles = Vector128
+                    .ShiftRightLogical(shifted.AsInt32(), 4)
+                    .AsByte();
 
                 // Lookup the hex values at the positions of the indices
                 Vector128<byte> indices = (lowNibbles | highNibbles) & Vector128.Create((byte)0xF);
@@ -168,12 +233,15 @@ namespace System
                 {
                     pos = lengthSubVector128;
                 }
-
             } while (true);
         }
 #endif
 
-        public static void EncodeToUtf16(ReadOnlySpan<byte> bytes, Span<char> chars, Casing casing = Casing.Upper)
+        public static void EncodeToUtf16(
+            ReadOnlySpan<byte> bytes,
+            Span<char> chars,
+            Casing casing = Casing.Upper
+        )
         {
             Debug.Assert(chars.Length >= bytes.Length * 2);
 
@@ -196,9 +264,10 @@ namespace System
         public static unsafe string ToString(ReadOnlySpan<byte> bytes, Casing casing = Casing.Upper)
         {
 #if NETFRAMEWORK || NETSTANDARD2_0
-            Span<char> result = bytes.Length > 16 ?
-                new char[bytes.Length * 2].AsSpan() :
-                stackalloc char[bytes.Length * 2];
+            Span<char> result =
+                bytes.Length > 16
+                    ? new char[bytes.Length * 2].AsSpan()
+                    : stackalloc char[bytes.Length * 2];
 
             int pos = 0;
             foreach (byte b in bytes)
@@ -210,11 +279,15 @@ namespace System
 #else
             fixed (byte* bytesPtr = bytes)
             {
-                return string.Create(bytes.Length * 2, (Ptr: (IntPtr)bytesPtr, bytes.Length, casing), static (chars, args) =>
-                {
-                    var ros = new ReadOnlySpan<byte>((byte*)args.Ptr, args.Length);
-                    EncodeToUtf16(ros, chars, args.casing);
-                });
+                return string.Create(
+                    bytes.Length * 2,
+                    (Ptr: (IntPtr)bytesPtr, bytes.Length, casing),
+                    static (chars, args) =>
+                    {
+                        var ros = new ReadOnlySpan<byte>((byte*)args.Ptr, args.Length);
+                        EncodeToUtf16(ros, chars, args.casing);
+                    }
+                );
             }
 #endif
         }
@@ -252,10 +325,17 @@ namespace System
             return TryDecodeFromUtf16(chars, bytes, out _);
         }
 
-        public static bool TryDecodeFromUtf16(ReadOnlySpan<char> chars, Span<byte> bytes, out int charsProcessed)
+        public static bool TryDecodeFromUtf16(
+            ReadOnlySpan<char> chars,
+            Span<byte> bytes,
+            out int charsProcessed
+        )
         {
             Debug.Assert(chars.Length % 2 == 0, "Un-even number of characters provided");
-            Debug.Assert(chars.Length / 2 == bytes.Length, "Target buffer not right-sized for provided characters");
+            Debug.Assert(
+                chars.Length / 2 == bytes.Length,
+                "Target buffer not right-sized for provided characters"
+            );
 
             int i = 0;
             int j = 0;
@@ -350,24 +430,265 @@ namespace System
         }
 
         /// <summary>Map from an ASCII char to its hex value, e.g. arr['b'] == 11. 0xFF means it's not a hex digit.</summary>
-        public static ReadOnlySpan<byte> CharToHexLookup => new byte[]
-        {
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 15
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 31
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 47
-            0x0,  0x1,  0x2,  0x3,  0x4,  0x5,  0x6,  0x7,  0x8,  0x9,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 63
-            0xFF, 0xA,  0xB,  0xC,  0xD,  0xE,  0xF,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 79
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 95
-            0xFF, 0xa,  0xb,  0xc,  0xd,  0xe,  0xf,  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 111
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 127
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 143
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 159
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 175
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 191
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 207
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 223
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 239
-            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF  // 255
-        };
+        public static ReadOnlySpan<byte> CharToHexLookup =>
+            new byte[]
+            {
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 15
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 31
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 47
+                0x0,
+                0x1,
+                0x2,
+                0x3,
+                0x4,
+                0x5,
+                0x6,
+                0x7,
+                0x8,
+                0x9,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 63
+                0xFF,
+                0xA,
+                0xB,
+                0xC,
+                0xD,
+                0xE,
+                0xF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 79
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 95
+                0xFF,
+                0xa,
+                0xb,
+                0xc,
+                0xd,
+                0xe,
+                0xf,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 111
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 127
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 143
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 159
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 175
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 191
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 207
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 223
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 239
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF,
+                0xFF, // 255
+            };
     }
 }

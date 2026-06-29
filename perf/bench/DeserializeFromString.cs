@@ -34,8 +34,8 @@ namespace Benchmarks
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 Converters =
                 {
-                    new STJ.Serialization.JsonStringEnumConverter(STJ.JsonNamingPolicy.CamelCase)
-                }
+                    new STJ.Serialization.JsonStringEnumConverter(STJ.JsonNamingPolicy.CamelCase),
+                },
             };
             value = DataGenerator.GenerateDeserialize<T>();
         }

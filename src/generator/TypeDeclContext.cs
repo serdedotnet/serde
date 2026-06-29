@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -57,14 +56,19 @@ namespace Serde
         public static TypeDeclContext FromFile(string content, string typeDeclName)
         {
             var tree = ParseCompilationUnit(content);
-            var typeDecl = FindTypeDecl(tree.Members, typeDeclName) ?? throw new InvalidOperationException($"Type {typeDeclName} not found in file");
+            var typeDecl =
+                FindTypeDecl(tree.Members, typeDeclName)
+                ?? throw new InvalidOperationException($"Type {typeDeclName} not found in file");
             if (typeDecl is null)
             {
                 throw new InvalidOperationException($"Type {typeDeclName} not found in file");
             }
             return new TypeDeclContext(typeDecl);
 
-            static TypeDeclarationSyntax? FindTypeDecl(SyntaxList<MemberDeclarationSyntax> members, string typeDeclName)
+            static TypeDeclarationSyntax? FindTypeDecl(
+                SyntaxList<MemberDeclarationSyntax> members,
+                string typeDeclName
+            )
             {
                 foreach (var member in members)
                 {
@@ -79,7 +83,9 @@ namespace Serde
                             }
                             return FindTypeDecl(t.Members, typeDeclName);
                         default:
-                            throw new InvalidOperationException($"Unexpected declaration kind {member}");
+                            throw new InvalidOperationException(
+                                $"Unexpected declaration kind {member}"
+                            );
                     }
                 }
                 return null;
@@ -125,12 +131,14 @@ namespace Serde
             for (int i = ParentTypeInfo.Count - 1; i >= 0; i--)
             {
                 var (name, kind) = ParentTypeInfo[i];
-                newType = new SourceBuilder($$"""
+                newType = new SourceBuilder(
+                    $$"""
 partial {{TypeKindToString(kind)}} {{name}}
 {
     {{newType}}
 }
-""");
+"""
+                );
             }
 
             if (NamespaceNames.Count > 0)
@@ -188,14 +196,15 @@ partial {{TypeKindToString(kind)}} {{name}}
             }
         }
 
-        public static string TypeKindToString(SyntaxKind kind) => kind switch
-        {
-            SyntaxKind.ClassDeclaration => "class",
-            SyntaxKind.StructDeclaration => "struct",
-            SyntaxKind.RecordDeclaration => "record",
-            SyntaxKind.RecordStructDeclaration => "record struct",
-            SyntaxKind.InterfaceDeclaration => "interface",
-            _ => throw new ArgumentException("Unsupported type kind: " + kind),
-        };
+        public static string TypeKindToString(SyntaxKind kind) =>
+            kind switch
+            {
+                SyntaxKind.ClassDeclaration => "class",
+                SyntaxKind.StructDeclaration => "struct",
+                SyntaxKind.RecordDeclaration => "record",
+                SyntaxKind.RecordStructDeclaration => "record struct",
+                SyntaxKind.InterfaceDeclaration => "interface",
+                _ => throw new ArgumentException("Unsupported type kind: " + kind),
+            };
     }
 }

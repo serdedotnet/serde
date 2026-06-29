@@ -1,4 +1,3 @@
-
 using System;
 using System.Buffers;
 
@@ -6,7 +5,8 @@ namespace Serde;
 
 public interface IDeserializer : IDisposable
 {
-    T? ReadNullableRef<T>(IDeserialize<T> deserialize) where T : class;
+    T? ReadNullableRef<T>(IDeserialize<T> deserialize)
+        where T : class;
 
     bool ReadBool();
     char ReadChar();
@@ -55,9 +55,9 @@ public static class IDeserializerExt
         var de = DeserializeProvider.GetDeserialize<T, TProvider>();
         return de.Deserialize(deserializer);
     }
+
     public static T ReadValue<T>(this IDeserializer deserializer)
-        where T : IDeserializeProvider<T>
-        => deserializer.ReadValue<T, T>();
+        where T : IDeserializeProvider<T> => deserializer.ReadValue<T, T>();
 }
 
 public interface ITypeDeserializer
@@ -148,30 +148,51 @@ public interface ITypeDeserializer
 
 public static class ITypeDeserializerExt
 {
-    public static T ReadValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
+    public static T ReadValue<T, TProvider>(
+        this ITypeDeserializer deserializeType,
+        ISerdeInfo info,
+        int index
+    )
         where T : class?
         where TProvider : IDeserializeProvider<T>
     {
         return deserializeType.ReadValue(info, index, TProvider.Instance);
     }
 
-    public static T ReadBoxedValue<T>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index, IDeserialize<T> d)
+    public static T ReadBoxedValue<T>(
+        this ITypeDeserializer deserializeType,
+        ISerdeInfo info,
+        int index,
+        IDeserialize<T> d
+    )
         where T : struct
     {
         return (T)deserializeType.ReadValue(info, index, new BoxProxy.De<T>(d))!;
     }
 
-    public static T ReadBoxedValue<T, TProvider>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
+    public static T ReadBoxedValue<T, TProvider>(
+        this ITypeDeserializer deserializeType,
+        ISerdeInfo info,
+        int index
+    )
         where TProvider : IDeserializeProvider<T>
     {
         return (T)deserializeType.ReadValue(info, index, BoxProxy.De<T, TProvider>.Instance)!;
     }
 
-    public static T ReadValue<T>(this ITypeDeserializer deserializeType, ISerdeInfo info, int index, ITypeDeserialize<T> d)
+    public static T ReadValue<T>(
+        this ITypeDeserializer deserializeType,
+        ISerdeInfo info,
+        int index,
+        ITypeDeserialize<T> d
+    )
     {
         return d.Deserialize(deserializeType, info, index);
     }
 
-    public static Guid ReadGuid(this ITypeDeserializer deserializeType, ISerdeInfo info, int index)
-        => ReadValue(deserializeType, info, index, GuidProxy.Instance);
+    public static Guid ReadGuid(
+        this ITypeDeserializer deserializeType,
+        ISerdeInfo info,
+        int index
+    ) => ReadValue(deserializeType, info, index, GuidProxy.Instance);
 }

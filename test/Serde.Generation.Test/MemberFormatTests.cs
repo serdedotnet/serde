@@ -1,4 +1,3 @@
-
 using System.Threading.Tasks;
 using VerifyXunit;
 using Xunit;
@@ -11,7 +10,8 @@ namespace Serde.Test
         [Fact]
         public Task Default()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 [GenerateSerialize]
@@ -20,7 +20,10 @@ partial struct S
     public int One { get; set; }
     public int TwoWord { get; set; }
 }";
-            return VerifyGeneratedCode(src, "S.ISerialize", @"
+            return VerifyGeneratedCode(
+                src,
+                "S.ISerialize",
+                @"
 #nullable enable
 using Serde;
 
@@ -33,13 +36,15 @@ partial struct S : Serde.ISerialize
         type.WriteField(""twoWord"", new Int32Wrap(this.TwoWord));
         type.End();
     }
-}");
+}"
+            );
         }
 
         [Fact]
         public Task CamelCase()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 [GenerateSerialize]
@@ -49,7 +54,10 @@ partial struct S
     public int One { get; set; }
     public int TwoWord { get; set; }
 }";
-            return VerifyGeneratedCode(src, "S.ISerialize", @"
+            return VerifyGeneratedCode(
+                src,
+                "S.ISerialize",
+                @"
 #nullable enable
 using Serde;
 
@@ -62,7 +70,8 @@ partial struct S : Serde.ISerialize
         type.WriteField(""twoWord"", new Int32Wrap(this.TwoWord));
         type.End();
     }
-}");
+}"
+            );
         }
 
         [Fact]
@@ -95,7 +104,8 @@ enum ColorEnum
         [Fact]
         public Task KebabCase()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 [GenerateSerde]
@@ -111,7 +121,8 @@ partial struct S
         [Fact]
         public Task SnakeCase()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 [GenerateSerde]
@@ -141,5 +152,5 @@ public enum ColorEnum
 """;
             return VerifyMultiFile(src);
         }
-   }
+    }
 }

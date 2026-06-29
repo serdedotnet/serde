@@ -37,8 +37,10 @@ public partial class Test
 {
     public required Vector2 v2;
     public required Vector2[][] vertices;
+
     [UseProxy(ForType = typeof(Vector2), SerializeProxy = typeof(Vector2Proxy2))]
     public required Vector2[][] weights;
+
     [UseProxy(ForType = typeof(Vector2), DeserializeProxy = typeof(Vector2Proxy2))]
     public required Dictionary<Vector3, Vector2[][]> points;
 }

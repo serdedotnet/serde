@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -12,15 +11,22 @@ internal static class CompExtensions
 {
     public static MetadataReference EmitToImageReference(
         this Compilation comp,
-        EmitOptions? options = null) => EmitToPortableExecutableReference(comp, options);
+        EmitOptions? options = null
+    ) => EmitToPortableExecutableReference(comp, options);
 
-    public static PortableExecutableReference EmitToPortableExecutableReference(this Compilation comp, EmitOptions? options = null)
+    public static PortableExecutableReference EmitToPortableExecutableReference(
+        this Compilation comp,
+        EmitOptions? options = null
+    )
     {
         var image = comp.EmitToArray(options);
         return AssemblyMetadata.CreateFromImage(image).GetReference();
     }
 
-    internal static ImmutableArray<byte> EmitToArray(this Compilation compilation, EmitOptions? options = null)
+    internal static ImmutableArray<byte> EmitToArray(
+        this Compilation compilation,
+        EmitOptions? options = null
+    )
     {
         var peStream = new MemoryStream();
 

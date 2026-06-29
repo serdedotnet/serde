@@ -24,17 +24,23 @@ namespace Serde
         GenerateDeserialize,
         GenerateSerde,
         SerdeTypeOptions,
-        SerdeMemberOptions
+        SerdeMemberOptions,
     }
 
     internal static class WellKnownTypes
     {
-        public static WellKnownType? TryGetWellKnownType(INamedTypeSymbol t, GeneratorExecutionContext context)
+        public static WellKnownType? TryGetWellKnownType(
+            INamedTypeSymbol t,
+            GeneratorExecutionContext context
+        )
         {
-            if (NameToWellKnownType(t.MetadataName) is {} wk)
+            if (NameToWellKnownType(t.MetadataName) is { } wk)
             {
                 var ia = context.Compilation.GetTypeByMetadataName(GetFQN(wk));
-                if (ia is not null && t.OriginalDefinition.Equals(ia, SymbolEqualityComparer.Default))
+                if (
+                    ia is not null
+                    && t.OriginalDefinition.Equals(ia, SymbolEqualityComparer.Default)
+                )
                 {
                     return wk;
                 }
@@ -42,41 +48,50 @@ namespace Serde
             return null;
         }
 
-        internal static string GetName(this WellKnownAttribute wk) => wk switch
-        {
-            WellKnownAttribute.GenerateDeserialize => nameof(WellKnownAttribute.GenerateDeserialize),
-            WellKnownAttribute.GenerateSerialize => nameof(WellKnownAttribute.GenerateSerialize),
-            WellKnownAttribute.GenerateSerde => nameof(WellKnownAttribute.GenerateSerde),
-            WellKnownAttribute.SerdeTypeOptions => nameof(WellKnownAttribute.SerdeTypeOptions),
-            WellKnownAttribute.SerdeMemberOptions => nameof(WellKnownAttribute.SerdeMemberOptions),
-        };
+        internal static string GetName(this WellKnownAttribute wk) =>
+            wk switch
+            {
+                WellKnownAttribute.GenerateDeserialize => nameof(
+                    WellKnownAttribute.GenerateDeserialize
+                ),
+                WellKnownAttribute.GenerateSerialize => nameof(
+                    WellKnownAttribute.GenerateSerialize
+                ),
+                WellKnownAttribute.GenerateSerde => nameof(WellKnownAttribute.GenerateSerde),
+                WellKnownAttribute.SerdeTypeOptions => nameof(WellKnownAttribute.SerdeTypeOptions),
+                WellKnownAttribute.SerdeMemberOptions => nameof(
+                    WellKnownAttribute.SerdeMemberOptions
+                ),
+            };
 
         internal static bool HasMatchingName(string name, WellKnownAttribute wk)
         {
             var typeName = wk.GetName();
-            return name.Equals(typeName, StringComparison.Ordinal) ||
-                name.Equals(wk.GetFqn(), StringComparison.Ordinal);
+            return name.Equals(typeName, StringComparison.Ordinal)
+                || name.Equals(wk.GetFqn(), StringComparison.Ordinal);
         }
 
         internal static string GetFqn(this WellKnownAttribute wk) => "Serde." + wk.GetName();
 
-        internal static bool IsWellKnownAttribute(INamedTypeSymbol type, WellKnownAttribute wk)
-            => type.ToDisplayString().Equals(wk.GetFqn(), StringComparison.Ordinal);
+        internal static bool IsWellKnownAttribute(INamedTypeSymbol type, WellKnownAttribute wk) =>
+            type.ToDisplayString().Equals(wk.GetFqn(), StringComparison.Ordinal);
 
-        private static WellKnownType? NameToWellKnownType(string s) => s switch
-        {
-            "ImmutableArray`1" => WellKnownType.ImmutableArray_1,
-            "List`1" => WellKnownType.List_1,
-            "Dictionary`2" => WellKnownType.Dictionary_2,
-             _ => null
-        };
+        private static WellKnownType? NameToWellKnownType(string s) =>
+            s switch
+            {
+                "ImmutableArray`1" => WellKnownType.ImmutableArray_1,
+                "List`1" => WellKnownType.List_1,
+                "Dictionary`2" => WellKnownType.Dictionary_2,
+                _ => null,
+            };
 
-        private static string GetFQN(this WellKnownType wk) => wk switch
-        {
-            WellKnownType.ImmutableArray_1 => "System.Collections.Immutable.ImmutableArray`1",
-            WellKnownType.List_1 => "System.Collections.Generic.List`1",
-            WellKnownType.Dictionary_2 => "System.Collections.Generic.Dictionary`2",
-            _ => throw ExceptionUtilities.Unreachable
-        };
+        private static string GetFQN(this WellKnownType wk) =>
+            wk switch
+            {
+                WellKnownType.ImmutableArray_1 => "System.Collections.Immutable.ImmutableArray`1",
+                WellKnownType.List_1 => "System.Collections.Generic.List`1",
+                WellKnownType.Dictionary_2 => "System.Collections.Generic.Dictionary`2",
+                _ => throw ExceptionUtilities.Unreachable,
+            };
     }
 }

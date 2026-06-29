@@ -1,4 +1,3 @@
-
 using System;
 
 namespace Serde;
@@ -9,19 +8,22 @@ namespace Serde;
 /// </summary>
 public class DeserializeException(string msg) : Exception(msg)
 {
-    public static DeserializeException UnassignedMember() => throw new DeserializeException("Not all members were assigned.");
+    public static DeserializeException UnassignedMember() =>
+        throw new DeserializeException("Not all members were assigned.");
 
-    public static DeserializeException UnknownMember(string name, ISerdeInfo info)
-        => new DeserializeException($"Could not find member named '{name ?? "<null>"}' in type '{info.Name}'.");
+    public static DeserializeException UnknownMember(string name, ISerdeInfo info) =>
+        new DeserializeException(
+            $"Could not find member named '{name ?? "<null>"}' in type '{info.Name}'."
+        );
 
-    public static DeserializeException WrongItemCount(int expected, int actual)
-        => new DeserializeException($"Expected {expected} items, got {actual}.");
+    public static DeserializeException WrongItemCount(int expected, int actual) =>
+        new DeserializeException($"Expected {expected} items, got {actual}.");
 
-    public static DeserializeException ExpectedEndOfType(int index)
-        => new DeserializeException($"Expected end of type, got index '{index}'.");
+    public static DeserializeException ExpectedEndOfType(int index) =>
+        new DeserializeException($"Expected end of type, got index '{index}'.");
 
-    public static DeserializeException DuplicateKey(string propertyName, ISerdeInfo info)
-        => new DeserializeException($"Duplicate key '{propertyName}' in type '{info.Name}'.");
+    public static DeserializeException DuplicateKey(string propertyName, ISerdeInfo info) =>
+        new DeserializeException($"Duplicate key '{propertyName}' in type '{info.Name}'.");
 
     /// <summary>
     /// Checks if a field has already been assigned and throws a DuplicateKey exception if it has.

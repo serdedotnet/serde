@@ -11,7 +11,12 @@ namespace Serde;
 public static class EnumerableHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SerializeSpan<T>(ISerdeInfo typeInfo, ReadOnlySpan<T> arr, ITypeSerialize<T> serializeImpl, ISerializer serializer)
+    public static void SerializeSpan<T>(
+        ISerdeInfo typeInfo,
+        ReadOnlySpan<T> arr,
+        ITypeSerialize<T> serializeImpl,
+        ISerializer serializer
+    )
     {
         var enumerable = serializer.WriteCollection(typeInfo, arr.Length);
         int index = 0;
@@ -23,8 +28,7 @@ public static class EnumerableHelpers
     }
 }
 
-public abstract class SerListBase<TSelf, T, TList, TProvider>
-    : ISerialize<TList>
+public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList>
     where TSelf : ISerialize<TList>, ISerializeProvider<TList>, new()
     where TProvider : ISerializeProvider<T>
 {
@@ -32,21 +36,16 @@ public abstract class SerListBase<TSelf, T, TList, TProvider>
     public abstract ISerdeInfo SerdeInfo { get; }
 
     private readonly ITypeSerialize<T> _ser = TypeSerialize.GetOrBox<T, TProvider>();
+
     protected SerListBase() { }
 
-    void ISerialize<TList>.Serialize(TList value, ISerializer serializer)
-        => EnumerableHelpers.SerializeSpan(SerdeInfo, GetSpan(value), _ser, serializer);
+    void ISerialize<TList>.Serialize(TList value, ISerializer serializer) =>
+        EnumerableHelpers.SerializeSpan(SerdeInfo, GetSpan(value), _ser, serializer);
 
     protected abstract ReadOnlySpan<T> GetSpan(TList value);
 }
 
-public abstract class DeListBase<
-    TSelf,
-    T,
-    TList,
-    TFixBuilder,
-    TVarBuilder,
-    TProvider>
+public abstract class DeListBase<TSelf, T, TList, TFixBuilder, TVarBuilder, TProvider>
     : IDeserialize<TList>
     where TSelf : IDeserialize<TList>, new()
     where TFixBuilder : class
@@ -102,101 +101,116 @@ public abstract class DeListBase<
     protected abstract TList FromVar(TVarBuilder builder);
 }
 
-public abstract class DeListBase<
-    TSelf,
-    T,
-    TList,
-    TBuilder,
-    TProvider>
+public abstract class DeListBase<TSelf, T, TList, TBuilder, TProvider>
     : DeListBase<TSelf, T, TList, TBuilder, TBuilder, TProvider>,
-    IDeserializeProvider<TList>
+        IDeserializeProvider<TList>
     where TSelf : IDeserialize<TList>, new()
     where TBuilder : class
     where TProvider : IDeserializeProvider<T>
 {
-    protected DeListBase()
-    { }
+    protected DeListBase() { }
 
     protected abstract TBuilder GetBuilder(int? sizeOpt);
+
     protected sealed override TBuilder GetFixBuilder(int size) => GetBuilder(size);
+
     protected sealed override TBuilder GetVarBuilder() => GetBuilder(null);
 
     protected abstract void Add(TBuilder builder, T item);
+
     protected sealed override void FixAdd(TBuilder builder, T item) => Add(builder, item);
+
     protected sealed override void VarAdd(TBuilder builder, T item) => Add(builder, item);
 
     protected abstract TList ToList(TBuilder builder);
+
     protected sealed override TList FromFix(TBuilder builder) => ToList(builder);
+
     protected sealed override TList FromVar(TBuilder builder) => ToList(builder);
 }
 
 public static class ArrayProxy
 {
-    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo)
-        => Serde.SerdeInfo.MakeEnumerable(typeof(T[]).ToString(), elementInfo);
+    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo) =>
+        Serde.SerdeInfo.MakeEnumerable(typeof(T[]).ToString(), elementInfo);
 
     public class Ser<T, TProvider>()
         : SerListBase<Ser<T, TProvider>, T, T[], TProvider>,
-          ISerializeProvider<T[]>
+            ISerializeProvider<T[]>
         where TProvider : ISerializeProvider<T>
     {
-        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(
+            TProvider.Instance.SerdeInfo
+        );
         public override ISerdeInfo SerdeInfo => s_serdeInfo;
+
         protected override ReadOnlySpan<T> GetSpan(T[] value) => value.AsSpan();
     }
 
     public sealed class De<T, TProvider>()
-        : DeListBase<
-            De<T, TProvider>,
-            T,
-            T[],
-            De<T, TProvider>.ArrayBuilder,
-            List<T>,
-            TProvider
-          >,
-          IDeserializeProvider<T[]>
+        : DeListBase<De<T, TProvider>, T, T[], De<T, TProvider>.ArrayBuilder, List<T>, TProvider>,
+            IDeserializeProvider<T[]>
         where TProvider : IDeserializeProvider<T>
     {
-        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(
+            TProvider.Instance.SerdeInfo
+        );
         public override ISerdeInfo SerdeInfo => s_serdeInfo;
+
         public sealed class ArrayBuilder(int size)
         {
             private int _index = 0;
             private readonly T[] _array = new T[size];
+
             public void Add(T item) => _array[_index++] = item;
+
             public T[] ToArray() => _array;
         }
+
         protected override ArrayBuilder GetFixBuilder(int size) => new(size);
+
         protected override void FixAdd(ArrayBuilder builder, T item) => builder.Add(item);
+
         protected override void VarAdd(List<T> builder, T item) => builder.Add(item);
+
         protected override List<T> GetVarBuilder() => [];
+
         protected override T[] FromFix(ArrayBuilder builder) => builder.ToArray();
+
         protected override T[] FromVar(List<T> builder) => builder.ToArray();
     }
 }
 
 public static class ListProxy
 {
-    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo)
-        => Serde.SerdeInfo.MakeEnumerable(typeof(List<T>).ToString(), elementInfo);
+    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo) =>
+        Serde.SerdeInfo.MakeEnumerable(typeof(List<T>).ToString(), elementInfo);
 
     public sealed class Ser<T, TProvider>()
         : SerListBase<Ser<T, TProvider>, T, List<T>, TProvider>,
-          ISerializeProvider<List<T>>
+            ISerializeProvider<List<T>>
         where TProvider : ISerializeProvider<T>
     {
-        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(
+            TProvider.Instance.SerdeInfo
+        );
         public override ISerdeInfo SerdeInfo => s_serdeInfo;
-        protected override ReadOnlySpan<T> GetSpan(List<T> value) => CollectionsMarshal.AsSpan(value);
+
+        protected override ReadOnlySpan<T> GetSpan(List<T> value) =>
+            CollectionsMarshal.AsSpan(value);
     }
 
     public sealed class De<T, TProvider>()
         : DeListBase<De<T, TProvider>, T, List<T>, List<T>, TProvider>,
-          IDeserialize<List<T>>, IDeserializeProvider<List<T>>
+            IDeserialize<List<T>>,
+            IDeserializeProvider<List<T>>
         where TProvider : IDeserializeProvider<T>
     {
-        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(TProvider.Instance.SerdeInfo);
+        private static readonly ISerdeInfo s_serdeInfo = GetSerdeInfo<T>(
+            TProvider.Instance.SerdeInfo
+        );
         public override ISerdeInfo SerdeInfo => s_serdeInfo;
+
         protected override List<T> GetBuilder(int? sizeOpt)
         {
             if (sizeOpt is int size)
@@ -217,8 +231,8 @@ public static class ListProxy
 
 public static class ImmutableArrayProxy
 {
-    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo)
-        => Serde.SerdeInfo.MakeEnumerable(typeof(ImmutableArray<T>).ToString(), elementInfo);
+    public static ISerdeInfo GetSerdeInfo<T>(ISerdeInfo elementInfo) =>
+        Serde.SerdeInfo.MakeEnumerable(typeof(ImmutableArray<T>).ToString(), elementInfo);
 
     private static class SerCache<T, TProvider>
         where TProvider : ISerializeProvider<T>
@@ -234,23 +248,29 @@ public static class ImmutableArrayProxy
 
     public sealed class Ser<T, TProvider>()
         : SerListBase<Ser<T, TProvider>, T, ImmutableArray<T>, TProvider>,
-          ISerializeProvider<ImmutableArray<T>>
+            ISerializeProvider<ImmutableArray<T>>
         where TProvider : ISerializeProvider<T>
     {
         public override ISerdeInfo SerdeInfo => SerCache<T, TProvider>.SerdeInfo;
+
         protected override ReadOnlySpan<T> GetSpan(ImmutableArray<T> value) => value.AsSpan();
     }
 
     public sealed class De<T, TProvider>()
         : DeListBase<De<T, TProvider>, T, ImmutableArray<T>, ImmutableArray<T>.Builder, TProvider>,
-          IDeserializeProvider<ImmutableArray<T>>
+            IDeserializeProvider<ImmutableArray<T>>
         where TProvider : IDeserializeProvider<T>
     {
         public override ISerdeInfo SerdeInfo => DeCache<T, TProvider>.SerdeInfo;
-        protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt) => sizeOpt is int size
-            ? ImmutableArray.CreateBuilder<T>(size)
-            : ImmutableArray.CreateBuilder<T>();
+
+        protected override ImmutableArray<T>.Builder GetBuilder(int? sizeOpt) =>
+            sizeOpt is int size
+                ? ImmutableArray.CreateBuilder<T>(size)
+                : ImmutableArray.CreateBuilder<T>();
+
         protected override void Add(ImmutableArray<T>.Builder builder, T item) => builder.Add(item);
-        protected override ImmutableArray<T> ToList(ImmutableArray<T>.Builder builder) => builder.ToImmutable();
+
+        protected override ImmutableArray<T> ToList(ImmutableArray<T>.Builder builder) =>
+            builder.ToImmutable();
     }
 }

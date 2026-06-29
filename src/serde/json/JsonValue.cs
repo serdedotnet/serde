@@ -14,10 +14,16 @@ namespace Serde.Json
     public abstract partial record JsonValue
     {
         public sealed partial record Number(double Value) : JsonValue;
+
         public sealed partial record Bool(bool Value) : JsonValue;
+
         public sealed partial record String(string Value) : JsonValue;
-        public sealed partial record Object(ImmutableDictionary<string, JsonValue> Members) : JsonValue;
+
+        public sealed partial record Object(ImmutableDictionary<string, JsonValue> Members)
+            : JsonValue;
+
         public sealed partial record Array(ImmutableArray<JsonValue> Elements) : JsonValue;
+
         public sealed partial record Null : JsonValue;
     }
 
@@ -46,11 +52,7 @@ namespace Serde.Json
                             StringProxy.SerdeInfo,
                             Instance
                         );
-                        Interlocked.CompareExchange(
-                            ref _objectInfo,
-                            objectInfo,
-                            null
-                        );
+                        Interlocked.CompareExchange(ref _objectInfo, objectInfo, null);
                     }
                     return _objectInfo;
                 }
@@ -63,21 +65,15 @@ namespace Serde.Json
                 {
                     if (_arrayInfo is null)
                     {
-                        var arrayInfo = SerdeInfo.MakeEnumerable(
-                            nameof(Array),
-                            Instance
-                        );
-                        Interlocked.CompareExchange(
-                            ref _arrayInfo,
-                            arrayInfo,
-                            null
-                        );
+                        var arrayInfo = SerdeInfo.MakeEnumerable(nameof(Array), Instance);
+                        Interlocked.CompareExchange(ref _arrayInfo, arrayInfo, null);
                     }
                     return _arrayInfo;
                 }
             }
 
-            public ImmutableArray<ISerdeInfo> CaseInfos { get; } = [
+            public ImmutableArray<ISerdeInfo> CaseInfos { get; } =
+            [
                 SerdeInfo.MakePrimitive(nameof(Number), PrimitiveKind.F64),
                 SerdeInfo.MakePrimitive(nameof(Bool), PrimitiveKind.Bool),
                 SerdeInfo.MakePrimitive(nameof(String), PrimitiveKind.String),
@@ -98,20 +94,29 @@ namespace Serde.Json
 
             private ArgumentOutOfRangeException GetOOR(int index)
             {
-                return new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
+                return new ArgumentOutOfRangeException(
+                    nameof(index),
+                    index,
+                    $"{Name} has no fields or properties."
+                );
             }
         }
 
         private JsonValue() { }
 
         public static implicit operator JsonValue(bool b) => new Bool(b);
+
         public static implicit operator JsonValue(int i) => new Number(i);
+
         public static implicit operator JsonValue(long l) => new Number(l);
+
         public static implicit operator JsonValue(double d) => new Number(d);
-        public static implicit operator JsonValue(string? s) => s is null
-            ? JsonValue.Null.Instance
-            : new String(s);
+
+        public static implicit operator JsonValue(string? s) =>
+            s is null ? JsonValue.Null.Instance : new String(s);
+
         public static implicit operator JsonValue(Dictionary<string, JsonValue> d) => new Object(d);
+
         public static implicit operator JsonValue(List<JsonValue> a) => new Array(a);
 
         partial record Number
@@ -123,6 +128,7 @@ namespace Serde.Json
         {
             public override string ToString() => Value.ToString();
         }
+
         partial record String
         {
             public override string ToString() => Value;
@@ -131,8 +137,7 @@ namespace Serde.Json
         partial record Array
         {
             public Array(IEnumerable<JsonValue> elements)
-                : this(elements.ToImmutableArray())
-            { }
+                : this(elements.ToImmutableArray()) { }
 
             public static readonly Array Empty = new Array(ImmutableArray<JsonValue>.Empty);
 
@@ -178,12 +183,10 @@ namespace Serde.Json
         partial record Object
         {
             public Object(IEnumerable<KeyValuePair<string, JsonValue>> members)
-                : this(members.ToImmutableDictionary())
-            { }
+                : this(members.ToImmutableDictionary()) { }
 
             public Object((string FieldName, JsonValue Value)[] members)
-                : this(members.ToImmutableDictionary(t => t.FieldName, t => t.Value))
-            { }
+                : this(members.ToImmutableDictionary(t => t.FieldName, t => t.Value)) { }
 
             public bool Equals(Object? other)
             {
@@ -234,6 +237,7 @@ namespace Serde.Json
         partial record Null
         {
             public static readonly Null Instance = new Null();
+
             private Null() { }
         }
     }

@@ -1,4 +1,3 @@
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -173,7 +172,8 @@ readonly partial record struct OPTSWrap {}
         [Fact]
         public Task StringWrap()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerde(ForType = typeof(string))]
 readonly partial struct StringWrap
@@ -184,29 +184,34 @@ readonly partial struct StringWrap
         _s = s;
     }
 }";
-            return VerifyDiagnostics(src,
-            // (3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
-            DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 29));
-
+            return VerifyDiagnostics(
+                src,
+                // (3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
+                DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 29)
+            );
         }
 
         [Fact]
         public Task RecordStringWrap()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateSerde(ForType = typeof(string))]
 partial record struct StringWrap(string Wrapped);
 ";
-            return VerifyDiagnostics(src,
-            // (3,2): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
-            DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 28));
+            return VerifyDiagnostics(
+                src,
+                // (3,2): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
+                DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 28)
+            );
         }
 
         [Fact]
         public Task PointWrap()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 
 class Point
@@ -229,7 +234,8 @@ partial struct PointWrap
         [Fact]
         public Task NestedDeserializeWrap()
         {
-            var src = @"
+            var src =
+                @"
 using System.Runtime.InteropServices.ComTypes;
 
 [Serde.GenerateSerde(ForType = typeof(BIND_OPTS))]
@@ -253,7 +259,10 @@ using Serde;
 [GenerateDeserialize]
 partial record R(int A, string B);
 """;
-            return VerifyGeneratedCode(src, "R.IDeserialize", """
+            return VerifyGeneratedCode(
+                src,
+                "R.IDeserialize",
+                """
 
 #nullable enable
 using Serde;
@@ -301,13 +310,15 @@ partial record R : Serde.IDeserialize<R>
         }
     }
 }
-""");
+"""
+            );
         }
 
         [Fact]
         public Task AttributeWrapperTest()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 using System;
 using System.Xml;
@@ -357,12 +368,14 @@ internal partial record struct ChannelList
         [Fact]
         public async Task RecursiveType()
         {
-            var comp = await CreateCompilation("""
+            var comp = await CreateCompilation(
+                """
 public partial record Recursive
 {
     public Recursive? Next { get; init; }
 }
-""");
+"""
+            );
             var src = """
 using Serde;
 namespace Test;

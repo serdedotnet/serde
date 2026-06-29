@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -8,11 +7,11 @@ namespace Serde.Json
 {
     partial record JsonValue : ISerializeProvider<JsonValue>, IDeserializeProvider<JsonValue>
     {
-        static IDeserialize<JsonValue> IDeserializeProvider<JsonValue>.Instance { get; }
-            = new JsonValueDeserialize();
+        static IDeserialize<JsonValue> IDeserializeProvider<JsonValue>.Instance { get; } =
+            new JsonValueDeserialize();
 
-        static ISerialize<JsonValue> ISerializeProvider<JsonValue>.Instance { get; }
-            = new JsonValueSerialize();
+        static ISerialize<JsonValue> ISerializeProvider<JsonValue>.Instance { get; } =
+            new JsonValueSerialize();
     }
 
     file sealed class JsonValueDeserialize : IDeserialize<JsonValue>
@@ -23,7 +22,10 @@ namespace Serde.Json
         {
             if (deserializer is not BaseJsonDeserializer jsonDeserializer)
             {
-                throw new ArgumentException("deserializer must be JsonDeserializer", nameof(deserializer));
+                throw new ArgumentException(
+                    "deserializer must be JsonDeserializer",
+                    nameof(deserializer)
+                );
             }
             return jsonDeserializer.ReadJsonValue();
         }
@@ -47,35 +49,37 @@ namespace Serde.Json
                     serializer.WriteString(v);
                     break;
                 case JsonValue.Object(ImmutableDictionary<string, JsonValue> members):
+                {
+                    var serdeInfo = JsonValue.UnionInfo.ObjectInfo;
+                    var dict = serializer.WriteCollection(serdeInfo, members.Count);
+                    int index = 0;
+                    foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
                     {
-                        var serdeInfo = JsonValue.UnionInfo.ObjectInfo;
-                        var dict = serializer.WriteCollection(serdeInfo, members.Count);
-                        int index = 0;
-                        foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
-                        {
-                            dict.WriteString(serdeInfo, index++, name);
-                            dict.WriteValue(serdeInfo, index++, node, this);
-                        }
-                        dict.End(serdeInfo);
-                        break;
+                        dict.WriteString(serdeInfo, index++, name);
+                        dict.WriteValue(serdeInfo, index++, node, this);
                     }
+                    dict.End(serdeInfo);
+                    break;
+                }
                 case JsonValue.Array(ImmutableArray<JsonValue> elements):
+                {
+                    var serdeInfo = JsonValue.UnionInfo.ArrayInfo;
+                    var enumerable = serializer.WriteCollection(serdeInfo, elements.Length);
+                    int index = 0;
+                    foreach (var element in elements)
                     {
-                        var serdeInfo = JsonValue.UnionInfo.ArrayInfo;
-                        var enumerable = serializer.WriteCollection(serdeInfo, elements.Length);
-                        int index = 0;
-                        foreach (var element in elements)
-                        {
-                            enumerable.WriteValue(serdeInfo, index++, element, this);
-                        }
-                        enumerable.End(serdeInfo);
-                        break;
+                        enumerable.WriteValue(serdeInfo, index++, element, this);
                     }
+                    enumerable.End(serdeInfo);
+                    break;
+                }
                 case JsonValue.Null n:
                     serializer.WriteNull();
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown JsonValue type: {value.GetType()}");
+                    throw new InvalidOperationException(
+                        $"Unknown JsonValue type: {value.GetType()}"
+                    );
             }
         }
     }

@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Serde.Json
@@ -13,7 +13,8 @@ namespace Serde.Json
     internal static partial class ThrowHelper
     {
         // If the exception source is this value, the serializer will re-throw as JsonException.
-        public const string ExceptionSourceValueToRethrowAsJsonException = "System.Text.Json.Rethrowable";
+        public const string ExceptionSourceValueToRethrowAsJsonException =
+            "System.Text.Json.Rethrowable";
 
         [DoesNotReturn]
         public static void ThrowArgumentNullException(string parameterName)
@@ -22,18 +23,25 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentOutOfRangeException_MaxDepthMustBePositive(string parameterName)
+        public static void ThrowArgumentOutOfRangeException_MaxDepthMustBePositive(
+            string parameterName
+        )
         {
             throw GetArgumentOutOfRangeException(parameterName, SR.MaxDepthMustBePositive);
         }
 
-        private static ArgumentOutOfRangeException GetArgumentOutOfRangeException(string parameterName, string message)
+        private static ArgumentOutOfRangeException GetArgumentOutOfRangeException(
+            string parameterName,
+            string message
+        )
         {
             return new ArgumentOutOfRangeException(parameterName, message);
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentOutOfRangeException_CommentEnumMustBeInRange(string parameterName)
+        public static void ThrowArgumentOutOfRangeException_CommentEnumMustBeInRange(
+            string parameterName
+        )
         {
             throw GetArgumentOutOfRangeException(parameterName, SR.CommentHandlingMustBeValid);
         }
@@ -61,9 +69,13 @@ namespace Serde.Json
             throw GetArgumentException(message);
         }
 
-        public static InvalidOperationException GetInvalidOperationException_CallFlushFirst(int _buffered)
+        public static InvalidOperationException GetInvalidOperationException_CallFlushFirst(
+            int _buffered
+        )
         {
-            return GetInvalidOperationException(string.Format(SR.CallFlushToAvoidDataLoss, _buffered));
+            return GetInvalidOperationException(
+                string.Format(SR.CallFlushToAvoidDataLoss, _buffered)
+            );
         }
 
         [DoesNotReturn]
@@ -97,7 +109,10 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentException(ReadOnlySpan<byte> propertyName, ReadOnlySpan<byte> value)
+        public static void ThrowArgumentException(
+            ReadOnlySpan<byte> propertyName,
+            ReadOnlySpan<byte> value
+        )
         {
             if (propertyName.Length > JsonConstants.MaxUnescapedTokenSize)
             {
@@ -111,7 +126,10 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentException(ReadOnlySpan<byte> propertyName, ReadOnlySpan<char> value)
+        public static void ThrowArgumentException(
+            ReadOnlySpan<byte> propertyName,
+            ReadOnlySpan<char> value
+        )
         {
             if (propertyName.Length > JsonConstants.MaxUnescapedTokenSize)
             {
@@ -125,7 +143,10 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentException(ReadOnlySpan<char> propertyName, ReadOnlySpan<byte> value)
+        public static void ThrowArgumentException(
+            ReadOnlySpan<char> propertyName,
+            ReadOnlySpan<byte> value
+        )
         {
             if (propertyName.Length > JsonConstants.MaxCharacterTokenSize)
             {
@@ -139,7 +160,10 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowArgumentException(ReadOnlySpan<char> propertyName, ReadOnlySpan<char> value)
+        public static void ThrowArgumentException(
+            ReadOnlySpan<char> propertyName,
+            ReadOnlySpan<char> value
+        )
         {
             if (propertyName.Length > JsonConstants.MaxCharacterTokenSize)
             {
@@ -153,12 +177,18 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowInvalidOperationOrArgumentException(ReadOnlySpan<byte> propertyName, int currentDepth, int maxDepth)
+        public static void ThrowInvalidOperationOrArgumentException(
+            ReadOnlySpan<byte> propertyName,
+            int currentDepth,
+            int maxDepth
+        )
         {
             currentDepth &= JsonConstants.RemoveFlagsBitMask;
             if (currentDepth >= maxDepth)
             {
-                ThrowInvalidOperationException(string.Format(SR.DepthTooLarge, currentDepth, maxDepth));
+                ThrowInvalidOperationException(
+                    string.Format(SR.DepthTooLarge, currentDepth, maxDepth)
+                );
             }
             else
             {
@@ -183,7 +213,10 @@ namespace Serde.Json
 
         private static InvalidOperationException GetInvalidOperationException(string message)
         {
-            return new InvalidOperationException(message) { Source = ExceptionSourceValueToRethrowAsJsonException };
+            return new InvalidOperationException(message)
+            {
+                Source = ExceptionSourceValueToRethrowAsJsonException,
+            };
         }
 
         [DoesNotReturn]
@@ -206,12 +239,18 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowInvalidOperationOrArgumentException(ReadOnlySpan<char> propertyName, int currentDepth, int maxDepth)
+        public static void ThrowInvalidOperationOrArgumentException(
+            ReadOnlySpan<char> propertyName,
+            int currentDepth,
+            int maxDepth
+        )
         {
             currentDepth &= JsonConstants.RemoveFlagsBitMask;
             if (currentDepth >= maxDepth)
             {
-                ThrowInvalidOperationException(string.Format(SR.DepthTooLarge, currentDepth, maxDepth));
+                ThrowInvalidOperationException(
+                    string.Format(SR.DepthTooLarge, currentDepth, maxDepth)
+                );
             }
             else
             {
@@ -220,12 +259,16 @@ namespace Serde.Json
             }
         }
 
-        public static InvalidOperationException GetInvalidOperationException_ExpectedArray(JsonTokenType tokenType)
+        public static InvalidOperationException GetInvalidOperationException_ExpectedArray(
+            JsonTokenType tokenType
+        )
         {
             return GetInvalidOperationException("array", tokenType);
         }
 
-        public static InvalidOperationException GetInvalidOperationException_ExpectedObject(JsonTokenType tokenType)
+        public static InvalidOperationException GetInvalidOperationException_ExpectedObject(
+            JsonTokenType tokenType
+        )
         {
             return GetInvalidOperationException("object", tokenType);
         }
@@ -249,7 +292,9 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowInvalidOperationException_ExpectedStringComparison(JsonTokenType tokenType)
+        public static void ThrowInvalidOperationException_ExpectedStringComparison(
+            JsonTokenType tokenType
+        )
         {
             throw GetInvalidOperationException(tokenType);
         }
@@ -266,12 +311,17 @@ namespace Serde.Json
             throw GetInvalidOperationException(SR.CannotSkip);
         }
 
-        private static InvalidOperationException GetInvalidOperationException(string message, JsonTokenType tokenType)
+        private static InvalidOperationException GetInvalidOperationException(
+            string message,
+            JsonTokenType tokenType
+        )
         {
             return GetInvalidOperationException(string.Format(SR.InvalidCast, tokenType, message));
         }
 
-        private static InvalidOperationException GetInvalidOperationException(JsonTokenType tokenType)
+        private static InvalidOperationException GetInvalidOperationException(
+            JsonTokenType tokenType
+        )
         {
             return GetInvalidOperationException(string.Format(SR.InvalidComparison, tokenType));
         }
@@ -279,37 +329,60 @@ namespace Serde.Json
         [DoesNotReturn]
         internal static void ThrowJsonElementWrongTypeException(
             JsonTokenType expectedType,
-            JsonTokenType actualType)
+            JsonTokenType actualType
+        )
         {
-            throw GetJsonElementWrongTypeException(expectedType.ToValueKind(), actualType.ToValueKind());
+            throw GetJsonElementWrongTypeException(
+                expectedType.ToValueKind(),
+                actualType.ToValueKind()
+            );
         }
 
         internal static InvalidOperationException GetJsonElementWrongTypeException(
             JsonValueKind expectedType,
-            JsonValueKind actualType)
+            JsonValueKind actualType
+        )
         {
             return GetInvalidOperationException(
-                string.Format(SR.JsonElementHasWrongType, expectedType, actualType));
+                string.Format(SR.JsonElementHasWrongType, expectedType, actualType)
+            );
         }
 
         internal static InvalidOperationException GetJsonElementWrongTypeException(
             string expectedTypeName,
-            JsonValueKind actualType)
+            JsonValueKind actualType
+        )
         {
             return GetInvalidOperationException(
-                string.Format(SR.JsonElementHasWrongType, expectedTypeName, actualType));
+                string.Format(SR.JsonElementHasWrongType, expectedTypeName, actualType)
+            );
         }
 
         [DoesNotReturn]
-        public static void ThrowJsonReaderException(ref Utf8JsonReader_Old json, ExceptionResource resource, byte nextByte = default, ReadOnlySpan<byte> bytes = default)
+        public static void ThrowJsonReaderException(
+            ref Utf8JsonReader_Old json,
+            ExceptionResource resource,
+            byte nextByte = default,
+            ReadOnlySpan<byte> bytes = default
+        )
         {
             throw GetJsonReaderException(ref json, resource, nextByte, bytes);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static JsonException_Old GetJsonReaderException(ref Utf8JsonReader_Old json, ExceptionResource resource, byte nextByte, ReadOnlySpan<byte> bytes)
+        public static JsonException_Old GetJsonReaderException(
+            ref Utf8JsonReader_Old json,
+            ExceptionResource resource,
+            byte nextByte,
+            ReadOnlySpan<byte> bytes
+        )
         {
-            string message = GetResourceString(ref json, resource, nextByte, JsonHelpers.Utf8GetString(bytes));
+            string message = GetResourceString(
+                ref json,
+                resource,
+                nextByte,
+                JsonHelpers.Utf8GetString(bytes)
+            );
 
             long lineNumber = json.CurrentState._lineNumber;
             long bytePositionInLine = json.CurrentState._bytePositionInLine;
@@ -328,7 +401,12 @@ namespace Serde.Json
 
         // This function will convert an ExceptionResource enum value to the resource string.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string GetResourceString(ref Utf8JsonReader_Old json, ExceptionResource resource, byte nextByte, string characters)
+        private static string GetResourceString(
+            ref Utf8JsonReader_Old json,
+            ExceptionResource resource,
+            byte nextByte,
+            string characters
+        )
         {
             string character = GetPrintableString(nextByte);
 
@@ -336,7 +414,10 @@ namespace Serde.Json
             switch (resource)
             {
                 case ExceptionResource.ArrayDepthTooLarge:
-                    message = string.Format(SR.ArrayDepthTooLarge, json.CurrentState.Options.MaxDepth);
+                    message = string.Format(
+                        SR.ArrayDepthTooLarge,
+                        json.CurrentState.Options.MaxDepth
+                    );
                     break;
                 case ExceptionResource.MismatchedObjectArray:
                     message = string.Format(SR.MismatchedObjectArray, character);
@@ -369,7 +450,10 @@ namespace Serde.Json
                     message = string.Format(SR.ExpectedNextDigitEValueNotFound, character);
                     break;
                 case ExceptionResource.ExpectedSeparatorAfterPropertyNameNotFound:
-                    message = string.Format(SR.ExpectedSeparatorAfterPropertyNameNotFound, character);
+                    message = string.Format(
+                        SR.ExpectedSeparatorAfterPropertyNameNotFound,
+                        character
+                    );
                     break;
                 case ExceptionResource.ExpectedStartOfPropertyNotFound:
                     message = string.Format(SR.ExpectedStartOfPropertyNotFound, character);
@@ -378,7 +462,10 @@ namespace Serde.Json
                     message = SR.ExpectedStartOfPropertyOrValueNotFound;
                     break;
                 case ExceptionResource.ExpectedStartOfPropertyOrValueAfterComment:
-                    message = string.Format(SR.ExpectedStartOfPropertyOrValueAfterComment, character);
+                    message = string.Format(
+                        SR.ExpectedStartOfPropertyOrValueAfterComment,
+                        character
+                    );
                     break;
                 case ExceptionResource.ExpectedStartOfValueNotFound:
                     message = string.Format(SR.ExpectedStartOfValueNotFound, character);
@@ -393,7 +480,10 @@ namespace Serde.Json
                     message = string.Format(SR.InvalidEndOfJsonNonPrimitive, json.TokenType);
                     break;
                 case ExceptionResource.ObjectDepthTooLarge:
-                    message = string.Format(SR.ObjectDepthTooLarge, json.CurrentState.Options.MaxDepth);
+                    message = string.Format(
+                        SR.ObjectDepthTooLarge,
+                        json.CurrentState.Options.MaxDepth
+                    );
                     break;
                 case ExceptionResource.ExpectedFalse:
                     message = string.Format(SR.ExpectedFalse, characters);
@@ -441,7 +531,9 @@ namespace Serde.Json
                     message = string.Format(SR.InvalidLeadingZeroInNumber, character);
                     break;
                 default:
-                    Debug.Fail($"The ExceptionResource enum value: {resource} is not part of the switch. Add the appropriate case and exception message.");
+                    Debug.Fail(
+                        $"The ExceptionResource enum value: {resource} is not part of the switch. Add the appropriate case and exception message."
+                    );
                     break;
             }
 
@@ -449,7 +541,13 @@ namespace Serde.Json
         }
 
         [DoesNotReturn]
-        public static void ThrowInvalidOperationException(ExceptionResource resource, int currentDepth, int maxDepth, byte token, JsonTokenType tokenType)
+        public static void ThrowInvalidOperationException(
+            ExceptionResource resource,
+            int currentDepth,
+            int maxDepth,
+            byte token,
+            JsonTokenType tokenType
+        )
         {
             throw GetInvalidOperationException(resource, currentDepth, maxDepth, token, tokenType);
         }
@@ -491,13 +589,17 @@ namespace Serde.Json
         [DoesNotReturn]
         public static void ThrowArgumentException_InvalidUTF16(int charAsInt)
         {
-            throw new ArgumentException(string.Format(SR.CannotEncodeInvalidUTF16, $"0x{charAsInt:X2}"));
+            throw new ArgumentException(
+                string.Format(SR.CannotEncodeInvalidUTF16, $"0x{charAsInt:X2}")
+            );
         }
 
         [DoesNotReturn]
         public static void ThrowInvalidOperationException_ReadInvalidUTF16(int charAsInt)
         {
-            throw GetInvalidOperationException(string.Format(SR.CannotReadInvalidUTF16, $"0x{charAsInt:X2}"));
+            throw GetInvalidOperationException(
+                string.Format(SR.CannotReadInvalidUTF16, $"0x{charAsInt:X2}")
+            );
         }
 
         [DoesNotReturn]
@@ -506,17 +608,24 @@ namespace Serde.Json
             throw GetInvalidOperationException(SR.CannotReadIncompleteUTF16);
         }
 
-        public static InvalidOperationException GetInvalidOperationException_ReadInvalidUTF8(DecoderFallbackException innerException)
+        public static InvalidOperationException GetInvalidOperationException_ReadInvalidUTF8(
+            DecoderFallbackException innerException
+        )
         {
             return GetInvalidOperationException(SR.CannotTranscodeInvalidUtf8, innerException);
         }
 
-        public static ArgumentException GetArgumentException_ReadInvalidUTF16(EncoderFallbackException innerException)
+        public static ArgumentException GetArgumentException_ReadInvalidUTF16(
+            EncoderFallbackException innerException
+        )
         {
             return new ArgumentException(SR.CannotTranscodeInvalidUtf16, innerException);
         }
 
-        public static InvalidOperationException GetInvalidOperationException(string message, Exception innerException)
+        public static InvalidOperationException GetInvalidOperationException(
+            string message,
+            Exception innerException
+        )
         {
             InvalidOperationException ex = new InvalidOperationException(message, innerException);
             ex.Source = ExceptionSourceValueToRethrowAsJsonException;
@@ -524,7 +633,13 @@ namespace Serde.Json
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static InvalidOperationException GetInvalidOperationException(ExceptionResource resource, int currentDepth, int maxDepth, byte token, JsonTokenType tokenType)
+        public static InvalidOperationException GetInvalidOperationException(
+            ExceptionResource resource,
+            int currentDepth,
+            int maxDepth,
+            byte token,
+            JsonTokenType tokenType
+        )
         {
             string message = GetResourceString(resource, currentDepth, maxDepth, token, tokenType);
             InvalidOperationException ex = GetInvalidOperationException(message);
@@ -540,39 +655,58 @@ namespace Serde.Json
 
         // This function will convert an ExceptionResource enum value to the resource string.
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static string GetResourceString(ExceptionResource resource, int currentDepth, int maxDepth, byte token, JsonTokenType tokenType)
+        private static string GetResourceString(
+            ExceptionResource resource,
+            int currentDepth,
+            int maxDepth,
+            byte token,
+            JsonTokenType tokenType
+        )
         {
             string message = "";
             switch (resource)
             {
                 case ExceptionResource.MismatchedObjectArray:
-                    Debug.Assert(token == JsonConstants.CloseBracket || token == JsonConstants.CloseBrace);
-                    message = (tokenType == JsonTokenType.PropertyName) ?
-                        string.Format(SR.CannotWriteEndAfterProperty, (char)token) :
-                        string.Format(SR.MismatchedObjectArray, (char)token);
+                    Debug.Assert(
+                        token == JsonConstants.CloseBracket || token == JsonConstants.CloseBrace
+                    );
+                    message =
+                        (tokenType == JsonTokenType.PropertyName)
+                            ? string.Format(SR.CannotWriteEndAfterProperty, (char)token)
+                            : string.Format(SR.MismatchedObjectArray, (char)token);
                     break;
                 case ExceptionResource.DepthTooLarge:
-                    message = string.Format(SR.DepthTooLarge, currentDepth & JsonConstants.RemoveFlagsBitMask, maxDepth);
+                    message = string.Format(
+                        SR.DepthTooLarge,
+                        currentDepth & JsonConstants.RemoveFlagsBitMask,
+                        maxDepth
+                    );
                     break;
                 case ExceptionResource.CannotStartObjectArrayWithoutProperty:
                     message = string.Format(SR.CannotStartObjectArrayWithoutProperty, tokenType);
                     break;
                 case ExceptionResource.CannotStartObjectArrayAfterPrimitiveOrClose:
-                    message = string.Format(SR.CannotStartObjectArrayAfterPrimitiveOrClose, tokenType);
+                    message = string.Format(
+                        SR.CannotStartObjectArrayAfterPrimitiveOrClose,
+                        tokenType
+                    );
                     break;
                 case ExceptionResource.CannotWriteValueWithinObject:
                     message = string.Format(SR.CannotWriteValueWithinObject, tokenType);
                     break;
                 case ExceptionResource.CannotWritePropertyWithinArray:
-                    message = (tokenType == JsonTokenType.PropertyName) ?
-                        string.Format(SR.CannotWritePropertyAfterProperty) :
-                        string.Format(SR.CannotWritePropertyWithinArray, tokenType);
+                    message =
+                        (tokenType == JsonTokenType.PropertyName)
+                            ? string.Format(SR.CannotWritePropertyAfterProperty)
+                            : string.Format(SR.CannotWritePropertyWithinArray, tokenType);
                     break;
                 case ExceptionResource.CannotWriteValueAfterPrimitiveOrClose:
                     message = string.Format(SR.CannotWriteValueAfterPrimitiveOrClose, tokenType);
                     break;
                 default:
-                    Debug.Fail($"The ExceptionResource enum value: {resource} is not part of the switch. Add the appropriate case and exception message.");
+                    Debug.Fail(
+                        $"The ExceptionResource enum value: {resource} is not part of the switch. Add the appropriate case and exception message."
+                    );
                     break;
             }
 
@@ -625,11 +759,16 @@ namespace Serde.Json
                     message = SR.FormatDecimal;
                     break;
                 default:
-                    Debug.Fail($"The NumericType enum value: {numericType} is not part of the switch. Add the appropriate case and exception message.");
+                    Debug.Fail(
+                        $"The NumericType enum value: {numericType} is not part of the switch. Add the appropriate case and exception message."
+                    );
                     break;
             }
 
-            throw new FormatException(message) { Source = ExceptionSourceValueToRethrowAsJsonException };
+            throw new FormatException(message)
+            {
+                Source = ExceptionSourceValueToRethrowAsJsonException,
+            };
         }
 
         [DoesNotReturn]
@@ -653,11 +792,16 @@ namespace Serde.Json
                     message = SR.CannotDecodeInvalidBase64;
                     break;
                 default:
-                    Debug.Fail($"The DataType enum value: {dataType} is not part of the switch. Add the appropriate case and exception message.");
+                    Debug.Fail(
+                        $"The DataType enum value: {dataType} is not part of the switch. Add the appropriate case and exception message."
+                    );
                     break;
             }
 
-            throw new FormatException(message) { Source = ExceptionSourceValueToRethrowAsJsonException };
+            throw new FormatException(message)
+            {
+                Source = ExceptionSourceValueToRethrowAsJsonException,
+            };
         }
 
         [DoesNotReturn]
@@ -724,7 +868,7 @@ namespace Serde.Json
         UInt64,
         Single,
         Double,
-        Decimal
+        Decimal,
     }
 
     internal enum DataType

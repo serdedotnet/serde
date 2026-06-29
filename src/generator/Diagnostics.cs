@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
@@ -36,35 +35,42 @@ namespace Serde
 
     internal static class Diagnostics
     {
-        public static string GetName(this DiagId id) => id switch
-        {
-            ERR_DoesntImplementInterface => nameof(ERR_DoesntImplementInterface),
-            ERR_TypeNotPartial => nameof(ERR_TypeNotPartial),
-            ERR_CantWrapSpecialType => nameof(ERR_CantWrapSpecialType),
-            ERR_MissingPrimaryCtor => nameof(ERR_MissingPrimaryCtor),
-            ERR_CantFindNestedWrapper => nameof(ERR_CantFindNestedWrapper),
-            ERR_WrapperDoesntImplementInterface => nameof(ERR_WrapperDoesntImplementInterface),
-            ERR_CantImplementAbstract => nameof(ERR_CantImplementAbstract),
-            ERR_CantFindTypeParameter => nameof(ERR_CantFindTypeParameter),
-            ERR_CtorParamMismatch => nameof(ERR_CtorParamMismatch),
-            ERR_MissingExplicitConversion => nameof(ERR_MissingExplicitConversion),
-            ERR_MissingReverseConversion => nameof(ERR_MissingReverseConversion),
-            ERR_AsTypeNoConversion => nameof(ERR_AsTypeNoConversion),
-            ERR_AsTypeNotNamed => nameof(ERR_AsTypeNotNamed),
-            ERR_AsTypeOnEnum => nameof(ERR_AsTypeOnEnum),
-            ERR_AsTypeWithOption => nameof(ERR_AsTypeWithOption),
-            ERR_ForTypeUnsupported => nameof(ERR_ForTypeUnsupported),
-            ERR_WithTypeUnsupported => nameof(ERR_WithTypeUnsupported),
-            ERR_DuplicateOrdinal => nameof(ERR_DuplicateOrdinal),
-            ERR_PartialMemberOrdinal => nameof(ERR_PartialMemberOrdinal),
-            ERR_OrdinalOnSkippedMember => nameof(ERR_OrdinalOnSkippedMember),
-            ERR_OrdinalOnEnumMember => nameof(ERR_OrdinalOnEnumMember),
-        };
+        public static string GetName(this DiagId id) =>
+            id switch
+            {
+                ERR_DoesntImplementInterface => nameof(ERR_DoesntImplementInterface),
+                ERR_TypeNotPartial => nameof(ERR_TypeNotPartial),
+                ERR_CantWrapSpecialType => nameof(ERR_CantWrapSpecialType),
+                ERR_MissingPrimaryCtor => nameof(ERR_MissingPrimaryCtor),
+                ERR_CantFindNestedWrapper => nameof(ERR_CantFindNestedWrapper),
+                ERR_WrapperDoesntImplementInterface => nameof(ERR_WrapperDoesntImplementInterface),
+                ERR_CantImplementAbstract => nameof(ERR_CantImplementAbstract),
+                ERR_CantFindTypeParameter => nameof(ERR_CantFindTypeParameter),
+                ERR_CtorParamMismatch => nameof(ERR_CtorParamMismatch),
+                ERR_MissingExplicitConversion => nameof(ERR_MissingExplicitConversion),
+                ERR_MissingReverseConversion => nameof(ERR_MissingReverseConversion),
+                ERR_AsTypeNoConversion => nameof(ERR_AsTypeNoConversion),
+                ERR_AsTypeNotNamed => nameof(ERR_AsTypeNotNamed),
+                ERR_AsTypeOnEnum => nameof(ERR_AsTypeOnEnum),
+                ERR_AsTypeWithOption => nameof(ERR_AsTypeWithOption),
+                ERR_ForTypeUnsupported => nameof(ERR_ForTypeUnsupported),
+                ERR_WithTypeUnsupported => nameof(ERR_WithTypeUnsupported),
+                ERR_DuplicateOrdinal => nameof(ERR_DuplicateOrdinal),
+                ERR_PartialMemberOrdinal => nameof(ERR_PartialMemberOrdinal),
+                ERR_OrdinalOnSkippedMember => nameof(ERR_OrdinalOnSkippedMember),
+                ERR_OrdinalOnEnumMember => nameof(ERR_OrdinalOnEnumMember),
+            };
 
-        public static Diagnostic CreateDiagnostic(DiagId id, Location location, params object[] args)
+        public static Diagnostic CreateDiagnostic(
+            DiagId id,
+            Location location,
+            params object[] args
+        )
         {
             var name = id.GetName();
-            var severity = name.StartsWith("ERR") ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning;
+            var severity = name.StartsWith("ERR")
+                ? DiagnosticSeverity.Error
+                : DiagnosticSeverity.Warning;
             return Diagnostic.Create(
                 name,
                 category: "Serde",
@@ -73,7 +79,8 @@ namespace Serde
                 defaultSeverity: severity,
                 isEnabledByDefault: true,
                 warningLevel: 0,
-                location: location);
+                location: location
+            );
         }
     }
 }

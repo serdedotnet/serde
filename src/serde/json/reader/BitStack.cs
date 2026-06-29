@@ -65,10 +65,16 @@ namespace Serde.Json
 
             int index = _currentDepth - AllocationFreeMaxDepth;
 
-            Debug.Assert(index >= 0, $"Set - Negative - index: {index}, arrayLength: {_array.Length}");
+            Debug.Assert(
+                index >= 0,
+                $"Set - Negative - index: {index}, arrayLength: {_array.Length}"
+            );
 
             // Maximum possible array length if bitLength was int.MaxValue (i.e. 67_108_864)
-            Debug.Assert(_array.Length <= int.MaxValue / 32 + 1, $"index: {index}, arrayLength: {_array.Length}");
+            Debug.Assert(
+                _array.Length <= int.MaxValue / 32 + 1,
+                $"index: {index}, arrayLength: {_array.Length}"
+            );
 
             int elementIndex = Div32Rem(index, out int extraBits);
 
@@ -77,11 +83,17 @@ namespace Serde.Json
             if (elementIndex >= _array.Length)
             {
                 // This multiplication can overflow, so cast to uint first.
-                Debug.Assert(index >= 0 && index > (int)((uint)_array.Length * 32 - 1), $"Only grow when necessary - index: {index}, arrayLength: {_array.Length}");
+                Debug.Assert(
+                    index >= 0 && index > (int)((uint)_array.Length * 32 - 1),
+                    $"Only grow when necessary - index: {index}, arrayLength: {_array.Length}"
+                );
                 DoubleArray(elementIndex);
             }
 
-            Debug.Assert(elementIndex < _array.Length, $"Set - index: {index}, elementIndex: {elementIndex}, arrayLength: {_array.Length}, extraBits: {extraBits}");
+            Debug.Assert(
+                elementIndex < _array.Length,
+                $"Set - index: {index}, elementIndex: {elementIndex}, arrayLength: {_array.Length}, extraBits: {extraBits}"
+            );
 
             int newValue = _array[elementIndex];
             if (value)
@@ -121,11 +133,17 @@ namespace Serde.Json
         {
             int index = _currentDepth - AllocationFreeMaxDepth - 1;
             Debug.Assert(_array != null);
-            Debug.Assert(index >= 0, $"Get - Negative - index: {index}, arrayLength: {_array.Length}");
+            Debug.Assert(
+                index >= 0,
+                $"Get - Negative - index: {index}, arrayLength: {_array.Length}"
+            );
 
             int elementIndex = Div32Rem(index, out int extraBits);
 
-            Debug.Assert(elementIndex < _array.Length, $"Get - index: {index}, elementIndex: {elementIndex}, arrayLength: {_array.Length}, extraBits: {extraBits}");
+            Debug.Assert(
+                elementIndex < _array.Length,
+                $"Get - index: {index}, elementIndex: {elementIndex}, arrayLength: {_array.Length}, extraBits: {extraBits}"
+            );
 
             return (_array[elementIndex] & (1 << extraBits)) != 0;
         }
@@ -133,7 +151,10 @@ namespace Serde.Json
         private void DoubleArray(int minSize)
         {
             Debug.Assert(_array != null);
-            Debug.Assert(_array.Length < int.MaxValue / 2, $"Array too large - arrayLength: {_array.Length}");
+            Debug.Assert(
+                _array.Length < int.MaxValue / 2,
+                $"Array too large - arrayLength: {_array.Length}"
+            );
             Debug.Assert(minSize >= 0 && minSize >= _array.Length);
 
             int nextDouble = Math.Max(minSize + 1, _array.Length * 2);
@@ -160,7 +181,7 @@ namespace Serde.Json
         private static int Div32Rem(int number, out int remainder)
         {
             uint quotient = (uint)number / 32;
-            remainder = number & (32 - 1);   // equivalent to number % 32, since 32 is a power of 2
+            remainder = number & (32 - 1); // equivalent to number % 32, since 32 is a power of 2
             return (int)quotient;
         }
     }

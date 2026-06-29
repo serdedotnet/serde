@@ -86,7 +86,9 @@ public interface ISerdeInfo
     /// </summary>
     bool HasExplicitFieldOrdinals => false;
 
-    internal static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    internal static readonly UTF8Encoding UTF8Encoding = new UTF8Encoding(
+        encoderShouldEmitUTF8Identifier: false
+    );
 }
 
 public enum InfoKind
@@ -97,11 +99,13 @@ public enum InfoKind
     List,
     Dictionary,
     Enum,
+
     /// <summary>
     /// Represents a closed union of types. Any type that returns this value from <see
     /// cref="ISerdeInfo.Kind"/> must also implement <see cref="IUnionSerdeInfo"/>.
     /// </summary>
     Union,
+
     /// <summary>
     /// Represents a fixed-length, heterogeneous sequence of values, e.g. a
     /// <see cref="System.ValueTuple"/>. Unlike <see cref="List"/>, each element may have a

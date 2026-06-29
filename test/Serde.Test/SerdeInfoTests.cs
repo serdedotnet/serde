@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,7 +26,9 @@ public sealed partial class SerdeInfoTests
 
     public partial record Rgb
     {
-        public byte R, G, B;
+        public byte R,
+            G,
+            B;
     }
 
     [GenerateDeserialize(ForType = typeof(Rgb))]
@@ -49,6 +50,7 @@ public sealed partial class SerdeInfoTests
 
         [DefaultValue("A")]
         public record A : UnionBase;
+
         [DefaultValue("B")]
         public record B : UnionBase;
     }
@@ -65,25 +67,37 @@ public sealed partial class SerdeInfoTests
         var aInfo = info.GetFieldInfo(0);
         Assert.Equal(nameof(UnionBase.A), aInfo.Name);
         Assert.Equal(aInfo.Attributes, info.GetFieldAttributes(0));
-        var attr = Assert.Single(aInfo.Attributes, a => a.AttributeType == typeof(DefaultValueAttribute));
+        var attr = Assert.Single(
+            aInfo.Attributes,
+            a => a.AttributeType == typeof(DefaultValueAttribute)
+        );
         Assert.Equal("A", attr.ConstructorArguments[0].Value);
 
         var bInfo = info.GetFieldInfo(1);
         Assert.Equal(nameof(UnionBase.B), bInfo.Name);
         Assert.Equal(bInfo.Attributes, info.GetFieldAttributes(1));
-        attr = Assert.Single(bInfo.Attributes, a => a.AttributeType == typeof(DefaultValueAttribute));
+        attr = Assert.Single(
+            bInfo.Attributes,
+            a => a.AttributeType == typeof(DefaultValueAttribute)
+        );
         Assert.Equal("B", attr.ConstructorArguments[0].Value);
     }
 
     [Fact]
     public void NullableInfo()
     {
-        var info = SerdeInfoProvider.GetSerializeInfo<string?, NullableRefProxy.Ser<string, StringProxy>>();
+        var info = SerdeInfoProvider.GetSerializeInfo<
+            string?,
+            NullableRefProxy.Ser<string, StringProxy>
+        >();
         Assert.Equal(InfoKind.Nullable, info.Kind);
         Assert.Equal("string?", info.Name);
         Assert.Equal(1, info.FieldCount);
         Assert.Equal(0, info.TryGetIndex("Value"u8));
-        Assert.Equal(SerdeInfoProvider.GetDeserializeInfo<string, StringProxy>(), info.GetFieldInfo(0));
+        Assert.Equal(
+            SerdeInfoProvider.GetDeserializeInfo<string, StringProxy>(),
+            info.GetFieldInfo(0)
+        );
     }
 
     [Theory]
@@ -119,7 +133,7 @@ public sealed partial class SerdeInfoTests
             PrimitiveKind.F64 => F64Proxy.SerdeInfo,
             PrimitiveKind.Decimal => DecimalProxy.SerdeInfo,
             PrimitiveKind.String => StringProxy.SerdeInfo,
-            _ => throw new System.ArgumentException($"Unknown kind: {expectedKind}")
+            _ => throw new System.ArgumentException($"Unknown kind: {expectedKind}"),
         };
 
         Assert.Equal(InfoKind.Primitive, info.Kind);
@@ -135,7 +149,10 @@ public sealed partial class SerdeInfoTests
         Assert.Null(customInfo.PrimitiveKind);
 
         // Nullable types should have null PrimitiveKind
-        var nullableInfo = SerdeInfoProvider.GetSerializeInfo<string?, NullableRefProxy.Ser<string, StringProxy>>();
+        var nullableInfo = SerdeInfoProvider.GetSerializeInfo<
+            string?,
+            NullableRefProxy.Ser<string, StringProxy>
+        >();
         Assert.Equal(InfoKind.Nullable, nullableInfo.Kind);
         Assert.Null(nullableInfo.PrimitiveKind);
 
@@ -214,10 +231,8 @@ public sealed partial class SerdeInfoTests
         var info = SerdeInfo.MakeCustom(
             "SimpleType",
             System.Array.Empty<System.Reflection.CustomAttributeData>(),
-            new (string, ISerdeInfo)[] {
-                ("x", I32Proxy.SerdeInfo),
-                ("y", StringProxy.SerdeInfo)
-            });
+            new (string, ISerdeInfo)[] { ("x", I32Proxy.SerdeInfo), ("y", StringProxy.SerdeInfo) }
+        );
 #pragma warning restore CS0618
 
         Assert.Equal("SimpleType", info.Name);
@@ -239,10 +254,20 @@ public sealed partial class SerdeInfoTests
         var info = SerdeInfo.MakeCustom(
             "AttrType",
             System.Array.Empty<System.Reflection.CustomAttributeData>(),
-            new (string, ISerdeInfo, IList<System.Reflection.CustomAttributeData>)[] {
-                ("a", I32Proxy.SerdeInfo, System.Array.Empty<System.Reflection.CustomAttributeData>()),
-                ("b", StringProxy.SerdeInfo, System.Array.Empty<System.Reflection.CustomAttributeData>())
-            });
+            new (string, ISerdeInfo, IList<System.Reflection.CustomAttributeData>)[]
+            {
+                (
+                    "a",
+                    I32Proxy.SerdeInfo,
+                    System.Array.Empty<System.Reflection.CustomAttributeData>()
+                ),
+                (
+                    "b",
+                    StringProxy.SerdeInfo,
+                    System.Array.Empty<System.Reflection.CustomAttributeData>()
+                ),
+            }
+        );
 
         Assert.Equal("AttrType", info.Name);
         Assert.Equal(InfoKind.CustomType, info.Kind);
@@ -263,15 +288,18 @@ public sealed partial class SerdeInfoTests
         var syntheticAttr = new SyntheticCustomAttributeData(
             typeof(DefaultValueAttribute),
             [new CustomAttributeTypedArgument(typeof(string), "synthetic")],
-            []);
+            []
+        );
 
         var info = SerdeInfo.MakeCustom(
             "SyntheticType",
             new CustomAttributeData[] { syntheticAttr },
-            new (string, ISerdeInfo, IList<CustomAttributeData>)[] {
+            new (string, ISerdeInfo, IList<CustomAttributeData>)[]
+            {
                 ("field1", I32Proxy.SerdeInfo, new CustomAttributeData[] { syntheticAttr }),
-                ("field2", StringProxy.SerdeInfo, System.Array.Empty<CustomAttributeData>())
-            });
+                ("field2", StringProxy.SerdeInfo, System.Array.Empty<CustomAttributeData>()),
+            }
+        );
 
         Assert.Equal("SyntheticType", info.Name);
         Assert.Equal(InfoKind.CustomType, info.Kind);
@@ -303,7 +331,8 @@ public sealed partial class SerdeInfoTests
         public SyntheticCustomAttributeData(
             Type attributeType,
             IList<CustomAttributeTypedArgument> constructorArguments,
-            IList<CustomAttributeNamedArgument> namedArguments)
+            IList<CustomAttributeNamedArgument> namedArguments
+        )
         {
             _attributeType = attributeType;
             _constructorArguments = constructorArguments;
@@ -311,7 +340,8 @@ public sealed partial class SerdeInfoTests
         }
 
         public override Type AttributeType => _attributeType;
-        public override IList<CustomAttributeTypedArgument> ConstructorArguments => _constructorArguments;
+        public override IList<CustomAttributeTypedArgument> ConstructorArguments =>
+            _constructorArguments;
         public override IList<CustomAttributeNamedArgument> NamedArguments => _namedArguments;
     }
 

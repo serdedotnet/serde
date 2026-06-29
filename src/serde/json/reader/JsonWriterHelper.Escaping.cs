@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics;
 using System.Text.Encodings.Web;
-
 #if !NETCOREAPP
 using System.Runtime.CompilerServices;
 #endif
@@ -22,27 +21,267 @@ namespace Serde.Json
         //
         // non-zero = allowed, 0 = disallowed
         public const int LastAsciiCharacter = 0x7F;
-        private static ReadOnlySpan<byte> AllowList => new byte[byte.MaxValue + 1]
-        {
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // U+0000..U+000F
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // U+0010..U+001F
-            1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, // U+0020..U+002F
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, // U+0030..U+003F
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // U+0040..U+004F
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, // U+0050..U+005F
-            0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // U+0060..U+006F
-            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, // U+0070..U+007F
-
-            // Also include the ranges from U+0080 to U+00FF for performance to avoid UTF8 code from checking boundary.
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // U+00F0..U+00FF
-        };
+        private static ReadOnlySpan<byte> AllowList =>
+            new byte[byte.MaxValue + 1]
+            {
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0, // U+0000..U+000F
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0, // U+0010..U+001F
+                1,
+                1,
+                0,
+                1,
+                1,
+                1,
+                0,
+                0,
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1,
+                1, // U+0020..U+002F
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                1,
+                0,
+                1, // U+0030..U+003F
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1, // U+0040..U+004F
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                1,
+                1,
+                1, // U+0050..U+005F
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1, // U+0060..U+006F
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0, // U+0070..U+007F
+                // Also include the ranges from U+0080 to U+00FF for performance to avoid UTF8 code from checking boundary.
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0, // U+00F0..U+00FF
+            };
 
 #if NETCOREAPP
         private const string HexFormatString = "X4";
@@ -70,7 +309,10 @@ namespace Serde.Json
 
             fixed (char* ptr = value)
             {
-                return (encoder ?? JavaScriptEncoder.Default).FindFirstCharacterToEncode(ptr, value.Length);
+                return (encoder ?? JavaScriptEncoder.Default).FindFirstCharacterToEncode(
+                    ptr,
+                    value.Length
+                );
             }
         }
 
@@ -78,14 +320,25 @@ namespace Serde.Json
         {
             Debug.Assert(textLength > 0);
             Debug.Assert(firstIndexToEscape >= 0 && firstIndexToEscape < textLength);
-            return firstIndexToEscape + JsonConstants.MaxExpansionFactorWhileEscaping * (textLength - firstIndexToEscape);
+            return firstIndexToEscape
+                + JsonConstants.MaxExpansionFactorWhileEscaping * (textLength - firstIndexToEscape);
         }
 
-        private static void EscapeString(ReadOnlySpan<byte> value, Span<byte> destination, JavaScriptEncoder encoder, ref int written)
+        private static void EscapeString(
+            ReadOnlySpan<byte> value,
+            Span<byte> destination,
+            JavaScriptEncoder encoder,
+            ref int written
+        )
         {
             Debug.Assert(encoder != null);
 
-            OperationStatus result = encoder.EncodeUtf8(value, destination, out int encoderBytesConsumed, out int encoderBytesWritten);
+            OperationStatus result = encoder.EncodeUtf8(
+                value,
+                destination,
+                out int encoderBytesConsumed,
+                out int encoderBytesWritten
+            );
 
             Debug.Assert(result != OperationStatus.DestinationTooSmall);
             Debug.Assert(result != OperationStatus.NeedMoreData);
@@ -100,7 +353,13 @@ namespace Serde.Json
             written += encoderBytesWritten;
         }
 
-        public static void EscapeString(ReadOnlySpan<byte> value, Span<byte> destination, int indexOfFirstByteToEscape, JavaScriptEncoder? encoder, out int written)
+        public static void EscapeString(
+            ReadOnlySpan<byte> value,
+            Span<byte> destination,
+            int indexOfFirstByteToEscape,
+            JavaScriptEncoder? encoder,
+            out int written
+        )
         {
             Debug.Assert(indexOfFirstByteToEscape >= 0 && indexOfFirstByteToEscape < value.Length);
 
@@ -180,7 +439,12 @@ namespace Serde.Json
                 default:
                     destination[written++] = (byte)'u';
 
-                    bool result = Utf8Formatter.TryFormat(value, destination.Slice(written), out int bytesWritten, format: s_hexStandardFormat);
+                    bool result = Utf8Formatter.TryFormat(
+                        value,
+                        destination.Slice(written),
+                        out int bytesWritten,
+                        format: s_hexStandardFormat
+                    );
                     Debug.Assert(result);
                     Debug.Assert(bytesWritten == 4);
                     written += bytesWritten;
@@ -192,11 +456,21 @@ namespace Serde.Json
 
         private static bool IsAsciiValue(char value) => value <= LastAsciiCharacter;
 
-        private static void EscapeString(ReadOnlySpan<char> value, Span<char> destination, JavaScriptEncoder encoder, ref int written)
+        private static void EscapeString(
+            ReadOnlySpan<char> value,
+            Span<char> destination,
+            JavaScriptEncoder encoder,
+            ref int written
+        )
         {
             Debug.Assert(encoder != null);
 
-            OperationStatus result = encoder.Encode(value, destination, out int encoderBytesConsumed, out int encoderCharsWritten);
+            OperationStatus result = encoder.Encode(
+                value,
+                destination,
+                out int encoderBytesConsumed,
+                out int encoderCharsWritten
+            );
 
             Debug.Assert(result != OperationStatus.DestinationTooSmall);
             Debug.Assert(result != OperationStatus.NeedMoreData);
@@ -211,7 +485,13 @@ namespace Serde.Json
             written += encoderCharsWritten;
         }
 
-        public static void EscapeString(ReadOnlySpan<char> value, Span<char> destination, int indexOfFirstByteToEscape, JavaScriptEncoder? encoder, out int written)
+        public static void EscapeString(
+            ReadOnlySpan<char> value,
+            Span<char> destination,
+            int indexOfFirstByteToEscape,
+            JavaScriptEncoder? encoder,
+            out int written
+        )
         {
             Debug.Assert(indexOfFirstByteToEscape >= 0 && indexOfFirstByteToEscape < value.Length);
 
@@ -294,7 +574,11 @@ namespace Serde.Json
                     destination[written++] = 'u';
 #if NETCOREAPP
                     int intChar = value;
-                    intChar.TryFormat(destination.Slice(written), out int charsWritten, HexFormatString);
+                    intChar.TryFormat(
+                        destination.Slice(written),
+                        out int charsWritten,
+                        HexFormatString
+                    );
                     Debug.Assert(charsWritten == 4);
                     written += charsWritten;
 #else

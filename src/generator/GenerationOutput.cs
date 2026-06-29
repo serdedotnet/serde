@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,12 +13,13 @@ namespace Serde;
 /// </summary>
 public readonly record struct GenerationOutput
 {
-    public ImmutableArray<Diagnostic> Diagnostics { get;}
+    public ImmutableArray<Diagnostic> Diagnostics { get; }
     public ImmutableSortedSet<(string FileName, SourceBuilder Content)> Sources { get; }
 
     public GenerationOutput(
         IEnumerable<Diagnostic> diagnostics,
-        IEnumerable<(string fileName, SourceBuilder content)> sources)
+        IEnumerable<(string fileName, SourceBuilder content)> sources
+    )
     {
         var diagSet = new HashSet<Diagnostic>();
         var diagBuilder = ImmutableArray.CreateBuilder<Diagnostic>();
@@ -30,7 +30,9 @@ public readonly record struct GenerationOutput
                 diagBuilder.Add(diag);
             }
         }
-        var outputBuilder = ImmutableSortedSet.CreateBuilder<(string, SourceBuilder)>(SerdeInfoImplComparer.Instance);
+        var outputBuilder = ImmutableSortedSet.CreateBuilder<(string, SourceBuilder)>(
+            SerdeInfoImplComparer.Instance
+        );
         foreach (var source in sources)
         {
             outputBuilder.Add(source);
@@ -66,11 +68,18 @@ public readonly record struct GenerationOutput
     private sealed class SerdeInfoImplComparer : IComparer<(string SrcName, SourceBuilder Content)>
     {
         private SerdeInfoImplComparer() { }
+
         public static readonly SerdeInfoImplComparer Instance = new SerdeInfoImplComparer();
 
-        public int Compare((string SrcName, SourceBuilder Content) x, (string SrcName, SourceBuilder Content) y)
+        public int Compare(
+            (string SrcName, SourceBuilder Content) x,
+            (string SrcName, SourceBuilder Content) y
+        )
         {
-            if (x.SrcName.EndsWith(".ISerdeInfoProvider") && y.SrcName.EndsWith(".ISerdeInfoProvider"))
+            if (
+                x.SrcName.EndsWith(".ISerdeInfoProvider")
+                && y.SrcName.EndsWith(".ISerdeInfoProvider")
+            )
             {
                 return x.SrcName.CompareTo(y.SrcName);
             }

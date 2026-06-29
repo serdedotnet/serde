@@ -140,7 +140,8 @@ partial struct Rgb
         [Fact]
         public Task Rgb()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateDeserialize]
 partial struct Rgb
@@ -153,7 +154,8 @@ partial struct Rgb
         [Fact]
         public Task NullableRefField()
         {
-            var src = @"
+            var src =
+                @"
 [Serde.GenerateDeserialize]
 partial struct S
 {
@@ -165,7 +167,8 @@ partial struct S
         [Fact]
         public Task DeserializeMissing()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateDeserialize]
 readonly partial record struct SetToNull
@@ -181,7 +184,8 @@ readonly partial record struct SetToNull
         [Fact]
         public Task Array()
         {
-            var src = @"
+            var src =
+                @"
 using Serde;
 [GenerateDeserialize]
 partial class ArrayField
@@ -194,7 +198,8 @@ partial class ArrayField
         [Fact]
         public Task EnumMember()
         {
-            var src = @"
+            var src =
+                @"
 [Serde.GenerateDeserialize]
 partial class C
 {
@@ -355,13 +360,8 @@ abstract partial record Base
             return VerifyMultiFile(src);
         }
 
-        private static Task VerifyDeserialize(
-            string src,
-            [CallerMemberName] string caller = "")
-            => VerifyGeneratedCode(src,
-                nameof(DeserializeTests),
-                caller,
-                multiFile: false);
+        private static Task VerifyDeserialize(string src, [CallerMemberName] string caller = "") =>
+            VerifyGeneratedCode(src, nameof(DeserializeTests), caller, multiFile: false);
 
         [Fact]
         public Task CtorParamMismatch()
