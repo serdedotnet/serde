@@ -112,12 +112,17 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         }
     }
 
-    public void Serialize(byte[] value, ITypeSerializer serializer, ISerdeInfo info, int index)
+    void ISerialize<byte[]>.SerializeAsField(
+        ITypeSerializer serializer,
+        ISerdeInfo info,
+        int index,
+        byte[] value
+    )
     {
         serializer.WriteBytes(info, index, value);
     }
 
-    byte[] ITypeDeserialize<byte[]>.Deserialize(
+    byte[] IDeserialize<byte[]>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index

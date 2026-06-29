@@ -14,7 +14,7 @@ partial class C
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteBoxedValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, Proxy2>(_l_info, 0, value.S);
+            _l_type.WriteValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, Proxy2>(_l_info, 0, value.S);
             _l_type.End(_l_info);
         }
         C Serde.IDeserialize<C>.Deserialize(IDeserializer deserializer)
@@ -37,7 +37,7 @@ partial class C
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_s = typeDeserialize.ReadBoxedValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, Proxy2>(_l_serdeInfo, _l_index_);
+                        _l_s = typeDeserialize.ReadValue<System.Runtime.InteropServices.ComTypes.BIND_OPTS, Proxy2>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:

@@ -18,8 +18,8 @@ partial class TupleTests
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var _l_type = serializer.WriteType(_l_info);
-                _l_type.WriteBoxedValue<(int, string), Serde.TupleProxy.Ser<int, string, global::Serde.I32Proxy, global::Serde.StringProxy>>(_l_info, 0, value.Pair);
-                _l_type.WriteBoxedValue<(int, (string, bool)), Serde.TupleProxy.Ser<int, (string, bool), global::Serde.I32Proxy, Serde.TupleProxy.Ser<string, bool, global::Serde.StringProxy, global::Serde.BoolProxy>>>(_l_info, 1, value.Nested);
+                _l_type.WriteValue<(int, string), Serde.TupleProxy.Ser<int, string, global::Serde.I32Proxy, global::Serde.StringProxy>>(_l_info, 0, value.Pair);
+                _l_type.WriteValue<(int, (string, bool)), Serde.TupleProxy.Ser<int, (string, bool), global::Serde.I32Proxy, Serde.TupleProxy.Ser<string, bool, global::Serde.StringProxy, global::Serde.BoolProxy>>>(_l_info, 1, value.Nested);
                 _l_type.WriteValue<System.Collections.Generic.List<(int, int)>, Serde.ListProxy.Ser<(int, int), Serde.TupleProxy.Ser<int, int, global::Serde.I32Proxy, global::Serde.I32Proxy>>>(_l_info, 2, value.Points);
                 _l_type.End(_l_info);
             }
@@ -45,12 +45,12 @@ partial class TupleTests
                     {
                         case 0:
                             Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                            _l_pair = typeDeserialize.ReadBoxedValue<(int, string), Serde.TupleProxy.De<int, string, global::Serde.I32Proxy, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
+                            _l_pair = typeDeserialize.ReadValue<(int, string), Serde.TupleProxy.De<int, string, global::Serde.I32Proxy, global::Serde.StringProxy>>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case 1:
                             Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 1, _l_serdeInfo);
-                            _l_nested = typeDeserialize.ReadBoxedValue<(int, (string, bool)), Serde.TupleProxy.De<int, (string, bool), global::Serde.I32Proxy, Serde.TupleProxy.De<string, bool, global::Serde.StringProxy, global::Serde.BoolProxy>>>(_l_serdeInfo, _l_index_);
+                            _l_nested = typeDeserialize.ReadValue<(int, (string, bool)), Serde.TupleProxy.De<int, (string, bool), global::Serde.I32Proxy, Serde.TupleProxy.De<string, bool, global::Serde.StringProxy, global::Serde.BoolProxy>>>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 1;
                             break;
                         case 2:

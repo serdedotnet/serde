@@ -95,6 +95,16 @@ partial class JsonDeserializer<TReader>
             return _index;
         }
 
+        IDeserializer ITypeDeserializer.ReadFieldStart(ISerdeInfo info, int index)
+        {
+            return _deserializer;
+        }
+
+        void ITypeDeserializer.ReadFieldEnd(ISerdeInfo info, int index, IDeserializer deserializer)
+        {
+            _index++;
+        }
+
         public T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
             where T : class?
         {

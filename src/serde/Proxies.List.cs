@@ -14,7 +14,7 @@ public static class EnumerableHelpers
     public static void SerializeSpan<T>(
         ISerdeInfo typeInfo,
         ReadOnlySpan<T> arr,
-        ITypeSerialize<T> serializeImpl,
+        ISerialize<T> serializeImpl,
         ISerializer serializer
     )
     {
@@ -22,10 +22,19 @@ public static class EnumerableHelpers
         int index = 0;
         foreach (var item in arr)
         {
-            serializeImpl.Serialize(item, enumerable, typeInfo, index++);
+            serializeImpl.SerializeAsField(enumerable, typeInfo, index++, item);
         }
         enumerable.End(typeInfo);
     }
+
+    [Obsolete("Use the ISerialize<T> overload instead")]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SerializeSpan<T>(
+        ISerdeInfo typeInfo,
+        ReadOnlySpan<T> arr,
+        ITypeSerialize<T> serializeImpl,
+        ISerializer serializer
+    ) => SerializeSpan(typeInfo, arr, (ISerialize<T>)serializeImpl, serializer);
 }
 
 public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList>
@@ -35,7 +44,7 @@ public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList
     public static ISerialize<TList> Instance { get; } = new TSelf();
     public abstract ISerdeInfo SerdeInfo { get; }
 
-    private readonly ITypeSerialize<T> _ser = TypeSerialize.GetOrBox<T, TProvider>();
+    private readonly ISerialize<T> _ser = TProvider.Instance;
 
     protected SerListBase() { }
 
@@ -56,7 +65,7 @@ public abstract class DeListBase<TSelf, T, TList, TFixBuilder, TVarBuilder, TPro
 
     public abstract ISerdeInfo SerdeInfo { get; }
 
-    private readonly ITypeDeserialize<T> _de = TypeDeserialize.GetOrBox<T, TProvider>();
+    private readonly IDeserialize<T> _de = TProvider.Instance;
 
     protected DeListBase() { }
 
@@ -69,7 +78,7 @@ public abstract class DeListBase<TSelf, T, TList, TFixBuilder, TVarBuilder, TPro
             var builder = GetFixBuilder(size);
             for (int i = 0; i < size; i++)
             {
-                FixAdd(builder, _de.Deserialize(deCollection, info, i));
+                FixAdd(builder, _de.DeserializeAsField(deCollection, info, i));
             }
             deCollection.End(info);
             return FromFix(builder);
@@ -86,7 +95,7 @@ public abstract class DeListBase<TSelf, T, TList, TFixBuilder, TVarBuilder, TPro
                     break;
                 }
 
-                VarAdd(builder, _de.Deserialize(deCollection, info, index));
+                VarAdd(builder, _de.DeserializeAsField(deCollection, info, index));
             }
             deCollection.End(info);
             return FromVar(builder);

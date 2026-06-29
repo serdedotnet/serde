@@ -16,7 +16,7 @@ partial record ComplexRecord
             var _l_type = serializer.WriteType(_l_info);
             _l_type.WriteI32(_l_info, 0, value.Id);
             _l_type.WriteStringIfNotNull(_l_info, 1, value.Description);
-            _l_type.WriteValueIfNotNull<SimpleRecord?, Serde.NullableRefProxy.Ser<SimpleRecord, SimpleRecord>>(_l_info, 2, value.NestedRecord);
+            _l_type.WriteValueIfNotNull<SimpleRecord, Serde.NullableRefProxy.Ser<SimpleRecord, SimpleRecord>>(_l_info, 2, value.NestedRecord);
             _l_type.End(_l_info);
         }
         ComplexRecord Serde.IDeserialize<ComplexRecord>.Deserialize(IDeserializer deserializer)

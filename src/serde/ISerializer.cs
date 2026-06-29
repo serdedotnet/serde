@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Serde;
 
@@ -81,19 +80,6 @@ public interface ISerializer
     ITypeSerializer WriteType(ISerdeInfo info);
 }
 
-public static class ISerializeExt
-{
-    public static void WriteValue<T, TProvider>(this ISerializer serializer, T value)
-        where TProvider : ISerializeProvider<T>
-    {
-        var ser = TProvider.Instance;
-        ser.Serialize(value, serializer);
-    }
-
-    public static void WriteValue<T>(this ISerializer serializer, T value)
-        where T : ISerializeProvider<T> => serializer.WriteValue<T, T>(value);
-}
-
 /// <summary>
 /// This interface is used to serialize non-primitive types. All non-primitive types are
 /// aggregates of other types. For custom types (structs and classes) these are member fields.
@@ -106,6 +92,9 @@ public static class ISerializeExt
 /// </summary>
 public interface ITypeSerializer
 {
+    ISerializer WriteFieldStart(ISerdeInfo typeInfo, int index);
+    void WriteFieldEnd(ISerdeInfo typeInfo, int index, ISerializer serializer);
+
     void WriteBool(ISerdeInfo typeInfo, int index, bool b);
     void WriteChar(ISerdeInfo typeInfo, int index, char c);
     void WriteU8(ISerdeInfo typeInfo, int index, byte b);
@@ -144,133 +133,16 @@ public interface ITypeSerializer
 
     /// <summary>
     /// Write an arbitrary value with custom serialization. For reference types this method may be
-    /// used directly. For value types, <see cref="ITypeSerializerExt.WriteBoxedValue{T,
-    /// TProvider}(ITypeSerializer, ISerdeInfo, int, T)"/> should be used instead.
+    /// used directly.
     /// </summary>
     /// <remarks>
     /// This method only accepts reference types to avoid code size explosion in AOT. For value types,
-    /// use <see cref="ITypeDeserializerExt.ReadBoxedValue{T}(ITypeDeserializer, ISerdeInfo, int, IDeserialize{T})" />
-    /// or <see cref="ITypeDeserializerExt.ReadBoxedValue{T, TProvider}(ITypeDeserializer, ISerdeInfo, int)" />.
+    /// use <see cref="ITypeSerializerExt.WriteValue{T}(ITypeSerializer, ISerdeInfo, int, T, ISerialize{T})" /> or
+    /// <see cref="ITypeSerializerExt.WriteValue{T, TProvider}(ITypeSerializer, ISerdeInfo, int, T)" />.
     /// </remarks>
     void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
         where T : class?;
 
     void SkipValue(ISerdeInfo typeInfo, int index) { }
     void End(ISerdeInfo info);
-}
-
-public static class ITypeSerializerExt
-{
-    public static void WriteValue<T, TProvider>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo typeInfo,
-        int index,
-        T value
-    )
-        where T : class?
-        where TProvider : ISerializeProvider<T> =>
-        serializeType.WriteValue(typeInfo, index, value, TProvider.Instance);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void WriteStringIfNotNull(
-        this ITypeSerializer serializeType,
-        ISerdeInfo typeInfo,
-        int index,
-        string? value
-    )
-    {
-        if (value is null)
-        {
-            serializeType.SkipValue(typeInfo, index);
-        }
-        else
-        {
-            serializeType.WriteString(typeInfo, index, value);
-        }
-    }
-
-    public static void WriteValueIfNotNull<T>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo typeInfo,
-        int index,
-        T value,
-        ISerialize<T> proxy
-    )
-        where T : class?
-    {
-        if (value is null)
-        {
-            serializeType.SkipValue(typeInfo, index);
-        }
-        else
-        {
-            serializeType.WriteValue(typeInfo, index, value, proxy);
-        }
-    }
-
-    public static void WriteValueIfNotNull<T, TProvider>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo typeInfo,
-        int index,
-        T value
-    )
-        where T : class?
-        where TProvider : ISerializeProvider<T> =>
-        serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
-
-    public static void WriteBoxedValue<T>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo serdeInfo,
-        int index,
-        T value,
-        ISerialize<T> proxy
-    )
-        where T : struct
-    {
-        serializeType.WriteValue(serdeInfo, index, value, new BoxProxy.Ser<T>(proxy));
-    }
-
-    public static void WriteBoxedValue<T, TProvider>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo serdeInfo,
-        int index,
-        T value
-    )
-        where TProvider : ISerializeProvider<T>
-    {
-        serializeType.WriteValue(serdeInfo, index, value, BoxProxy.Ser<T, TProvider>.Instance);
-    }
-
-    public static void WriteBoxedValueIfNotNull<T, TProvider>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo typeInfo,
-        int index,
-        T value
-    )
-        where TProvider : ISerializeProvider<T>
-    {
-        if (value is null)
-        {
-            serializeType.SkipValue(typeInfo, index);
-        }
-        else
-        {
-            serializeType.WriteBoxedValue<T, TProvider>(typeInfo, index, value);
-        }
-    }
-
-    public static void WriteValue<T>(
-        this ITypeSerializer serializeType,
-        ISerdeInfo serdeInfo,
-        int index,
-        T value,
-        ITypeSerialize<T> proxy
-    ) => proxy.Serialize(value, serializeType, serdeInfo, index);
-
-    public static void WriteGuid(
-        this ITypeSerializer typeSerializer,
-        ISerdeInfo serdeInfo,
-        int index,
-        Guid value
-    ) => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
 }

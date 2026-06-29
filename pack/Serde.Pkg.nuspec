@@ -11,13 +11,11 @@
       <repository type="git" url="https://github.com/agocke/serde-dn" />
       <dependencies>
         <group targetFramework="net10.0" />
-        <group targetFramework="net8.0" />
       </dependencies>
     </metadata>
     <files>
         <file src="README.Serde.md" target="docs" />
         <file src="../artifacts/bin/Serde/release_net10.0/Serde.dll" target="lib/net10.0" />
-        <file src="../artifacts/bin/Serde/release_net8.0/Serde.dll" target="lib/net8.0" />
         <file src="../artifacts/bin/SerdeGenerator/release/SerdeGenerator.dll" target="analyzers/dotnet/cs" />
     </files>
 </package>

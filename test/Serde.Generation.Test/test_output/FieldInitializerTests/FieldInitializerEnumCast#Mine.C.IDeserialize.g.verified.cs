@@ -34,7 +34,7 @@ partial class C
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_field = typeDeserialize.ReadBoxedValue<Other.Color, Other.ColorProxy>(_l_serdeInfo, _l_index_);
+                        _l_field = typeDeserialize.ReadValue<Other.Color, Other.ColorProxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:

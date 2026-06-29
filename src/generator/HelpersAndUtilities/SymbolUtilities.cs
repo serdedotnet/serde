@@ -291,6 +291,18 @@ namespace Serde
                             },
 
                             {
+                                Key: nameof(MemberOptions.SerializeNull),
+                                Value:
+                                {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with
+                            {
+                                SerializeNull = (bool)value,
+                            },
+
+                            {
                                 Key: nameof(MemberOptions.Skip),
                                 Value:
                                 {

@@ -33,7 +33,7 @@ partial record struct ChannelList
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_channels = typeDeserialize.ReadBoxedValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayProxy.De<Test.Channel, Test.ChannelProxy>>(_l_serdeInfo, _l_index_);
+                        _l_channels = typeDeserialize.ReadValue<System.Collections.Immutable.ImmutableArray<Test.Channel>, Serde.ImmutableArrayProxy.De<Test.Channel, Test.ChannelProxy>>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case Serde.ITypeDeserializer.IndexNotFound:

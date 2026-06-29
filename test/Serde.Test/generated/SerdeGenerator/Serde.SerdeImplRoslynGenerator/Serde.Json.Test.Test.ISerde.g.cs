@@ -16,7 +16,7 @@ partial class Test
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
             var _l_type = serializer.WriteType(_l_info);
-            _l_type.WriteBoxedValue<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>(_l_info, 0, value.v2);
+            _l_type.WriteValue<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>(_l_info, 0, value.v2);
             _l_type.WriteValue<System.Numerics.Vector2[][], Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>>>(_l_info, 1, value.vertices);
             _l_type.WriteValue<System.Numerics.Vector2[][], Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy2>>>(_l_info, 2, value.weights);
             _l_type.WriteValue<System.Collections.Generic.Dictionary<System.Numerics.Vector3, System.Numerics.Vector2[][]>, Serde.DictProxy.Ser<System.Numerics.Vector3, System.Numerics.Vector2[][], Serde.Json.Test.Vector3Proxy, Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>>>>(_l_info, 3, value.points);
@@ -45,7 +45,7 @@ partial class Test
                 {
                     case 0:
                         Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                        _l_v2 = typeDeserialize.ReadBoxedValue<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>(_l_serdeInfo, _l_index_);
+                        _l_v2 = typeDeserialize.ReadValue<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 0;
                         break;
                     case 1:

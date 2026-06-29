@@ -174,7 +174,7 @@ namespace Serde
     {
         _l_result = index switch {
             {{string.Join("," + Utilities.NewLine, members
-                .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}")) }},
+                .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}"))}},
             _ => throw new InvalidOperationException($"Unexpected index: {index}")
         };
     }
@@ -312,7 +312,7 @@ namespace Serde
                     var memberType = m
                         .Type.WithNullableAnnotation(m.NullableAnnotation)
                         .ToDisplayString();
-                    string readMethodName = m.Type.IsReferenceType ? "ReadValue" : "ReadBoxedValue";
+                    string readMethodName = "ReadValue";
                     string readValueCall;
 
                     var proxyContext = ProxyContext.Create(

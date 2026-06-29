@@ -4,11 +4,7 @@ using System;
 
 namespace Serde;
 
-internal interface ISerdePrimitive<TSelf, T>
-    : ISerde<T>,
-        ISerdeProvider<TSelf, TSelf, T>,
-        ITypeSerialize<T>,
-        ITypeDeserialize<T>
+internal interface ISerdePrimitive<TSelf, T> : ISerde<T>, ISerdeProvider<TSelf, TSelf, T>
     where TSelf : ISerdePrimitive<TSelf, T>
 {
     /// <summary>
@@ -34,14 +30,14 @@ public sealed class BoolProxy : ISerdePrimitive<BoolProxy, bool>
 
     bool IDeserialize<bool>.Deserialize(IDeserializer deserializer) => deserializer.ReadBool();
 
-    void ITypeSerialize<bool>.Serialize(
-        bool value,
+    void ISerialize<bool>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        bool value
     ) => serializer.WriteBool(info, index, value);
 
-    bool ITypeDeserialize<bool>.Deserialize(
+    bool IDeserialize<bool>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -65,14 +61,14 @@ public sealed class CharProxy : ISerdePrimitive<CharProxy, char>
 
     char IDeserialize<char>.Deserialize(IDeserializer deserializer) => deserializer.ReadChar();
 
-    void ITypeSerialize<char>.Serialize(
-        char value,
+    void ISerialize<char>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        char value
     ) => serializer.WriteChar(info, index, value);
 
-    char ITypeDeserialize<char>.Deserialize(
+    char IDeserialize<char>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -95,14 +91,14 @@ public sealed class U8Proxy : ISerdePrimitive<U8Proxy, byte>
 
     public byte Deserialize(IDeserializer deserializer) => deserializer.ReadU8();
 
-    void ITypeSerialize<byte>.Serialize(
-        byte value,
+    void ISerialize<byte>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        byte value
     ) => serializer.WriteU8(info, index, value);
 
-    byte ITypeDeserialize<byte>.Deserialize(
+    byte IDeserialize<byte>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -126,17 +122,17 @@ public sealed class U16Proxy : ISerdePrimitive<U16Proxy, ushort>
 
     ushort IDeserialize<ushort>.Deserialize(IDeserializer deserializer) => deserializer.ReadU16();
 
-    ushort ITypeDeserialize<ushort>.Deserialize(
+    ushort IDeserialize<ushort>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
     ) => deserializer.ReadU16(info, index);
 
-    void ITypeSerialize<ushort>.Serialize(
-        ushort value,
+    void ISerialize<ushort>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        ushort value
     ) => serializer.WriteU16(info, index, value);
 }
 
@@ -157,17 +153,17 @@ public sealed class U32Proxy : ISerdePrimitive<U32Proxy, uint>
 
     uint IDeserialize<uint>.Deserialize(IDeserializer deserializer) => deserializer.ReadU32();
 
-    uint ITypeDeserialize<uint>.Deserialize(
+    uint IDeserialize<uint>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
     ) => deserializer.ReadU32(info, index);
 
-    void ITypeSerialize<uint>.Serialize(
-        uint value,
+    void ISerialize<uint>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        uint value
     ) => serializer.WriteU32(info, index, value);
 }
 
@@ -188,14 +184,14 @@ public sealed class U64Proxy : ISerdePrimitive<U64Proxy, ulong>
 
     ulong IDeserialize<ulong>.Deserialize(IDeserializer deserializer) => deserializer.ReadU64();
 
-    void ITypeSerialize<ulong>.Serialize(
-        ulong value,
+    void ISerialize<ulong>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        ulong value
     ) => serializer.WriteU64(info, index, value);
 
-    ulong ITypeDeserialize<ulong>.Deserialize(
+    ulong IDeserialize<ulong>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -220,14 +216,14 @@ public sealed class U128Proxy : ISerdePrimitive<U128Proxy, UInt128>
     UInt128 IDeserialize<UInt128>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadU128();
 
-    void ITypeSerialize<UInt128>.Serialize(
-        UInt128 value,
+    void ISerialize<UInt128>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        UInt128 value
     ) => serializer.WriteU128(info, index, value);
 
-    UInt128 ITypeDeserialize<UInt128>.Deserialize(
+    UInt128 IDeserialize<UInt128>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -251,14 +247,14 @@ public sealed class I8Proxy : ISerdePrimitive<I8Proxy, sbyte>
 
     sbyte IDeserialize<sbyte>.Deserialize(IDeserializer deserializer) => deserializer.ReadI8();
 
-    void ITypeSerialize<sbyte>.Serialize(
-        sbyte value,
+    void ISerialize<sbyte>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        sbyte value
     ) => serializer.WriteI8(info, index, value);
 
-    sbyte ITypeDeserialize<sbyte>.Deserialize(
+    sbyte IDeserialize<sbyte>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -282,14 +278,14 @@ public sealed class I16Proxy : ISerdePrimitive<I16Proxy, short>
 
     short IDeserialize<short>.Deserialize(IDeserializer deserializer) => deserializer.ReadI16();
 
-    void ITypeSerialize<short>.Serialize(
-        short value,
+    void ISerialize<short>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        short value
     ) => serializer.WriteI16(info, index, value);
 
-    short ITypeDeserialize<short>.Deserialize(
+    short IDeserialize<short>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -312,14 +308,14 @@ public sealed class I32Proxy : ISerdePrimitive<I32Proxy, int>
 
     int IDeserialize<int>.Deserialize(IDeserializer deserializer) => deserializer.ReadI32();
 
-    void ITypeSerialize<int>.Serialize(
-        int value,
+    void ISerialize<int>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        int value
     ) => serializer.WriteI32(info, index, value);
 
-    int ITypeDeserialize<int>.Deserialize(
+    int IDeserialize<int>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -343,14 +339,14 @@ public sealed class I64Proxy : ISerdePrimitive<I64Proxy, long>
 
     long IDeserialize<long>.Deserialize(IDeserializer deserializer) => deserializer.ReadI64();
 
-    void ITypeSerialize<long>.Serialize(
-        long value,
+    void ISerialize<long>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        long value
     ) => serializer.WriteI64(info, index, value);
 
-    long ITypeDeserialize<long>.Deserialize(
+    long IDeserialize<long>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -374,14 +370,14 @@ public sealed class I128Proxy : ISerdePrimitive<I128Proxy, Int128>
 
     Int128 IDeserialize<Int128>.Deserialize(IDeserializer deserializer) => deserializer.ReadI128();
 
-    void ITypeSerialize<Int128>.Serialize(
-        Int128 value,
+    void ISerialize<Int128>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        Int128 value
     ) => serializer.WriteI128(info, index, value);
 
-    Int128 ITypeDeserialize<Int128>.Deserialize(
+    Int128 IDeserialize<Int128>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -402,14 +398,14 @@ public sealed class F16Proxy : ISerdePrimitive<F16Proxy, Half>
 
     public Half Deserialize(IDeserializer deserializer) => deserializer.ReadF16();
 
-    void ITypeSerialize<Half>.Serialize(
-        Half value,
+    void ISerialize<Half>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        Half value
     ) => serializer.WriteF16(info, index, value);
 
-    Half ITypeDeserialize<Half>.Deserialize(
+    Half IDeserialize<Half>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -430,14 +426,14 @@ public sealed class F32Proxy : ISerdePrimitive<F32Proxy, float>
 
     public float Deserialize(IDeserializer deserializer) => deserializer.ReadF32();
 
-    void ITypeSerialize<float>.Serialize(
-        float value,
+    void ISerialize<float>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        float value
     ) => serializer.WriteF32(info, index, value);
 
-    float ITypeDeserialize<float>.Deserialize(
+    float IDeserialize<float>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -459,14 +455,14 @@ public sealed class F64Proxy : ISerdePrimitive<F64Proxy, double>
 
     double IDeserialize<double>.Deserialize(IDeserializer deserializer) => deserializer.ReadF64();
 
-    void ITypeSerialize<double>.Serialize(
-        double value,
+    void ISerialize<double>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        double value
     ) => serializer.WriteF64(info, index, value);
 
-    double ITypeDeserialize<double>.Deserialize(
+    double IDeserialize<double>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
@@ -489,17 +485,17 @@ public sealed class DecimalProxy : ISerdePrimitive<DecimalProxy, decimal>
     decimal IDeserialize<decimal>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDecimal();
 
-    decimal ITypeDeserialize<decimal>.Deserialize(
+    decimal IDeserialize<decimal>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
     ) => deserializer.ReadDecimal(info, index);
 
-    void ITypeSerialize<decimal>.Serialize(
-        decimal value,
+    void ISerialize<decimal>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        decimal value
     ) => serializer.WriteDecimal(info, index, value);
 }
 
@@ -520,23 +516,24 @@ public sealed class StringProxy : ISerdePrimitive<StringProxy, string>
 
     public string Deserialize(IDeserializer deserializer) => deserializer.ReadString();
 
-    string ITypeDeserialize<string>.Deserialize(
+    string IDeserialize<string>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index
     ) => deserializer.ReadString(info, index);
 
-    void ITypeSerialize<string>.Serialize(
-        string value,
+    void ISerialize<string>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        string value
     ) => serializer.WriteString(info, index, value);
 }
 
 public static class BoxProxy
 {
-    public sealed class Ser<T> : ISerialize<object?>, ITypeSerialize<T>
+    [Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
+    public sealed class Ser<T> : ISerialize<object?>
     {
         private readonly ISerialize<T> _underlying;
 
@@ -551,32 +548,27 @@ public static class BoxProxy
         {
             _underlying.Serialize((T)value!, serializer);
         }
-
-        public void Serialize(T value, ITypeSerializer serializer, ISerdeInfo info, int index)
-        {
-            serializer.WriteValue(info, index, value, this);
-        }
     }
 
+    [Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
     public sealed class Ser<T, TProvider>
         where TProvider : ISerializeProvider<T>
     {
         public static readonly Ser<T> Instance = new Ser<T>(TProvider.Instance);
     }
 
-    public sealed class De<T>(IDeserialize<T> _underlying)
-        : IDeserialize<object?>,
-            ITypeDeserialize<T>
+    [Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
+    public sealed class De<T>(IDeserialize<T> _underlying) : ITypeDeserialize<T>
     {
         public ISerdeInfo SerdeInfo => _underlying.SerdeInfo;
 
-        public object? Deserialize(IDeserializer deserializer) =>
-            _underlying.Deserialize(deserializer);
+        public T Deserialize(IDeserializer deserializer) => _underlying.Deserialize(deserializer);
 
         public T Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index) =>
             (T)deserializer.ReadValue(info, index, this)!;
     }
 
+    [Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
     public static class De<T, TProvider>
         where TProvider : IDeserializeProvider<T>
     {
@@ -610,6 +602,23 @@ public static class NullableProxy
                 serializer.WriteNull();
             }
         }
+
+        void ISerialize<T?>.SerializeAsField(
+            ITypeSerializer typeSerializer,
+            ISerdeInfo serdeInfo,
+            int index,
+            T? value
+        )
+        {
+            if (value is { } notnull)
+            {
+                proxy.SerializeAsField(typeSerializer, serdeInfo, index, notnull);
+            }
+            else
+            {
+                typeSerializer.WriteNull(serdeInfo, index);
+            }
+        }
     }
 
     public sealed class De<T, TProvider> : IDeserialize<T?>, IDeserializeProvider<T?>
@@ -620,12 +629,35 @@ public static class NullableProxy
         static IDeserialize<T?> IDeserializeProvider<T?>.Instance => Instance;
         public ISerdeInfo SerdeInfo { get; } =
             Serde.SerdeInfo.MakeNullable(TProvider.Instance.SerdeInfo);
+        private readonly IDeserialize<T> proxy = TProvider.Instance;
 
         private De() { }
 
         public T? Deserialize(IDeserializer deserializer)
         {
-            return (T?)deserializer.ReadNullableRef<object>(BoxProxy.De<T, TProvider>.Instance!);
+            if (deserializer.ReadNullableRef(EmptyStringProxy.Instance) is null)
+            {
+                return null;
+            }
+            else
+            {
+                return proxy.Deserialize(deserializer);
+            }
+        }
+
+        private class EmptyStringProxy : IDeserialize<string>
+        {
+            public static readonly EmptyStringProxy Instance = new EmptyStringProxy();
+            public ISerdeInfo SerdeInfo =>
+                NullableRefProxy.De<string, StringProxy>.Instance.SerdeInfo;
+
+            public string Deserialize(IDeserializer deserializer) => "";
+
+            string IDeserialize<string>.DeserializeAsField(
+                ITypeDeserializer typeDeserializer,
+                ISerdeInfo serdeInfo,
+                int index
+            ) => "";
         }
     }
 }
@@ -700,18 +732,18 @@ public sealed class GuidProxy : ISerdePrimitive<GuidProxy, Guid>
         return Guid.Parse(bytes);
     }
 
-    void ITypeSerialize<Guid>.Serialize(
-        Guid value,
+    void ISerialize<Guid>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
-        int index
+        int index,
+        Guid value
     )
     {
         var bytes = value.ToString();
         serializer.WriteString(info, index, bytes);
     }
 
-    Guid ITypeDeserialize<Guid>.Deserialize(
+    Guid IDeserialize<Guid>.DeserializeAsField(
         ITypeDeserializer deserializer,
         ISerdeInfo info,
         int index

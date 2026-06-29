@@ -20,13 +20,13 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
     static ISerialize<TDict> ISerializeProvider<TDict>.Instance => Instance;
     public abstract ISerdeInfo SerdeInfo { get; }
 
-    private readonly ITypeSerialize<TK> _keySer;
-    private readonly ITypeSerialize<TV> _valueSer;
+    private readonly ISerialize<TK> _keySer;
+    private readonly ISerialize<TV> _valueSer;
 
     protected SerDictBase()
     {
-        _keySer = TypeSerialize.GetOrBox<TK, TKProvider>();
-        _valueSer = TypeSerialize.GetOrBox<TV, TVProvider>();
+        _keySer = TKProvider.Instance;
+        _valueSer = TVProvider.Instance;
     }
 
     void ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
@@ -36,8 +36,8 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
         int index = 0;
         foreach (var (k, v) in value)
         {
-            _keySer.Serialize(k, sd, typeInfo, index++);
-            _valueSer.Serialize(v, sd, typeInfo, index++);
+            _keySer.SerializeAsField(sd, typeInfo, index++, k);
+            _valueSer.SerializeAsField(sd, typeInfo, index++, v);
         }
         sd.End(typeInfo);
     }
@@ -55,11 +55,8 @@ public abstract class DeDictBase<TSelf, TKey, TValue, TDict, TBuilder, TKProvide
     public static IDeserialize<TDict> Instance { get; } = new TSelf();
     public abstract ISerdeInfo SerdeInfo { get; }
 
-    private readonly ITypeDeserialize<TKey> _keyDe = TypeDeserialize.GetOrBox<TKey, TKProvider>();
-    private readonly ITypeDeserialize<TValue> _valueDe = TypeDeserialize.GetOrBox<
-        TValue,
-        TVProvider
-    >();
+    private readonly IDeserialize<TKey> _keyDe = TKProvider.Instance;
+    private readonly IDeserialize<TValue> _valueDe = TVProvider.Instance;
 
     protected DeDictBase() { }
 
@@ -78,13 +75,13 @@ public abstract class DeDictBase<TSelf, TKey, TValue, TDict, TBuilder, TKProvide
                 break;
             }
 
-            var key = _keyDe.Deserialize(deCollection, typeInfo, index);
+            var key = _keyDe.DeserializeAsField(deCollection, typeInfo, index);
             index = deCollection.TryReadIndex(typeInfo);
             if (index == ITypeDeserializer.EndOfType)
             {
                 throw new DeserializeException("Expected value, but reached end of collection.");
             }
-            var value = _valueDe.Deserialize(deCollection, typeInfo, index);
+            var value = _valueDe.DeserializeAsField(deCollection, typeInfo, index);
             Add(builder, key, value);
         }
         if (sizeOpt is int size && size != builder.Count)

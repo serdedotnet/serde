@@ -47,19 +47,6 @@ public interface IDeserializer : IDisposable
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
 
-public static class IDeserializerExt
-{
-    public static T ReadValue<T, TProvider>(this IDeserializer deserializer)
-        where TProvider : IDeserializeProvider<T>
-    {
-        var de = DeserializeProvider.GetDeserialize<T, TProvider>();
-        return de.Deserialize(deserializer);
-    }
-
-    public static T ReadValue<T>(this IDeserializer deserializer)
-        where T : IDeserializeProvider<T> => deserializer.ReadValue<T, T>();
-}
-
 public interface ITypeDeserializer
 {
     public const int EndOfType = -1;
@@ -88,13 +75,16 @@ public interface ITypeDeserializer
     /// </summary>
     (int, string? errorName) TryReadIndexWithName(ISerdeInfo info);
 
+    IDeserializer ReadFieldStart(ISerdeInfo info, int index);
+    void ReadFieldEnd(ISerdeInfo info, int index, IDeserializer deserializer);
+
     /// <summary>
     /// Read a value of type T using the provided deserializer.
     /// </summary>
     /// <remarks>
     /// This method only accepts reference types to avoid code size explosion in AOT. For value types,
-    /// use <see cref="ITypeDeserializerExt.ReadBoxedValue{T}(ITypeDeserializer, ISerdeInfo, int, IDeserialize{T})" />
-    /// or <see cref="ITypeDeserializerExt.ReadBoxedValue{T, TProvider}(ITypeDeserializer, ISerdeInfo, int)" />.
+    /// use <see cref="ITypeDeserializerExt.ReadValue{T}(ITypeDeserializer, ISerdeInfo, int, IDeserialize{T})" /> or
+    /// <see cref="ITypeDeserializerExt.ReadValue{T, TProvider}(ITypeDeserializer, ISerdeInfo, int)" />.
     /// </remarks>
     T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> deserialize)
         where T : class?;
@@ -144,55 +134,4 @@ public interface ITypeDeserializer
     /// cref="ITypeDeserializer" /> should not be used again.
     /// </summary>
     void End(ISerdeInfo info) { }
-}
-
-public static class ITypeDeserializerExt
-{
-    public static T ReadValue<T, TProvider>(
-        this ITypeDeserializer deserializeType,
-        ISerdeInfo info,
-        int index
-    )
-        where T : class?
-        where TProvider : IDeserializeProvider<T>
-    {
-        return deserializeType.ReadValue(info, index, TProvider.Instance);
-    }
-
-    public static T ReadBoxedValue<T>(
-        this ITypeDeserializer deserializeType,
-        ISerdeInfo info,
-        int index,
-        IDeserialize<T> d
-    )
-        where T : struct
-    {
-        return (T)deserializeType.ReadValue(info, index, new BoxProxy.De<T>(d))!;
-    }
-
-    public static T ReadBoxedValue<T, TProvider>(
-        this ITypeDeserializer deserializeType,
-        ISerdeInfo info,
-        int index
-    )
-        where TProvider : IDeserializeProvider<T>
-    {
-        return (T)deserializeType.ReadValue(info, index, BoxProxy.De<T, TProvider>.Instance)!;
-    }
-
-    public static T ReadValue<T>(
-        this ITypeDeserializer deserializeType,
-        ISerdeInfo info,
-        int index,
-        ITypeDeserialize<T> d
-    )
-    {
-        return d.Deserialize(deserializeType, info, index);
-    }
-
-    public static Guid ReadGuid(
-        this ITypeDeserializer deserializeType,
-        ISerdeInfo info,
-        int index
-    ) => ReadValue(deserializeType, info, index, GuidProxy.Instance);
 }

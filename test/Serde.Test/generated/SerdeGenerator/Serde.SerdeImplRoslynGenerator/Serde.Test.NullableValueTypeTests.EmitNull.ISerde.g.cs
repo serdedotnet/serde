@@ -6,24 +6,24 @@ using Serde;
 
 namespace Serde.Test;
 
-partial class GenericWrapperTests
+partial class NullableValueTypeTests
 {
-    partial record struct CustomArrayWrapExplicitOnType
+    partial record EmitNull
     {
-        sealed partial class _SerdeObj : global::Serde.ISerde<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>
+        sealed partial class _SerdeObj : global::Serde.ISerde<Serde.Test.NullableValueTypeTests.EmitNull>
         {
-            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType.s_serdeInfo;
+            global::Serde.ISerdeInfo global::Serde.ISerdeInfoProvider.SerdeInfo => Serde.Test.NullableValueTypeTests.EmitNull.s_serdeInfo;
 
-            void global::Serde.ISerialize<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.Serialize(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType value, global::Serde.ISerializer serializer)
+            void global::Serde.ISerialize<Serde.Test.NullableValueTypeTests.EmitNull>.Serialize(Serde.Test.NullableValueTypeTests.EmitNull value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
                 var _l_type = serializer.WriteType(_l_info);
-                _l_type.WriteValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.A);
+                _l_type.WriteValue<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.Value);
                 _l_type.End(_l_info);
             }
-            Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType Serde.IDeserialize<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.Deserialize(IDeserializer deserializer)
+            Serde.Test.NullableValueTypeTests.EmitNull Serde.IDeserialize<Serde.Test.NullableValueTypeTests.EmitNull>.Deserialize(IDeserializer deserializer)
             {
-                Serde.Test.GenericWrapperTests.CustomImArray2<int> _l_a = default!;
+                int? _l_value = default!;
 
                 byte _r_assignedValid = 0;
 
@@ -41,7 +41,7 @@ partial class GenericWrapperTests
                     {
                         case 0:
                             Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 0, _l_serdeInfo);
-                            _l_a = typeDeserialize.ReadValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
+                            _l_value = typeDeserialize.ReadValue<int?, Serde.NullableProxy.De<int, global::Serde.I32Proxy>>(_l_serdeInfo, _l_index_);
                             _r_assignedValid |= ((byte)1) << 0;
                             break;
                         case Serde.ITypeDeserializer.IndexNotFound:
@@ -52,12 +52,12 @@ partial class GenericWrapperTests
                     }
                 }
                 typeDeserialize.End(_l_serdeInfo);
-                if ((_r_assignedValid & 0b1) != 0b1)
+                if ((_r_assignedValid & 0b0) != 0b0)
                 {
                     throw Serde.DeserializeException.UnassignedMember();
                 }
-                var newType = new Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType() {
-                    A = _l_a,
+                var newType = new Serde.Test.NullableValueTypeTests.EmitNull() {
+                    Value = _l_value,
                 };
 
                 return newType;
