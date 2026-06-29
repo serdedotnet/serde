@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -18,17 +17,22 @@ public static class EqArrayProxy
     internal static class SerTypeInfo<T, TProvider>
         where TProvider : ISerializeProvider<T>
     {
-        public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable("EqArray", TProvider.Instance.SerdeInfo);
+        public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable(
+            "EqArray",
+            TProvider.Instance.SerdeInfo
+        );
     }
 
     internal static class DeTypeInfo<T, TProvider>
         where TProvider : IDeserializeProvider<T>
     {
-        public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable("EqArray", TProvider.Instance.SerdeInfo);
+        public static readonly ISerdeInfo Instance = Serde.SerdeInfo.MakeEnumerable(
+            "EqArray",
+            TProvider.Instance.SerdeInfo
+        );
     }
 
-    public sealed class Ser<T, TProvider>
-        : ISerializeProvider<EqArray<T>>, ISerialize<EqArray<T>>
+    public sealed class Ser<T, TProvider> : ISerializeProvider<EqArray<T>>, ISerialize<EqArray<T>>
         where TProvider : ISerializeProvider<T>
     {
         public static readonly Ser<T, TProvider> Instance = new();
@@ -38,20 +42,20 @@ public static class EqArrayProxy
 
         void ISerialize<EqArray<T>>.Serialize(EqArray<T> value, ISerializer serializer)
         {
-            ImmutableArrayProxy.Ser<T, TProvider>.Instance.Serialize(
-                value.Array,
-                serializer
-            );
+            ImmutableArrayProxy.Ser<T, TProvider>.Instance.Serialize(value.Array, serializer);
         }
     }
 
-    public sealed class De<T, TProvider> : IDeserializeProvider<EqArray<T>>, IDeserialize<EqArray<T>>
+    public sealed class De<T, TProvider>
+        : IDeserializeProvider<EqArray<T>>,
+            IDeserialize<EqArray<T>>
         where TProvider : IDeserializeProvider<T>
     {
         public static readonly De<T, TProvider> Instance = new();
         static IDeserialize<EqArray<T>> IDeserializeProvider<EqArray<T>>.Instance => Instance;
 
         public ISerdeInfo SerdeInfo => DeTypeInfo<T, TProvider>.Instance;
+
         EqArray<T> IDeserialize<EqArray<T>>.Deserialize(IDeserializer deserializer)
         {
             return new(ImmutableArrayProxy.De<T, TProvider>.Instance.Deserialize(deserializer));
@@ -63,7 +67,7 @@ public class GenericTypeSample
 {
     public static void Run()
     {
-        var eq = new EqArray<int>([ 1, 2, 3, 4 ]);
+        var eq = new EqArray<int>([1, 2, 3, 4]);
 
         // Serialize the version to a JSON string.
         // Here we pass the proxy parameter explicitly, but if EqArray is a nested field, the
@@ -74,7 +78,9 @@ public class GenericTypeSample
         var deEq = JsonSerializer.Deserialize<EqArray<int>, EqArrayProxy.De<int, I32Proxy>>(json);
         if (!eq.Array.SequenceEqual(deEq.Array))
         {
-            throw new InvalidOperationException("Deserialized version does not match the original.");
+            throw new InvalidOperationException(
+                "Deserialized version does not match the original."
+            );
         }
     }
 }

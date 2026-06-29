@@ -1,4 +1,3 @@
-
 namespace Serde;
 
 public interface ISerdeInfoProvider
@@ -9,18 +8,17 @@ public interface ISerdeInfoProvider
 public static class SerdeInfoProvider
 {
     public static ISerdeInfo GetInfo<TProvider>(TProvider provider)
-        where TProvider : ISerdeInfoProvider
-        => provider.SerdeInfo;
+        where TProvider : ISerdeInfoProvider => provider.SerdeInfo;
+
     public static ISerdeInfo GetSerializeInfo<T, TProvider>()
-        where TProvider : ISerializeProvider<T>
-        => TProvider.Instance.SerdeInfo;
+        where TProvider : ISerializeProvider<T> => TProvider.Instance.SerdeInfo;
+
     public static ISerdeInfo GetSerializeInfo<T>()
-        where T : ISerializeProvider<T>
-        => T.Instance.SerdeInfo;
+        where T : ISerializeProvider<T> => T.Instance.SerdeInfo;
+
     public static ISerdeInfo GetDeserializeInfo<T, TProvider>()
-        where TProvider : IDeserializeProvider<T>
-        => TProvider.Instance.SerdeInfo;
+        where TProvider : IDeserializeProvider<T> => TProvider.Instance.SerdeInfo;
+
     public static ISerdeInfo GetDeserializeInfo<T>()
-        where T : IDeserializeProvider<T>
-        => T.Instance.SerdeInfo;
+        where T : IDeserializeProvider<T> => T.Instance.SerdeInfo;
 }

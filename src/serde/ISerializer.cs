@@ -89,11 +89,10 @@ public static class ISerializeExt
         var ser = TProvider.Instance;
         ser.Serialize(value, serializer);
     }
-    public static void WriteValue<T>(this ISerializer serializer, T value)
-        where T : ISerializeProvider<T>
-        => serializer.WriteValue<T, T>(value);
-}
 
+    public static void WriteValue<T>(this ISerializer serializer, T value)
+        where T : ISerializeProvider<T> => serializer.WriteValue<T, T>(value);
+}
 
 /// <summary>
 /// This interface is used to serialize non-primitive types. All non-primitive types are
@@ -166,17 +165,19 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value)
+        T value
+    )
         where T : class?
-        where TProvider : ISerializeProvider<T>
-        => serializeType.WriteValue(typeInfo, index, value, TProvider.Instance);
+        where TProvider : ISerializeProvider<T> =>
+        serializeType.WriteValue(typeInfo, index, value, TProvider.Instance);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void WriteStringIfNotNull(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        string? value)
+        string? value
+    )
     {
         if (value is null)
         {
@@ -193,7 +194,8 @@ public static class ITypeSerializerExt
         ISerdeInfo typeInfo,
         int index,
         T value,
-        ISerialize<T> proxy)
+        ISerialize<T> proxy
+    )
         where T : class?
     {
         if (value is null)
@@ -210,10 +212,11 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value)
+        T value
+    )
         where T : class?
-        where TProvider : ISerializeProvider<T>
-        => serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
+        where TProvider : ISerializeProvider<T> =>
+        serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 
     public static void WriteBoxedValue<T>(
         this ITypeSerializer serializeType,
@@ -231,7 +234,8 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo serdeInfo,
         int index,
-        T value)
+        T value
+    )
         where TProvider : ISerializeProvider<T>
     {
         serializeType.WriteValue(serdeInfo, index, value, BoxProxy.Ser<T, TProvider>.Instance);
@@ -241,7 +245,8 @@ public static class ITypeSerializerExt
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
-        T value)
+        T value
+    )
         where TProvider : ISerializeProvider<T>
     {
         if (value is null)
@@ -260,14 +265,12 @@ public static class ITypeSerializerExt
         int index,
         T value,
         ITypeSerialize<T> proxy
-    )
-        => proxy.Serialize(value, serializeType, serdeInfo, index);
+    ) => proxy.Serialize(value, serializeType, serdeInfo, index);
 
     public static void WriteGuid(
         this ITypeSerializer typeSerializer,
         ISerdeInfo serdeInfo,
         int index,
         Guid value
-    )
-        => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
+    ) => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
 }

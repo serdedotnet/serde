@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,28 +18,32 @@ namespace Serde.Test
         {
             var src = @"[ 1, 2 ]";
             var result = JsonSerializer.DeserializeJsonValue(src);
-            Assert.Equal(new Array(new JsonValue[] {
-                new Number(1),
-                new Number(2)
-            }), result);
+            Assert.Equal(new Array(new JsonValue[] { new Number(1), new Number(2) }), result);
         }
 
         [Fact]
         public void NestedEnumerable()
         {
-            var src = @"[
+            var src =
+                @"[
                 [ 1, ""abc"" ],
                 [ 2 ],
                 [ ""def"", 3 ],
                 []
             ]";
             var result = JsonSerializer.DeserializeJsonValue(src);
-            Assert.Equal(new Array(new JsonValue[] {
-                new Array(new JsonValue[] { 1, "abc" }),
-                new Array(new JsonValue[] { 2 }),
-                new Array(new JsonValue[] { "def", 3 }),
-                Array.Empty
-            }), result);
+            Assert.Equal(
+                new Array(
+                    new JsonValue[]
+                    {
+                        new Array(new JsonValue[] { 1, "abc" }),
+                        new Array(new JsonValue[] { 2 }),
+                        new Array(new JsonValue[] { "def", 3 }),
+                        Array.Empty,
+                    }
+                ),
+                result
+            );
         }
 
         [Fact]
@@ -48,10 +51,12 @@ namespace Serde.Test
         {
             var src = @"{ ""field1"": ""abc"", ""field2"": 123 }";
             var result = JsonSerializer.DeserializeJsonValue(src);
-            Assert.Equal(new JsonValue.Object(new (string, JsonValue)[] {
-                ("field1", "abc"),
-                ("field2", 123)
-            }), result);
+            Assert.Equal(
+                new JsonValue.Object(
+                    new (string, JsonValue)[] { ("field1", "abc"), ("field2", 123) }
+                ),
+                result
+            );
         }
 
         [Fact]
@@ -73,12 +78,10 @@ namespace Serde.Test
         public void SingleElementObj()
         {
             var src = """
-            { "field1": 123 }
-            """;
+                { "field1": 123 }
+                """;
             var result = JsonSerializer.DeserializeJsonValue(src);
-            Assert.Equal(new JsonValue.Object([
-                ("field1", 123)
-            ]), result);
+            Assert.Equal(new JsonValue.Object([("field1", 123)]), result);
         }
 
         [Fact]
@@ -102,7 +105,8 @@ namespace Serde.Test
         [Fact]
         public void DeserializeExtraMembers()
         {
-            var src = @"
+            var src =
+                @"
 {
     ""a"" : 1,
     ""c"" : {
@@ -129,7 +133,8 @@ namespace Serde.Test
         [Fact]
         public void DeserializeId()
         {
-            var src = @"{
+            var src =
+                @"{
                 ""_links"":{
                     ""self"":{
                         ""href"":""https://dev.azure.com/dnceng/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_apis/pipelines/686?revision=12""
@@ -170,7 +175,8 @@ namespace Serde.Test
         [Fact]
         public void DeserializeNestedWithList()
         {
-            var listSrc = @"
+            var listSrc =
+                @"
 [
     {
         ""skip1"": ""x"",
@@ -191,7 +197,8 @@ namespace Serde.Test
         ""skip3"": null
     }
 ]";
-            var src = @$"{{
+            var src =
+                @$"{{
   ""count"": 3,
   ""list"": {listSrc}
 }}";
@@ -211,7 +218,8 @@ namespace Serde.Test
         [Fact]
         public void CheckSetToNull()
         {
-            var src = @"
+            var src =
+                @"
 {
     ""present"": ""abc"",
     ""extra"": ""def""
@@ -232,6 +240,7 @@ namespace Serde.Test
         private readonly partial record struct ThrowMissing
         {
             public string Present { get; init; }
+
             [SerdeMemberOptions(ThrowIfMissing = true)]
             public string? Missing { get; init; }
         }
@@ -239,18 +248,22 @@ namespace Serde.Test
         [Fact]
         public void ThrowIfMissing()
         {
-            var src = @"
+            var src =
+                @"
 {
     ""present"": ""abc"",
     ""extra"": ""def""
 }";
-            Assert.Throws<DeserializeException>(() => JsonSerializer.Deserialize<ThrowMissing>(src));
+            Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<ThrowMissing>(src)
+            );
         }
 
         [GenerateDeserialize]
         private partial record ThrowMissingFalse
         {
             public required string Present { get; init; }
+
             [SerdeMemberOptions(ThrowIfMissing = false)]
             public bool Missing { get; init; } = false;
         }
@@ -271,7 +284,8 @@ namespace Serde.Test
         [Fact]
         public void DenyUnknownTest()
         {
-            var src = @"
+            var src =
+                @"
 {
     ""present"": ""abc"",
     ""extra"": ""def""
@@ -291,16 +305,14 @@ namespace Serde.Test
         private partial class NullableFields
         {
             public string? S = null;
-            public Dictionary<string, string?> Dict = new() {
-                ["abc"] = null,
-                ["def"] = "def"
-            };
+            public Dictionary<string, string?> Dict = new() { ["abc"] = null, ["def"] = "def" };
         }
 
         [Fact]
         public void NullableFieldsTest()
         {
-            var src = @"
+            var src =
+                @"
 {
     ""dict"": {
         ""def"": ""def"",
@@ -342,25 +354,32 @@ namespace Serde.Test
         [Fact]
         public void DeserializeEnum()
         {
-            Assert.Equal(ColorEnum.Red, JsonSerializer.Deserialize<ColorEnum, ColorEnumWrap>("\"red\""));
+            Assert.Equal(
+                ColorEnum.Red,
+                JsonSerializer.Deserialize<ColorEnum, ColorEnumWrap>("\"red\"")
+            );
         }
 
-        private sealed class ColorEnumWrap : IDeserialize<ColorEnum>, IDeserializeProvider<ColorEnum>
+        private sealed class ColorEnumWrap
+            : IDeserialize<ColorEnum>,
+                IDeserializeProvider<ColorEnum>
         {
             public static ColorEnumWrap Instance { get; } = new();
             static IDeserialize<ColorEnum> IDeserializeProvider<ColorEnum>.Instance => Instance;
+
             private ColorEnumWrap() { }
 
-            public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeEnum(
-                nameof(JsonDeserializeTests.ColorEnum),
-                typeof(ColorEnum).GetCustomAttributesData(),
-                I32Proxy.SerdeInfo,
-                [
-                    ("red", typeof(ColorEnum).GetField("Red")),
-                    ("green", typeof(ColorEnum).GetField("Green")),
-                    ("blue", typeof(ColorEnum).GetField("Blue")),
-                ]
-            );
+            public ISerdeInfo SerdeInfo { get; } =
+                Serde.SerdeInfo.MakeEnum(
+                    nameof(JsonDeserializeTests.ColorEnum),
+                    typeof(ColorEnum).GetCustomAttributesData(),
+                    I32Proxy.SerdeInfo,
+                    [
+                        ("red", typeof(ColorEnum).GetField("Red")),
+                        ("green", typeof(ColorEnum).GetField("Green")),
+                        ("blue", typeof(ColorEnum).GetField("Blue")),
+                    ]
+                );
 
             ColorEnum IDeserialize<ColorEnum>.Deserialize(IDeserializer deserializer)
             {
@@ -371,11 +390,12 @@ namespace Serde.Test
                 {
                     throw DeserializeException.UnknownMember(errorName!, typeInfo);
                 }
-                return index switch {
+                return index switch
+                {
                     0 => ColorEnum.Red,
                     1 => ColorEnum.Green,
                     2 => ColorEnum.Blue,
-                    _ => throw new System.InvalidOperationException($"Unexpected index: {index}")
+                    _ => throw new System.InvalidOperationException($"Unexpected index: {index}"),
                 };
             }
         }
@@ -384,7 +404,7 @@ namespace Serde.Test
         {
             Red,
             Green,
-            Blue
+            Blue,
         }
 
         [Fact]
@@ -421,18 +441,19 @@ namespace Serde.Test
 }
 """;
 
-            public static Location Sample => new Location
-            {
-                Id = 1234,
-                Address1 = "The Street Name",
-                Address2 = "20/11",
-                City = "The City",
-                State = "The State",
-                PostalCode = "abc-12",
-                Name = "Nonexisting",
-                PhoneNumber = "+0 11 222 333 44",
-                Country = "The Greatest"
-            };
+            public static Location Sample =>
+                new Location
+                {
+                    Id = 1234,
+                    Address1 = "The Street Name",
+                    Address2 = "20/11",
+                    City = "The City",
+                    State = "The State",
+                    PostalCode = "abc-12",
+                    Name = "Nonexisting",
+                    PhoneNumber = "+0 11 222 333 44",
+                    Country = "The Greatest",
+                };
         }
 
         [GenerateDeserialize]
@@ -441,6 +462,7 @@ namespace Serde.Test
             private BasicDU() { }
 
             public record A(int X) : BasicDU { }
+
             public record B(string Y) : BasicDU { }
         }
 
@@ -448,11 +470,11 @@ namespace Serde.Test
         public void DeserializeBasicDU()
         {
             var aJson = """
-            {"A":{"x":5}}
-            """;
+                {"A":{"x":5}}
+                """;
             var bJson = """
-            {"B":{"y":"hello"}}
-            """;
+                {"B":{"y":"hello"}}
+                """;
             var a = new BasicDU.A(5);
             var b = new BasicDU.B("hello");
             Assert.Equal(a, Serde.Json.JsonSerializer.Deserialize<BasicDU>(aJson));
@@ -464,9 +486,11 @@ namespace Serde.Test
             private BasicDUManualTag() { }
 
             public record A(int W, int X) : BasicDUManualTag { }
+
             public record B(string Y, string Z) : BasicDUManualTag { }
 
-            static IDeserialize<BasicDUManualTag> IDeserializeProvider<BasicDUManualTag>.Instance => _DeserializeObject.Instance;
+            static IDeserialize<BasicDUManualTag> IDeserializeProvider<BasicDUManualTag>.Instance =>
+                _DeserializeObject.Instance;
 
             private sealed class _DeserializeObject : IDeserialize<BasicDUManualTag>
             {
@@ -497,13 +521,15 @@ namespace Serde.Test
             {
                 public static readonly _m_AProxy Instance = new();
 
-                public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-                    "A",
-                    System.Array.Empty<CustomAttributeData>(),
-                    [
-                        new Serde.SerdeInfo.FieldInfo("w", I32Proxy.SerdeInfo),
-                        new Serde.SerdeInfo.FieldInfo("x", I32Proxy.SerdeInfo),
-                    ]);
+                public ISerdeInfo SerdeInfo { get; } =
+                    Serde.SerdeInfo.MakeCustom(
+                        "A",
+                        System.Array.Empty<CustomAttributeData>(),
+                        [
+                            new Serde.SerdeInfo.FieldInfo("w", I32Proxy.SerdeInfo),
+                            new Serde.SerdeInfo.FieldInfo("x", I32Proxy.SerdeInfo),
+                        ]
+                    );
 
                 public A Deserialize(ITypeDeserializer typeDeserialize)
                 {
@@ -533,7 +559,9 @@ namespace Serde.Test
                                 typeDeserialize.SkipValue(_l_AProxy, _l_index);
                                 break;
                             default:
-                                throw new InvalidOperationException("Unexpected index: " + _l_index);
+                                throw new InvalidOperationException(
+                                    "Unexpected index: " + _l_index
+                                );
                         }
                     }
 
@@ -549,13 +577,16 @@ namespace Serde.Test
             private sealed class _m_BProxy : ISerdeInfoProvider
             {
                 public static readonly _m_BProxy Instance = new();
-                public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-                    "B",
-                    System.Array.Empty<CustomAttributeData>(),
-                    [
-                        new Serde.SerdeInfo.FieldInfo("y", StringProxy.SerdeInfo),
-                        new Serde.SerdeInfo.FieldInfo("z", StringProxy.SerdeInfo),
-                    ]);
+                public ISerdeInfo SerdeInfo { get; } =
+                    Serde.SerdeInfo.MakeCustom(
+                        "B",
+                        System.Array.Empty<CustomAttributeData>(),
+                        [
+                            new Serde.SerdeInfo.FieldInfo("y", StringProxy.SerdeInfo),
+                            new Serde.SerdeInfo.FieldInfo("z", StringProxy.SerdeInfo),
+                        ]
+                    );
+
                 public B Deserialize(ITypeDeserializer d)
                 {
                     var _l_BProxy = this.SerdeInfo;
@@ -584,7 +615,9 @@ namespace Serde.Test
                                 d.SkipValue(_l_BProxy, _l_index);
                                 break;
                             default:
-                                throw new InvalidOperationException("Unexpected index: " + _l_index);
+                                throw new InvalidOperationException(
+                                    "Unexpected index: " + _l_index
+                                );
                         }
                     }
 
@@ -597,14 +630,12 @@ namespace Serde.Test
                 }
             }
 
-            private static ISerdeInfo SerdeInfo { get; } = new BaseSerdeInfo(
-                nameof(BasicDUManualTag),
-                "tag",
-                [
-                    _m_AProxy.Instance.SerdeInfo,
-                    _m_BProxy.Instance.SerdeInfo,
-                ]
-            );
+            private static ISerdeInfo SerdeInfo { get; } =
+                new BaseSerdeInfo(
+                    nameof(BasicDUManualTag),
+                    "tag",
+                    [_m_AProxy.Instance.SerdeInfo, _m_BProxy.Instance.SerdeInfo]
+                );
 
             private sealed record BaseSerdeInfo(
                 string TypeName,
@@ -615,27 +646,36 @@ namespace Serde.Test
                 private readonly byte[] _utf8TagName = Encoding.UTF8.GetBytes(TagName);
 
                 public string Name => TypeName;
-                public IList<CustomAttributeData> Attributes => throw new System.NotImplementedException();
+                public IList<CustomAttributeData> Attributes =>
+                    throw new System.NotImplementedException();
                 public int FieldCount => 1;
-                public IList<CustomAttributeData> GetFieldAttributes(int index) => index switch
-                {
-                    0 => [],
-                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
-                };
-                public ISerdeInfo GetFieldInfo(int index) => index switch
-                {
-                    0 => StringProxy.SerdeInfo,
-                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
-                };
-                public ReadOnlySpan<byte> GetFieldName(int index) => Encoding.UTF8.GetBytes(GetFieldStringName(index));
-                public string GetFieldStringName(int index) => index switch
-                {
-                    0 => TagName,
-                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
-                };
-                public int TryGetIndex(ReadOnlySpan<byte> fieldName) => fieldName.SequenceEqual(_utf8TagName)
-                    ? 0
-                    : ITypeDeserializer.IndexNotFound;
+
+                public IList<CustomAttributeData> GetFieldAttributes(int index) =>
+                    index switch
+                    {
+                        0 => [],
+                        _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                    };
+
+                public ISerdeInfo GetFieldInfo(int index) =>
+                    index switch
+                    {
+                        0 => StringProxy.SerdeInfo,
+                        _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                    };
+
+                public ReadOnlySpan<byte> GetFieldName(int index) =>
+                    Encoding.UTF8.GetBytes(GetFieldStringName(index));
+
+                public string GetFieldStringName(int index) =>
+                    index switch
+                    {
+                        0 => TagName,
+                        _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                    };
+
+                public int TryGetIndex(ReadOnlySpan<byte> fieldName) =>
+                    fieldName.SequenceEqual(_utf8TagName) ? 0 : ITypeDeserializer.IndexNotFound;
             }
         }
 
@@ -643,13 +683,19 @@ namespace Serde.Test
         public void SerializeBasicDUManualTag()
         {
             var aJson = """
-            {"tag":"A","w":5,"x":6}
-            """;
+                {"tag":"A","w":5,"x":6}
+                """;
             var bJson = """
-            {"tag":"B","y":"hello","z":"world"}
-            """;
-            Assert.Equal(new BasicDUManualTag.A(5, 6), Serde.Json.JsonSerializer.Deserialize<BasicDUManualTag>(aJson));
-            Assert.Equal(new BasicDUManualTag.B("hello", "world"), Serde.Json.JsonSerializer.Deserialize<BasicDUManualTag>(bJson));
+                {"tag":"B","y":"hello","z":"world"}
+                """;
+            Assert.Equal(
+                new BasicDUManualTag.A(5, 6),
+                Serde.Json.JsonSerializer.Deserialize<BasicDUManualTag>(aJson)
+            );
+            Assert.Equal(
+                new BasicDUManualTag.B("hello", "world"),
+                Serde.Json.JsonSerializer.Deserialize<BasicDUManualTag>(bJson)
+            );
         }
     }
 }

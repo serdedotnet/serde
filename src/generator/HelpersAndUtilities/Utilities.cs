@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,15 +8,18 @@ namespace Serde
 {
     internal static class ExceptionUtilities
     {
-        public static Exception Unreachable => new InvalidOperationException("This location is thought to be unreachable");
+        public static Exception Unreachable =>
+            new InvalidOperationException("This location is thought to be unreachable");
 
-        public static Exception UnexpectedValue<T>(T t) => new InvalidOperationException($"Value {t} was unexpected");
+        public static Exception UnexpectedValue<T>(T t) =>
+            new InvalidOperationException($"Value {t} was unexpected");
     }
 
     internal static class SpanExtensions
     {
-        public static bool IsSorted<T>(this ReadOnlySpan<T> span) where T : IComparable<T>
-            => IsSorted(span, Comparer<T>.Default);
+        public static bool IsSorted<T>(this ReadOnlySpan<T> span)
+            where T : IComparable<T> => IsSorted(span, Comparer<T>.Default);
+
         public static bool IsSorted<T>(this ReadOnlySpan<T> span, IComparer<T> comparer)
         {
             for (int i = 1; i < span.Length; i++)
@@ -33,27 +35,30 @@ namespace Serde
 
     internal static class NullableExt
     {
-        public static T NotNull<T>(this T? value) where T : struct => value!.Value;
-        public static T NotNull<T>(this T? value) where T : class => value ?? throw new ArgumentNullException(nameof(value));
+        public static T NotNull<T>(this T? value)
+            where T : struct => value!.Value;
+
+        public static T NotNull<T>(this T? value)
+            where T : class => value ?? throw new ArgumentNullException(nameof(value));
 
         public static U? Map<T, U>(this T? value, Func<T, U?> f)
             where T : struct
-            where U : class => value is {} v ? f(v) : null;
+            where U : class => value is { } v ? f(v) : null;
 
         public static U? Map<T, U>(this T? value, Func<T, U> f)
             where T : class
-            where U : class => value is {} v ? f(v) : null;
+            where U : class => value is { } v ? f(v) : null;
 
         public static U? Map<T, U>(this T? value, Func<T, U?> f)
             where T : class
-            where U : struct => value is {} v ? f(v) : null;
+            where U : struct => value is { } v ? f(v) : null;
     }
 
     internal static class NullableExt2
     {
         public static U? Map<T, U>(this T? value, Func<T, U> f)
             where T : struct
-            where U : struct => value is {} v ? f(v) : null;
+            where U : struct => value is { } v ? f(v) : null;
     }
 
     internal static class Utilities
@@ -73,7 +78,8 @@ namespace Serde
             value = kvp.Value;
         }
 
-        public static IEnumerable<U> SelectNotNull<T, U>(this IEnumerable<T> en, Func<T, U?> f) where U : class
+        public static IEnumerable<U> SelectNotNull<T, U>(this IEnumerable<T> en, Func<T, U?> f)
+            where U : class
         {
             foreach (var item in en.Select(f))
             {
@@ -84,7 +90,8 @@ namespace Serde
             }
         }
 
-        public static IEnumerable<U> SelectNotNull<T, U>(this IEnumerable<T> en, Func<T, U?> f) where U : struct
+        public static IEnumerable<U> SelectNotNull<T, U>(this IEnumerable<T> en, Func<T, U?> f)
+            where U : struct
         {
             foreach (var item in en.Select(f))
             {

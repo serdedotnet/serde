@@ -1,4 +1,3 @@
-
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -8,7 +7,9 @@ namespace Serde;
 
 public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<SourceBuilder>
 {
-    public static readonly Encoding UTF8Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+    public static readonly Encoding UTF8Encoding = new UTF8Encoding(
+        encoderShouldEmitUTF8Identifier: false
+    );
 
     private string _currentIndentWhitespace = "";
     private StringBuilder _stringBuilder;
@@ -73,9 +74,7 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<Sourc
         return new StringBuilderText(_stringBuilder, SourceBuilder.UTF8Encoding, checksumAlgorithm);
     }
 
-    public void Append(
-        [InterpolatedStringHandlerArgument("")]
-        SourceBuilderStringHandler s)
+    public void Append([InterpolatedStringHandlerArgument("")] SourceBuilderStringHandler s)
     {
         // No work needed, the handler has already added the text to the string builder
     }
@@ -91,10 +90,7 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<Sourc
         Append(srcBuilder.ToString());
     }
 
-    private static void Append(
-        StringBuilder builder,
-        string currentIndentWhitespace,
-        string str)
+    private static void Append(StringBuilder builder, string currentIndentWhitespace, string str)
     {
         int start = 0;
         int nl;
@@ -119,9 +115,7 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<Sourc
         }
     }
 
-    public void AppendLine(
-        [InterpolatedStringHandlerArgument("")]
-        SourceBuilderStringHandler s)
+    public void AppendLine([InterpolatedStringHandlerArgument("")] SourceBuilderStringHandler s)
     {
         Append(s);
         _stringBuilder.AppendLine();
@@ -190,7 +184,8 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<Sourc
         public SourceBuilderStringHandler(
             int literalLength,
             int formattedCount,
-            SourceBuilder sourceBuilder)
+            SourceBuilder sourceBuilder
+        )
         {
             _stringBuilder = sourceBuilder._stringBuilder;
             _originalIndentWhitespace = sourceBuilder._currentIndentWhitespace;
@@ -256,8 +251,12 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<Sourc
 
         private readonly Encoding? _encodingOpt;
 
-        public StringBuilderText(StringBuilder builder, Encoding? encodingOpt, SourceHashAlgorithm checksumAlgorithm)
-             : base(checksumAlgorithm: checksumAlgorithm)
+        public StringBuilderText(
+            StringBuilder builder,
+            Encoding? encodingOpt,
+            SourceHashAlgorithm checksumAlgorithm
+        )
+            : base(checksumAlgorithm: checksumAlgorithm)
         {
             _builder = builder;
             _encodingOpt = encodingOpt;
@@ -310,7 +309,12 @@ public sealed class SourceBuilder : IComparable<SourceBuilder>, IEquatable<Sourc
             return _builder.ToString(span.Start, span.Length);
         }
 
-        public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
+        public override void CopyTo(
+            int sourceIndex,
+            char[] destination,
+            int destinationIndex,
+            int count
+        )
         {
             _builder.CopyTo(sourceIndex, destination, destinationIndex, count);
         }

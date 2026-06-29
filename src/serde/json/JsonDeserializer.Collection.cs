@@ -1,4 +1,3 @@
-
 using System;
 using System.Buffers;
 using System.Buffers.Text;
@@ -21,8 +20,7 @@ partial class JsonDeserializer<TReader>
 
         public int? SizeOpt => null;
 
-        public int TryReadIndex(ISerdeInfo info)
-            => TryReadIndexWithName(info).Item1;
+        public int TryReadIndex(ISerdeInfo info) => TryReadIndexWithName(info).Item1;
 
         public (int, string? errorName) TryReadIndexWithName(ISerdeInfo info)
         {
@@ -35,7 +33,9 @@ partial class JsonDeserializer<TReader>
                 case InfoKind.Dictionary:
                     return (TryReadIndexDictionary(out errorName), errorName);
                 default:
-                    throw new ArgumentException($"TypeKind is {info.Kind}, expected Enumerable or Dictionary");
+                    throw new ArgumentException(
+                        $"TypeKind is {info.Kind}, expected Enumerable or Dictionary"
+                    );
             }
         }
 
@@ -95,7 +95,8 @@ partial class JsonDeserializer<TReader>
             return _index;
         }
 
-        public T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d) where T : class?
+        public T ReadValue<T>(ISerdeInfo info, int index, IDeserialize<T> d)
+            where T : class?
         {
             var next = d.Deserialize(_deserializer);
             _index++;

@@ -1,4 +1,3 @@
-
 #nullable disable
 
 using System;
@@ -42,42 +41,48 @@ public partial record Location
 }
 """;
 
-    public static Location Sample => new Location
-    {
-        Id = 1234,
-        Address1 = "The Street Name",
-        Address2 = "20/11",
-        City = "The City",
-        State = "The State",
-        PostalCode = "abc-12",
-        Name = "Nonexisting",
-        PhoneNumber = "+0 11 222 333 44",
-        Country = "The Greatest"
-    };
+    public static Location Sample =>
+        new Location
+        {
+            Id = 1234,
+            Address1 = "The Street Name",
+            Address2 = "20/11",
+            City = "The City",
+            State = "The State",
+            PostalCode = "abc-12",
+            Name = "Nonexisting",
+            PhoneNumber = "+0 11 222 333 44",
+            Country = "The Greatest",
+        };
 }
 
 public partial record LocationWrap : IDeserialize<Location>, IDeserializeProvider<Location>
 {
     public static LocationWrap Instance { get; } = new();
     static IDeserialize<Location> IDeserializeProvider<Location>.Instance => Instance;
+
     private LocationWrap() { }
 
-    public ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-        "Location",
-        typeof(Location).GetCustomAttributesData(),
-        [
-            new Serde.SerdeInfo.FieldInfo("id", I32Proxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("address1", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("address2", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("city", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("state", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("postalCode", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("name", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("phoneNumber", StringProxy.SerdeInfo),
-            new Serde.SerdeInfo.FieldInfo("country", StringProxy.SerdeInfo)
-        ]);
+    public ISerdeInfo SerdeInfo { get; } =
+        Serde.SerdeInfo.MakeCustom(
+            "Location",
+            typeof(Location).GetCustomAttributesData(),
+            [
+                new Serde.SerdeInfo.FieldInfo("id", I32Proxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("address1", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("address2", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("city", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("state", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("postalCode", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("name", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("phoneNumber", StringProxy.SerdeInfo),
+                new Serde.SerdeInfo.FieldInfo("country", StringProxy.SerdeInfo),
+            ]
+        );
 
-    Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(IDeserializer deserializer)
+    Benchmarks.Location Serde.IDeserialize<Benchmarks.Location>.Deserialize(
+        IDeserializer deserializer
+    )
     {
         int _l_id = default!;
         string _l_address1 = default!;
@@ -175,7 +180,6 @@ public partial record Primitives(
     ushort UShortField,
     uint UIntField,
     ulong ULongField,
-
     sbyte SByteField,
     short ShortField,
     int IntField,
@@ -189,7 +193,6 @@ public partial record Primitives(
         UShortField: ushort.MaxValue,
         UIntField: uint.MaxValue,
         ULongField: ulong.MaxValue,
-
         SByteField: sbyte.MaxValue,
         ShortField: short.MaxValue,
         IntField: int.MaxValue,
@@ -213,24 +216,51 @@ public partial record Primitives(
 }
 
 [GenerateSerde]
-public partial record Guids(
-    Guid GuidField,
-    Guid GuidField2
-)
+public partial record Guids(Guid GuidField, Guid GuidField2)
 {
     public static readonly Guids Sample = new Guids(
-        GuidField: new Guid(new byte[] {
-            0x01, 0x02, 0x03, 0x04,
-            0x05, 0x06, 0x07, 0x08,
-            0x09, 0x0A, 0x0B, 0x0C,
-            0x0D, 0x0E, 0x0F, 0x10,
-        }),
-        GuidField2: new Guid(new byte[] {
-            0x10, 0x0F, 0x0E, 0x0D,
-            0x0C, 0x0B, 0x0A, 0x09,
-            0x08, 0x07, 0x06, 0x05,
-            0x04, 0x03, 0x02, 0x01,
-        })
+        GuidField: new Guid(
+            new byte[]
+            {
+                0x01,
+                0x02,
+                0x03,
+                0x04,
+                0x05,
+                0x06,
+                0x07,
+                0x08,
+                0x09,
+                0x0A,
+                0x0B,
+                0x0C,
+                0x0D,
+                0x0E,
+                0x0F,
+                0x10,
+            }
+        ),
+        GuidField2: new Guid(
+            new byte[]
+            {
+                0x10,
+                0x0F,
+                0x0E,
+                0x0D,
+                0x0C,
+                0x0B,
+                0x0A,
+                0x09,
+                0x08,
+                0x07,
+                0x06,
+                0x05,
+                0x04,
+                0x03,
+                0x02,
+                0x01,
+            }
+        )
     );
     public const string SampleSerialized = """
 {

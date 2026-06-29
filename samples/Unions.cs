@@ -1,11 +1,9 @@
-
 using System;
 using Serde;
 using Serde.Json;
 using static Utils;
 
 // Sample code for serializing and deserializing union types
-
 
 // ANCHOR: union-def
 [StaticCs.Closed] // Optional library for annotating union types
@@ -15,8 +13,10 @@ abstract partial record UnionBase
     private UnionBase() { }
 
     public partial record DerivedA(int A) : UnionBase;
+
     public partial record DerivedB(string B) : UnionBase;
 }
+
 // ANCHOR_END: union-def
 
 public static class UnionSample

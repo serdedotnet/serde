@@ -1,9 +1,9 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using static Serde.Diagnostics;
 
 namespace Serde;
@@ -14,7 +14,8 @@ public partial class SerializeImplGen
         GeneratorExecutionContext context,
         ITypeSymbol receiverType,
         INamedTypeSymbol? foreignType,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
     {
         if (receiverType.IsAbstract)
         {
@@ -22,7 +23,11 @@ public partial class SerializeImplGen
         }
 
         var statements = new SourceBuilder();
-        var fieldsAndProps = SymbolUtilities.GetDataMembers(receiverType, SerdeUsage.Serialize, context);
+        var fieldsAndProps = SymbolUtilities.GetDataMembers(
+            receiverType,
+            SerdeUsage.Serialize,
+            context
+        );
 
         // The generated body of ISerialize is
         // `var _l_info = GetInfo(this);
@@ -63,54 +68,108 @@ public partial class SerializeImplGen
             {
                 var m = fieldsAndProps[i];
 
-                var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
+                var proxyContext = ProxyContext.Create(
+                    classScopeProxyMap,
+                    ProxyMap.FromSymbol(m.Symbol)
+                );
 
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
-                if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } proxy)
+                if (
+                    Proxies.TryGetExplicitWrapper(
+                        m,
+                        context,
+                        SerdeUsage.Serialize,
+                        inProgress,
+                        proxyContext
+                    ) is
+                    { } proxy
+                )
                 {
-                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i, receiverExpr));
+                    statements.AppendLine(
+                        MakeWriteValueStmt(m, m.Type.ToDisplayString(), proxy, i, receiverExpr)
+                    );
                 }
                 // 2. Check for a direct implementation of ISerialize
-                else if (SerdeImplRoslynGenerator.ImplementsSerde(m.Type, m.Type, context, SerdeUsage.Serialize))
+                else if (
+                    SerdeImplRoslynGenerator.ImplementsSerde(
+                        m.Type,
+                        m.Type,
+                        context,
+                        SerdeUsage.Serialize
+                    )
+                )
                 {
-                    statements.AppendLine(MakeWriteValueStmt(m, m.Type.ToDisplayString(), m.Type.ToDisplayString(), i, receiverExpr));
+                    statements.AppendLine(
+                        MakeWriteValueStmt(
+                            m,
+                            m.Type.ToDisplayString(),
+                            m.Type.ToDisplayString(),
+                            i,
+                            receiverExpr
+                        )
+                    );
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
                 //    method. Check using the non-null form (even if it's nullable), since nullable
                 //    types aren't considered primitives
-                else if (Proxies.TryGetPrimitiveName(m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)) is { } primName)
+                else if (
+                    Proxies.TryGetPrimitiveName(
+                        m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)
+                    ) is
+                    { } primName
+                )
                 {
                     if (m.IsNullable && !m.SerializeNull)
                     {
                         // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                         primName += "IfNotNull";
                     }
-                    statements.AppendLine($"_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});");
+                    statements.AppendLine(
+                        $"_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});"
+                    );
                 }
                 // 4. A wrapper that implements ISerialize
-                else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Serialize, inProgress, proxyContext) is { } wrapper)
+                else if (
+                    Proxies.TryGetImplicitWrapper(
+                        m.Type,
+                        context,
+                        SerdeUsage.Serialize,
+                        inProgress,
+                        proxyContext
+                    ) is
+                    { } wrapper
+                )
                 {
-                    statements.AppendLine(MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i, receiverExpr));
+                    statements.AppendLine(
+                        MakeWriteValueStmt(m, wrapper.Type, wrapper.Proxy, i, receiverExpr)
+                    );
                 }
                 else
                 {
                     // No built-in handling and doesn't implement ISerialize, error
-                    context.ReportDiagnostic(CreateDiagnostic(
-                        DiagId.ERR_DoesntImplementInterface,
-                        m.Locations[0],
-                        m.Symbol,
-                        m.Type,
-                        "Serde.ISerializeProvider<T>"));
+                    context.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagId.ERR_DoesntImplementInterface,
+                            m.Locations[0],
+                            m.Symbol,
+                            m.Type,
+                            "Serde.ISerializeProvider<T>"
+                        )
+                    );
                     continue;
                 }
             }
 
-            static string MakeWriteValueStmt(DataMemberSymbol m, string type, string proxy, int i, string valueExpr)
+            static string MakeWriteValueStmt(
+                DataMemberSymbol m,
+                string type,
+                string proxy,
+                int i,
+                string valueExpr
+            )
             {
                 // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
-                string methodName = m.Type.IsReferenceType
-                    ? "WriteValue"
-                    : "WriteBoxedValue";
+                string methodName = m.Type.IsReferenceType ? "WriteValue" : "WriteBoxedValue";
                 // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                 if (m.IsNullable && !m.SerializeNull)
                 {
@@ -127,17 +186,23 @@ public partial class SerializeImplGen
         var interfaceString = interfaceType.ToDisplayString();
 
         // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
-        var members = new SourceBuilder($$"""
-        void global::Serde.ISerialize<{{interfaceString}}>.Serialize({{interfaceString}} value, global::Serde.ISerializer serializer)
-        {
-            {{statements}}
-        }
+        var members = new SourceBuilder(
+            $$"""
+            void global::Serde.ISerialize<{{interfaceString}}>.Serialize({{interfaceString}} value, global::Serde.ISerializer serializer)
+            {
+                {{statements}}
+            }
 
-        """);
+            """
+        );
         return members;
     }
 
-    private static void GenEnumSerialize(ITypeSymbol receiverType, SourceBuilder statements, List<DataMemberSymbol> fieldsAndProps)
+    private static void GenEnumSerialize(
+        ITypeSymbol receiverType,
+        SourceBuilder statements,
+        List<DataMemberSymbol> fieldsAndProps
+    )
     {
         // `var _l_info = GetInfo(this);`
         statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
@@ -154,7 +219,8 @@ public partial class SerializeImplGen
         // serializer.SerializeEnumValue("Enum", name, (Underlying)value, default(Underlying));
         var enumType = (INamedTypeSymbol)receiverType;
         var underlying = enumType.EnumUnderlyingType!;
-        statements.AppendLine($$"""
+        statements.AppendLine(
+            $$"""
                 var index = value switch
                 {
                     {{string.Join("," + Utilities.NewLine, fieldsAndProps
@@ -164,7 +230,9 @@ public partial class SerializeImplGen
                 """
         );
         var methodName = Proxies.TryGetPrimitiveName(underlying).NotNull();
-        statements.AppendLine($"_l_type.Write{methodName}(_l_info, index, ({underlying.ToDisplayString()})value);");
+        statements.AppendLine(
+            $"_l_type.Write{methodName}(_l_info, index, ({underlying.ToDisplayString()})value);"
+        );
     }
 
     /// <summary>
@@ -184,21 +252,25 @@ public partial class SerializeImplGen
             var t = caseTypes[i];
             var tString = t.ToDisplayString();
             casesBuilder.AppendLine($"case {tString} c:");
-            casesBuilder.AppendLine($"    _l_type.WriteValue<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);");
+            casesBuilder.AppendLine(
+                $"    _l_type.WriteValue<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);"
+            );
             casesBuilder.AppendLine($"    break;");
         }
-        var methodDecl = new SourceBuilder($$"""
-        void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
-        {
-            var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_serdeInfo);
-            switch (value)
+        var methodDecl = new SourceBuilder(
+            $$"""
+            void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
             {
-                {{casesBuilder}}
+                var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
+                var _l_type = serializer.WriteType(_l_serdeInfo);
+                switch (value)
+                {
+                    {{casesBuilder}}
+                }
+                _l_type.End(_l_serdeInfo);
             }
-            _l_type.End(_l_serdeInfo);
-        }
-        """);
+            """
+        );
         return methodDecl;
     }
 }

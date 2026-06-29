@@ -1,4 +1,3 @@
-
 using System;
 
 namespace Serde;
@@ -11,18 +10,15 @@ namespace Serde;
 /// </summary>
 public static class TupleProxy
 {
-
-    public class Ser<T1, TProvider1>()
-        : ISerializeProvider<ValueTuple<T1>>
+    public class Ser<T1, TProvider1>() : ISerializeProvider<ValueTuple<T1>>
         where TProvider1 : ISerializeProvider<T1>
     {
         public static ISerialize<ValueTuple<T1>> Instance { get; } = new Impl();
 
         private sealed class Impl : ISerialize<ValueTuple<T1>>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([TProvider1.Instance.SerdeInfo]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
 
@@ -36,17 +32,15 @@ public static class TupleProxy
         }
     }
 
-    public class De<T1, TProvider1>()
-        : IDeserializeProvider<ValueTuple<T1>>
+    public class De<T1, TProvider1>() : IDeserializeProvider<ValueTuple<T1>>
         where TProvider1 : IDeserializeProvider<T1>
     {
         public static IDeserialize<ValueTuple<T1>> Instance { get; } = new Impl();
 
         private sealed class Impl : IDeserialize<ValueTuple<T1>>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([TProvider1.Instance.SerdeInfo]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
 
@@ -86,8 +80,7 @@ public static class TupleProxy
         }
     }
 
-    public class Ser<T1, T2, TProvider1, TProvider2>()
-        : ISerializeProvider<(T1, T2)>
+    public class Ser<T1, T2, TProvider1, TProvider2>() : ISerializeProvider<(T1, T2)>
         where TProvider1 : ISerializeProvider<T1>
         where TProvider2 : ISerializeProvider<T2>
     {
@@ -95,10 +88,11 @@ public static class TupleProxy
 
         private sealed class Impl : ISerialize<(T1, T2)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeSerialize<T2> _ser2 = TypeSerialize.GetOrBox<T2, TProvider2>();
@@ -114,8 +108,7 @@ public static class TupleProxy
         }
     }
 
-    public class De<T1, T2, TProvider1, TProvider2>()
-        : IDeserializeProvider<(T1, T2)>
+    public class De<T1, T2, TProvider1, TProvider2>() : IDeserializeProvider<(T1, T2)>
         where TProvider1 : IDeserializeProvider<T1>
         where TProvider2 : IDeserializeProvider<T2>
     {
@@ -123,10 +116,11 @@ public static class TupleProxy
 
         private sealed class Impl : IDeserialize<(T1, T2)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeDeserialize<T2> _de2 = TypeDeserialize.GetOrBox<T2, TProvider2>();
@@ -182,11 +176,12 @@ public static class TupleProxy
 
         private sealed class Impl : ISerialize<(T1, T2, T3)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeSerialize<T2> _ser2 = TypeSerialize.GetOrBox<T2, TProvider2>();
@@ -214,11 +209,12 @@ public static class TupleProxy
 
         private sealed class Impl : IDeserialize<(T1, T2, T3)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeDeserialize<T2> _de2 = TypeDeserialize.GetOrBox<T2, TProvider2>();
@@ -281,12 +277,13 @@ public static class TupleProxy
 
         private sealed class Impl : ISerialize<(T1, T2, T3, T4)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeSerialize<T2> _ser2 = TypeSerialize.GetOrBox<T2, TProvider2>();
@@ -317,12 +314,13 @@ public static class TupleProxy
 
         private sealed class Impl : IDeserialize<(T1, T2, T3, T4)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeDeserialize<T2> _de2 = TypeDeserialize.GetOrBox<T2, TProvider2>();
@@ -380,8 +378,18 @@ public static class TupleProxy
         }
     }
 
-    public class Ser<T1, T2, T3, T4, T5, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5>()
-        : ISerializeProvider<(T1, T2, T3, T4, T5)>
+    public class Ser<
+        T1,
+        T2,
+        T3,
+        T4,
+        T5,
+        TProvider1,
+        TProvider2,
+        TProvider3,
+        TProvider4,
+        TProvider5
+    >() : ISerializeProvider<(T1, T2, T3, T4, T5)>
         where TProvider1 : ISerializeProvider<T1>
         where TProvider2 : ISerializeProvider<T2>
         where TProvider3 : ISerializeProvider<T3>
@@ -392,13 +400,14 @@ public static class TupleProxy
 
         private sealed class Impl : ISerialize<(T1, T2, T3, T4, T5)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-                TProvider5.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                    TProvider5.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeSerialize<T2> _ser2 = TypeSerialize.GetOrBox<T2, TProvider2>();
@@ -420,8 +429,18 @@ public static class TupleProxy
         }
     }
 
-    public class De<T1, T2, T3, T4, T5, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5>()
-        : IDeserializeProvider<(T1, T2, T3, T4, T5)>
+    public class De<
+        T1,
+        T2,
+        T3,
+        T4,
+        T5,
+        TProvider1,
+        TProvider2,
+        TProvider3,
+        TProvider4,
+        TProvider5
+    >() : IDeserializeProvider<(T1, T2, T3, T4, T5)>
         where TProvider1 : IDeserializeProvider<T1>
         where TProvider2 : IDeserializeProvider<T2>
         where TProvider3 : IDeserializeProvider<T3>
@@ -432,13 +451,14 @@ public static class TupleProxy
 
         private sealed class Impl : IDeserialize<(T1, T2, T3, T4, T5)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-                TProvider5.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                    TProvider5.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeDeserialize<T2> _de2 = TypeDeserialize.GetOrBox<T2, TProvider2>();
@@ -502,8 +522,20 @@ public static class TupleProxy
         }
     }
 
-    public class Ser<T1, T2, T3, T4, T5, T6, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6>()
-        : ISerializeProvider<(T1, T2, T3, T4, T5, T6)>
+    public class Ser<
+        T1,
+        T2,
+        T3,
+        T4,
+        T5,
+        T6,
+        TProvider1,
+        TProvider2,
+        TProvider3,
+        TProvider4,
+        TProvider5,
+        TProvider6
+    >() : ISerializeProvider<(T1, T2, T3, T4, T5, T6)>
         where TProvider1 : ISerializeProvider<T1>
         where TProvider2 : ISerializeProvider<T2>
         where TProvider3 : ISerializeProvider<T3>
@@ -515,14 +547,15 @@ public static class TupleProxy
 
         private sealed class Impl : ISerialize<(T1, T2, T3, T4, T5, T6)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-                TProvider5.Instance.SerdeInfo,
-                TProvider6.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                    TProvider5.Instance.SerdeInfo,
+                    TProvider6.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeSerialize<T2> _ser2 = TypeSerialize.GetOrBox<T2, TProvider2>();
@@ -546,8 +579,20 @@ public static class TupleProxy
         }
     }
 
-    public class De<T1, T2, T3, T4, T5, T6, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6>()
-        : IDeserializeProvider<(T1, T2, T3, T4, T5, T6)>
+    public class De<
+        T1,
+        T2,
+        T3,
+        T4,
+        T5,
+        T6,
+        TProvider1,
+        TProvider2,
+        TProvider3,
+        TProvider4,
+        TProvider5,
+        TProvider6
+    >() : IDeserializeProvider<(T1, T2, T3, T4, T5, T6)>
         where TProvider1 : IDeserializeProvider<T1>
         where TProvider2 : IDeserializeProvider<T2>
         where TProvider3 : IDeserializeProvider<T3>
@@ -559,14 +604,15 @@ public static class TupleProxy
 
         private sealed class Impl : IDeserialize<(T1, T2, T3, T4, T5, T6)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-                TProvider5.Instance.SerdeInfo,
-                TProvider6.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                    TProvider5.Instance.SerdeInfo,
+                    TProvider6.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeDeserialize<T2> _de2 = TypeDeserialize.GetOrBox<T2, TProvider2>();
@@ -636,8 +682,22 @@ public static class TupleProxy
         }
     }
 
-    public class Ser<T1, T2, T3, T4, T5, T6, T7, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6, TProvider7>()
-        : ISerializeProvider<(T1, T2, T3, T4, T5, T6, T7)>
+    public class Ser<
+        T1,
+        T2,
+        T3,
+        T4,
+        T5,
+        T6,
+        T7,
+        TProvider1,
+        TProvider2,
+        TProvider3,
+        TProvider4,
+        TProvider5,
+        TProvider6,
+        TProvider7
+    >() : ISerializeProvider<(T1, T2, T3, T4, T5, T6, T7)>
         where TProvider1 : ISerializeProvider<T1>
         where TProvider2 : ISerializeProvider<T2>
         where TProvider3 : ISerializeProvider<T3>
@@ -650,15 +710,16 @@ public static class TupleProxy
 
         private sealed class Impl : ISerialize<(T1, T2, T3, T4, T5, T6, T7)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-                TProvider5.Instance.SerdeInfo,
-                TProvider6.Instance.SerdeInfo,
-                TProvider7.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                    TProvider5.Instance.SerdeInfo,
+                    TProvider6.Instance.SerdeInfo,
+                    TProvider7.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeSerialize<T1> _ser1 = TypeSerialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeSerialize<T2> _ser2 = TypeSerialize.GetOrBox<T2, TProvider2>();
@@ -684,8 +745,22 @@ public static class TupleProxy
         }
     }
 
-    public class De<T1, T2, T3, T4, T5, T6, T7, TProvider1, TProvider2, TProvider3, TProvider4, TProvider5, TProvider6, TProvider7>()
-        : IDeserializeProvider<(T1, T2, T3, T4, T5, T6, T7)>
+    public class De<
+        T1,
+        T2,
+        T3,
+        T4,
+        T5,
+        T6,
+        T7,
+        TProvider1,
+        TProvider2,
+        TProvider3,
+        TProvider4,
+        TProvider5,
+        TProvider6,
+        TProvider7
+    >() : IDeserializeProvider<(T1, T2, T3, T4, T5, T6, T7)>
         where TProvider1 : IDeserializeProvider<T1>
         where TProvider2 : IDeserializeProvider<T2>
         where TProvider3 : IDeserializeProvider<T3>
@@ -698,15 +773,16 @@ public static class TupleProxy
 
         private sealed class Impl : IDeserialize<(T1, T2, T3, T4, T5, T6, T7)>
         {
-            public ISerdeInfo SerdeInfo { get; } = global::Serde.SerdeInfo.MakeTuple([
-                TProvider1.Instance.SerdeInfo,
-                TProvider2.Instance.SerdeInfo,
-                TProvider3.Instance.SerdeInfo,
-                TProvider4.Instance.SerdeInfo,
-                TProvider5.Instance.SerdeInfo,
-                TProvider6.Instance.SerdeInfo,
-                TProvider7.Instance.SerdeInfo,
-            ]);
+            public ISerdeInfo SerdeInfo { get; } =
+                global::Serde.SerdeInfo.MakeTuple([
+                    TProvider1.Instance.SerdeInfo,
+                    TProvider2.Instance.SerdeInfo,
+                    TProvider3.Instance.SerdeInfo,
+                    TProvider4.Instance.SerdeInfo,
+                    TProvider5.Instance.SerdeInfo,
+                    TProvider6.Instance.SerdeInfo,
+                    TProvider7.Instance.SerdeInfo,
+                ]);
 
             private readonly ITypeDeserialize<T1> _de1 = TypeDeserialize.GetOrBox<T1, TProvider1>();
             private readonly ITypeDeserialize<T2> _de2 = TypeDeserialize.GetOrBox<T2, TProvider2>();

@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -16,7 +15,8 @@ public static class SerdeInfo
 {
     public readonly record struct FieldInfo(string Name, ISerdeInfo SerdeInfo)
     {
-        private readonly IList<CustomAttributeData> _attributes = Array.Empty<CustomAttributeData>();
+        private readonly IList<CustomAttributeData> _attributes =
+            Array.Empty<CustomAttributeData>();
         private readonly MemberInfo? _memberInfo;
 
         /// <summary>
@@ -33,7 +33,9 @@ public static class SerdeInfo
             {
                 if (MemberInfo is not null)
                 {
-                    throw new InvalidOperationException("Cannot set both Attributes and MemberInfo.");
+                    throw new InvalidOperationException(
+                        "Cannot set both Attributes and MemberInfo."
+                    );
                 }
                 _attributes = value;
             }
@@ -51,7 +53,9 @@ public static class SerdeInfo
             {
                 if (_attributes.Count > 0)
                 {
-                    throw new InvalidOperationException("Cannot set both Attributes and MemberInfo.");
+                    throw new InvalidOperationException(
+                        "Cannot set both Attributes and MemberInfo."
+                    );
                 }
                 _memberInfo = value;
             }
@@ -72,7 +76,8 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<FieldInfo> fields)
+        ReadOnlySpan<FieldInfo> fields
+    )
     {
         return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, fields);
     }
@@ -81,15 +86,16 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields)
-        => MakeCustom(typeName, typeAttributes, fields, Array.Empty<int>());
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields
+    ) => MakeCustom(typeName, typeAttributes, fields, Array.Empty<int>());
 
     [Obsolete("Use MakeCustom with ReadOnlySpan<FieldInfo> instead.")]
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, MemberInfo? MemberInfo)> fields,
-        ReadOnlySpan<int> fieldOrdinals)
+        ReadOnlySpan<int> fieldOrdinals
+    )
     {
         var converted = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
@@ -97,7 +103,7 @@ public static class SerdeInfo
             converted[i] = new(fields[i].SerializeName, fields[i].SerdeInfo)
             {
                 MemberInfo = fields[i].MemberInfo,
-                Ordinal = fieldOrdinals.IsEmpty ? -1 : fieldOrdinals[i]
+                Ordinal = fieldOrdinals.IsEmpty ? -1 : fieldOrdinals[i],
             };
         }
         return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
@@ -109,14 +115,19 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo, IList<CustomAttributeData> FieldAttributes)> fields)
+        ReadOnlySpan<(
+            string SerializeName,
+            ISerdeInfo SerdeInfo,
+            IList<CustomAttributeData> FieldAttributes
+        )> fields
+    )
     {
         var converted = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
             converted[i] = new(fields[i].SerializeName, fields[i].SerdeInfo)
             {
-                Attributes = fields[i].FieldAttributes
+                Attributes = fields[i].FieldAttributes,
             };
         }
         return TypeWithFieldsInfo.Create(typeName, InfoKind.CustomType, typeAttributes, converted);
@@ -126,7 +137,8 @@ public static class SerdeInfo
     public static ISerdeInfo MakeCustom(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo)> fields)
+        ReadOnlySpan<(string SerializeName, ISerdeInfo SerdeInfo)> fields
+    )
     {
         var converted = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
@@ -140,28 +152,29 @@ public static class SerdeInfo
         string typeName,
         IList<CustomAttributeData> typeAttributes,
         ISerdeInfo underlyingInfo,
-        ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields)
+        ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields
+    )
     {
         var fieldsWithInfo = new FieldInfo[fields.Length];
         for (int i = 0; i < fields.Length; i++)
         {
             fieldsWithInfo[i] = new(fields[i].SerializeName, underlyingInfo)
             {
-                MemberInfo = fields[i].MemberInfo
+                MemberInfo = fields[i].MemberInfo,
             };
         }
 
         return TypeWithFieldsInfo.Create(typeName, InfoKind.Enum, typeAttributes, fieldsWithInfo);
     }
 
-    public static ISerdeInfo MakePrimitive(string name, PrimitiveKind kind) => new PrimitiveInfo(name, kind);
+    public static ISerdeInfo MakePrimitive(string name, PrimitiveKind kind) =>
+        new PrimitiveInfo(name, kind);
 
-    public static ISerdeInfo MakeNullable(ISerdeInfo underlying) => new NullableSerdeInfo(underlying);
+    public static ISerdeInfo MakeNullable(ISerdeInfo underlying) =>
+        new NullableSerdeInfo(underlying);
 
-    public static ISerdeInfo MakeEnumerable(
-        string typeName,
-        ISerdeInfo elementInfo)
-        => new CollectionInfo(typeName, InfoKind.List, [elementInfo]);
+    public static ISerdeInfo MakeEnumerable(string typeName, ISerdeInfo elementInfo) =>
+        new CollectionInfo(typeName, InfoKind.List, [elementInfo]);
 
     /// <summary>
     /// Create an <see cref="ISerdeInfo"/> for a fixed-length, heterogeneous tuple. Each element
@@ -190,14 +203,15 @@ public static class SerdeInfo
             sb.ToString(),
             InfoKind.Tuple,
             Array.Empty<CustomAttributeData>(),
-            fields);
+            fields
+        );
     }
 
     public static ISerdeInfo MakeDictionary(
         string typeName,
         ISerdeInfo keyInfo,
-        ISerdeInfo valueInfo)
-        => new CollectionInfo(typeName, InfoKind.Dictionary, [keyInfo, valueInfo]);
+        ISerdeInfo valueInfo
+    ) => new CollectionInfo(typeName, InfoKind.Dictionary, [keyInfo, valueInfo]);
 
     /// <summary>
     /// Make an ISerdeInfo that represents a union. Each case is represented as a field, meaning
@@ -206,8 +220,8 @@ public static class SerdeInfo
     public static IUnionSerdeInfo MakeUnion(
         string typeName,
         IList<CustomAttributeData> typeAttributes,
-        ImmutableArray<ISerdeInfo> caseInfos)
-        => new UnionSerdeInfo(typeName, typeAttributes, caseInfos);
+        ImmutableArray<ISerdeInfo> caseInfos
+    ) => new UnionSerdeInfo(typeName, typeAttributes, caseInfos);
 
     private sealed record PrimitiveInfo(string Name, PrimitiveKind PrimitiveKind) : INoFieldsInfo
     {
@@ -220,7 +234,8 @@ public static class SerdeInfo
     private sealed record CollectionInfo(
         string Name,
         InfoKind Kind,
-        ImmutableArray<ISerdeInfo> TypeArgInfos) : ISerdeInfo
+        ImmutableArray<ISerdeInfo> TypeArgInfos
+    ) : ISerdeInfo
     {
         public int FieldCount => TypeArgInfos.Length;
 
@@ -228,36 +243,37 @@ public static class SerdeInfo
 
         public IList<CustomAttributeData> Attributes => [];
 
-        public Utf8Span GetFieldName(int index)
-            => index >= 0 && index < TypeArgInfos.Length
+        public Utf8Span GetFieldName(int index) =>
+            index >= 0 && index < TypeArgInfos.Length
                 ? ISerdeInfo.UTF8Encoding.GetBytes(TypeArgInfos[index].Name)
                 : throw GetOOR(index);
 
-        public string GetFieldStringName(int index)
-            => index >= 0 && index < TypeArgInfos.Length
+        public string GetFieldStringName(int index) =>
+            index >= 0 && index < TypeArgInfos.Length
                 ? TypeArgInfos[index].Name
                 : throw GetOOR(index);
 
-        public IList<CustomAttributeData> GetFieldAttributes(int index)
-            => index >= 0 && index < TypeArgInfos.Length
-                ? []
-                : throw GetOOR(index);
+        public IList<CustomAttributeData> GetFieldAttributes(int index) =>
+            index >= 0 && index < TypeArgInfos.Length ? [] : throw GetOOR(index);
 
         public int TryGetIndex(Utf8Span fieldName) => ITypeDeserializer.IndexNotFound;
 
-        public ISerdeInfo GetFieldInfo(int index)
-            => index >= 0 && index < TypeArgInfos.Length
-                ? TypeArgInfos[index]
-                : throw GetOOR(index);
+        public ISerdeInfo GetFieldInfo(int index) =>
+            index >= 0 && index < TypeArgInfos.Length ? TypeArgInfos[index] : throw GetOOR(index);
 
-        private ArgumentOutOfRangeException GetOOR(int index)
-            => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has {TypeArgInfos.Length} type argument(s).");
+        private ArgumentOutOfRangeException GetOOR(int index) =>
+            new ArgumentOutOfRangeException(
+                nameof(index),
+                index,
+                $"{Name} has {TypeArgInfos.Length} type argument(s)."
+            );
     }
 }
 
 public static class SerdeInfoExtensions
 {
-    public static ISerdeInfo WithName(this ISerdeInfo @this, string newName) => new WrappingInfo(@this, newName);
+    public static ISerdeInfo WithName(this ISerdeInfo @this, string newName) =>
+        new WrappingInfo(@this, newName);
 }
 
 /// <summary>
@@ -275,21 +291,20 @@ file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
 
     public IList<CustomAttributeData> Attributes => [];
 
-    public Utf8Span GetFieldName(int index)
-        => index == 0 ? "Value"u8 : throw GetOOR(index);
+    public Utf8Span GetFieldName(int index) => index == 0 ? "Value"u8 : throw GetOOR(index);
 
-    public string GetFieldStringName(int index)
-        => index == 0 ? "Value" : throw GetOOR(index);
+    public string GetFieldStringName(int index) => index == 0 ? "Value" : throw GetOOR(index);
 
-    public IList<CustomAttributeData> GetFieldAttributes(int index)
-        => index == 0 ? [] : throw GetOOR(index);
+    public IList<CustomAttributeData> GetFieldAttributes(int index) =>
+        index == 0 ? [] : throw GetOOR(index);
 
-    public int TryGetIndex(Utf8Span fieldName) => "Value"u8.SequenceEqual(fieldName) ? 0 : ITypeDeserializer.IndexNotFound;
+    public int TryGetIndex(Utf8Span fieldName) =>
+        "Value"u8.SequenceEqual(fieldName) ? 0 : ITypeDeserializer.IndexNotFound;
 
     public ISerdeInfo GetFieldInfo(int index) => index == 0 ? UnderlyingInfo : throw GetOOR(index);
 
-    private ArgumentOutOfRangeException GetOOR(int index)
-        => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has only one field.");
+    private ArgumentOutOfRangeException GetOOR(int index) =>
+        new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has only one field.");
 }
 
 /// <summary>
@@ -304,10 +319,16 @@ file sealed class WrappingInfo(ISerdeInfo underlying, string name) : ISerdeInfo
     public int FieldCount => underlying.FieldCount;
 
     public Utf8Span GetFieldName(int index) => underlying.GetFieldName(index);
+
     public string GetFieldStringName(int index) => underlying.GetFieldStringName(index);
-    public IList<CustomAttributeData> GetFieldAttributes(int index) => underlying.GetFieldAttributes(index);
+
+    public IList<CustomAttributeData> GetFieldAttributes(int index) =>
+        underlying.GetFieldAttributes(index);
+
     public int TryGetIndex(Utf8Span fieldName) => underlying.TryGetIndex(fieldName);
+
     public int GetFieldOrdinal(int fieldPosition) => underlying.GetFieldOrdinal(fieldPosition);
+
     public bool HasExplicitFieldOrdinals => underlying.HasExplicitFieldOrdinals;
 
     [Experimental("SerdeExperimentalFieldInfo")]
@@ -316,25 +337,24 @@ file sealed class WrappingInfo(ISerdeInfo underlying, string name) : ISerdeInfo
 #pragma warning restore SerdeExperimentalFieldInfo
 }
 
-
 file interface INoFieldsInfo : ISerdeInfo
 {
     int ISerdeInfo.FieldCount => 0;
 
-    Utf8Span ISerdeInfo.GetFieldName(int index)
-        => throw GetOOR(index);
-    string ISerdeInfo.GetFieldStringName(int index)
-        => throw GetOOR(index);
-    IList<CustomAttributeData> ISerdeInfo.GetFieldAttributes(int index)
-        => throw GetOOR(index);
+    Utf8Span ISerdeInfo.GetFieldName(int index) => throw GetOOR(index);
+    string ISerdeInfo.GetFieldStringName(int index) => throw GetOOR(index);
+    IList<CustomAttributeData> ISerdeInfo.GetFieldAttributes(int index) => throw GetOOR(index);
 
     int ISerdeInfo.TryGetIndex(Utf8Span fieldName) => ITypeDeserializer.IndexNotFound;
 
-    ISerdeInfo ISerdeInfo.GetFieldInfo(int index)
-        => throw GetOOR(index);
+    ISerdeInfo ISerdeInfo.GetFieldInfo(int index) => throw GetOOR(index);
 
-    private ArgumentOutOfRangeException GetOOR(int index)
-        => new ArgumentOutOfRangeException(nameof(index), index, $"{Name} has no fields or properties.");
+    private ArgumentOutOfRangeException GetOOR(int index) =>
+        new ArgumentOutOfRangeException(
+            nameof(index),
+            index,
+            $"{Name} has no fields or properties."
+        );
 }
 
 /// <summary>
@@ -359,7 +379,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         ReadOnlyMemory<byte> Utf8Name,
         IList<CustomAttributeData> CustomAttributesData,
         ISerdeInfo FieldSerdeInfo,
-        int Ordinal);
+        int Ordinal
+    );
 
     public string Name { get; }
 
@@ -369,14 +390,14 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
 
     public IList<CustomAttributeData> Attributes { get; }
 
-
     private TypeWithFieldsInfo(
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
         ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
         ImmutableArray<PrivateFieldInfo> indexToInfo,
-        bool hasExplicitOrdinals)
+        bool hasExplicitOrdinals
+    )
     {
         Name = typeName;
         Kind = typeKind;
@@ -394,9 +415,13 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<SerdeInfo.FieldInfo> fields)
+        ReadOnlySpan<SerdeInfo.FieldInfo> fields
+    )
     {
-        var nameToIndexBuilder = ImmutableArray.CreateBuilder<(ReadOnlyMemory<byte> Utf8Name, int Index)>(fields.Length);
+        var nameToIndexBuilder = ImmutableArray.CreateBuilder<(
+            ReadOnlyMemory<byte> Utf8Name,
+            int Index
+        )>(fields.Length);
         var indexToInfoBuilder = ImmutableArray.CreateBuilder<PrivateFieldInfo>(fields.Length);
         bool hasExplicitOrdinals = false;
         for (int index = 0; index < fields.Length; index++)
@@ -413,17 +438,22 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
                 default,
                 field.Attributes,
                 field.SerdeInfo,
-                field.Ordinal >= 0 ? field.Ordinal : index);
+                field.Ordinal >= 0 ? field.Ordinal : index
+            );
             indexToInfoBuilder.Add(fieldInfo);
         }
 
-        nameToIndexBuilder.Sort((left, right) =>
-            left.Utf8Name.Span.SequenceCompareTo(right.Utf8Name.Span));
+        nameToIndexBuilder.Sort(
+            (left, right) => left.Utf8Name.Span.SequenceCompareTo(right.Utf8Name.Span)
+        );
 
         for (int i = 0; i < nameToIndexBuilder.Count; i++)
         {
             var index = nameToIndexBuilder[i].Index;
-            indexToInfoBuilder[index] = indexToInfoBuilder[index] with { Utf8Name = nameToIndexBuilder[i].Utf8Name };
+            indexToInfoBuilder[index] = indexToInfoBuilder[index] with
+            {
+                Utf8Name = nameToIndexBuilder[i].Utf8Name,
+            };
         }
 
         return new TypeWithFieldsInfo(
@@ -432,7 +462,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             typeAttributes,
             nameToIndexBuilder.ToImmutable(),
             indexToInfoBuilder.ToImmutable(),
-            hasExplicitOrdinals);
+            hasExplicitOrdinals
+        );
     }
 
     /// <summary>
@@ -475,14 +506,21 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int BinarySearch(ReadOnlySpan<(ReadOnlyMemory<byte>, int)> span, Utf8Span fieldName)
+    private static int BinarySearch(
+        ReadOnlySpan<(ReadOnlyMemory<byte>, int)> span,
+        Utf8Span fieldName
+    )
     {
         return BinarySearch(ref MemoryMarshal.GetReference(span), span.Length, fieldName);
     }
 
     // This is a copy of the BinarySearch method from System.MemoryExtensions.
     // We can't use that version because ref structs can't yet be substituted for type arguments.
-    private static int BinarySearch(ref (ReadOnlyMemory<byte> Utf8Name, int) spanStart, int length, Utf8Span fieldName)
+    private static int BinarySearch(
+        ref (ReadOnlyMemory<byte> Utf8Name, int) spanStart,
+        int length,
+        Utf8Span fieldName
+    )
     {
         int lo = 0;
         int hi = length - 1;
@@ -522,22 +560,23 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
 file sealed class UnionSerdeInfo(
     string name,
     IList<CustomAttributeData> attributes,
-    ImmutableArray<ISerdeInfo> caseInfos) : IUnionSerdeInfo
+    ImmutableArray<ISerdeInfo> caseInfos
+) : IUnionSerdeInfo
 {
     public string Name => name;
     public IList<CustomAttributeData> Attributes => attributes;
     public ImmutableArray<ISerdeInfo> CaseInfos => caseInfos;
     public int FieldCount => caseInfos.Length;
 
-    public IList<CustomAttributeData> GetFieldAttributes(int index)
-        => caseInfos[index].Attributes;
+    public IList<CustomAttributeData> GetFieldAttributes(int index) => caseInfos[index].Attributes;
 
     public ISerdeInfo GetFieldInfo(int index) => caseInfos[index];
 
     /// <summary>
     /// The field name for a union is the name of the case.
     /// </summary>
-    public Utf8Span GetFieldName(int index) => ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
+    public Utf8Span GetFieldName(int index) =>
+        ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
 
     public string GetFieldStringName(int index) => caseInfos[index].Name;
 

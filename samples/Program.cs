@@ -1,5 +1,4 @@
-﻿
-// Unions
+﻿// Unions
 using System;
 using CustomSerdeSample;
 using EqArraySample;

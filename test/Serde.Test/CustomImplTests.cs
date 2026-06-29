@@ -1,4 +1,3 @@
-
 using System.IO;
 using Serde.Json;
 using Xunit;
@@ -10,24 +9,29 @@ public sealed partial class CustomImplTests
     [GenerateSerialize]
     private sealed partial record RgbWithFieldMap : IDeserializeProvider<RgbWithFieldMap>
     {
-        public int Red, Green, Blue;
+        public int Red,
+            Green,
+            Blue;
 
-        public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-            "RgbWithFieldMap",
-            typeof(RgbWithFieldMap).GetCustomAttributesData(),
-            [
-                new Serde.SerdeInfo.FieldInfo("red", I32Proxy.SerdeInfo),
-                new Serde.SerdeInfo.FieldInfo("green", I32Proxy.SerdeInfo),
-                new Serde.SerdeInfo.FieldInfo("blue", I32Proxy.SerdeInfo)
-            ]);
+        public static ISerdeInfo SerdeInfo { get; } =
+            Serde.SerdeInfo.MakeCustom(
+                "RgbWithFieldMap",
+                typeof(RgbWithFieldMap).GetCustomAttributesData(),
+                [
+                    new Serde.SerdeInfo.FieldInfo("red", I32Proxy.SerdeInfo),
+                    new Serde.SerdeInfo.FieldInfo("green", I32Proxy.SerdeInfo),
+                    new Serde.SerdeInfo.FieldInfo("blue", I32Proxy.SerdeInfo),
+                ]
+            );
 
-        static IDeserialize<RgbWithFieldMap> IDeserializeProvider<RgbWithFieldMap>.Instance { get; }
-            = new RgbWithFieldMapDeserialize();
+        static IDeserialize<RgbWithFieldMap> IDeserializeProvider<RgbWithFieldMap>.Instance { get; } =
+            new RgbWithFieldMapDeserialize();
     }
 
     private sealed class RgbWithFieldMapDeserialize : IDeserialize<RgbWithFieldMap>
     {
         ISerdeInfo ISerdeInfoProvider.SerdeInfo => RgbWithFieldMap.SerdeInfo;
+
         RgbWithFieldMap IDeserialize<RgbWithFieldMap>.Deserialize(IDeserializer deserializer)
         {
             var fieldMap = RgbWithFieldMap.SerdeInfo;
@@ -57,14 +61,24 @@ public sealed partial class CustomImplTests
             }
 
             deType.End(fieldMap);
-            return new RgbWithFieldMap { Red = red, Green = green, Blue = blue };
+            return new RgbWithFieldMap
+            {
+                Red = red,
+                Green = green,
+                Blue = blue,
+            };
         }
     }
 
     [Fact]
     public void TestLocation()
     {
-        var rgb = new RgbWithFieldMap { Red = 255, Green = 128, Blue = 0 };
+        var rgb = new RgbWithFieldMap
+        {
+            Red = 255,
+            Green = 128,
+            Blue = 0,
+        };
         var json = JsonSerializer.Serialize(rgb);
         var deserialized = JsonSerializer.Deserialize<RgbWithFieldMap>(json);
         Assert.Equal(rgb.Red, deserialized.Red);

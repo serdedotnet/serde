@@ -61,6 +61,7 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
             return buffer;
         }
     }
+
     private ArrayWriter? _bufferWriter = new();
 
     private (ArrayWriter, bool Owned) BorrowBufferWriter()
@@ -83,13 +84,15 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
     }
 
     public static ByteArrayProxy Instance { get; } = new();
+
     private ByteArrayProxy() { }
 
-    public static ISerdeInfo SerdeInfo { get; } = Serde.SerdeInfo.MakePrimitive("byte[]", PrimitiveKind.Bytes);
+    public static ISerdeInfo SerdeInfo { get; } =
+        Serde.SerdeInfo.MakePrimitive("byte[]", PrimitiveKind.Bytes);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
-    void ISerialize<byte[]>.Serialize(byte[] value, ISerializer serializer)
-        => serializer.WriteBytes(value);
+    void ISerialize<byte[]>.Serialize(byte[] value, ISerializer serializer) =>
+        serializer.WriteBytes(value);
 
     byte[] IDeserialize<byte[]>.Deserialize(IDeserializer deserializer)
     {
@@ -114,7 +117,11 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         serializer.WriteBytes(info, index, value);
     }
 
-    byte[] ITypeDeserialize<byte[]>.Deserialize(ITypeDeserializer deserializer, ISerdeInfo info, int index)
+    byte[] ITypeDeserialize<byte[]>.Deserialize(
+        ITypeDeserializer deserializer,
+        ISerdeInfo info,
+        int index
+    )
     {
         // Take ownership of the buffer writer
         var (bufferWriter, owned) = BorrowBufferWriter();

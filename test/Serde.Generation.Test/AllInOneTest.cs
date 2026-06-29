@@ -12,7 +12,12 @@ public sealed class AllInOneTest
     public Task GeneratorTest()
     {
         var curPath = GetPath();
-        var allInOnePath = Path.Combine(Path.GetDirectoryName(curPath)!, "..", "Serde.Test", "AllInOneSrc.cs");
+        var allInOnePath = Path.Combine(
+            Path.GetDirectoryName(curPath)!,
+            "..",
+            "Serde.Test",
+            "AllInOneSrc.cs"
+        );
 
         var src = File.ReadAllText(allInOnePath);
         return GeneratorTestUtils.VerifyMultiFile(src);

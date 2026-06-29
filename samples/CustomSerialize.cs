@@ -1,4 +1,3 @@
-
 // Define a custom Color type
 using System;
 using Serde;
@@ -31,7 +30,8 @@ class ColorSerdeObj : ISerde<Color>
         return new Color(
             Convert.ToInt32(hex[1..3], 16),
             Convert.ToInt32(hex[3..5], 16),
-            Convert.ToInt32(hex[5..7], 16));
+            Convert.ToInt32(hex[5..7], 16)
+        );
     }
 }
 

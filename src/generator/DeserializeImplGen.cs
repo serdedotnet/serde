@@ -1,13 +1,12 @@
-
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Serde.Diagnostics;
 using static Serde.SerdeImplRoslynGenerator;
@@ -20,7 +19,8 @@ namespace Serde
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
             INamedTypeSymbol? foreignType,
-            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+        )
         {
             var typeFqn = receiverType.ToDisplayString();
             TypeSyntax typeSyntax = ParseTypeName(typeFqn);
@@ -32,9 +32,16 @@ namespace Serde
             }
 
             // Generate members for IDeserialize.Deserialize implementation
-            var members = receiverType.TypeKind == TypeKind.Enum
-                ? GenerateEnumDeserializeMethod(context, receiverType, typeSyntax)
-                : GenerateCustomDeserializeMethod(context, receiverType, typeSyntax, foreignType, inProgress);
+            var members =
+                receiverType.TypeKind == TypeKind.Enum
+                    ? GenerateEnumDeserializeMethod(context, receiverType, typeSyntax)
+                    : GenerateCustomDeserializeMethod(
+                        context,
+                        receiverType,
+                        typeSyntax,
+                        foreignType,
+                        inProgress
+                    );
             return members;
         }
 
@@ -70,10 +77,13 @@ namespace Serde
             for (int i = 0; i < members.Length; i++)
             {
                 var m = members[i];
-                membersBuilder.AppendLine($"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>(_l_serdeInfo, {i}),");
+                membersBuilder.AppendLine(
+                    $"{i} => de.ReadValue<{m.ToDisplayString()}, {SerdeInfoGenerator.GetUnionProxyName(m)}>(_l_serdeInfo, {i}),"
+                );
             }
 
-            var src = new SourceBuilder($$"""
+            var src = new SourceBuilder(
+                $$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
@@ -95,7 +105,8 @@ namespace Serde
     de.End(_l_serdeInfo);
     return _l_result;
 }
-""");
+"""
+            );
             return src;
         }
 
@@ -124,21 +135,26 @@ namespace Serde
         private static SourceBuilder GenerateEnumDeserializeMethod(
             GeneratorExecutionContext context,
             ITypeSymbol type,
-            TypeSyntax typeSyntax)
+            TypeSyntax typeSyntax
+        )
         {
             Debug.Assert(type.TypeKind == TypeKind.Enum);
-            var primName = Proxies.TryGetPrimitiveName(((INamedTypeSymbol)type).EnumUnderlyingType!);
+            var primName = Proxies.TryGetPrimitiveName(
+                ((INamedTypeSymbol)type).EnumUnderlyingType!
+            );
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
-            var assignedVarType = members.Count switch {
+            var assignedVarType = members.Count switch
+            {
                 <= 8 => "byte",
                 <= 16 => "ushort",
                 <= 32 => "uint",
                 <= 64 => "ulong",
-                _ => throw new InvalidOperationException("Too many members in type")
+                _ => throw new InvalidOperationException("Too many members in type"),
             };
-            var src = new SourceBuilder($$"""
+            var src = new SourceBuilder(
+                $$"""
 {{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
 {
     var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
@@ -165,7 +181,8 @@ namespace Serde
     de.End(serdeInfo);
     return _l_result;
 }
-""");
+"""
+            );
             return src;
         }
 
@@ -199,7 +216,8 @@ namespace Serde
             ITypeSymbol type,
             TypeSyntax typeSyntax,
             INamedTypeSymbol? foreignType,
-            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+            ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+        )
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
 
@@ -211,21 +229,31 @@ namespace Serde
             // emitted in the proxy type, so the initializers — which may reference members
             // inaccessible from the proxy — must not be copied.
             var containingType = inProgress.IsEmpty ? null : inProgress[0].Containing;
-            var preserveInitializers = containingType is not null
+            var preserveInitializers =
+                containingType is not null
                 && SymbolEqualityComparer.Default.Equals(type, containingType);
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
-            var assignedVarType = members.Count switch {
+            var assignedVarType = members.Count switch
+            {
                 <= 8 => "byte",
                 <= 16 => "ushort",
                 <= 32 => "uint",
                 <= 64 => "ulong",
-                _ => throw new InvalidOperationException("Too many members in type")
+                _ => throw new InvalidOperationException("Too many members in type"),
             };
             var (cases, locals, requiredMask) = InitCasesAndLocals();
-            var typeCreationExpr = GenerateTypeCreation(context, typeFqn, type, members, requiredMask);
-            string foreignTypeConversionOpt = foreignType is not null ? $"({foreignType.ToDisplayString()})" : "";
+            var typeCreationExpr = GenerateTypeCreation(
+                context,
+                typeFqn,
+                type,
+                members,
+                requiredMask
+            );
+            string foreignTypeConversionOpt = foreignType is not null
+                ? $"({foreignType.ToDisplayString()})"
+                : "";
 
             const string typeInfoLocalName = "_l_serdeInfo";
             const string indexLocalName = "_l_index_";
@@ -236,7 +264,8 @@ namespace Serde
                 : "_";
 
             var interfaceString = (foreignType ?? type).ToDisplayString(SymbolUtilities.FqnFormat);
-            var methodText = new SourceBuilder($$"""
+            var methodText = new SourceBuilder(
+                $$"""
 {{interfaceString}} Serde.IDeserialize<{{interfaceString}}>.Deserialize(IDeserializer deserializer)
 {
     {{locals}}
@@ -261,7 +290,8 @@ namespace Serde
     {{typeCreationExpr}}
     return {{foreignTypeConversionOpt}}newType;
 }
-""");
+"""
+            );
             return methodText;
 
             (string Cases, string Locals, string AssignedMask) InitCasesAndLocals()
@@ -279,15 +309,27 @@ namespace Serde
                     }
 
                     var m = members[fieldIndex];
-                    var memberType = m.Type.WithNullableAnnotation(m.NullableAnnotation).ToDisplayString();
-                    string readMethodName = m.Type.IsReferenceType
-                        ? "ReadValue"
-                        : "ReadBoxedValue";
+                    var memberType = m
+                        .Type.WithNullableAnnotation(m.NullableAnnotation)
+                        .ToDisplayString();
+                    string readMethodName = m.Type.IsReferenceType ? "ReadValue" : "ReadBoxedValue";
                     string readValueCall;
 
-                    var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
+                    var proxyContext = ProxyContext.Create(
+                        classScopeProxyMap,
+                        ProxyMap.FromSymbol(m.Symbol)
+                    );
 
-                    if (Proxies.TryGetExplicitWrapper(m, context, SerdeUsage.Deserialize, inProgress, proxyContext) is { } explicitWrap)
+                    if (
+                        Proxies.TryGetExplicitWrapper(
+                            m,
+                            context,
+                            SerdeUsage.Deserialize,
+                            inProgress,
+                            proxyContext
+                        ) is
+                        { } explicitWrap
+                    )
                     {
                         readValueCall = $"{readMethodName}<{memberType}, {explicitWrap}>";
                     }
@@ -299,19 +341,31 @@ namespace Serde
                     {
                         readValueCall = $"Read{primitiveName}";
                     }
-                    else if (Proxies.TryGetImplicitWrapper(m.Type, context, SerdeUsage.Deserialize, inProgress, proxyContext) is { Proxy: { } wrap })
+                    else if (
+                        Proxies.TryGetImplicitWrapper(
+                            m.Type,
+                            context,
+                            SerdeUsage.Deserialize,
+                            inProgress,
+                            proxyContext
+                        ) is
+                        { Proxy: { } wrap }
+                    )
                     {
                         readValueCall = $"{readMethodName}<{memberType}, {wrap}>";
                     }
                     else
                     {
                         // No built-in handling and doesn't implement IDeserialize, error
-                        context.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_DoesntImplementInterface,
-                            m.Locations[0],
-                            m.Symbol,
-                            memberType,
-                            "Serde.IDeserializeProvider<T>"));
+                        context.ReportDiagnostic(
+                            CreateDiagnostic(
+                                DiagId.ERR_DoesntImplementInterface,
+                                m.Locations[0],
+                                m.Symbol,
+                                memberType,
+                                "Serde.IDeserializeProvider<T>"
+                            )
+                        );
                         readValueCall = $"ReadValue<{memberType}, {memberType}>";
                     }
                     var localName = GetLocalName(m);
@@ -325,13 +379,15 @@ namespace Serde
                         ? $"Serde.DeserializeException.ThrowIfDuplicate({AssignedVarName}, {fieldIndex}, {typeInfoLocalName});"
                         : "";
 
-                    casesBuilder.AppendLine($"""
-                    case {fieldIndex}:
-                        {duplicateKeyCheck}
-                        {localName} = typeDeserialize.{readValueCall}({typeInfoLocalName}, {indexLocalName});
-                        {AssignedVarName} |= (({assignedVarType})1) << {fieldIndex};
-                        break;
-                    """);
+                    casesBuilder.AppendLine(
+                        $"""
+                        case {fieldIndex}:
+                            {duplicateKeyCheck}
+                            {localName} = typeDeserialize.{readValueCall}({typeInfoLocalName}, {indexLocalName});
+                            {AssignedVarName} |= (({assignedVarType})1) << {fieldIndex};
+                            break;
+                        """
+                    );
 
                     // Require that the member is assigned if m.ThrowIfMissing is set, or if it is not nullable
                     // and ThrowIfMissing is unset
@@ -342,17 +398,19 @@ namespace Serde
                 }
                 var unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
                     ? $"""
-                    throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
-                    """
+                        throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
+                        """
                     : $"""
-                    typeDeserialize.SkipValue(_l_serdeInfo, {indexLocalName});
-                    break;
-                    """;
+                        typeDeserialize.SkipValue(_l_serdeInfo, {indexLocalName});
+                        break;
+                        """;
                 foreach (var i in skippedIndices)
                 {
-                    casesBuilder.AppendLine($"""
-                    case {i}:
-                    """);
+                    casesBuilder.AppendLine(
+                        $"""
+                        case {i}:
+                        """
+                    );
                 }
                 casesBuilder.AppendLine(
                     $"""
@@ -366,9 +424,11 @@ namespace Serde
                         throw new InvalidOperationException("Unexpected index: " + {indexLocalName});
                     """
                 );
-                return (casesBuilder.ToString(),
-                        localsBuilder.ToString(),
-                        "0b" + Convert.ToString(assignedMaskValue, 2));
+                return (
+                    casesBuilder.ToString(),
+                    localsBuilder.ToString(),
+                    "0b" + Convert.ToString(assignedMaskValue, 2)
+                );
             }
         }
 
@@ -385,7 +445,8 @@ namespace Serde
             string typeName,
             ITypeSymbol type,
             List<DataMemberSymbol> members,
-            string assignedMask)
+            string assignedMask
+        )
         {
             IMethodSymbol? primaryCtor = null;
             IMethodSymbol? parameterlessCtor = null;
@@ -411,7 +472,9 @@ namespace Serde
 
             if (parameterlessCtor is null && primaryCtor is null)
             {
-                context.ReportDiagnostic(CreateDiagnostic(DiagId.ERR_MissingPrimaryCtor, type.Locations[0]));
+                context.ReportDiagnostic(
+                    CreateDiagnostic(DiagId.ERR_MissingPrimaryCtor, type.Locations[0])
+                );
                 return new SourceBuilder($"var newType = new {typeName}();");
             }
 
@@ -424,11 +487,14 @@ namespace Serde
                     var index = assignmentMembers.FindIndex(m => m.Name == p.Name);
                     if (index < 0)
                     {
-                        context.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_CtorParamMismatch,
-                            type.Locations[0],
-                            p.Name,
-                            type.ToDisplayString()));
+                        context.ReportDiagnostic(
+                            CreateDiagnostic(
+                                DiagId.ERR_CtorParamMismatch,
+                                type.Locations[0],
+                                p.Name,
+                                type.ToDisplayString()
+                            )
+                        );
                         return new SourceBuilder($"var newType = new {typeName}();");
                     }
                     if (parameters.Length != 0)

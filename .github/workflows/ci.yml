@@ -18,9 +18,13 @@ jobs:
         dotnet-version: '10.0.*'
     - name: Restore dependencies
       run: dotnet restore
+    - name: Restore tools
+      run: dotnet tool restore
     - name: Build
       run: dotnet build --no-restore -warnaserror
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Pack
       run: ./build.sh --pack
+    - name: Check formatting
+      run: dotnet csharpier check .

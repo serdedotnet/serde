@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Text;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Serde.Json
 {
@@ -44,32 +44,35 @@ namespace Serde.Json
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInRangeInclusive(uint value, uint lowerBound, uint upperBound)
-            => (value - lowerBound) <= (upperBound - lowerBound);
+        public static bool IsInRangeInclusive(uint value, uint lowerBound, uint upperBound) =>
+            (value - lowerBound) <= (upperBound - lowerBound);
 
         /// <summary>
         /// Returns <see langword="true"/> if <paramref name="value"/> is between
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInRangeInclusive(int value, int lowerBound, int upperBound)
-            => (uint)(value - lowerBound) <= (uint)(upperBound - lowerBound);
+        public static bool IsInRangeInclusive(int value, int lowerBound, int upperBound) =>
+            (uint)(value - lowerBound) <= (uint)(upperBound - lowerBound);
 
         /// <summary>
         /// Returns <see langword="true"/> if <paramref name="value"/> is between
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInRangeInclusive(long value, long lowerBound, long upperBound)
-            => (ulong)(value - lowerBound) <= (ulong)(upperBound - lowerBound);
+        public static bool IsInRangeInclusive(long value, long lowerBound, long upperBound) =>
+            (ulong)(value - lowerBound) <= (ulong)(upperBound - lowerBound);
 
         /// <summary>
         /// Returns <see langword="true"/> if <paramref name="value"/> is between
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsInRangeInclusive(JsonTokenType value, JsonTokenType lowerBound, JsonTokenType upperBound)
-            => (value - lowerBound) <= (upperBound - lowerBound);
+        public static bool IsInRangeInclusive(
+            JsonTokenType value,
+            JsonTokenType lowerBound,
+            JsonTokenType upperBound
+        ) => (value - lowerBound) <= (upperBound - lowerBound);
 
         /// <summary>
         /// Returns <see langword="true"/> if <paramref name="value"/> is in the range [0..9].
@@ -97,9 +100,9 @@ namespace Serde.Json
         {
             return Encoding.UTF8.GetString(bytes
 #if NETSTANDARD2_0 || NETFRAMEWORK
-                        .ToArray()
+                .ToArray()
 #endif
-                );
+            );
         }
 
         /// <summary>
@@ -107,7 +110,8 @@ namespace Serde.Json
         /// </summary>
         public static Dictionary<TKey, TValue> CreateDictionaryFromCollection<TKey, TValue>(
             IEnumerable<KeyValuePair<TKey, TValue>> collection,
-            IEqualityComparer<TKey> comparer)
+            IEqualityComparer<TKey> comparer
+        )
             where TKey : notnull
         {
 #if NETSTANDARD2_0 || NETFRAMEWORK

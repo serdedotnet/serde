@@ -1,12 +1,11 @@
-
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Serde;
 
@@ -42,7 +41,13 @@ internal static class SerdeInfoGenerator
     {
         if (receiverType.IsAbstract)
         {
-            GenerateUnionInfoAndSerdeImpls(typeDeclContext.TypeDecl, receiverType, context, usage, inProgress);
+            GenerateUnionInfoAndSerdeImpls(
+                typeDeclContext.TypeDecl,
+                receiverType,
+                context,
+                usage,
+                inProgress
+            );
             return;
         }
 
@@ -73,7 +78,14 @@ internal static class SerdeInfoGenerator
         if (reflectionTypeString.IndexOf('<') is var index && index != -1)
         {
             reflectionTypeString = reflectionTypeString[..index];
-            reflectionTypeString = reflectionTypeString + "<" + new string(',', reflectionType is INamedTypeSymbol nts ? nts.TypeParameters.Length - 1 : 0) + ">";
+            reflectionTypeString =
+                reflectionTypeString
+                + "<"
+                + new string(
+                    ',',
+                    reflectionType is INamedTypeSymbol nts ? nts.TypeParameters.Length - 1 : 0
+                )
+                + ">";
         }
 
         var classScopeProxyMap = ProxyMap.FromSymbol(receiverType);
@@ -90,7 +102,10 @@ internal static class SerdeInfoGenerator
                 continue;
             }
 
-            var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(m.Symbol));
+            var proxyContext = ProxyContext.Create(
+                classScopeProxyMap,
+                ProxyMap.FromSymbol(m.Symbol)
+            );
             var wrapperName = GetWrapperName(m, context, usage, inProgress, proxyContext);
             if (wrapperName is null)
             {
@@ -107,9 +122,8 @@ internal static class SerdeInfoGenerator
         // equal the default 0..n sequence: that presence distinguishes "explicitly assigned" (a
         // stable identity) from "incidental physical position". The partial case (some but not all)
         // is a reported error and is skipped here to avoid emitting bogus data.
-        var allExplicit = !isEnum
-            && emittedMembers.Count > 0
-            && emittedMembers.All(e => e.Member.Ordinal is int);
+        var allExplicit =
+            !isEnum && emittedMembers.Count > 0 && emittedMembers.All(e => e.Member.Ordinal is int);
 
         var memberEntries = new List<string>(emittedMembers.Count);
         foreach (var (m, wrapper) in emittedMembers)
@@ -126,17 +140,31 @@ internal static class SerdeInfoGenerator
         if (typeString.IndexOf('<') is var idx && idx != -1)
         {
             typeString = typeString[..idx];
-            typeString = typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
+            typeString =
+                typeString + "<" + new string(',', receiverType.TypeParameters.Length - 1) + ">";
         }
         var identityName = (foreignType ?? receiverType).Name;
-        List<string> makeArgs = [ $"\"{identityName}\"", $"typeof({typeString}).GetCustomAttributesData()" ];
+        List<string> makeArgs =
+        [
+            $"\"{identityName}\"",
+            $"typeof({typeString}).GetCustomAttributesData()",
+        ];
 
         if (isEnum)
         {
             var proxyContext = ProxyContext.Create(classScopeProxyMap, ProxyMap.Empty);
 
             string underlyingInfo;
-            if (Proxies.TryGetImplicitWrapper(receiverType.EnumUnderlyingType!, context, usage, inProgress, proxyContext) is { Proxy: { } wrap })
+            if (
+                Proxies.TryGetImplicitWrapper(
+                    receiverType.EnumUnderlyingType!,
+                    context,
+                    usage,
+                    inProgress,
+                    proxyContext
+                ) is
+                { Proxy: { } wrap }
+            )
             {
                 underlyingInfo = wrap.ToString();
             }
@@ -146,7 +174,9 @@ internal static class SerdeInfoGenerator
                 underlyingInfo = "<underlying info not found, this is a bug>";
             }
             string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
-            makeArgs.Add($"global::Serde.SerdeInfoProvider.Get{name}Info<{receiverType.EnumUnderlyingType}, {underlyingInfo}>()");
+            makeArgs.Add(
+                $"global::Serde.SerdeInfoProvider.Get{name}Info<{receiverType.EnumUnderlyingType}, {underlyingInfo}>()"
+            );
         }
 
         // Build the field array argument with explicit, self-consistent indentation so each
@@ -184,7 +214,8 @@ internal static class SerdeInfoGenerator
             typeDeclContext,
             baseList: isEnum ? " : global::Serde.ISerdeInfoProvider" : null,
             body,
-            "ISerdeInfoProvider");
+            "ISerdeInfoProvider"
+        );
 
         context.AddSource(fileName, newType);
 
@@ -203,7 +234,8 @@ internal static class SerdeInfoGenerator
             }
 
             string name = usage == SerdeUsage.Serialize ? "Serialize" : "Deserialize";
-            var infoExpr = $"global::Serde.SerdeInfoProvider.Get{name}Info<{m.Type.ToDisplayString()}, {wrapperName}>()";
+            var infoExpr =
+                $"global::Serde.SerdeInfoProvider.Get{name}Info<{m.Type.ToDisplayString()}, {wrapperName}>()";
 
             // MemberInfo only exists to lazily supply the field's custom attributes. If the member
             // has no attributes, skip it entirely so the runtime never does the reflection lookup.
@@ -233,7 +265,8 @@ internal static class SerdeInfoGenerator
         INamedTypeSymbol receiverType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
-        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress)
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
     {
         var typeMembers = SymbolUtilities.GetDUTypeMembers(receiverType);
         var originalCtx = new TypeDeclContext(typeDecl);
@@ -243,22 +276,42 @@ internal static class SerdeInfoGenerator
             string typeName = originalCtx.Name;
             var typeKind = originalCtx.Kind;
             string declKeywords;
-            (typeName, declKeywords) = typeKind == SyntaxKind.EnumDeclaration
-                ? (Proxies.GetProxyName(typeName), "class")
-                : (typeName, TypeDeclContext.TypeKindToString(typeKind));
-            var nestedType = originalCtx.MakeSiblingType(new SourceBuilder($$"""
+            (typeName, declKeywords) =
+                typeKind == SyntaxKind.EnumDeclaration
+                    ? (Proxies.GetProxyName(typeName), "class")
+                    : (typeName, TypeDeclContext.TypeKindToString(typeKind));
+            var nestedType = originalCtx.MakeSiblingType(
+                new SourceBuilder(
+                    $$"""
 partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}}
 {
     private sealed partial class {{proxyName}} {}
 }
-"""));
+"""
+                )
+            );
             var newCtx = TypeDeclContext.FromFile(nestedType.ToString(), proxyName);
-            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(usage, context, newCtx, m, foreignType: null, inProgress.Add((m, receiverType)));
+            SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(
+                usage,
+                context,
+                newCtx,
+                m,
+                foreignType: null,
+                inProgress.Add((m, receiverType))
+            );
             var serdeObjFqn = $"{newCtx.GetFqn()}.{usage.GetSerdeObjName()}";
-            SerdeImplRoslynGenerator.GenerateProviderImpls(usage, context, serdeObjFqn, newCtx, m, foreignType: null);
+            SerdeImplRoslynGenerator.GenerateProviderImpls(
+                usage,
+                context,
+                serdeObjFqn,
+                newCtx,
+                m,
+                foreignType: null
+            );
         }
 
-        var bodies = new SourceBuilder($$"""
+        var bodies = new SourceBuilder(
+            $$"""
 private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.MakeUnion(
     "{{SerdeImplRoslynGenerator.GetSerdeName(receiverType)}}",
     typeof({{receiverType.ToDisplayString()}}).GetCustomAttributesData(),
@@ -268,14 +321,16 @@ private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.M
 );
 
 {{GetProxyDefs()}}
-""");
+"""
+        );
 
         var typeDeclContext = new TypeDeclContext(typeDecl);
         var (fileName, newType) = SerdeImplRoslynGenerator.MakePartialDecl(
             typeDeclContext,
             baseList: null,
             bodies,
-            "ISerdeInfoProvider");
+            "ISerdeInfoProvider"
+        );
         context.AddSource(fileName, newType);
 
         return;
@@ -283,8 +338,12 @@ private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.M
         string GetMembersInfos()
         {
             string infoName = usage.HasFlag(SerdeUsage.Serialize) ? "Serialize" : "Deserialize";
-            return string.Join("," + Utilities.NewLine,
-                typeMembers.Select(m => $"global::Serde.SerdeInfoProvider.Get{infoName}Info<{m.ToDisplayString()}, {GetUnionProxyName(m)}>()"));
+            return string.Join(
+                "," + Utilities.NewLine,
+                typeMembers.Select(m =>
+                    $"global::Serde.SerdeInfoProvider.Get{infoName}Info<{m.ToDisplayString()}, {GetUnionProxyName(m)}>()"
+                )
+            );
         }
 
         string GetProxyDefs()
@@ -312,8 +371,16 @@ private static global::Serde.ISerdeInfo s_serdeInfo { get; } = Serde.SerdeInfo.M
         GeneratorExecutionContext context,
         SerdeUsage usage,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
-        ProxyContext proxyContext)
+        ProxyContext proxyContext
+    )
     {
-        return Proxies.TryGetProxyString(m.Symbol, m.Type, context, usage, inProgress, proxyContext);
+        return Proxies.TryGetProxyString(
+            m.Symbol,
+            m.Type,
+            context,
+            usage,
+            inProgress,
+            proxyContext
+        );
     }
 }

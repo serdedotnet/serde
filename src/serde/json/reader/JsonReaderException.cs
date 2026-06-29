@@ -10,8 +10,7 @@ namespace Serde.Json
     [Serializable]
     internal sealed class JsonReaderException : JsonException_Old
     {
-        public JsonReaderException(string message, long lineNumber, long bytePositionInLine) : base(message, path: null, lineNumber, bytePositionInLine)
-        {
-        }
+        public JsonReaderException(string message, long lineNumber, long bytePositionInLine)
+            : base(message, path: null, lineNumber, bytePositionInLine) { }
     }
 }

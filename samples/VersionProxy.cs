@@ -19,11 +19,17 @@ partial struct VersionProxy
     public int Build;
     public int Revision;
 
-    public static explicit operator Version(VersionProxy p)
-        => new Version(p.Major, p.Minor, p.Build, p.Revision);
+    public static explicit operator Version(VersionProxy p) =>
+        new Version(p.Major, p.Minor, p.Build, p.Revision);
 
-    public static explicit operator VersionProxy(Version v)
-        => new VersionProxy { Major = v.Major, Minor = v.Minor, Build = v.Build, Revision = v.Revision };
+    public static explicit operator VersionProxy(Version v) =>
+        new VersionProxy
+        {
+            Major = v.Major,
+            Minor = v.Minor,
+            Build = v.Build,
+            Revision = v.Revision,
+        };
 }
 
 public static class Sample

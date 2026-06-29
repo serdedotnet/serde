@@ -17,7 +17,10 @@ namespace Serde.Test
         {
             var doc = System.Text.Json.JsonDocument.Parse(json);
             var stream = new MemoryStream();
-            Utf8JsonWriter writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            Utf8JsonWriter writer = new Utf8JsonWriter(
+                stream,
+                new JsonWriterOptions { Indented = true }
+            );
             doc.WriteTo(writer);
             writer.Flush();
             return Encoding.UTF8.GetString(stream.ToArray());
@@ -35,27 +38,40 @@ namespace Serde.Test
         {
             var date = new DtWrap(new(2023, 10, 1, 12, 0, 0, System.DateTimeKind.Utc));
             var js = Serde.Json.JsonSerializer.Serialize(date);
-            Assert.Equal("""
-            {"value":"2023-10-01T12:00:00Z"}
-            """, js);
+            Assert.Equal(
+                """
+                {"value":"2023-10-01T12:00:00Z"}
+                """,
+                js
+            );
         }
 
         [GenerateSerialize]
         private partial record DtWrap(System.DateTime Value);
-
 
         [Fact]
         public void DateTimeOffset()
         {
             var date = new DtoWrap(new(2023, 10, 1, 12, 0, 0, System.TimeSpan.FromHours(7)));
             var js = Serde.Json.JsonSerializer.Serialize(date);
-            Assert.Equal("""
-            {"value":"2023-10-01T12:00:00+07:00"}
-            """, js);
-            Assert.Equal("""
-            {"value":"2023-10-01T12:00:00+07:00"}
-            """, System.Text.Json.JsonSerializer.Serialize(date, new JsonSerializerOptions()
-                { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            Assert.Equal(
+                """
+                {"value":"2023-10-01T12:00:00+07:00"}
+                """,
+                js
+            );
+            Assert.Equal(
+                """
+                {"value":"2023-10-01T12:00:00+07:00"}
+                """,
+                System.Text.Json.JsonSerializer.Serialize(
+                    date,
+                    new JsonSerializerOptions()
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    }
+                )
+            );
         }
 
         [GenerateSerialize]
@@ -64,60 +80,68 @@ namespace Serde.Test
         [Fact]
         public void SerializeRgb()
         {
-            var color = new Color { Red = 3, Green = 5, Blue = 7 };
-            Assert.Equal("""
-            {"red":3,"green":5,"blue":7}
-            """, Json.JsonSerializer.Serialize(color));
+            var color = new Color
+            {
+                Red = 3,
+                Green = 5,
+                Blue = 7,
+            };
+            Assert.Equal(
+                """
+                {"red":3,"green":5,"blue":7}
+                """,
+                Json.JsonSerializer.Serialize(color)
+            );
         }
 
         [Fact]
         public void TestNestedTypes()
         {
-            var src = new Object(new (string, JsonValue)[] {
-                ("field1", 1),
-                ("field2", new Object(new (string, JsonValue)[] {
-                    ("nested1", 5)
-                })),
-                ("field3", 2)
-            });
+            var src = new Object(
+                new (string, JsonValue)[]
+                {
+                    ("field1", 1),
+                    ("field2", new Object(new (string, JsonValue)[] { ("nested1", 5) })),
+                    ("field3", 2),
+                }
+            );
 
-            VerifyJsonSource(src, @"
+            VerifyJsonSource(
+                src,
+                @"
 {
   ""field1"": 1,
   ""field2"": {
     ""nested1"": 5
   },
   ""field3"": 2
-}");
+}"
+            );
         }
 
         [Fact]
         public void SerializeEnumerable()
         {
-            var src = new Array([1, 2
-]);
+            var src = new Array([1, 2]);
 
-            VerifyJsonSource(src, @"
+            VerifyJsonSource(
+                src,
+                @"
 [
   1,
   2
-]");
+]"
+            );
         }
 
         [Fact]
         public void NestedEnumerable()
         {
-            var src = new Array(
-            [
-                1,
-                new Array([3, 4
-]),
-                5,
-                8
-,
-            ]);
+            var src = new Array([1, new Array([3, 4]), 5, 8]);
 
-            VerifyJsonSource(src, @"
+            VerifyJsonSource(
+                src,
+                @"
 [
   1,
   [
@@ -126,48 +150,66 @@ namespace Serde.Test
   ],
   5,
   8
-]");
+]"
+            );
         }
 
-        private partial class JsonDictionaryWrapper(Dictionary<int, int> d) : IReadOnlyDictionary<int, int>
+        private partial class JsonDictionaryWrapper(Dictionary<int, int> d)
+            : IReadOnlyDictionary<int, int>
         {
             public Dictionary<int, int> _d = d;
             public int Count => _d.Count;
             public IEnumerable<int> Keys => _d.Keys;
             public IEnumerable<int> Values => _d.Values;
+
             public bool ContainsKey(int key) => _d.ContainsKey(key);
+
             public bool TryGetValue(int key, out int value) => _d.TryGetValue(key, out value);
+
             public IEnumerator<KeyValuePair<int, int>> GetEnumerator() => _d.GetEnumerator();
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() =>
+                GetEnumerator();
+
             public int this[int key] => _d[key];
         }
+
         partial class JsonDictionaryWrapper : ISerializeProvider<JsonDictionaryWrapper>
         {
-            private sealed class ToStringProxy : ISerializeProvider<int>, ISerialize<int>, ITypeSerialize<int>
+            private sealed class ToStringProxy
+                : ISerializeProvider<int>,
+                    ISerialize<int>,
+                    ITypeSerialize<int>
             {
                 public static ISerialize<int> Instance { get; } = new ToStringProxy();
 
                 public ISerdeInfo SerdeInfo => StringProxy.SerdeInfo;
 
-                public void Serialize(int value, ISerializer serializer) => serializer.WriteString(value.ToString());
+                public void Serialize(int value, ISerializer serializer) =>
+                    serializer.WriteString(value.ToString());
 
-                public void Serialize(int value, ITypeSerializer serializer, ISerdeInfo info, int index)
+                public void Serialize(
+                    int value,
+                    ITypeSerializer serializer,
+                    ISerdeInfo info,
+                    int index
+                )
                 {
                     serializer.WriteString(info, index, value.ToString());
                 }
             }
 
-            static ISerialize<JsonDictionaryWrapper> ISerializeProvider<JsonDictionaryWrapper>.Instance { get; }
-                = new Proxy();
+            static ISerialize<JsonDictionaryWrapper> ISerializeProvider<JsonDictionaryWrapper>.Instance { get; } =
+                new Proxy();
 
             private sealed class Proxy()
                 : SerDictBase<Proxy, int, int, JsonDictionaryWrapper, ToStringProxy, I32Proxy>
             {
                 private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeDictionary(
-                        typeof(Dictionary<int, int>).ToString(),
-                        ToStringProxy.Instance.SerdeInfo,
-                        I32Proxy.SerdeInfo
-                    );
+                    typeof(Dictionary<int, int>).ToString(),
+                    ToStringProxy.Instance.SerdeInfo,
+                    I32Proxy.SerdeInfo
+                );
                 public override ISerdeInfo SerdeInfo => s_serdeInfo;
             }
         }
@@ -175,11 +217,7 @@ namespace Serde.Test
         [Fact]
         public void TestCustomDictionary()
         {
-            var d = new Dictionary<int, int>()
-            {
-                [3] = 5,
-                [1] = 10
-            };
+            var d = new Dictionary<int, int>() { [3] = 5, [1] = 10 };
             var js = Serde.Json.JsonSerializer.Serialize(new JsonDictionaryWrapper(d));
             var resultDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<int, int>>(js)!;
             Assert.Equal(d.Count, resultDict.Count);
@@ -193,7 +231,10 @@ namespace Serde.Test
         public void NullableString()
         {
             string? s = null;
-            var js = Serde.Json.JsonSerializer.Serialize<string?, NullableRefProxy.Ser<string, StringProxy>>(s);
+            var js = Serde.Json.JsonSerializer.Serialize<
+                string?,
+                NullableRefProxy.Ser<string, StringProxy>
+            >(s);
             Assert.Equal("null", js);
             js = Serde.Json.JsonSerializer.Serialize<JsonValue>(JsonValue.Null.Instance);
             Assert.Equal("null", js);
@@ -203,16 +244,15 @@ namespace Serde.Test
         private partial class NullableFields
         {
             public string? S = null;
-            public Dictionary<string, string?> D = new() {
-                ["abc"] = null,
-                ["def"] = "def"
-            };
+            public Dictionary<string, string?> D = new() { ["abc"] = null, ["def"] = "def" };
         }
 
         [GenerateSerialize]
         private partial struct Color
         {
-            public int Red, Green, Blue;
+            public int Red,
+                Green,
+                Blue;
         }
 
         [Fact]
@@ -234,7 +274,9 @@ namespace Serde.Test
         public void DeserializeIntArray()
         {
             var js = "[1,2,3]";
-            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.De<int, I32Proxy>>(js);
+            var arr = Serde.Json.JsonSerializer.Deserialize<int[], ArrayProxy.De<int, I32Proxy>>(
+                js
+            );
             Assert.Equal(new int[] { 1, 2, 3 }, arr);
         }
 
@@ -244,6 +286,7 @@ namespace Serde.Test
             private BasicDU() { }
 
             public record A(int X) : BasicDU { }
+
             public record B(string Y) : BasicDU { }
         }
 
@@ -252,12 +295,18 @@ namespace Serde.Test
         {
             var a = new BasicDU.A(5);
             var b = new BasicDU.B("hello");
-            Assert.Equal("""
-            {"A":{"x":5}}
-            """, Serde.Json.JsonSerializer.Serialize<BasicDU>(a));
-            Assert.Equal("""
-            {"B":{"y":"hello"}}
-            """, Serde.Json.JsonSerializer.Serialize<BasicDU>(b));
+            Assert.Equal(
+                """
+                {"A":{"x":5}}
+                """,
+                Serde.Json.JsonSerializer.Serialize<BasicDU>(a)
+            );
+            Assert.Equal(
+                """
+                {"B":{"y":"hello"}}
+                """,
+                Serde.Json.JsonSerializer.Serialize<BasicDU>(b)
+            );
         }
 
         abstract partial record BasicDUManualTag : ISerializeProvider<BasicDUManualTag>
@@ -265,11 +314,12 @@ namespace Serde.Test
             private BasicDUManualTag() { }
 
             public record A(int W, int X) : BasicDUManualTag { }
+
             public record B(string Y, string Z) : BasicDUManualTag { }
 
-            static ISerialize<BasicDUManualTag> ISerializeProvider<BasicDUManualTag>.Instance => _SerializeObject.Instance;
+            static ISerialize<BasicDUManualTag> ISerializeProvider<BasicDUManualTag>.Instance =>
+                _SerializeObject.Instance;
             private static ISerdeInfo SerdeInfo => BaseSerdeInfo.Instance;
-
 
             private sealed class _SerializeObject : ISerialize<BasicDUManualTag>
             {
@@ -307,53 +357,65 @@ namespace Serde.Test
             private sealed class _m_AProxy : ISerdeInfoProvider
             {
                 public static readonly _m_AProxy Instance = new();
-                ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-                    "A",
-                    System.Array.Empty<CustomAttributeData>(),
-                    [
-                        new Serde.SerdeInfo.FieldInfo("w", I32Proxy.SerdeInfo),
-                        new Serde.SerdeInfo.FieldInfo("x", I32Proxy.SerdeInfo),
-                    ]);
+                ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } =
+                    Serde.SerdeInfo.MakeCustom(
+                        "A",
+                        System.Array.Empty<CustomAttributeData>(),
+                        [
+                            new Serde.SerdeInfo.FieldInfo("w", I32Proxy.SerdeInfo),
+                            new Serde.SerdeInfo.FieldInfo("x", I32Proxy.SerdeInfo),
+                        ]
+                    );
             }
 
             private sealed class _m_BProxy : ISerdeInfoProvider
             {
                 public static readonly _m_BProxy Instance = new();
-                ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } = Serde.SerdeInfo.MakeCustom(
-                    "B",
-                    System.Array.Empty<CustomAttributeData>(),
-                    [
-                        new Serde.SerdeInfo.FieldInfo("y", StringProxy.SerdeInfo),
-                        new Serde.SerdeInfo.FieldInfo("z", StringProxy.SerdeInfo),
-                    ]);
+                ISerdeInfo ISerdeInfoProvider.SerdeInfo { get; } =
+                    Serde.SerdeInfo.MakeCustom(
+                        "B",
+                        System.Array.Empty<CustomAttributeData>(),
+                        [
+                            new Serde.SerdeInfo.FieldInfo("y", StringProxy.SerdeInfo),
+                            new Serde.SerdeInfo.FieldInfo("z", StringProxy.SerdeInfo),
+                        ]
+                    );
             }
 
             private sealed class BaseSerdeInfo : IUnionSerdeInfo
             {
                 public static readonly BaseSerdeInfo Instance = new BaseSerdeInfo();
+
                 private BaseSerdeInfo() { }
 
-                public ImmutableArray<ISerdeInfo> CaseInfos => throw new System.NotImplementedException();
+                public ImmutableArray<ISerdeInfo> CaseInfos =>
+                    throw new System.NotImplementedException();
 
                 public string Name => throw new System.NotImplementedException();
 
-                public IList<CustomAttributeData> Attributes => throw new System.NotImplementedException();
+                public IList<CustomAttributeData> Attributes =>
+                    throw new System.NotImplementedException();
 
                 public int FieldCount => throw new System.NotImplementedException();
 
-                public IList<CustomAttributeData> GetFieldAttributes(int index) => throw new System.NotImplementedException();
+                public IList<CustomAttributeData> GetFieldAttributes(int index) =>
+                    throw new System.NotImplementedException();
 
-                public ISerdeInfo GetFieldInfo(int index) => throw new System.NotImplementedException();
+                public ISerdeInfo GetFieldInfo(int index) =>
+                    throw new System.NotImplementedException();
 
-                public System.ReadOnlySpan<byte> GetFieldName(int index) => Encoding.UTF8.GetBytes(GetFieldStringName(index));
+                public System.ReadOnlySpan<byte> GetFieldName(int index) =>
+                    Encoding.UTF8.GetBytes(GetFieldStringName(index));
 
-                public string GetFieldStringName(int index) => index switch
-                {
-                    0 => "tag",
-                    _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
-                };
+                public string GetFieldStringName(int index) =>
+                    index switch
+                    {
+                        0 => "tag",
+                        _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
+                    };
 
-                public int TryGetIndex(System.ReadOnlySpan<byte> fieldName) => throw new System.NotImplementedException();
+                public int TryGetIndex(System.ReadOnlySpan<byte> fieldName) =>
+                    throw new System.NotImplementedException();
             }
         }
 
@@ -362,12 +424,18 @@ namespace Serde.Test
         {
             var a = new BasicDUManualTag.A(5, 6);
             var b = new BasicDUManualTag.B("hello", "world");
-            Assert.Equal("""
-            {"tag":"A","w":5,"x":6}
-            """, Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(a));
-            Assert.Equal("""
-            {"tag":"B","y":"hello","z":"world"}
-            """, Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(b));
+            Assert.Equal(
+                """
+                {"tag":"A","w":5,"x":6}
+                """,
+                Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(a)
+            );
+            Assert.Equal(
+                """
+                {"tag":"B","y":"hello","z":"world"}
+                """,
+                Serde.Json.JsonSerializer.Serialize<BasicDUManualTag>(b)
+            );
         }
 
         [GenerateSerialize]
@@ -376,17 +444,33 @@ namespace Serde.Test
         [Fact]
         public void ToBytesMatchesSerialize()
         {
-            var color = new Color { Red = 3, Green = 5, Blue = 7 };
+            var color = new Color
+            {
+                Red = 3,
+                Green = 5,
+                Blue = 7,
+            };
             var mem = Serde.Json.JsonSerializer.ToBytes(color);
-            Assert.Equal(Serde.Json.JsonSerializer.Serialize(color), Encoding.UTF8.GetString(mem.Span));
+            Assert.Equal(
+                Serde.Json.JsonSerializer.Serialize(color),
+                Encoding.UTF8.GetString(mem.Span)
+            );
         }
 
         [Fact]
         public void ToBytesWithProvider()
         {
-            var color = new Color { Red = 9, Green = 8, Blue = 7 };
+            var color = new Color
+            {
+                Red = 9,
+                Green = 8,
+                Blue = 7,
+            };
             var mem = Serde.Json.JsonSerializer.ToBytes<Color>(color);
-            Assert.Equal(Serde.Json.JsonSerializer.Serialize(color), Encoding.UTF8.GetString(mem.Span));
+            Assert.Equal(
+                Serde.Json.JsonSerializer.Serialize(color),
+                Encoding.UTF8.GetString(mem.Span)
+            );
         }
 
         [Fact]
@@ -399,7 +483,10 @@ namespace Serde.Test
             }
             var data = new BigData(values);
             var mem = Serde.Json.JsonSerializer.ToBytes(data);
-            Assert.Equal(Serde.Json.JsonSerializer.Serialize(data), Encoding.UTF8.GetString(mem.Span));
+            Assert.Equal(
+                Serde.Json.JsonSerializer.Serialize(data),
+                Encoding.UTF8.GetString(mem.Span)
+            );
         }
     }
 }

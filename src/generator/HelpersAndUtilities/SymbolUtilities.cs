@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,19 +12,21 @@ namespace Serde
 {
     internal static class SymbolUtilities
     {
-        public static ITypeSymbol GetSymbolType(ISymbol symbol) => symbol switch
-        {
-            IFieldSymbol f => f.Type,
-            IPropertySymbol p => p.Type,
-            IParameterSymbol p => p.Type,
-            ILocalSymbol l => l.Type,
-            _ => throw new InvalidOperationException($"Unexpected symbol {symbol}")
-        };
+        public static ITypeSymbol GetSymbolType(ISymbol symbol) =>
+            symbol switch
+            {
+                IFieldSymbol f => f.Type,
+                IPropertySymbol p => p.Type,
+                IParameterSymbol p => p.Type,
+                ILocalSymbol l => l.Type,
+                _ => throw new InvalidOperationException($"Unexpected symbol {symbol}"),
+            };
 
         public static List<DataMemberSymbol> GetDataMembers(
             ITypeSymbol type,
             SerdeUsage usage,
-            GeneratorExecutionContext context)
+            GeneratorExecutionContext context
+        )
         {
             var members = new List<DataMemberSymbol>();
             var curType = type;
@@ -65,9 +66,11 @@ namespace Serde
                         continue;
                     }
                     var memberOptions = GetMemberOptions(m);
-                    if (memberOptions.Skip ||
-                        (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize) ||
-                        (memberOptions.SkipDeserialize && usage == SerdeUsage.Deserialize))
+                    if (
+                        memberOptions.Skip
+                        || (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize)
+                        || (memberOptions.SkipDeserialize && usage == SerdeUsage.Deserialize)
+                    )
                     {
                         CheckOrdinal(m);
                         continue;
@@ -85,8 +88,9 @@ namespace Serde
                 {
                     if (m.Ordinal is not null)
                     {
-                        context?.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_OrdinalOnEnumMember, m.Locations[0], m.Name));
+                        context?.ReportDiagnostic(
+                            CreateDiagnostic(DiagId.ERR_OrdinalOnEnumMember, m.Locations[0], m.Name)
+                        );
                     }
                 }
             }
@@ -100,8 +104,9 @@ namespace Serde
             {
                 if (GetMemberOptions(m).Ordinal is not null)
                 {
-                    context.ReportDiagnostic(CreateDiagnostic(
-                        DiagId.ERR_OrdinalOnSkippedMember, m.Locations[0], m.Name));
+                    context.ReportDiagnostic(
+                        CreateDiagnostic(DiagId.ERR_OrdinalOnSkippedMember, m.Locations[0], m.Name)
+                    );
                 }
             }
         }
@@ -118,7 +123,8 @@ namespace Serde
         /// </summary>
         private static List<DataMemberSymbol> ReorderByExplicitOrdinal(
             List<DataMemberSymbol> members,
-            GeneratorExecutionContext context)
+            GeneratorExecutionContext context
+        )
         {
             var anyExplicit = false;
             var allExplicit = true;
@@ -146,8 +152,13 @@ namespace Serde
                 {
                     if (m.Ordinal is null)
                     {
-                        context.ReportDiagnostic(CreateDiagnostic(
-                            DiagId.ERR_PartialMemberOrdinal, m.Locations[0], m.Name));
+                        context.ReportDiagnostic(
+                            CreateDiagnostic(
+                                DiagId.ERR_PartialMemberOrdinal,
+                                m.Locations[0],
+                                m.Name
+                            )
+                        );
                     }
                 }
             }
@@ -163,8 +174,15 @@ namespace Serde
                 }
                 if (byOrdinal.TryGetValue(ord, out var existing))
                 {
-                    context.ReportDiagnostic(CreateDiagnostic(
-                        DiagId.ERR_DuplicateOrdinal, m.Locations[0], ord, existing.Name, m.Name));
+                    context.ReportDiagnostic(
+                        CreateDiagnostic(
+                            DiagId.ERR_DuplicateOrdinal,
+                            m.Locations[0],
+                            ord,
+                            existing.Name,
+                            m.Name
+                        )
+                    );
                 }
                 else
                 {
@@ -182,7 +200,9 @@ namespace Serde
                 .ToList();
         }
 
-        internal static ImmutableArray<INamedTypeSymbol> GetDUTypeMembers(INamedTypeSymbol receiverType)
+        internal static ImmutableArray<INamedTypeSymbol> GetDUTypeMembers(
+            INamedTypeSymbol receiverType
+        )
         {
             Debug.Assert(receiverType.IsAbstract);
 
@@ -197,7 +217,8 @@ namespace Serde
             return builder.ToImmutable();
         }
 
-        public static TypeSyntax ToFqnSyntax(this ITypeSymbol t) => SyntaxFactory.ParseTypeName(t.ToDisplayString());
+        public static TypeSyntax ToFqnSyntax(this ITypeSymbol t) =>
+            SyntaxFactory.ParseTypeName(t.ToDisplayString());
 
         public static MemberOptions GetMemberOptions(ISymbol member)
         {
@@ -209,7 +230,12 @@ namespace Serde
                 {
                     continue;
                 }
-                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeMemberOptions))
+                if (
+                    WellKnownTypes.IsWellKnownAttribute(
+                        attrClass,
+                        WellKnownAttribute.SerdeMemberOptions
+                    )
+                )
                 {
                     foreach (var named in attr.NamedArguments)
                     {
@@ -218,61 +244,89 @@ namespace Serde
                         {
                             {
                                 Key: nameof(MemberOptions.ThrowIfMissing),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { ThrowIfMissing = (bool)value },
+                            } => options with
+                            {
+                                ThrowIfMissing = (bool)value,
+                            },
 
                             {
                                 Key: nameof(MemberOptions.Rename),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_String
                                 }
-                            } => options with { Rename = (string)value },
+                            } => options with
+                            {
+                                Rename = (string)value,
+                            },
 
                             {
                                 Key: nameof(MemberOptions.Ordinal),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Int32
                                 }
-                            } => options with { Ordinal = (int)value is var ord && ord >= 0 ? ord : null },
+                            } => options with
+                            {
+                                Ordinal = (int)value is var ord && ord >= 0 ? ord : null,
+                            },
 
                             {
                                 Key: nameof(MemberOptions.ProvideAttributes),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { ProvideAttributes = (bool)value },
+                            } => options with
+                            {
+                                ProvideAttributes = (bool)value,
+                            },
 
                             {
                                 Key: nameof(MemberOptions.Skip),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { Skip = (bool)value },
+                            } => options with
+                            {
+                                Skip = (bool)value,
+                            },
 
                             {
                                 Key: nameof(MemberOptions.SkipSerialize),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { SkipSerialize = (bool)value },
+                            } => options with
+                            {
+                                SkipSerialize = (bool)value,
+                            },
 
                             {
                                 Key: nameof(MemberOptions.SkipDeserialize),
-                                Value: {
+                                Value:
+                                {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            } => options with { SkipDeserialize = (bool)value },
+                            } => options with
+                            {
+                                SkipDeserialize = (bool)value,
+                            },
 
-                            _ => options
+                            _ => options,
                         };
                     }
                     break;
@@ -291,7 +345,12 @@ namespace Serde
                 {
                     continue;
                 }
-                if (WellKnownTypes.IsWellKnownAttribute(attrClass, WellKnownAttribute.SerdeTypeOptions))
+                if (
+                    WellKnownTypes.IsWellKnownAttribute(
+                        attrClass,
+                        WellKnownAttribute.SerdeTypeOptions
+                    )
+                )
                 {
                     foreach ((string name, TypedConstant argument) in attr.NamedArguments)
                     {
@@ -300,30 +359,46 @@ namespace Serde
                         {
                             continue;
                         }
-                        options = (name, argument) switch {
-                            (nameof(TypeOptions.MemberFormat),
-                                {
-                                    Kind: TypedConstantKind.Enum,
-                                    Type.Name: nameof(MemberFormat)
-                                }) => options with { MemberFormat = (MemberFormat)value },
-                            (nameof(TypeOptions.DenyUnknownMembers),
-                                {
-                                    Kind: TypedConstantKind.Primitive,
-                                    Type.SpecialType: SpecialType.System_Boolean
-                                }
-                            ) => options with { DenyUnknownMembers = (bool)value },
-                            (nameof(TypeOptions.AllowDuplicateKeys),
+                        options = (name, argument) switch
+                        {
+                            (
+                                nameof(TypeOptions.MemberFormat),
+                                { Kind: TypedConstantKind.Enum, Type.Name: nameof(MemberFormat) }
+                            ) => options with
+                            {
+                                MemberFormat = (MemberFormat)value,
+                            },
+                            (
+                                nameof(TypeOptions.DenyUnknownMembers),
                                 {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_Boolean
                                 }
-                            ) => options with { AllowDuplicateKeys = (bool)value },
-                            (nameof(TypeOptions.Rename),
+                            ) => options with
+                            {
+                                DenyUnknownMembers = (bool)value,
+                            },
+                            (
+                                nameof(TypeOptions.AllowDuplicateKeys),
+                                {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            ) => options with
+                            {
+                                AllowDuplicateKeys = (bool)value,
+                            },
+                            (
+                                nameof(TypeOptions.Rename),
                                 {
                                     Kind: TypedConstantKind.Primitive,
                                     Type.SpecialType: SpecialType.System_String
-                                }) => options with { Rename = (string)value },
-                            _ => options
+                                }
+                            ) => options with
+                            {
+                                Rename = (string)value,
+                            },
+                            _ => options,
                         };
                     }
                     break;
@@ -339,9 +414,9 @@ namespace Serde
             SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
             SymbolDisplayGenericsOptions.IncludeTypeParameters,
             SymbolDisplayMemberOptions.IncludeContainingType,
-            miscellaneousOptions:
-                SymbolDisplayMiscellaneousOptions.UseSpecialTypes
+            miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes
                 | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
-                | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+                | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
+        );
     }
 }

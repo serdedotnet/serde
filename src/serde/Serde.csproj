@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net10.0;net8.0</TargetFrameworks>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -17,7 +16,8 @@
 
   <ItemGroup>
     <EmbeddedResource Update="json/reader/SR.resx" LogicalName="SR.resources">
-      <Generator>MSBuild:Compile</Generator><!-- Tell Visual Studio to run a build if the resx file changes -->
+      <Generator>MSBuild:Compile</Generator>
+      <!-- Tell Visual Studio to run a build if the resx file changes -->
       <StronglyTypedFileName>$(IntermediateOutputPath)\SR.Designer.cs</StronglyTypedFileName>
       <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
       <StronglyTypedClassName>SR</StronglyTypedClassName>
@@ -28,5 +28,4 @@
     </PackageReference>
     <PackageReference Include="StaticCS.CsSig" />
   </ItemGroup>
-
 </Project>

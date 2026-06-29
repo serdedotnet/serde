@@ -1,4 +1,3 @@
-
 using System;
 using Xunit;
 
@@ -6,7 +5,6 @@ namespace Serde;
 
 public sealed class SourceBuilderTests
 {
-
     [Fact]
     public void TestSourceBuilder()
     {
@@ -16,28 +14,38 @@ public sealed class SourceBuilderTests
         Assert.Equal("Hello, 10", b.ToString());
 
         b = new();
-        b.Append($$"""
+        b.Append(
+            $$"""
 {
     {{x}}
 }
-""");
-        Assert.Equal("""
-        {
-            10
-        }
-        """, b.ToString());
+"""
+        );
+        Assert.Equal(
+            """
+            {
+                10
+            }
+            """,
+            b.ToString()
+        );
 
-        b = new($$"""
-        {
-            {{ "abc" + Environment.NewLine + "def"}}
-        }
-        """);
-        Assert.Equal("""
+        b = new(
+            $$"""
+            {
+                {{"abc" + Environment.NewLine + "def"}}
+            }
+            """
+        );
+        Assert.Equal(
+            """
             {
                 abc
                 def
             }
-            """, b.ToString());
+            """,
+            b.ToString()
+        );
     }
 
     [Fact]
@@ -48,18 +56,22 @@ public sealed class SourceBuilderTests
 
             def
             """;
-        var b = new SourceBuilder($$"""
-        {
-            {{s}}
-        }
-        """);
-        Assert.Equal("""
-        {
-            abc
+        var b = new SourceBuilder(
+            $$"""
+            {
+                {{s}}
+            }
+            """
+        );
+        Assert.Equal(
+            """
+            {
+                abc
 
-            def
-        }
-        """, b.ToString());
+                def
+            }
+            """,
+            b.ToString()
+        );
     }
-
 }

@@ -23,8 +23,8 @@ partial class JsonDeserializer<TReader>
             return TryReadIndexWithName(info).Item1;
         }
 
-        (int, string? errorName) ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo)
-            => TryReadIndexWithName(serdeInfo);
+        (int, string? errorName) ITypeDeserializer.TryReadIndexWithName(ISerdeInfo serdeInfo) =>
+            TryReadIndexWithName(serdeInfo);
 
         private (int, string? errorName) TryReadIndexWithName(ISerdeInfo serdeInfo)
         {
@@ -92,106 +92,127 @@ partial class JsonDeserializer<TReader>
             ReadColon();
             return _deserializer.ReadBool();
         }
+
         char ITypeDeserializer.ReadChar(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadChar();
         }
+
         byte ITypeDeserializer.ReadU8(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadU8();
         }
+
         ushort ITypeDeserializer.ReadU16(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadU16();
         }
+
         uint ITypeDeserializer.ReadU32(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadU32();
         }
+
         ulong ITypeDeserializer.ReadU64(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadU64();
         }
+
         UInt128 ITypeDeserializer.ReadU128(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadU128();
         }
+
         sbyte ITypeDeserializer.ReadI8(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadI8();
         }
+
         short ITypeDeserializer.ReadI16(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadI16();
         }
+
         int ITypeDeserializer.ReadI32(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadI32();
         }
+
         long ITypeDeserializer.ReadI64(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadI64();
         }
+
         Int128 ITypeDeserializer.ReadI128(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadI128();
         }
+
         Half ITypeDeserializer.ReadF16(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadF16();
         }
+
         float ITypeDeserializer.ReadF32(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadF32();
         }
+
         double ITypeDeserializer.ReadF64(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadF64();
         }
+
         decimal ITypeDeserializer.ReadDecimal(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadDecimal();
         }
+
         string ITypeDeserializer.ReadString(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadString();
         }
+
         DateTime ITypeDeserializer.ReadDateTime(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadDateTime();
         }
+
         DateTimeOffset ITypeDeserializer.ReadDateTimeOffset(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadDateTimeOffset();
         }
+
         DateOnly ITypeDeserializer.ReadDateOnly(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadDateOnly();
         }
+
         TimeOnly ITypeDeserializer.ReadTimeOnly(ISerdeInfo info, int index)
         {
             ReadColon();
             return _deserializer.ReadTimeOnly();
         }
+
         void ITypeDeserializer.ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer)
         {
             ReadColon();

@@ -19,15 +19,16 @@ public interface IDeserialize<T> : ISerdeInfoProvider
 /// </summary>
 public interface IDeserializeProvider<T>
 {
-    abstract static IDeserialize<T> Instance { get; }
+    static abstract IDeserialize<T> Instance { get; }
 }
 
 public static class DeserializeProvider
 {
-    public static IDeserialize<T> GetDeserialize<T>() where T : IDeserializeProvider<T> => T.Instance;
+    public static IDeserialize<T> GetDeserialize<T>()
+        where T : IDeserializeProvider<T> => T.Instance;
+
     public static IDeserialize<T> GetDeserialize<T, TProvider>()
-        where TProvider : IDeserializeProvider<T>
-        => TProvider.Instance;
+        where TProvider : IDeserializeProvider<T> => TProvider.Instance;
 }
 
 /// <summary>
@@ -53,7 +54,7 @@ public static class TypeDeserialize
         return d switch
         {
             ITypeDeserialize<T> typeDe => typeDe,
-            _ => BoxProxy.De<T, TProvider>.Instance
+            _ => BoxProxy.De<T, TProvider>.Instance,
         };
     }
 }
