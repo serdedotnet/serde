@@ -6,7 +6,6 @@ using Serde;
 
 namespace Benchmarks;
 
-
 // A type whose members are themselves generated reference types. Serializing each
 // element of the list goes through the synthesized ISerialize<Location>.SerializeAsField,
 // which is the path affected by routing WriteValue through SerializeAsField.

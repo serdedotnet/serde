@@ -645,7 +645,11 @@ public static class NullableProxy
             }
         }
 
-        T? IDeserialize<T?>.DeserializeAsField(ITypeDeserializer typeDeserializer, ISerdeInfo serdeInfo, int index)
+        T? IDeserialize<T?>.DeserializeAsField(
+            ITypeDeserializer typeDeserializer,
+            ISerdeInfo serdeInfo,
+            int index
+        )
         {
             var d = typeDeserializer.ReadFieldStart(serdeInfo, index);
             T? result = d.TryReadNull() ? null : proxy.Deserialize(d);
