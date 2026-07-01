@@ -100,4 +100,41 @@ public partial class AsTests
         var back = JsonSerializer.Deserialize<TupleWrapper>(json);
         Assert.Equal(w, back);
     }
+
+    [GenerateSerde(AsUnderlying = true)]
+    public enum Priority
+    {
+        Low = 1,
+        Medium = 5,
+        High = 10,
+    }
+
+    [Fact]
+    public void RoundTripEnumAsInt()
+    {
+        // Unlike the default by-name enum format, `AsUnderlying = true` serializes the enum as its
+        // underlying integral value (5), not its name ("medium") or ordinal index (1).
+        var json = JsonSerializer.Serialize<Priority, PriorityProxy>(Priority.Medium);
+        Assert.Equal("5", json);
+
+        var back = JsonSerializer.Deserialize<Priority, PriorityProxy>(json);
+        Assert.Equal(Priority.Medium, back);
+    }
+
+    [GenerateSerde(AsUnderlying = true)]
+    public enum Level : byte
+    {
+        A = 0,
+        B = 200,
+    }
+
+    [Fact]
+    public void RoundTripEnumAsByte()
+    {
+        var json = JsonSerializer.Serialize<Level, LevelProxy>(Level.B);
+        Assert.Equal("200", json);
+
+        var back = JsonSerializer.Deserialize<Level, LevelProxy>(json);
+        Assert.Equal(Level.B, back);
+    }
 }

@@ -134,6 +134,11 @@ partial class JsonSerializer
             serializer.WriteBytes(bytes);
         }
 
+        public void WriteEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo, int ordinal)
+        {
+            serializer.WriteEnum(fieldInfo, ordinal);
+        }
+
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
             where T : class?
         {
@@ -200,6 +205,9 @@ partial class JsonSerializer
             throw new KeyNotStringException();
 
         public void WriteNull() => throw new KeyNotStringException();
+
+        void ISerializer.WriteEnum(ISerdeInfo info, int ordinal) =>
+            throw new KeyNotStringException();
     }
 
     private sealed class DictImpl(JsonSerializer serializer) : ITypeSerializer
@@ -289,6 +297,9 @@ partial class JsonSerializer
 
         public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) =>
             GetSerializer(index).WriteBytes(bytes);
+
+        public void WriteEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo, int ordinal) =>
+            GetSerializer(index).WriteEnum(fieldInfo, ordinal);
 
         public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
             where T : class? => serialize.Serialize(value, GetSerializer(index));

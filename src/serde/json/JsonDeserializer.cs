@@ -404,4 +404,35 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
             throw new JsonException($"Invalid base64 string: {status}");
         }
     }
+
+    /// <summary>
+    /// Default behavior of JSON is to read and write enums as strings.
+    /// </summary>
+    public int ReadEnum(ISerdeInfo info)
+    {
+        if (info.Kind != InfoKind.Enum)
+        {
+            throw new ArgumentException($"Expected enum type, found {info.Kind}");
+        }
+        switch (ThrowIfEos(Reader.SkipWhitespace()))
+        {
+            case (byte)'"':
+                break;
+            default:
+                throw new JsonException("Expected enum name as string");
+        }
+
+        // Read a string
+        Reader.Advance();
+        _scratch.Clear();
+        var span = Reader.LexUtf8Span(_scratch);
+        var localIndex = info.TryGetIndex(span);
+        var errorName = localIndex == ITypeDeserializer.IndexNotFound ? span.ToString() : null;
+        if (errorName is not null)
+        {
+            throw Serde.DeserializeException.UnknownMember(errorName, info);
+        }
+        _first = false;
+        return localIndex;
+    }
 }

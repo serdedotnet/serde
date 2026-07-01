@@ -39,6 +39,38 @@ sealed partial class {{proxyName}};
         return newDecl;
     }
 
+    /// <summary>
+    /// Returns true if the enum is annotated to serialize/deserialize as its underlying integral
+    /// value (via <c>AsUnderlying = true</c> on a <c>GenerateSerde</c>, <c>GenerateSerialize</c>,
+    /// or <c>GenerateDeserialize</c> attribute) rather than by name.
+    /// </summary>
+    internal static bool EnumSerializesAsUnderlying(ITypeSymbol enumType)
+    {
+        foreach (var attr in enumType.GetAttributes())
+        {
+            if (attr.AttributeClass is not { } attrClass)
+            {
+                continue;
+            }
+            if (
+                !IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerde)
+                && !IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateSerialize)
+                && !IsWellKnownAttribute(attrClass, WellKnownAttribute.GenerateDeserialize)
+            )
+            {
+                continue;
+            }
+            foreach (var named in attr.NamedArguments)
+            {
+                if (named.Key == "AsUnderlying" && named.Value.Value is true)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     internal static string? TryGetPrimitiveName(ITypeSymbol type)
     {
         // Nullable types are not considered primitive types

@@ -13,7 +13,7 @@ using static Serde.SerdeImplRoslynGenerator;
 
 namespace Serde
 {
-    internal class DeserializeImplGen
+    internal partial class DeserializeImplGen
     {
         internal static SourceBuilder GenDeserialize(
             GeneratorExecutionContext context,
@@ -103,82 +103,6 @@ namespace Serde
         throw Serde.DeserializeException.ExpectedEndOfType(index);
     }
     de.End(_l_serdeInfo);
-    return _l_result;
-}
-"""
-            );
-            return src;
-        }
-
-        /// <summary>
-        /// Generates the method body for deserializing an enum.
-        /// Code looks like:
-        /// <code>
-        /// static T IDeserialize&lt;T&gt;Deserialize(IDeserializer deserializer)
-        /// {
-        ///    var serdeInfo = GetInfo(this);
-        ///    var de = deserializer.ReadType(serdeInfo);
-        ///    var (index, errorName) = de.TryReadIndex(serdeInfo);
-        ///    if (index == ITypeDeserializer.IndexNotFound)
-        ///    {
-        ///      throw new InvalidDeserializeValueException($"Unexpected value: {errorName}");
-        ///    }
-        ///    return index switch
-        ///    {
-        ///      {index} =&gt; {enum member},
-        ///      ...
-        ///      _ =&gt; throw new InvalidDeserializeValueException($"Unexpected index: {index}")
-        ///    };
-        /// }
-        /// </code>
-        /// </summary>
-        private static SourceBuilder GenerateEnumDeserializeMethod(
-            GeneratorExecutionContext context,
-            ITypeSymbol type,
-            TypeSyntax typeSyntax
-        )
-        {
-            Debug.Assert(type.TypeKind == TypeKind.Enum);
-            var primName = Proxies.TryGetPrimitiveName(
-                ((INamedTypeSymbol)type).EnumUnderlyingType!
-            );
-
-            var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
-            var typeFqn = typeSyntax.ToString();
-            var assignedVarType = members.Count switch
-            {
-                <= 8 => "byte",
-                <= 16 => "ushort",
-                <= 32 => "uint",
-                <= 64 => "ulong",
-                _ => throw new InvalidOperationException("Too many members in type"),
-            };
-            var src = new SourceBuilder(
-                $$"""
-{{typeFqn}} IDeserialize<{{typeFqn}}>.Deserialize(IDeserializer deserializer)
-{
-    var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-    var de = deserializer.ReadType(serdeInfo);
-    var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
-    if (index == ITypeDeserializer.IndexNotFound)
-    {
-        throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
-    }
-    {{typeFqn}} _l_result;
-    if (index == ITypeDeserializer.EndOfType)
-    {
-        // Assume we want to read the underlying value
-        _l_result = ({{typeFqn}})de.Read{{primName}}(serdeInfo, index);
-    }
-    else
-    {
-        _l_result = index switch {
-            {{string.Join("," + Utilities.NewLine, members
-                .Select((m, i) => $"{i} => {typeSyntax}.{m.Name}"))}},
-            _ => throw new InvalidOperationException($"Unexpected index: {index}")
-        };
-    }
-    de.End(serdeInfo);
     return _l_result;
 }
 """

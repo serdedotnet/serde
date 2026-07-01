@@ -35,6 +35,11 @@ sealed class GenerateSerialize : Attribute
     /// type must exist.
     /// </summary>
     public Type? As { get; init; }
+
+    /// <summary>
+    /// Enums only: serialize the enum as its underlying integral value instead of by name.
+    /// </summary>
+    public bool AsUnderlying { get; init; }
 }
 
 /// <summary>
@@ -66,6 +71,11 @@ sealed class GenerateDeserialize : Attribute
     /// type must exist.
     /// </summary>
     public Type? As { get; init; }
+
+    /// <summary>
+    /// Enums only: deserialize the enum from its underlying integral value instead of by name.
+    /// </summary>
+    public bool AsUnderlying { get; init; }
 }
 
 /// <summary>
@@ -102,6 +112,12 @@ sealed class GenerateSerde : Attribute
     /// both directions between the declaring type and this type must exist.
     /// </summary>
     public Type? As { get; init; }
+
+    /// <summary>
+    /// Enums only: serialize and deserialize the enum as its underlying integral value instead of
+    /// by name.
+    /// </summary>
+    public bool AsUnderlying { get; init; }
 }
 
 /// <summary>

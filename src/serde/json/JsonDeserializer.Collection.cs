@@ -272,6 +272,14 @@ partial class JsonDeserializer<TReader>
             _index++;
         }
 
+        /// <summary>
+        /// Default behavior of JSON is to read and write enums as strings.
+        /// </summary>
+        int ITypeDeserializer.ReadEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo)
+        {
+            return _deserializer.ReadEnum(fieldInfo);
+        }
+
         public void End(ISerdeInfo info)
         {
             // Nothing to do; the closing delimiter is consumed when the end of the type is reached.
