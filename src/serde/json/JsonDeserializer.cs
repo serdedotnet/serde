@@ -52,14 +52,26 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
     public T? ReadNullableRef<T>(IDeserialize<T> proxy)
         where T : class
     {
+        if (TryReadNull())
+        {
+            return null;
+        }
+        else
+        {
+            return proxy.Deserialize(this);
+        }
+    }
+
+    public bool TryReadNull()
+    {
         var peek = Reader.SkipWhitespace();
         switch (ThrowIfEos(peek))
         {
             case (byte)'n' when Reader.StartsWith("null"u8):
                 Reader.Advance(4);
-                return null;
+                return true;
             default:
-                return proxy.Deserialize(this);
+                return false;
         }
     }
 

@@ -18,7 +18,20 @@ namespace Benchmarks
             if (typeof(T) == typeof(Guids))
                 return (T)(object)Guids.Sample;
 
+            if (typeof(T) == typeof(LocationList))
+                return (T)(object)CreateLocationList();
+
             throw new InvalidOperationException();
+
+            static LocationList CreateLocationList()
+            {
+                var list = new System.Collections.Generic.List<Location>();
+                for (int i = 0; i < 16; i++)
+                {
+                    list.Add(CreateLocation());
+                }
+                return new LocationList { Locations = list };
+            }
 
             static LoginViewModel CreateLoginViewModel() =>
                 new LoginViewModel

@@ -30,6 +30,7 @@ partial record AllInOne
             new("guidField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Guid, global::Serde.GuidProxy>()),
             new("escapedStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
             new("nullStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>()),
+            new("nullIntField", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>()),
             new("uIntArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<uint[], Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>()),
             new("nestedArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>()),
             new("byteArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte[], global::Serde.ByteArrayProxy>()),

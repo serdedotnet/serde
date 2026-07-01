@@ -375,6 +375,7 @@ namespace Serde
         System.UInt128 ReadU128();
         T? ReadNullableRef<T>(Serde.IDeserialize<T> deserialize) where T : class;
         bool ReadBool();
+        bool TryReadNull();
         byte ReadU8();
         char ReadChar();
         decimal ReadDecimal();

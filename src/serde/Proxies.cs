@@ -635,7 +635,7 @@ public static class NullableProxy
 
         public T? Deserialize(IDeserializer deserializer)
         {
-            if (deserializer.ReadNullableRef(EmptyStringProxy.Instance) is null)
+            if (deserializer.TryReadNull())
             {
                 return null;
             }
@@ -645,19 +645,12 @@ public static class NullableProxy
             }
         }
 
-        private class EmptyStringProxy : IDeserialize<string>
+        T? IDeserialize<T?>.DeserializeAsField(ITypeDeserializer typeDeserializer, ISerdeInfo serdeInfo, int index)
         {
-            public static readonly EmptyStringProxy Instance = new EmptyStringProxy();
-            public ISerdeInfo SerdeInfo =>
-                NullableRefProxy.De<string, StringProxy>.Instance.SerdeInfo;
-
-            public string Deserialize(IDeserializer deserializer) => "";
-
-            string IDeserialize<string>.DeserializeAsField(
-                ITypeDeserializer typeDeserializer,
-                ISerdeInfo serdeInfo,
-                int index
-            ) => "";
+            var d = typeDeserializer.ReadFieldStart(serdeInfo, index);
+            T? result = d.TryReadNull() ? null : proxy.Deserialize(d);
+            typeDeserializer.ReadFieldEnd(serdeInfo, index, d);
+            return result;
         }
     }
 }

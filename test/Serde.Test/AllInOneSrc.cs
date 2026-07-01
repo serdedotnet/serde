@@ -39,6 +39,7 @@ namespace Serde.Test
         public required string EscapedStringField;
 
         public string? NullStringField = null;
+        public int? NullIntField = null;
 
         public uint[] UIntArr = null!;
         public int[][] NestedArr = null!;
@@ -80,6 +81,7 @@ namespace Serde.Test
                 && EscapedStringField == other.EscapedStringField
                 && GuidField.Equals(other.GuidField)
                 && NullStringField == other.NullStringField
+                && NullIntField == other.NullIntField
                 && UIntArr.AsSpan().SequenceEqual(other.UIntArr.AsSpan())
                 && NestedArr.AsSpan().SequenceEqual(other.NestedArr.AsSpan(), new Comparer())
                 && ByteArr.AsSpan().SequenceEqual(other.ByteArr.AsSpan())
