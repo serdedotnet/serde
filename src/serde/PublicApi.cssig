@@ -563,6 +563,7 @@ namespace Serde
         void WriteU32(Serde.ISerdeInfo typeInfo, int index, uint u32);
         void WriteU64(Serde.ISerdeInfo typeInfo, int index, ulong u64);
         void WriteU8(Serde.ISerdeInfo typeInfo, int index, byte b);
+        void WriteValue<T, TProvider>(Serde.ISerdeInfo typeInfo, int index, T value) where T : class? where TProvider : Serde.ISerializeProvider<T>;
         void WriteValue<T>(Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> serialize) where T : class?;
     }
     public static class ITypeSerializerExt

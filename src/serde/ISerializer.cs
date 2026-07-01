@@ -145,4 +145,12 @@ public interface ITypeSerializer
 
     void SkipValue(ISerdeInfo typeInfo, int index) { }
     void End(ISerdeInfo info);
+
+    // Non-virtual/abstract members
+    public sealed void WriteValue<T, TProvider>(ISerdeInfo typeInfo, int index, T value)
+        where T : class?
+        where TProvider : ISerializeProvider<T>
+    {
+        TProvider.Instance.SerializeAsField(this, typeInfo, index, value);
+    }
 }
