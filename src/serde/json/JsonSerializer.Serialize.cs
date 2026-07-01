@@ -10,13 +10,11 @@ partial class JsonSerializer
 {
     private readonly Utf8JsonWriter _writer;
     private readonly KeySerializer _keySerializer;
-    private readonly EnumSerializer _enumSerializer;
 
     internal JsonSerializer(Utf8JsonWriter writer)
     {
         _writer = writer;
         _keySerializer = new KeySerializer(this);
-        _enumSerializer = new EnumSerializer(this);
     }
 }
 
@@ -112,6 +110,12 @@ partial class JsonSerializer : ISerializer
     public void WriteBytes(ReadOnlyMemory<byte> bytes) =>
         _writer.WriteBase64StringValue(bytes.Span);
 
+    public void WriteEnum(ISerdeInfo info, int ordinal)
+    {
+        var name = info.GetFieldName(ordinal);
+        _writer.WriteStringValue(name);
+    }
+
     ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? size)
     {
         switch (info.Kind)
@@ -136,102 +140,14 @@ partial class JsonSerializer : ISerializer
     {
         switch (typeInfo.Kind)
         {
-            case InfoKind.Enum:
-                return _enumSerializer;
             case InfoKind.Union:
             case InfoKind.CustomType:
                 _writer.WriteStartObject();
                 return this;
+            case InfoKind.Enum:
             default:
                 throw new ArgumentException("Invalid type kind for WriteType: " + typeInfo.Kind);
         }
-    }
-
-    private sealed class EnumSerializer(JsonSerializer _parent) : ITypeSerializer
-    {
-        public ISerializer WriteFieldStart(ISerdeInfo typeInfo, int fieldIndex)
-        {
-            return _parent;
-        }
-
-        public void WriteFieldEnd(ISerdeInfo typeInfo, int fieldIndex, ISerializer serializer)
-        {
-            // noop
-        }
-
-        private void WriteEnumName(ISerdeInfo typeInfo, int index)
-        {
-            _parent._writer.WriteStringValue(typeInfo.GetFieldName(index));
-        }
-
-        public void End(ISerdeInfo info) { }
-
-        public void WriteBool(ISerdeInfo typeInfo, int index, bool b) => ThrowInvalidEnum();
-
-        public void WriteU8(ISerdeInfo typeInfo, int index, byte b) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteChar(ISerdeInfo typeInfo, int index, char c) => ThrowInvalidEnum();
-
-        public void WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) => ThrowInvalidEnum();
-
-        public void WriteF16(ISerdeInfo typeInfo, int index, Half h) => ThrowInvalidEnum();
-
-        public void WriteF64(ISerdeInfo typeInfo, int index, double d) => ThrowInvalidEnum();
-
-        public void WriteValue<T>(ISerdeInfo typeInfo, int index, T value, ISerialize<T> serialize)
-            where T : class? => ThrowInvalidEnum();
-
-        public void WriteF32(ISerdeInfo typeInfo, int index, float f) => ThrowInvalidEnum();
-
-        public void WriteI16(ISerdeInfo typeInfo, int index, short i16) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteI32(ISerdeInfo typeInfo, int index, int i32) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteI64(ISerdeInfo typeInfo, int index, long i64) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteI128(ISerdeInfo typeInfo, int index, Int128 i128) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteNull(ISerdeInfo typeInfo, int index) => ThrowInvalidEnum();
-
-        public void WriteI8(ISerdeInfo typeInfo, int index, sbyte b) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteString(ISerdeInfo typeInfo, int index, string s) => ThrowInvalidEnum();
-
-        public void WriteU16(ISerdeInfo typeInfo, int index, ushort u16) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteU32(ISerdeInfo typeInfo, int index, uint u32) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteU64(ISerdeInfo typeInfo, int index, ulong u64) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteU128(ISerdeInfo typeInfo, int index, UInt128 u128) =>
-            WriteEnumName(typeInfo, index);
-
-        public void WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt) =>
-            ThrowInvalidEnum();
-
-        public void WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt) =>
-            ThrowInvalidEnum();
-
-        public void WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d) => ThrowInvalidEnum();
-
-        public void WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t) => ThrowInvalidEnum();
-
-        public void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes) =>
-            ThrowInvalidEnum();
-
-        private void ThrowInvalidEnum() =>
-            throw new InvalidOperationException(
-                "Invalid operation for enum serialization, expected integer value."
-            );
     }
 }
 
@@ -403,5 +319,16 @@ partial class JsonSerializer : ITypeSerializer
     {
         _writer.WritePropertyName(typeInfo.GetFieldName(index));
         _writer.WriteBase64StringValue(bytes.Span);
+    }
+
+    void ITypeSerializer.WriteEnum(
+        ISerdeInfo typeInfo,
+        int index,
+        ISerdeInfo fieldInfo,
+        int ordinal
+    )
+    {
+        _writer.WritePropertyName(typeInfo.GetFieldName(index));
+        WriteEnum(fieldInfo, ordinal);
     }
 }

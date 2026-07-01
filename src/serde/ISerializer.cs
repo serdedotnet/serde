@@ -39,6 +39,7 @@ public interface ISerializer
         // Default implementation: serialize as ISO 8601 time string
         WriteString(t.ToString("HH:mm:ss"));
     }
+    void WriteEnum(ISerdeInfo info, int ordinal);
 
     /// <summary>
     /// Write a collection type -- either a list or a dictionary.
@@ -130,6 +131,23 @@ public interface ITypeSerializer
         WriteString(typeInfo, index, t.ToString("HH:mm:ss"));
     }
     void WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes);
+
+    /// <summary>
+    /// Write an enum value.
+    /// </summary>
+    /// <param name="typeInfo">
+    /// The type information for the parent type.
+    /// </param>
+    /// <param name="index">
+    /// The index of the current field in the parent type.
+    /// </param>
+    /// <param name="fieldInfo">
+    /// The type information for the enum field.
+    /// </param>
+    /// <param name="ordinal">
+    /// The ordinal value of the enum. This is the index of the enum variant in the enum type.
+    /// </param>
+    void WriteEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo, int ordinal);
 
     /// <summary>
     /// Write an arbitrary value with custom serialization. For reference types this method may be

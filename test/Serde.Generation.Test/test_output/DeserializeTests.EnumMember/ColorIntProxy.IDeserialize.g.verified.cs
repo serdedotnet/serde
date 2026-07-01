@@ -9,28 +9,13 @@ partial class ColorIntProxy : Serde.IDeserialize<ColorInt>
     ColorInt IDeserialize<ColorInt>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-        var de = deserializer.ReadType(serdeInfo);
-        var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
-        if (index == ITypeDeserializer.IndexNotFound)
-        {
-            throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
-        }
-        ColorInt _l_result;
-        if (index == ITypeDeserializer.EndOfType)
-        {
-            // Assume we want to read the underlying value
-            _l_result = (ColorInt)de.ReadI32(serdeInfo, index);
-        }
-        else
-        {
-            _l_result = index switch {
-                0 => ColorInt.Red,
-                1 => ColorInt.Green,
-                2 => ColorInt.Blue,
-                _ => throw new InvalidOperationException($"Unexpected index: {index}")
-            };
-        }
-        de.End(serdeInfo);
+        var index = deserializer.ReadEnum(serdeInfo);
+        ColorInt _l_result = index switch {
+            0 => ColorInt.Red,
+            1 => ColorInt.Green,
+            2 => ColorInt.Blue,
+            _ => throw new InvalidOperationException($"Unexpected index: {index}")
+        };
         return _l_result;
     }
 }

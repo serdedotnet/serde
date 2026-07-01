@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Text;
 
 namespace Serde;
 
@@ -46,6 +47,14 @@ public interface IDeserializer : IDisposable
         return TimeOnly.Parse(s);
     }
     void ReadBytes(IBufferWriter<byte> writer);
+
+    /// <summary>
+    /// Read an enum value and return the index of the value. This only works for "closed" enums,
+    /// where all possible enum values are named. For "open" enums, one of the other ReadValue
+    /// methods should be used to read the underlying enum value.
+    /// </summary>
+    int ReadEnum(ISerdeInfo info);
+
     ITypeDeserializer ReadType(ISerdeInfo typeInfo);
 }
 
@@ -128,6 +137,7 @@ public interface ITypeDeserializer
         return TimeOnly.Parse(s);
     }
     void ReadBytes(ISerdeInfo info, int index, IBufferWriter<byte> writer);
+    int ReadEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo);
 
     /// <summary>
     /// Finish deserializing the type. This method should be called when the type is fully

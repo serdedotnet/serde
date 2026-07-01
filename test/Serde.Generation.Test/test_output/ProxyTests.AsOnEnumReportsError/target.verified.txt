@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(As = typeof(int))]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+public enum BadEnum { A, B }
+*/
+ : (2,1)-(2,32),
+      Message: The 'As' option cannot be applied to enum 'BadEnum'. Use 'AsUnderlying = true' to serialize an enum as its underlying value.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsTypeOnEnum,
+        Title: ,
+        MessageFormat: The 'As' option cannot be applied to enum 'BadEnum'. Use 'AsUnderlying = true' to serialize an enum as its underlying value.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

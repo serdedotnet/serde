@@ -302,17 +302,20 @@ namespace Serde
     {
         public System.Type? As { get; init; }
         public System.Type? ForType { get; init; }
+        public bool AsUnderlying { get; init; }
     }
     public sealed class GenerateSerde()
     {
         public System.Type? As { get; init; }
         public System.Type? ForType { get; init; }
         public System.Type? With { get; init; }
+        public bool AsUnderlying { get; init; }
     }
     public sealed class GenerateSerialize()
     {
         public System.Type? As { get; init; }
         public System.Type? ForType { get; init; }
+        public bool AsUnderlying { get; init; }
     }
     public sealed class GuidProxy
     {
@@ -381,6 +384,7 @@ namespace Serde
         decimal ReadDecimal();
         double ReadF64();
         float ReadF32();
+        int ReadEnum(Serde.ISerdeInfo info);
         int ReadI32();
         long ReadI64();
         sbyte ReadI8();
@@ -456,6 +460,7 @@ namespace Serde
         void WriteDateTime(System.DateTime dt);
         void WriteDateTimeOffset(System.DateTimeOffset dt);
         void WriteDecimal(decimal d);
+        void WriteEnum(Serde.ISerdeInfo info, int ordinal);
         void WriteF16(System.Half h);
         void WriteF32(float f);
         void WriteF64(double d);
@@ -504,6 +509,7 @@ namespace Serde
         decimal ReadDecimal(Serde.ISerdeInfo info, int index);
         double ReadF64(Serde.ISerdeInfo info, int index);
         float ReadF32(Serde.ISerdeInfo info, int index);
+        int ReadEnum(Serde.ISerdeInfo typeInfo, int index, Serde.ISerdeInfo fieldInfo);
         int ReadI32(Serde.ISerdeInfo info, int index);
         int TryReadIndex(Serde.ISerdeInfo info);
         int? SizeOpt { get; }
@@ -547,6 +553,7 @@ namespace Serde
         void WriteDateTime(Serde.ISerdeInfo typeInfo, int index, System.DateTime dt);
         void WriteDateTimeOffset(Serde.ISerdeInfo typeInfo, int index, System.DateTimeOffset dt);
         void WriteDecimal(Serde.ISerdeInfo typeInfo, int index, decimal d);
+        void WriteEnum(Serde.ISerdeInfo typeInfo, int index, Serde.ISerdeInfo fieldInfo, int ordinal);
         void WriteF16(Serde.ISerdeInfo typeInfo, int index, System.Half h);
         void WriteF32(Serde.ISerdeInfo typeInfo, int index, float f);
         void WriteF64(Serde.ISerdeInfo typeInfo, int index, double d);
@@ -776,6 +783,7 @@ namespace Serde
         public static Serde.ISerdeInfo MakeCustom(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, System.ReadOnlySpan<Serde.SerdeInfo.FieldInfo> fields);
         public static Serde.ISerdeInfo MakeDictionary(string typeName, Serde.ISerdeInfo keyInfo, Serde.ISerdeInfo valueInfo);
         public static Serde.ISerdeInfo MakeEnum(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, Serde.ISerdeInfo underlyingInfo, System.ReadOnlySpan<(string SerializeName, System.Reflection.MemberInfo? MemberInfo)> fields);
+        public static Serde.ISerdeInfo MakeEnum(string typeName, System.Collections.Generic.IList<System.Reflection.CustomAttributeData> typeAttributes, Serde.ISerdeInfo underlyingInfo, System.ReadOnlySpan<(string SerializeName, System.Reflection.MemberInfo? MemberInfo)> fields, Serde.PrimitiveKind primitiveKind);
         public static Serde.ISerdeInfo MakeEnumerable(string typeName, Serde.ISerdeInfo elementInfo);
         public static Serde.ISerdeInfo MakeNullable(Serde.ISerdeInfo underlying);
         public static Serde.ISerdeInfo MakePrimitive(string name, Serde.PrimitiveKind kind);
@@ -1006,6 +1014,7 @@ namespace Serde.Json
         public void WriteDateTime(System.DateTime dt);
         public void WriteDateTimeOffset(System.DateTimeOffset dt);
         public void WriteDecimal(decimal d);
+        public void WriteEnum(Serde.ISerdeInfo info, int ordinal);
         public void WriteF16(System.Half h);
         public void WriteF32(float f);
         public void WriteF64(double d);

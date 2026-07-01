@@ -9,28 +9,13 @@ partial class ColorLongProxy : Serde.IDeserialize<ColorLong>
     ColorLong IDeserialize<ColorLong>.Deserialize(IDeserializer deserializer)
     {
         var serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-        var de = deserializer.ReadType(serdeInfo);
-        var (index, errorName) = de.TryReadIndexWithName(serdeInfo);
-        if (index == ITypeDeserializer.IndexNotFound)
-        {
-            throw Serde.DeserializeException.UnknownMember(errorName!, serdeInfo);
-        }
-        ColorLong _l_result;
-        if (index == ITypeDeserializer.EndOfType)
-        {
-            // Assume we want to read the underlying value
-            _l_result = (ColorLong)de.ReadI64(serdeInfo, index);
-        }
-        else
-        {
-            _l_result = index switch {
-                0 => ColorLong.Red,
-                1 => ColorLong.Green,
-                2 => ColorLong.Blue,
-                _ => throw new InvalidOperationException($"Unexpected index: {index}")
-            };
-        }
-        de.End(serdeInfo);
+        var index = deserializer.ReadEnum(serdeInfo);
+        ColorLong _l_result = index switch {
+            0 => ColorLong.Red,
+            1 => ColorLong.Green,
+            2 => ColorLong.Blue,
+            _ => throw new InvalidOperationException($"Unexpected index: {index}")
+        };
         return _l_result;
     }
 }

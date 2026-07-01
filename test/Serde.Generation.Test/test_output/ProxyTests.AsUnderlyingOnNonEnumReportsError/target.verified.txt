@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+
+[GenerateSerde(AsUnderlying = true)]
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+public partial struct NotAnEnum { public int Value; }
+*/
+ : (2,1)-(2,35),
+      Message: The 'AsUnderlying' option can only be applied to enums, but 'NotAnEnum' is not an enum.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_AsUnderlyingOnNonEnum,
+        Title: ,
+        MessageFormat: The 'AsUnderlying' option can only be applied to enums, but 'NotAnEnum' is not an enum.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

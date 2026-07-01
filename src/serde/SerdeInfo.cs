@@ -153,6 +153,14 @@ public static class SerdeInfo
         IList<CustomAttributeData> typeAttributes,
         ISerdeInfo underlyingInfo,
         ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields
+    ) => MakeEnum(typeName, typeAttributes, underlyingInfo, fields, PrimitiveKind.String);
+
+    public static ISerdeInfo MakeEnum(
+        string typeName,
+        IList<CustomAttributeData> typeAttributes,
+        ISerdeInfo underlyingInfo,
+        ReadOnlySpan<(string SerializeName, MemberInfo? MemberInfo)> fields,
+        PrimitiveKind primitiveKind
     )
     {
         var fieldsWithInfo = new FieldInfo[fields.Length];
@@ -164,7 +172,13 @@ public static class SerdeInfo
             };
         }
 
-        return TypeWithFieldsInfo.Create(typeName, InfoKind.Enum, typeAttributes, fieldsWithInfo);
+        return TypeWithFieldsInfo.Create(
+            typeName,
+            InfoKind.Enum,
+            typeAttributes,
+            fieldsWithInfo,
+            primitiveKind
+        );
     }
 
     public static ISerdeInfo MakePrimitive(string name, PrimitiveKind kind) =>
@@ -386,7 +400,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
 
     public InfoKind Kind { get; }
 
-    public PrimitiveKind? PrimitiveKind => null;
+    public PrimitiveKind? PrimitiveKind { get; }
 
     public IList<CustomAttributeData> Attributes { get; }
 
@@ -396,7 +410,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         IList<CustomAttributeData> typeAttributes,
         ImmutableArray<(ReadOnlyMemory<byte>, int)> nameToIndex,
         ImmutableArray<PrivateFieldInfo> indexToInfo,
-        bool hasExplicitOrdinals
+        bool hasExplicitOrdinals,
+        PrimitiveKind? primitiveKind = null
     )
     {
         Name = typeName;
@@ -405,6 +420,7 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         _nameToIndex = nameToIndex;
         _indexToInfo = indexToInfo;
         _hasExplicitOrdinals = hasExplicitOrdinals;
+        PrimitiveKind = primitiveKind;
     }
 
     /// <summary>
@@ -415,7 +431,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         string typeName,
         InfoKind typeKind,
         IList<CustomAttributeData> typeAttributes,
-        ReadOnlySpan<SerdeInfo.FieldInfo> fields
+        ReadOnlySpan<SerdeInfo.FieldInfo> fields,
+        PrimitiveKind? primitiveKind = null
     )
     {
         var nameToIndexBuilder = ImmutableArray.CreateBuilder<(
@@ -462,7 +479,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             typeAttributes,
             nameToIndexBuilder.ToImmutable(),
             indexToInfoBuilder.ToImmutable(),
-            hasExplicitOrdinals
+            hasExplicitOrdinals,
+            primitiveKind
         );
     }
 

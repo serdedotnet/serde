@@ -231,6 +231,12 @@ partial class JsonDeserializer<TReader>
             _deserializer.ReadBytes(writer);
         }
 
+        int ITypeDeserializer.ReadEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo)
+        {
+            ReadColon();
+            return _deserializer.ReadEnum(fieldInfo);
+        }
+
         void ITypeDeserializer.SkipValue(ISerdeInfo info, int index)
         {
             ReadColon();

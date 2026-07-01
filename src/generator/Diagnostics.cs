@@ -31,6 +31,7 @@ namespace Serde
         ERR_PartialMemberOrdinal = 19,
         ERR_OrdinalOnSkippedMember = 20,
         ERR_OrdinalOnEnumMember = 21,
+        ERR_AsUnderlyingOnNonEnum = 22,
     }
 
     internal static class Diagnostics
@@ -59,6 +60,7 @@ namespace Serde
                 ERR_PartialMemberOrdinal => nameof(ERR_PartialMemberOrdinal),
                 ERR_OrdinalOnSkippedMember => nameof(ERR_OrdinalOnSkippedMember),
                 ERR_OrdinalOnEnumMember => nameof(ERR_OrdinalOnEnumMember),
+                ERR_AsUnderlyingOnNonEnum => nameof(ERR_AsUnderlyingOnNonEnum),
             };
 
         public static Diagnostic CreateDiagnostic(

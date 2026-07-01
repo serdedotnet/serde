@@ -13,9 +13,6 @@ public static class IDeserializerExt
 
     public static T ReadValue<T>(this IDeserializer deserializer)
         where T : IDeserializeProvider<T> => deserializer.ReadValue<T, T>();
-
-    public static Guid ReadGuid(this ITypeDeserializer @this, ISerdeInfo info, int index) =>
-        @this.ReadValue(info, index, GuidProxy.Instance);
 }
 
 public static class ITypeDeserializerExt
@@ -34,6 +31,9 @@ public static class ITypeDeserializerExt
     )
         where TProvider : IDeserializeProvider<T> =>
         TProvider.Instance.DeserializeAsField(@this, info, index);
+
+    public static Guid ReadGuid(this ITypeDeserializer @this, ISerdeInfo info, int index) =>
+        @this.ReadValue(info, index, GuidProxy.Instance);
 
     [Obsolete("Use ReadValue instead")]
     public static T ReadBoxedValue<T>(

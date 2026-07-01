@@ -161,7 +161,10 @@
     <value>The 'As' option cannot be applied to type '{0}': the 'As' type must be a named type.</value>
   </data>
   <data name="ERR_AsTypeOnEnum" xml:space="preserve">
-    <value>The 'As' option cannot be applied to type '{0}': enums cannot define user-defined conversions.</value>
+    <value>The 'As' option cannot be applied to enum '{0}'. Use 'AsUnderlying = true' to serialize an enum as its underlying value.</value>
+  </data>
+  <data name="ERR_AsUnderlyingOnNonEnum" xml:space="preserve">
+    <value>The 'AsUnderlying' option can only be applied to enums, but '{0}' is not an enum.</value>
   </data>
   <data name="ERR_AsTypeWithOption" xml:space="preserve">
     <value>The 'As' option cannot be combined with the '{0}' option.</value>

@@ -628,13 +628,37 @@ public readonly partial struct ArrayAsId
         }
 
         [Fact]
-        public Task AsCombinedWithEnum()
+        public Task AsUnderlyingOnEnum()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(AsUnderlying = true)]
+public enum Color { Red, Green, Blue }
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsOnEnumReportsError()
         {
             var src = """
 using Serde;
 
 [GenerateSerde(As = typeof(int))]
 public enum BadEnum { A, B }
+""";
+            return VerifyMultiFile(src);
+        }
+
+        [Fact]
+        public Task AsUnderlyingOnNonEnumReportsError()
+        {
+            var src = """
+using Serde;
+
+[GenerateSerde(AsUnderlying = true)]
+public partial struct NotAnEnum { public int Value; }
 """;
             return VerifyMultiFile(src);
         }

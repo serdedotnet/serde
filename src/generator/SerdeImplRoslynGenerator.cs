@@ -215,7 +215,8 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         INamedTypeSymbol? foreignType = null;
 
         // If the `As` property is set, the type is serialized/deserialized by converting to and
-        // from the given type. This is incompatible with `ForType`, `With`, and enums.
+        // from the given type via user-defined conversions. This is incompatible with `ForType`,
+        // `With`, and enums (enums use `AsUnderlying` instead).
         INamedTypeSymbol? asType = null;
         if (
             attributeData.NamedArguments.FirstOrNull(a => a.Key == nameof(GenerateSerialize.As)) is
@@ -261,6 +262,28 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                 );
                 return;
             }
+        }
+
+        // If `AsUnderlying = true` is set (enums only), the enum is serialized as its underlying
+        // integral value rather than by name. This is handled by the enum serde-object generator
+        // (GenEnumSerialize/GenEnumDeserialize), which emits direct primitive Write/Read calls when
+        // it detects the option on the enum. Here we only validate that the target is an enum.
+        if (
+            attributeData.NamedArguments.FirstOrNull(a =>
+                a.Key == nameof(GenerateSerde.AsUnderlying)
+            )
+                is (_, { Value: true })
+            && !isEnum
+        )
+        {
+            generationContext.ReportDiagnostic(
+                CreateDiagnostic(
+                    DiagId.ERR_AsUnderlyingOnNonEnum,
+                    attributeData.ApplicationSyntaxReference!.GetSyntax().GetLocation(),
+                    typeSymbol
+                )
+            );
+            return;
         }
 
         if (proxiedType is not null)
