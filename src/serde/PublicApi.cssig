@@ -397,7 +397,6 @@ namespace Serde
     }
     public static class IDeserializerExt
     {
-        public static System.Guid ReadGuid(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index);
         public static T ReadValue<T, TProvider>(this Serde.IDeserializer deserializer) where TProvider : Serde.IDeserializeProvider<T>;
         public static T ReadValue<T>(this Serde.IDeserializer deserializer) where T : Serde.IDeserializeProvider<T>;
     }
@@ -527,6 +526,7 @@ namespace Serde
     }
     public static class ITypeDeserializerExt
     {
+        public static System.Guid ReadGuid(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index);
         [System.Obsolete("Use ReadValue instead")]
         public static T ReadBoxedValue<T, TProvider>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index) where TProvider : Serde.IDeserializeProvider<T>;
         [System.Obsolete("Use ReadValue instead")]
