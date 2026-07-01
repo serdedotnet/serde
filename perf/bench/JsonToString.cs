@@ -9,6 +9,7 @@ namespace Benchmarks
 {
     [GenericTypeArguments(typeof(LoginViewModel))]
     [GenericTypeArguments(typeof(Location))]
+    [GenericTypeArguments(typeof(LocationList))]
     [GenericTypeArguments(typeof(Serde.Test.AllInOne))]
     public class SerializeToString<T>
         where T : Serde.ISerializeProvider<T>

@@ -8,6 +8,8 @@ public interface IDeserializer : IDisposable
     T? ReadNullableRef<T>(IDeserialize<T> deserialize)
         where T : class;
 
+    bool TryReadNull();
+
     bool ReadBool();
     char ReadChar();
     byte ReadU8();

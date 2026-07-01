@@ -1,9 +1,19 @@
 #nullable disable
 
 using System;
+using System.Collections.Generic;
 using Serde;
 
 namespace Benchmarks;
+
+// A type whose members are themselves generated reference types. Serializing each
+// element of the list goes through the synthesized ISerialize<Location>.SerializeAsField,
+// which is the path affected by routing WriteValue through SerializeAsField.
+[GenerateSerde]
+public partial record LocationList
+{
+    public List<Location> Locations { get; set; }
+}
 
 // the view models come from a real world app called "AllReady"
 [GenerateSerialize, GenerateDeserialize]
