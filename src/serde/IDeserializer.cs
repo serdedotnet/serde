@@ -134,4 +134,12 @@ public interface ITypeDeserializer
     /// cref="ITypeDeserializer" /> should not be used again.
     /// </summary>
     void End(ISerdeInfo info) { }
+
+    // Non-virtual members
+    public sealed T ReadValue<T, TProvider>(ISerdeInfo info, int index)
+        where T : class?
+        where TProvider : IDeserializeProvider<T>
+    {
+        return ReadValue(info, index, TProvider.Instance);
+    }
 }

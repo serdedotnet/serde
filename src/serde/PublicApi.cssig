@@ -493,6 +493,7 @@ namespace Serde
         System.Int128 ReadI128(Serde.ISerdeInfo info, int index);
         System.TimeOnly ReadTimeOnly(Serde.ISerdeInfo info, int index);
         System.UInt128 ReadU128(Serde.ISerdeInfo info, int index);
+        T ReadValue<T, TProvider>(Serde.ISerdeInfo info, int index) where T : class? where TProvider : Serde.IDeserializeProvider<T>;
         T ReadValue<T>(Serde.ISerdeInfo info, int index, Serde.IDeserialize<T> deserialize) where T : class?;
         bool ReadBool(Serde.ISerdeInfo info, int index);
         byte ReadU8(Serde.ISerdeInfo info, int index);
