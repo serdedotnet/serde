@@ -452,10 +452,9 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             }
 
             nameToIndexBuilder.Add((ISerdeInfo.UTF8Encoding.GetBytes(field.Name), index));
-            var fieldAttributes =
-                field.MemberInfo is { } memberInfo
-                    ? memberInfo.GetCustomAttributesData()
-                    : field.Attributes;
+            var fieldAttributes = field.MemberInfo is { } memberInfo
+                ? memberInfo.GetCustomAttributesData()
+                : field.Attributes;
             var fieldInfo = new PrivateFieldInfo(
                 field.Name,
                 default,
