@@ -283,5 +283,31 @@ namespace Serde
             }
             return null;
         }
+
+        /// <summary>
+        /// Computes how this member should be initialized when deserializing into a local
+        /// variable: the <c>Initializer</c> expression to assign to the local, and whether the
+        /// member is <c>Required</c> to appear in the input.
+        ///
+        /// A member with a preserved initializer (see <see cref="GetConstInitializer"/>) already
+        /// has a valid default value, so it is optional unless <c>ThrowIfMissing</c> is explicitly
+        /// set to true. A non-nullable member without a preserved initializer stays required so
+        /// that a missing value is reported rather than silently left as <c>default!</c>.
+        ///
+        /// <paramref name="preserveInitializers"/> must be false when the deserializer is generated
+        /// outside the declaring type (e.g. a ForType proxy), where the initializer may reference
+        /// inaccessible members and so must not be relied upon.
+        /// </summary>
+        public (string Initializer, bool Required) GetDeserializeInitializer(
+            Compilation compilation,
+            bool preserveInitializers
+        )
+        {
+            var preserved = preserveInitializers ? GetConstInitializer(compilation) : null;
+            var required =
+                ThrowIfMissing == true
+                || (!IsNullable && ThrowIfMissing == null && preserved is null);
+            return (preserved ?? "default!", required);
+        }
     }
 }

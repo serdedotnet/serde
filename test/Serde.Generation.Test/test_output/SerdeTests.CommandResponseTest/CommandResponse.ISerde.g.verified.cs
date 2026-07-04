@@ -76,7 +76,7 @@ partial class CommandResponse<TResult, TProxy>
                 }
             }
             typeDeserialize.End(_l_serdeInfo);
-            if ((_r_assignedValid & 0b11011) != 0b11011)
+            if ((_r_assignedValid & 0b11001) != 0b11001)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }

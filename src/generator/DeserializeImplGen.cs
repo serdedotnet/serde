@@ -293,9 +293,10 @@ namespace Serde
                         readValueCall = $"ReadValue<{memberType}, {memberType}>";
                     }
                     var localName = GetLocalName(m);
-                    var initializer = preserveInitializers
-                        ? (m.GetConstInitializer(context.Compilation) ?? "default!")
-                        : "default!";
+                    var (initializer, isRequired) = m.GetDeserializeInitializer(
+                        context.Compilation,
+                        preserveInitializers
+                    );
                     localsBuilder.AppendLine($"{memberType} {localName} = {initializer};");
 
                     var typeOptions = SymbolUtilities.GetTypeOptions(type);
@@ -313,9 +314,7 @@ namespace Serde
                         """
                     );
 
-                    // Require that the member is assigned if m.ThrowIfMissing is set, or if it is not nullable
-                    // and ThrowIfMissing is unset
-                    if (m.ThrowIfMissing == true || (!m.IsNullable && m.ThrowIfMissing == null))
+                    if (isRequired)
                     {
                         assignedMaskValue |= 1L << fieldIndex;
                     }
