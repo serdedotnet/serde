@@ -24,6 +24,28 @@ public sealed partial class SerdeInfoTests
         Assert.Equal(0, info.FieldCount);
     }
 
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class MyAttribute(string name) : Attribute
+    {
+        public string Name { get; } = name;
+    }
+
+    [GenerateDeserialize]
+    public partial record Options
+    {
+        [My("first")]
+        public string? First { get; init; }
+    }
+
+    [Fact]
+    public void TestGeneratedFieldAttributesFromMemberInfo()
+    {
+        var info = SerdeInfoProvider.GetDeserializeInfo<Options>();
+        var attrs = info.GetFieldAttributes(0);
+        var attr = Assert.Single(attrs, a => a.AttributeType == typeof(MyAttribute));
+        Assert.Equal("first", attr.ConstructorArguments[0].Value);
+    }
+
     public partial record Rgb
     {
         public byte R,

@@ -22,8 +22,9 @@ public static class SerdeInfo
         /// <summary>
         /// The attributes for the field. This list may be modified from the original set of
         /// attributes. If <see cref="MemberInfo"/> is set instead, the attributes are derived from
-        /// it lazily. Setting both <see cref="Attributes"/> and <see cref="MemberInfo"/> is invalid
-        /// and throws an <see cref="InvalidOperationException"/> when the attributes are read.
+        /// it when the <see cref="ISerdeInfo"/> is constructed. Setting both
+        /// <see cref="Attributes"/> and <see cref="MemberInfo"/> is invalid and throws an
+        /// <see cref="InvalidOperationException"/>.
         /// <see cref="ISerdeInfo.GetFieldAttributes"/>
         /// </summary>
         public IList<CustomAttributeData> Attributes
@@ -43,8 +44,9 @@ public static class SerdeInfo
 
         /// <summary>
         /// The reflection <see cref="System.Reflection.MemberInfo"/> backing this field, if
-        /// available. When set, <see cref="Attributes"/> is derived from it lazily rather than
-        /// being materialized eagerly. Setting both this and <see cref="Attributes"/> is invalid.
+        /// available. When set, <see cref="Attributes"/> is derived from it when the
+        /// <see cref="ISerdeInfo"/> is constructed rather than being materialized eagerly. Setting
+        /// both this and <see cref="Attributes"/> is invalid.
         /// </summary>
         public MemberInfo? MemberInfo
         {
@@ -450,10 +452,14 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
             }
 
             nameToIndexBuilder.Add((ISerdeInfo.UTF8Encoding.GetBytes(field.Name), index));
+            var fieldAttributes =
+                field.MemberInfo is { } memberInfo
+                    ? memberInfo.GetCustomAttributesData()
+                    : field.Attributes;
             var fieldInfo = new PrivateFieldInfo(
                 field.Name,
                 default,
-                field.Attributes,
+                fieldAttributes,
                 field.SerdeInfo,
                 field.Ordinal >= 0 ? field.Ordinal : index
             );
