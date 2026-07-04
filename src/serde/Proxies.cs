@@ -511,8 +511,11 @@ public sealed class StringProxy : ISerdePrimitive<StringProxy, string>
 
     private const string s_typeName = "string";
 
-    void ISerialize<string>.Serialize(string value, ISerializer serializer) =>
+    void ISerialize<string>.Serialize(string value, ISerializer serializer)
+    {
+        ArgumentNullException.ThrowIfNull(value);
         serializer.WriteString(value);
+    }
 
     public string Deserialize(IDeserializer deserializer) => deserializer.ReadString();
 

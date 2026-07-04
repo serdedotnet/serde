@@ -41,7 +41,7 @@ partial class C
                 }
             }
             typeDeserialize.End(_l_serdeInfo);
-            if ((_r_assignedValid & 0b1) != 0b1)
+            if ((_r_assignedValid & 0b0) != 0b0)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }

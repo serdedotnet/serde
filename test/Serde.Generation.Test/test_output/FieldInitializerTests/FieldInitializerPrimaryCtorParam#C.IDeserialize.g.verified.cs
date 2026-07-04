@@ -53,7 +53,7 @@ partial record C
                 }
             }
             typeDeserialize.End(_l_serdeInfo);
-            if ((_r_assignedValid & 0b111) != 0b111)
+            if ((_r_assignedValid & 0b11) != 0b11)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }

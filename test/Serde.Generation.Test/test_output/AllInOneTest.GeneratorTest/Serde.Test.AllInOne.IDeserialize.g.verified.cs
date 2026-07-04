@@ -194,7 +194,7 @@ partial record AllInOne
                 }
             }
             typeDeserialize.End(_l_serdeInfo);
-            if ((_r_assignedValid & 0b11111001111111111111111111) != 0b11111001111111111111111111)
+            if ((_r_assignedValid & 0b11000001111110111111111111) != 0b11000001111110111111111111)
             {
                 throw Serde.DeserializeException.UnassignedMember();
             }

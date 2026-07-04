@@ -329,6 +329,47 @@ namespace Serde.Test
             Assert.Equal(s.Dict.Count, de.Dict.Count);
         }
 
+        [GenerateDeserialize]
+        private partial class InitializedFields
+        {
+            // Non-nullable field with a preserved (constant) initializer: optional.
+            public int Num = 42;
+            public string Str = "hello";
+
+            // Non-nullable field without an initializer: still required.
+            public int Required;
+        }
+
+        [Fact]
+        public void InitializedFieldsAreOptional()
+        {
+            // Num and Str are omitted; they must fall back to their initializers rather
+            // than throwing an UnassignedMember exception.
+            var src = """
+{
+    "required": 7
+}
+""";
+            var de = JsonSerializer.Deserialize<InitializedFields>(src);
+            Assert.Equal(42, de.Num);
+            Assert.Equal("hello", de.Str);
+            Assert.Equal(7, de.Required);
+        }
+
+        [Fact]
+        public void FieldWithoutInitializerIsRequired()
+        {
+            // Required has no initializer, so omitting it still throws.
+            var src = """
+{
+    "num": 1
+}
+""";
+            Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<InitializedFields>(src)
+            );
+        }
+
         [Fact]
         public void DeserializeWithSkip()
         {
