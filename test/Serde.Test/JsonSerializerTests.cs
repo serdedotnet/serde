@@ -237,6 +237,28 @@ namespace Serde.Test
             Assert.Equal("null", js);
         }
 
+        [GenerateSerde]
+        private partial record NullableByteArrayWrap
+        {
+            public byte[]? Bytes { get; init; }
+        }
+
+        [Fact]
+        public void NullableByteArray()
+        {
+            var wrap = new NullableByteArrayWrap { Bytes = new byte[] { 1, 2, 3 } };
+            var js = Serde.Json.JsonSerializer.Serialize(wrap);
+            Assert.Equal("""{"bytes":"AQID"}""", js);
+            var de = Serde.Json.JsonSerializer.Deserialize<NullableByteArrayWrap>(js);
+            Assert.Equal(wrap.Bytes, de.Bytes);
+
+            var nullWrap = new NullableByteArrayWrap { Bytes = null };
+            js = Serde.Json.JsonSerializer.Serialize(nullWrap);
+            Assert.Equal("{}", js);
+            de = Serde.Json.JsonSerializer.Deserialize<NullableByteArrayWrap>(js);
+            Assert.Null(de.Bytes);
+        }
+
         [GenerateSerialize]
         private partial class NullableFields
         {
