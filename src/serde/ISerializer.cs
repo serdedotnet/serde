@@ -2,7 +2,7 @@ using System;
 
 namespace Serde;
 
-public interface ISerializer
+public interface ISerializer : IDisposable
 {
     void WriteBool(bool b);
     void WriteChar(char c);
@@ -79,6 +79,8 @@ public interface ISerializer
     /// cref="ISerializer" /> have undefined behavior.
     /// </returns>
     ITypeSerializer WriteType(ISerdeInfo info);
+
+    void IDisposable.Dispose() { }
 }
 
 /// <summary>
