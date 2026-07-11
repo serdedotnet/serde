@@ -457,6 +457,104 @@ namespace Serde.Test
             );
         }
 
+        // A hand-written serializer that exercises the new WriteType(ISerdeInfo, int fieldCount)
+        // overload together with the "IfNotNull" helpers that skip null fields. The field count
+        // passed to WriteType reflects the number of fields that are actually written (i.e. the
+        // total after nulls are skipped), which is what count-prefixed formats require.
+        private sealed record ContactManual(int Id, string? Name, string? Email)
+            : ISerializeProvider<ContactManual>
+        {
+            static ISerialize<ContactManual> ISerializeProvider<ContactManual>.Instance =>
+                _Serialize.Instance;
+
+            private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+                "ContactManual",
+                System.Array.Empty<CustomAttributeData>(),
+                [
+                    new Serde.SerdeInfo.FieldInfo("id", I32Proxy.SerdeInfo),
+                    new Serde.SerdeInfo.FieldInfo("name", StringProxy.SerdeInfo),
+                    new Serde.SerdeInfo.FieldInfo("email", StringProxy.SerdeInfo),
+                ]
+            );
+
+            private sealed class _Serialize : ISerialize<ContactManual>
+            {
+                public static readonly _Serialize Instance = new();
+
+                public ISerdeInfo SerdeInfo => ContactManual.s_serdeInfo;
+
+                public void Serialize(ContactManual value, ISerializer serializer)
+                {
+                    var info = this.SerdeInfo;
+                    // Count only the fields that will actually be written so that formats which
+                    // need the field count up front receive the post-skip total.
+                    var fieldCount =
+                        1 + (value.Name is null ? 0 : 1) + (value.Email is null ? 0 : 1);
+                    var type = serializer.WriteType(info, fieldCount);
+                    type.WriteI32(info, 0, value.Id);
+                    type.WriteStringIfNotNull(info, 1, value.Name);
+                    type.WriteStringIfNotNull(info, 2, value.Email);
+                    type.End(info);
+                }
+            }
+        }
+
+        [Fact]
+        public void WriteTypeWithFieldCountSkipsNullFields()
+        {
+            Assert.Equal(
+                """{"id":1,"name":"Alice","email":"alice@example.com"}""",
+                Serde.Json.JsonSerializer.Serialize(
+                    new ContactManual(1, "Alice", "alice@example.com")
+                )
+            );
+
+            // A null field is skipped by WriteStringIfNotNull; the remaining fields still serialize.
+            Assert.Equal(
+                """{"id":2,"email":"bob@example.com"}""",
+                Serde.Json.JsonSerializer.Serialize(new ContactManual(2, null, "bob@example.com"))
+            );
+
+            Assert.Equal(
+                """{"id":3,"name":"Carol"}""",
+                Serde.Json.JsonSerializer.Serialize(new ContactManual(3, "Carol", null))
+            );
+
+            // When every optional field is null, only the required field remains.
+            Assert.Equal(
+                """{"id":4}""",
+                Serde.Json.JsonSerializer.Serialize(new ContactManual(4, null, null))
+            );
+        }
+
+        // Passes a deliberately inaccurate field count to WriteType to confirm that the JSON
+        // serializer's default implementation ignores the count (JSON objects are structurally
+        // delimited and do not need it) and produces the same output regardless.
+        private sealed class WrongCountSerialize : ISerialize<ContactManual>
+        {
+            public ISerdeInfo SerdeInfo => SerdeInfoProvider.GetSerializeInfo<ContactManual>();
+
+            public void Serialize(ContactManual value, ISerializer serializer)
+            {
+                var info = this.SerdeInfo;
+                var type = serializer.WriteType(info, 0);
+                type.WriteI32(info, 0, value.Id);
+                type.WriteString(info, 1, value.Name!);
+                type.WriteString(info, 2, value.Email!);
+                type.End(info);
+            }
+        }
+
+        [Fact]
+        public void WriteTypeFieldCountIgnoredForJson()
+        {
+            var value = new ContactManual(7, "Carol", "carol@example.com");
+            Assert.Equal(
+                """{"id":7,"name":"Carol","email":"carol@example.com"}""",
+                Serde.Json.JsonSerializer.Serialize(value, new WrongCountSerialize())
+            );
+        }
+
         [GenerateSerialize]
         private partial record BigData(List<int> Values);
 
@@ -506,6 +604,169 @@ namespace Serde.Test
                 Serde.Json.JsonSerializer.Serialize(data),
                 Encoding.UTF8.GetString(mem.Span)
             );
+        }
+
+        [GenerateSerialize]
+        private partial record ContactGen(int Id, string? Name, string? Email);
+
+        [Theory]
+        // Id is required; Name and Email are skipped when null, so the field count passed to
+        // WriteType by the generated code must reflect only the fields actually written.
+        [InlineData("Alice", "alice@example.com", 3)]
+        [InlineData(null, "bob@example.com", 2)]
+        [InlineData("Carol", null, 2)]
+        [InlineData(null, null, 1)]
+        public void GeneratedWriteTypeReceivesPostSkipFieldCount(
+            string? name,
+            string? email,
+            int expectedFieldCount
+        )
+        {
+            var recorder = new FieldCountRecordingSerializer();
+            Serde
+                .SerializeProvider.GetSerialize<ContactGen>()
+                .Serialize(new ContactGen(1, name, email), recorder);
+            Assert.Equal(expectedFieldCount, recorder.FieldCount);
+        }
+
+        /// <summary>
+        /// A minimal <see cref="ISerializer"/>/<see cref="ITypeSerializer"/> that records the field
+        /// count passed to <see cref="ISerializer.WriteType(ISerdeInfo, int)"/>. All other members
+        /// are no-ops. Used to assert that generated code computes the correct post-skip count.
+        /// </summary>
+        private sealed class FieldCountRecordingSerializer : ISerializer, ITypeSerializer
+        {
+            public int? FieldCount { get; private set; }
+
+            ITypeSerializer ISerializer.WriteType(ISerdeInfo info, int fieldCount)
+            {
+                FieldCount = fieldCount;
+                return this;
+            }
+
+            ITypeSerializer ISerializer.WriteType(ISerdeInfo info) => this;
+
+            ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? count) => this;
+
+            // --- ISerializer no-op members ---
+            void ISerializer.WriteBool(bool b) { }
+
+            void ISerializer.WriteChar(char c) { }
+
+            void ISerializer.WriteU8(byte b) { }
+
+            void ISerializer.WriteU16(ushort u16) { }
+
+            void ISerializer.WriteU32(uint u32) { }
+
+            void ISerializer.WriteU64(ulong u64) { }
+
+            void ISerializer.WriteU128(System.UInt128 u128) { }
+
+            void ISerializer.WriteI8(sbyte b) { }
+
+            void ISerializer.WriteI16(short i16) { }
+
+            void ISerializer.WriteI32(int i32) { }
+
+            void ISerializer.WriteI64(long i64) { }
+
+            void ISerializer.WriteI128(System.Int128 i128) { }
+
+            void ISerializer.WriteF32(float f) { }
+
+            void ISerializer.WriteF64(double d) { }
+
+            void ISerializer.WriteDecimal(decimal d) { }
+
+            void ISerializer.WriteString(string s) { }
+
+            void ISerializer.WriteNull() { }
+
+            void ISerializer.WriteDateTime(System.DateTime dt) { }
+
+            void ISerializer.WriteDateTimeOffset(System.DateTimeOffset dt) { }
+
+            void ISerializer.WriteBytes(System.ReadOnlyMemory<byte> bytes) { }
+
+            void ISerializer.WriteEnum(ISerdeInfo info, int ordinal) { }
+
+            // --- ITypeSerializer members ---
+            ISerializer ITypeSerializer.WriteFieldStart(ISerdeInfo typeInfo, int index) => this;
+
+            void ITypeSerializer.WriteFieldEnd(
+                ISerdeInfo typeInfo,
+                int index,
+                ISerializer serializer
+            ) { }
+
+            void ITypeSerializer.WriteBool(ISerdeInfo typeInfo, int index, bool b) { }
+
+            void ITypeSerializer.WriteChar(ISerdeInfo typeInfo, int index, char c) { }
+
+            void ITypeSerializer.WriteU8(ISerdeInfo typeInfo, int index, byte b) { }
+
+            void ITypeSerializer.WriteU16(ISerdeInfo typeInfo, int index, ushort u16) { }
+
+            void ITypeSerializer.WriteU32(ISerdeInfo typeInfo, int index, uint u32) { }
+
+            void ITypeSerializer.WriteU64(ISerdeInfo typeInfo, int index, ulong u64) { }
+
+            void ITypeSerializer.WriteU128(ISerdeInfo typeInfo, int index, System.UInt128 u128) { }
+
+            void ITypeSerializer.WriteI8(ISerdeInfo typeInfo, int index, sbyte b) { }
+
+            void ITypeSerializer.WriteI16(ISerdeInfo typeInfo, int index, short i16) { }
+
+            void ITypeSerializer.WriteI32(ISerdeInfo typeInfo, int index, int i32) { }
+
+            void ITypeSerializer.WriteI64(ISerdeInfo typeInfo, int index, long i64) { }
+
+            void ITypeSerializer.WriteI128(ISerdeInfo typeInfo, int index, System.Int128 i128) { }
+
+            void ITypeSerializer.WriteF32(ISerdeInfo typeInfo, int index, float f) { }
+
+            void ITypeSerializer.WriteF64(ISerdeInfo typeInfo, int index, double d) { }
+
+            void ITypeSerializer.WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) { }
+
+            void ITypeSerializer.WriteString(ISerdeInfo typeInfo, int index, string s) { }
+
+            void ITypeSerializer.WriteNull(ISerdeInfo typeInfo, int index) { }
+
+            void ITypeSerializer.WriteDateTime(
+                ISerdeInfo typeInfo,
+                int index,
+                System.DateTime dt
+            ) { }
+
+            void ITypeSerializer.WriteDateTimeOffset(
+                ISerdeInfo typeInfo,
+                int index,
+                System.DateTimeOffset dt
+            ) { }
+
+            void ITypeSerializer.WriteBytes(
+                ISerdeInfo typeInfo,
+                int index,
+                System.ReadOnlyMemory<byte> bytes
+            ) { }
+
+            void ITypeSerializer.WriteEnum(
+                ISerdeInfo typeInfo,
+                int index,
+                ISerdeInfo fieldInfo,
+                int ordinal
+            ) { }
+
+            void ITypeSerializer.WriteValue<T>(
+                ISerdeInfo typeInfo,
+                int index,
+                T value,
+                ISerialize<T> serialize
+            ) { }
+
+            void ITypeSerializer.End(ISerdeInfo info) { }
         }
     }
 }

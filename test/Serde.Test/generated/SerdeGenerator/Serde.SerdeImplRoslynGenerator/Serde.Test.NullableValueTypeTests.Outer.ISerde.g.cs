@@ -17,7 +17,7 @@ partial class NullableValueTypeTests
             void global::Serde.ISerialize<Serde.Test.NullableValueTypeTests.Outer>.Serialize(Serde.Test.NullableValueTypeTests.Outer value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_type = serializer.WriteType(_l_info, 2);
                 _l_type.WriteValue<Serde.Test.NullableValueTypeTests.OmitByDefault, Serde.Test.NullableValueTypeTests.OmitByDefault>(_l_info, 0, value.Inner);
                 _l_type.WriteI32(_l_info, 1, value.Trailing);
                 _l_type.End(_l_info);

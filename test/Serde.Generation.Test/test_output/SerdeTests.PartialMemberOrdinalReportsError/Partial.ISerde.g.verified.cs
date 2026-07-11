@@ -13,7 +13,7 @@ partial record Partial
         void global::Serde.ISerialize<Partial>.Serialize(Partial value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 2);
             _l_type.WriteI32(_l_info, 0, value.A);
             _l_type.WriteI32(_l_info, 1, value.B);
             _l_type.End(_l_info);

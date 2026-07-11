@@ -17,7 +17,7 @@ partial class JsonSerializerTests
             void ISerialize<Serde.Test.JsonSerializerTests.BasicDU>.Serialize(Serde.Test.JsonSerializerTests.BasicDU value, ISerializer serializer)
             {
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_serdeInfo);
+                var _l_type = serializer.WriteType(_l_serdeInfo, 1);
                 switch (value)
                 {
                     case Serde.Test.JsonSerializerTests.BasicDU.A c:

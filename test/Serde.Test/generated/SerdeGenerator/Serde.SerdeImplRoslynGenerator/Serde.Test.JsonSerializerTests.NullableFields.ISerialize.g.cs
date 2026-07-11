@@ -17,7 +17,9 @@ partial class JsonSerializerTests
             void global::Serde.ISerialize<Serde.Test.JsonSerializerTests.NullableFields>.Serialize(Serde.Test.JsonSerializerTests.NullableFields value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_fieldCount = 2;
+                if (value.S is null) _l_fieldCount--;
+                var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
                 _l_type.WriteStringIfNotNull(_l_info, 0, value.S);
                 _l_type.WriteValue<System.Collections.Generic.Dictionary<string, string?>, Serde.DictProxy.Ser<string, string?, global::Serde.StringProxy, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>>(_l_info, 1, value.D);
                 _l_type.End(_l_info);

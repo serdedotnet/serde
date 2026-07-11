@@ -13,7 +13,9 @@ partial class C
         void global::Serde.ISerialize<C>.Serialize(C value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_fieldCount = 1;
+            if (value.ColorOpt is null) _l_fieldCount--;
+            var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
             _l_type.WriteValueIfNotNull<Rgb, Serde.NullableProxy.Ser<Rgb, RgbProxy>>(_l_info, 0, value.ColorOpt);
             _l_type.End(_l_info);
         }

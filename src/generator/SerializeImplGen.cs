@@ -61,8 +61,15 @@ public partial class SerializeImplGen
             // `var _l_info = GetInfo(this);`
             statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
 
-            // `var type = serializer.WriteType(_l_info);`
-            statements.AppendLine("var _l_type = serializer.WriteType(_l_info);");
+            // The field-writing statements are collected separately so that the number of fields
+            // that will actually be written can be computed and passed to WriteType before any of
+            // them are emitted. Nullable fields that are skipped when null (i.e. serialized with an
+            // `IfNotNull` helper) are subtracted from the count at runtime.
+            var writeStatements = new SourceBuilder();
+
+            // Member-access expressions for fields that may be skipped when null. Each contributes a
+            // `-1` to the field count when its value is null.
+            var skippableExprs = new List<string>();
 
             for (int i = 0; i < fieldsAndProps.Count; i++)
             {
@@ -80,6 +87,7 @@ public partial class SerializeImplGen
                 ).ToDisplayString();
 
                 // 1. Check if this member has an explicit proxy. If so, we'll use it.
+                string writeStmt;
                 if (
                     Proxies.TryGetExplicitWrapper(
                         m,
@@ -91,9 +99,7 @@ public partial class SerializeImplGen
                     { } proxy
                 )
                 {
-                    statements.AppendLine(
-                        MakeWriteValueStmt(m, notNullTypeName, proxy, i, receiverExpr)
-                    );
+                    writeStmt = MakeWriteValueStmt(m, notNullTypeName, proxy, i, receiverExpr);
                 }
                 // 2. Check for a direct implementation of ISerialize
                 else if (
@@ -105,8 +111,12 @@ public partial class SerializeImplGen
                     )
                 )
                 {
-                    statements.AppendLine(
-                        MakeWriteValueStmt(m, notNullTypeName, notNullTypeName, i, receiverExpr)
+                    writeStmt = MakeWriteValueStmt(
+                        m,
+                        notNullTypeName,
+                        notNullTypeName,
+                        i,
+                        receiverExpr
                     );
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
@@ -124,9 +134,7 @@ public partial class SerializeImplGen
                         // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                         primName += "IfNotNull";
                     }
-                    statements.AppendLine(
-                        $"_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});"
-                    );
+                    writeStmt = $"_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});";
                 }
                 // 4. A wrapper that implements ISerialize
                 else if (
@@ -140,8 +148,12 @@ public partial class SerializeImplGen
                     { } wrapper
                 )
                 {
-                    statements.AppendLine(
-                        MakeWriteValueStmt(m, notNullTypeName, wrapper.Proxy, i, receiverExpr)
+                    writeStmt = MakeWriteValueStmt(
+                        m,
+                        notNullTypeName,
+                        wrapper.Proxy,
+                        i,
+                        receiverExpr
                     );
                 }
                 else
@@ -158,31 +170,64 @@ public partial class SerializeImplGen
                     );
                     continue;
                 }
-            }
 
-            static string MakeWriteValueStmt(
-                DataMemberSymbol m,
-                string type,
-                string proxy,
-                int i,
-                string valueExpr
-            )
-            {
-                // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
-                // Use WriteValueIfNotNull if it's not been disabled and the field is nullable. In that
-                // case the generic argument is the non-null inner type, because the IfNotNull overloads
-                // accept a `T?` value and a provider of the nullable type.
+                writeStatements.AppendLine(writeStmt);
+
+                // A nullable field that is not forced to serialize null is skipped when its value is
+                // null, so it must be removed from the field count in that case.
                 if (m.IsNullable && !m.SerializeNull)
                 {
-                    return $"_l_type.WriteValueIfNotNull<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+                    skippableExprs.Add($"{receiverExpr}.{m.Name}");
                 }
-                // Plain WriteValue: the generic type argument must match the static type of the value
-                // expression and the provider. For a nullable member (e.g. `int?` serialized via
-                // NullableProxy when SerializeNull is set) that is the full nullable type, not the
-                // unwrapped inner type.
-                var typeArg = m.IsNullable ? m.Type.ToDisplayString() : type;
-                return $"_l_type.WriteValue<{typeArg}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+
+                static string MakeWriteValueStmt(
+                    DataMemberSymbol m,
+                    string type,
+                    string proxy,
+                    int i,
+                    string valueExpr
+                )
+                {
+                    // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
+                    // Use WriteValueIfNotNull if it's not been disabled and the field is nullable. In that
+                    // case the generic argument is the non-null inner type, because the IfNotNull overloads
+                    // accept a `T?` value and a provider of the nullable type.
+                    if (m.IsNullable && !m.SerializeNull)
+                    {
+                        return $"_l_type.WriteValueIfNotNull<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+                    }
+                    // Plain WriteValue: the generic type argument must match the static type of the value
+                    // expression and the provider. For a nullable member (e.g. `int?` serialized via
+                    // NullableProxy when SerializeNull is set) that is the full nullable type, not the
+                    // unwrapped inner type.
+                    var typeArg = m.IsNullable ? m.Type.ToDisplayString() : type;
+                    return $"_l_type.WriteValue<{typeArg}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+                }
             }
+
+            // Compute the number of fields that will actually be written and open the type. When no
+            // fields can be skipped the count is a constant; otherwise it starts at the total and is
+            // decremented for each nullable field whose value is null.
+            if (skippableExprs.Count == 0)
+            {
+                statements.AppendLine(
+                    $"var _l_type = serializer.WriteType(_l_info, {fieldsAndProps.Count});"
+                );
+            }
+            else
+            {
+                statements.AppendLine($"var _l_fieldCount = {fieldsAndProps.Count};");
+                foreach (var expr in skippableExprs)
+                {
+                    statements.AppendLine($"if ({expr} is null) _l_fieldCount--;");
+                }
+                statements.AppendLine(
+                    "var _l_type = serializer.WriteType(_l_info, _l_fieldCount);"
+                );
+            }
+
+            statements.Append(writeStatements);
+
             // `type.End();`
             statements.Append("_l_type.End(_l_info);");
         }
@@ -231,7 +276,7 @@ public partial class SerializeImplGen
             void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
             {
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_serdeInfo);
+                var _l_type = serializer.WriteType(_l_serdeInfo, 1);
                 switch (value)
                 {
                     {{casesBuilder}}

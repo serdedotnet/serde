@@ -16,7 +16,7 @@ partial record Base
         void ISerialize<Some.Nested.Namespace.Base>.Serialize(Some.Nested.Namespace.Base value, ISerializer serializer)
         {
             var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_serdeInfo);
+            var _l_type = serializer.WriteType(_l_serdeInfo, 1);
             switch (value)
             {
                 case Some.Nested.Namespace.Base.A c:

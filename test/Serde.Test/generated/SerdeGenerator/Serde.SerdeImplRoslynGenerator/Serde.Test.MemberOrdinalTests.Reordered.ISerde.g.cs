@@ -17,7 +17,7 @@ partial class MemberOrdinalTests
             void global::Serde.ISerialize<Serde.Test.MemberOrdinalTests.Reordered>.Serialize(Serde.Test.MemberOrdinalTests.Reordered value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_type = serializer.WriteType(_l_info, 3);
                 _l_type.WriteI32(_l_info, 0, value.B);
                 _l_type.WriteI32(_l_info, 1, value.C);
                 _l_type.WriteI32(_l_info, 2, value.A);

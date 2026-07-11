@@ -16,7 +16,7 @@ partial class C
         void global::Serde.ISerialize<Some.Nested.Namespace.C>.Serialize(Some.Nested.Namespace.C value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 4);
             _l_type.WriteValue<Some.Nested.Namespace.ColorInt, Some.Nested.Namespace.ColorIntProxy>(_l_info, 0, value.ColorInt);
             _l_type.WriteValue<Some.Nested.Namespace.ColorByte, Some.Nested.Namespace.ColorByteProxy>(_l_info, 1, value.ColorByte);
             _l_type.WriteValue<Some.Nested.Namespace.ColorLong, Some.Nested.Namespace.ColorLongProxy>(_l_info, 2, value.ColorLong);

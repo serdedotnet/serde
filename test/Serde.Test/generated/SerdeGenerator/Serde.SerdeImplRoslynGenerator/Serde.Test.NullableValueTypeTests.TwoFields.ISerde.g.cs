@@ -17,7 +17,10 @@ partial class NullableValueTypeTests
             void global::Serde.ISerialize<Serde.Test.NullableValueTypeTests.TwoFields>.Serialize(Serde.Test.NullableValueTypeTests.TwoFields value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_fieldCount = 2;
+                if (value.First is null) _l_fieldCount--;
+                if (value.Second is null) _l_fieldCount--;
+                var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
                 _l_type.WriteValueIfNotNull<int, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.First);
                 _l_type.WriteValueIfNotNull<int, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 1, value.Second);
                 _l_type.End(_l_info);

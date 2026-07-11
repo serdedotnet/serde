@@ -17,7 +17,7 @@ partial class TupleTests
             void global::Serde.ISerialize<Serde.Test.TupleTests.TupleHolder>.Serialize(Serde.Test.TupleTests.TupleHolder value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_type = serializer.WriteType(_l_info, 3);
                 _l_type.WriteValue<(int, string), Serde.TupleProxy.Ser<int, string, global::Serde.I32Proxy, global::Serde.StringProxy>>(_l_info, 0, value.Pair);
                 _l_type.WriteValue<(int, (string, bool)), Serde.TupleProxy.Ser<int, (string, bool), global::Serde.I32Proxy, Serde.TupleProxy.Ser<string, bool, global::Serde.StringProxy, global::Serde.BoolProxy>>>(_l_info, 1, value.Nested);
                 _l_type.WriteValue<System.Collections.Generic.List<(int, int)>, Serde.ListProxy.Ser<(int, int), Serde.TupleProxy.Ser<int, int, global::Serde.I32Proxy, global::Serde.I32Proxy>>>(_l_info, 2, value.Points);

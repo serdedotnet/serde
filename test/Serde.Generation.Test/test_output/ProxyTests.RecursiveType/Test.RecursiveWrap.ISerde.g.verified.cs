@@ -16,7 +16,9 @@ partial class RecursiveWrap
         void global::Serde.ISerialize<Recursive>.Serialize(Recursive value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_fieldCount = 1;
+            if (value.Next is null) _l_fieldCount--;
+            var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
             _l_type.WriteValueIfNotNull<Recursive, Test.RecursiveWrap>(_l_info, 0, value.Next);
             _l_type.End(_l_info);
         }

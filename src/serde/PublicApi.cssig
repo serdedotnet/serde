@@ -452,6 +452,7 @@ namespace Serde
     {
         Serde.ITypeSerializer WriteCollection(Serde.ISerdeInfo info, int? count);
         Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info);
+        Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info, int fieldCount);
         void WriteBool(bool b);
         void WriteBytes(System.ReadOnlyMemory<byte> bytes);
         void WriteChar(char c);

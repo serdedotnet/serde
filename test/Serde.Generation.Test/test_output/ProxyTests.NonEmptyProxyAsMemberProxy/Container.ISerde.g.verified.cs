@@ -13,7 +13,7 @@ partial class Container
         void global::Serde.ISerialize<Container>.Serialize(Container value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 1);
             _l_type.WriteValue<ForeignPoint, ForeignPointProxy>(_l_info, 0, value.Point);
             _l_type.End(_l_info);
         }
