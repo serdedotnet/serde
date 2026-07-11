@@ -457,6 +457,104 @@ namespace Serde.Test
             );
         }
 
+        // A hand-written serializer that exercises the new WriteType(ISerdeInfo, int fieldCount)
+        // overload together with the "IfNotNull" helpers that skip null fields. The field count
+        // passed to WriteType reflects the number of fields that are actually written (i.e. the
+        // total after nulls are skipped), which is what count-prefixed formats require.
+        private sealed record ContactManual(int Id, string? Name, string? Email)
+            : ISerializeProvider<ContactManual>
+        {
+            static ISerialize<ContactManual> ISerializeProvider<ContactManual>.Instance =>
+                _Serialize.Instance;
+
+            private static readonly ISerdeInfo s_serdeInfo = Serde.SerdeInfo.MakeCustom(
+                "ContactManual",
+                System.Array.Empty<CustomAttributeData>(),
+                [
+                    new Serde.SerdeInfo.FieldInfo("id", I32Proxy.SerdeInfo),
+                    new Serde.SerdeInfo.FieldInfo("name", StringProxy.SerdeInfo),
+                    new Serde.SerdeInfo.FieldInfo("email", StringProxy.SerdeInfo),
+                ]
+            );
+
+            private sealed class _Serialize : ISerialize<ContactManual>
+            {
+                public static readonly _Serialize Instance = new();
+
+                public ISerdeInfo SerdeInfo => ContactManual.s_serdeInfo;
+
+                public void Serialize(ContactManual value, ISerializer serializer)
+                {
+                    var info = this.SerdeInfo;
+                    // Count only the fields that will actually be written so that formats which
+                    // need the field count up front receive the post-skip total.
+                    var fieldCount =
+                        1 + (value.Name is null ? 0 : 1) + (value.Email is null ? 0 : 1);
+                    var type = serializer.WriteType(info, fieldCount);
+                    type.WriteI32(info, 0, value.Id);
+                    type.WriteStringIfNotNull(info, 1, value.Name);
+                    type.WriteStringIfNotNull(info, 2, value.Email);
+                    type.End(info);
+                }
+            }
+        }
+
+        [Fact]
+        public void WriteTypeWithFieldCountSkipsNullFields()
+        {
+            Assert.Equal(
+                """{"id":1,"name":"Alice","email":"alice@example.com"}""",
+                Serde.Json.JsonSerializer.Serialize(
+                    new ContactManual(1, "Alice", "alice@example.com")
+                )
+            );
+
+            // A null field is skipped by WriteStringIfNotNull; the remaining fields still serialize.
+            Assert.Equal(
+                """{"id":2,"email":"bob@example.com"}""",
+                Serde.Json.JsonSerializer.Serialize(new ContactManual(2, null, "bob@example.com"))
+            );
+
+            Assert.Equal(
+                """{"id":3,"name":"Carol"}""",
+                Serde.Json.JsonSerializer.Serialize(new ContactManual(3, "Carol", null))
+            );
+
+            // When every optional field is null, only the required field remains.
+            Assert.Equal(
+                """{"id":4}""",
+                Serde.Json.JsonSerializer.Serialize(new ContactManual(4, null, null))
+            );
+        }
+
+        // Passes a deliberately inaccurate field count to WriteType to confirm that the JSON
+        // serializer's default implementation ignores the count (JSON objects are structurally
+        // delimited and do not need it) and produces the same output regardless.
+        private sealed class WrongCountSerialize : ISerialize<ContactManual>
+        {
+            public ISerdeInfo SerdeInfo => SerdeInfoProvider.GetSerializeInfo<ContactManual>();
+
+            public void Serialize(ContactManual value, ISerializer serializer)
+            {
+                var info = this.SerdeInfo;
+                var type = serializer.WriteType(info, 0);
+                type.WriteI32(info, 0, value.Id);
+                type.WriteString(info, 1, value.Name!);
+                type.WriteString(info, 2, value.Email!);
+                type.End(info);
+            }
+        }
+
+        [Fact]
+        public void WriteTypeFieldCountIgnoredForJson()
+        {
+            var value = new ContactManual(7, "Carol", "carol@example.com");
+            Assert.Equal(
+                """{"id":7,"name":"Carol","email":"carol@example.com"}""",
+                Serde.Json.JsonSerializer.Serialize(value, new WrongCountSerialize())
+            );
+        }
+
         [GenerateSerialize]
         private partial record BigData(List<int> Values);
 

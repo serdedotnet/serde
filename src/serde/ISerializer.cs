@@ -80,6 +80,33 @@ public interface ISerializer : IDisposable
     /// </returns>
     ITypeSerializer WriteType(ISerdeInfo info);
 
+    /// <summary>
+    /// Write a non-collection, non-primitive type. This could be a custom type, an enum, a union, a
+    /// nullable type, etc. The full set of options corresponds to the options represented by <see
+    /// cref="ISerdeInfo" />. The <paramref name="fieldCount"/> parameter is used to indicate the
+    /// number of nested fields to serialize. If some fields are skipped, the <paramref
+    /// name="fieldCount"/> parameter should be set to the number of fields that will be serialized.
+    /// If all fields are serialized, the <paramref name="fieldCount"/> parameter should be equal to
+    /// <see cref="ISerdeInfo.FieldCount"/>.
+    /// </summary>
+    /// <returns>
+    /// An <see cref="ITypeSerializer" /> that can be used to serialize the type. After this method
+    /// is called, the retuned <see cref="ITypeSerializer" /> should be used to serialize the type.
+    /// The <see cref="ITypeSerializer.End" /> method should be called when the type is fully
+    /// serialized. The parent <see cref="ISerializer"/> should not be used after this method is
+    /// called, until the <see cref="ITypeSerializer.End" /> method is called. Before the <see
+    /// cref="ITypeSerializer.End" /> method is called, all operations on the parent <see
+    /// cref="ISerializer" /> have undefined behavior.
+    /// </returns>
+    ITypeSerializer WriteType(ISerdeInfo info, int fieldCount)
+    {
+        // Default implementation: formats whose serialized representation does not need to know the
+        // number of fields up front (such as JSON, which delimits objects structurally) can ignore
+        // the field count and defer to the single-argument overload. Formats that must write the
+        // field count as part of the type header should override this method.
+        return WriteType(info);
+    }
+
     void IDisposable.Dispose() { }
 }
 
