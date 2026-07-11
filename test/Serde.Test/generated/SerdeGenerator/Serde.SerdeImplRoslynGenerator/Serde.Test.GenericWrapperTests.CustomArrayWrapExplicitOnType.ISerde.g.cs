@@ -17,7 +17,7 @@ partial class GenericWrapperTests
             void global::Serde.ISerialize<Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType>.Serialize(Serde.Test.GenericWrapperTests.CustomArrayWrapExplicitOnType value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_type = serializer.WriteType(_l_info, 1);
                 _l_type.WriteValue<Serde.Test.GenericWrapperTests.CustomImArray2<int>, Serde.Test.GenericWrapperTests.CustomImArray2Proxy.Ser<int, global::Serde.I32Proxy>>(_l_info, 0, value.A);
                 _l_type.End(_l_info);
             }

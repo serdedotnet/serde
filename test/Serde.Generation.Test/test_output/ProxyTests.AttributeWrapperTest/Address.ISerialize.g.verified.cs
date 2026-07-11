@@ -13,7 +13,7 @@ partial class Address
         void global::Serde.ISerialize<Address>.Serialize(Address value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 5);
             _l_type.WriteString(_l_info, 0, value.Name);
             _l_type.WriteString(_l_info, 1, value.Line1);
             _l_type.WriteString(_l_info, 2, value.City);

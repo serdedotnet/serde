@@ -15,7 +15,7 @@ partial struct MaxSizeType
         void global::Serde.ISerialize<Serde.Test.MaxSizeType>.Serialize(Serde.Test.MaxSizeType value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 64);
             _l_type.WriteU8(_l_info, 0, value.Field1);
             _l_type.WriteU8(_l_info, 1, value.Field2);
             _l_type.WriteU8(_l_info, 2, value.Field3);

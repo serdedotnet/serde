@@ -17,7 +17,7 @@ partial class JsonSerializerTests
             void global::Serde.ISerialize<Serde.Test.JsonSerializerTests.DtoWrap>.Serialize(Serde.Test.JsonSerializerTests.DtoWrap value, global::Serde.ISerializer serializer)
             {
                 var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_info);
+                var _l_type = serializer.WriteType(_l_info, 1);
                 _l_type.WriteDateTimeOffset(_l_info, 0, value.Value);
                 _l_type.End(_l_info);
             }

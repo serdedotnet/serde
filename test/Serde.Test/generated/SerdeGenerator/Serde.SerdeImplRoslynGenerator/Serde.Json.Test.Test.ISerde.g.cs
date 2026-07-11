@@ -15,7 +15,7 @@ partial class Test
         void global::Serde.ISerialize<Serde.Json.Test.Test>.Serialize(Serde.Json.Test.Test value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 4);
             _l_type.WriteValue<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>(_l_info, 0, value.v2);
             _l_type.WriteValue<System.Numerics.Vector2[][], Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy>>>(_l_info, 1, value.vertices);
             _l_type.WriteValue<System.Numerics.Vector2[][], Serde.ArrayProxy.Ser<System.Numerics.Vector2[], Serde.ArrayProxy.Ser<System.Numerics.Vector2, Serde.Json.Test.Vector2Proxy2>>>(_l_info, 2, value.weights);

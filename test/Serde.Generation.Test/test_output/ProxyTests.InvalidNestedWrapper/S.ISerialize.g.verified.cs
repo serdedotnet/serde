@@ -13,7 +13,7 @@ partial struct S
         void global::Serde.ISerialize<S>.Serialize(S value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 1);
             _l_type.WriteValue<System.Collections.Generic.List<int>, Serde.ArrayProxy.Ser<System.Collections.Specialized.BitVector32.Section, Outer.SectionWrap>>(_l_info, 0, value.Sections);
             _l_type.End(_l_info);
         }

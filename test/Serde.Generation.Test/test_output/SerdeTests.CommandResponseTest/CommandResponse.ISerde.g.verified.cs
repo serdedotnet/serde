@@ -13,7 +13,9 @@ partial class CommandResponse<TResult, TProxy>
         void global::Serde.ISerialize<CommandResponse<TResult, TProxy>>.Serialize(CommandResponse<TResult, TProxy> value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_fieldCount = 5;
+            if (value.Arguments is null) _l_fieldCount--;
+            var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
             _l_type.WriteI32(_l_info, 0, value.Status);
             _l_type.WriteString(_l_info, 1, value.Message);
             _l_type.WriteValueIfNotNull<System.Collections.Generic.List<ArgumentInfo>, Serde.NullableRefProxy.Ser<System.Collections.Generic.List<ArgumentInfo>, Serde.ListProxy.Ser<ArgumentInfo, ArgumentInfo>>>(_l_info, 2, value.Arguments);

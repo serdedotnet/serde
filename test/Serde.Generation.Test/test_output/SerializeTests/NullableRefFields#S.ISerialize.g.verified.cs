@@ -13,7 +13,12 @@ partial struct S<T1, T2, T3, T4, T5>
         void global::Serde.ISerialize<S<T1, T2, T3, T4, T5>>.Serialize(S<T1, T2, T3, T4, T5> value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_fieldCount = 5;
+            if (value.FS is null) _l_fieldCount--;
+            if (value.F2 is null) _l_fieldCount--;
+            if (value.F3 is null) _l_fieldCount--;
+            if (value.F4 is null) _l_fieldCount--;
+            var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
             _l_type.WriteStringIfNotNull(_l_info, 0, value.FS);
             _l_type.WriteValue<T1, T1>(_l_info, 1, value.F1);
             _l_type.WriteValueIfNotNull<T2, T2>(_l_info, 2, value.F2);

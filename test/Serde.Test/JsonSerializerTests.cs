@@ -605,5 +605,164 @@ namespace Serde.Test
                 Encoding.UTF8.GetString(mem.Span)
             );
         }
+
+        [GenerateSerialize]
+        private partial record ContactGen(int Id, string? Name, string? Email);
+
+        [Theory]
+        // Id is required; Name and Email are skipped when null, so the field count passed to
+        // WriteType by the generated code must reflect only the fields actually written.
+        [InlineData("Alice", "alice@example.com", 3)]
+        [InlineData(null, "bob@example.com", 2)]
+        [InlineData("Carol", null, 2)]
+        [InlineData(null, null, 1)]
+        public void GeneratedWriteTypeReceivesPostSkipFieldCount(
+            string? name,
+            string? email,
+            int expectedFieldCount
+        )
+        {
+            var recorder = new FieldCountRecordingSerializer();
+            Serde.SerializeProvider.GetSerialize<ContactGen>()
+                .Serialize(new ContactGen(1, name, email), recorder);
+            Assert.Equal(expectedFieldCount, recorder.FieldCount);
+        }
+
+        /// <summary>
+        /// A minimal <see cref="ISerializer"/>/<see cref="ITypeSerializer"/> that records the field
+        /// count passed to <see cref="ISerializer.WriteType(ISerdeInfo, int)"/>. All other members
+        /// are no-ops. Used to assert that generated code computes the correct post-skip count.
+        /// </summary>
+        private sealed class FieldCountRecordingSerializer : ISerializer, ITypeSerializer
+        {
+            public int? FieldCount { get; private set; }
+
+            ITypeSerializer ISerializer.WriteType(ISerdeInfo info, int fieldCount)
+            {
+                FieldCount = fieldCount;
+                return this;
+            }
+
+            ITypeSerializer ISerializer.WriteType(ISerdeInfo info) => this;
+
+            ITypeSerializer ISerializer.WriteCollection(ISerdeInfo info, int? count) => this;
+
+            // --- ISerializer no-op members ---
+            void ISerializer.WriteBool(bool b) { }
+
+            void ISerializer.WriteChar(char c) { }
+
+            void ISerializer.WriteU8(byte b) { }
+
+            void ISerializer.WriteU16(ushort u16) { }
+
+            void ISerializer.WriteU32(uint u32) { }
+
+            void ISerializer.WriteU64(ulong u64) { }
+
+            void ISerializer.WriteU128(System.UInt128 u128) { }
+
+            void ISerializer.WriteI8(sbyte b) { }
+
+            void ISerializer.WriteI16(short i16) { }
+
+            void ISerializer.WriteI32(int i32) { }
+
+            void ISerializer.WriteI64(long i64) { }
+
+            void ISerializer.WriteI128(System.Int128 i128) { }
+
+            void ISerializer.WriteF32(float f) { }
+
+            void ISerializer.WriteF64(double d) { }
+
+            void ISerializer.WriteDecimal(decimal d) { }
+
+            void ISerializer.WriteString(string s) { }
+
+            void ISerializer.WriteNull() { }
+
+            void ISerializer.WriteDateTime(System.DateTime dt) { }
+
+            void ISerializer.WriteDateTimeOffset(System.DateTimeOffset dt) { }
+
+            void ISerializer.WriteBytes(System.ReadOnlyMemory<byte> bytes) { }
+
+            void ISerializer.WriteEnum(ISerdeInfo info, int ordinal) { }
+
+            // --- ITypeSerializer members ---
+            ISerializer ITypeSerializer.WriteFieldStart(ISerdeInfo typeInfo, int index) => this;
+
+            void ITypeSerializer.WriteFieldEnd(
+                ISerdeInfo typeInfo,
+                int index,
+                ISerializer serializer
+            ) { }
+
+            void ITypeSerializer.WriteBool(ISerdeInfo typeInfo, int index, bool b) { }
+
+            void ITypeSerializer.WriteChar(ISerdeInfo typeInfo, int index, char c) { }
+
+            void ITypeSerializer.WriteU8(ISerdeInfo typeInfo, int index, byte b) { }
+
+            void ITypeSerializer.WriteU16(ISerdeInfo typeInfo, int index, ushort u16) { }
+
+            void ITypeSerializer.WriteU32(ISerdeInfo typeInfo, int index, uint u32) { }
+
+            void ITypeSerializer.WriteU64(ISerdeInfo typeInfo, int index, ulong u64) { }
+
+            void ITypeSerializer.WriteU128(ISerdeInfo typeInfo, int index, System.UInt128 u128) { }
+
+            void ITypeSerializer.WriteI8(ISerdeInfo typeInfo, int index, sbyte b) { }
+
+            void ITypeSerializer.WriteI16(ISerdeInfo typeInfo, int index, short i16) { }
+
+            void ITypeSerializer.WriteI32(ISerdeInfo typeInfo, int index, int i32) { }
+
+            void ITypeSerializer.WriteI64(ISerdeInfo typeInfo, int index, long i64) { }
+
+            void ITypeSerializer.WriteI128(ISerdeInfo typeInfo, int index, System.Int128 i128) { }
+
+            void ITypeSerializer.WriteF32(ISerdeInfo typeInfo, int index, float f) { }
+
+            void ITypeSerializer.WriteF64(ISerdeInfo typeInfo, int index, double d) { }
+
+            void ITypeSerializer.WriteDecimal(ISerdeInfo typeInfo, int index, decimal d) { }
+
+            void ITypeSerializer.WriteString(ISerdeInfo typeInfo, int index, string s) { }
+
+            void ITypeSerializer.WriteNull(ISerdeInfo typeInfo, int index) { }
+
+            void ITypeSerializer.WriteDateTime(ISerdeInfo typeInfo, int index, System.DateTime dt)
+            { }
+
+            void ITypeSerializer.WriteDateTimeOffset(
+                ISerdeInfo typeInfo,
+                int index,
+                System.DateTimeOffset dt
+            ) { }
+
+            void ITypeSerializer.WriteBytes(
+                ISerdeInfo typeInfo,
+                int index,
+                System.ReadOnlyMemory<byte> bytes
+            ) { }
+
+            void ITypeSerializer.WriteEnum(
+                ISerdeInfo typeInfo,
+                int index,
+                ISerdeInfo fieldInfo,
+                int ordinal
+            ) { }
+
+            void ITypeSerializer.WriteValue<T>(
+                ISerdeInfo typeInfo,
+                int index,
+                T value,
+                ISerialize<T> serialize
+            ) { }
+
+            void ITypeSerializer.End(ISerdeInfo info) { }
+        }
     }
 }

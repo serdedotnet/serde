@@ -15,7 +15,7 @@ partial class Vector4Proxy
         void global::Serde.ISerialize<System.Numerics.Vector4>.Serialize(System.Numerics.Vector4 value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 4);
             _l_type.WriteF32(_l_info, 0, value.X);
             _l_type.WriteF32(_l_info, 1, value.Y);
             _l_type.WriteF32(_l_info, 2, value.Z);

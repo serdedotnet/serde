@@ -16,7 +16,10 @@ partial record AllInOne
         void global::Serde.ISerialize<Serde.Test.AllInOne>.Serialize(Serde.Test.AllInOne value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_fieldCount = 26;
+            if (value.NullStringField is null) _l_fieldCount--;
+            if (value.NullIntField is null) _l_fieldCount--;
+            var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
             _l_type.WriteBool(_l_info, 0, value.BoolField);
             _l_type.WriteChar(_l_info, 1, value.CharField);
             _l_type.WriteU8(_l_info, 2, value.ByteField);

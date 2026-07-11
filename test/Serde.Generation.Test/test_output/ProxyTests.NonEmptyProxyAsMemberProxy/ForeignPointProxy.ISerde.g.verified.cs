@@ -14,7 +14,7 @@ partial struct ForeignPointProxy
         {
             var _l_self = (ForeignPointProxy)value;
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 2);
             _l_type.WriteI32(_l_info, 0, _l_self.X);
             _l_type.WriteI32(_l_info, 1, _l_self.Y);
             _l_type.End(_l_info);

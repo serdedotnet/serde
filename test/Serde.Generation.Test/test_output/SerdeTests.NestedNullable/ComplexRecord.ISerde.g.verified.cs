@@ -13,7 +13,10 @@ partial record ComplexRecord
         void global::Serde.ISerialize<ComplexRecord>.Serialize(ComplexRecord value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_fieldCount = 3;
+            if (value.Description is null) _l_fieldCount--;
+            if (value.NestedRecord is null) _l_fieldCount--;
+            var _l_type = serializer.WriteType(_l_info, _l_fieldCount);
             _l_type.WriteI32(_l_info, 0, value.Id);
             _l_type.WriteStringIfNotNull(_l_info, 1, value.Description);
             _l_type.WriteValueIfNotNull<SimpleRecord, Serde.NullableRefProxy.Ser<SimpleRecord, SimpleRecord>>(_l_info, 2, value.NestedRecord);

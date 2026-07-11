@@ -13,7 +13,7 @@ partial struct MyForeignTypeProxy
         void global::Serde.ISerialize<MyForeignType>.Serialize(MyForeignType value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info);
+            var _l_type = serializer.WriteType(_l_info, 2);
             _l_type.WriteI32(_l_info, 0, value.MyInt);
             _l_type.WriteString(_l_info, 1, value.MyString);
             _l_type.End(_l_info);
