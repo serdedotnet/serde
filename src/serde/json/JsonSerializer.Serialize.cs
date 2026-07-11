@@ -136,11 +136,10 @@ partial class JsonSerializer : ISerializer
         }
     }
 
-    ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo)
-        => WriteType(typeInfo);
+    ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo) => WriteType(typeInfo);
 
-    ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo, int fieldCount)
-        => WriteType(typeInfo);
+    ITypeSerializer ISerializer.WriteType(ISerdeInfo typeInfo, int fieldCount) =>
+        WriteType(typeInfo);
 
     private ITypeSerializer WriteType(ISerdeInfo typeInfo)
     {

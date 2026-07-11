@@ -623,7 +623,8 @@ namespace Serde.Test
         )
         {
             var recorder = new FieldCountRecordingSerializer();
-            Serde.SerializeProvider.GetSerialize<ContactGen>()
+            Serde
+                .SerializeProvider.GetSerialize<ContactGen>()
                 .Serialize(new ContactGen(1, name, email), recorder);
             Assert.Equal(expectedFieldCount, recorder.FieldCount);
         }
@@ -733,8 +734,11 @@ namespace Serde.Test
 
             void ITypeSerializer.WriteNull(ISerdeInfo typeInfo, int index) { }
 
-            void ITypeSerializer.WriteDateTime(ISerdeInfo typeInfo, int index, System.DateTime dt)
-            { }
+            void ITypeSerializer.WriteDateTime(
+                ISerdeInfo typeInfo,
+                int index,
+                System.DateTime dt
+            ) { }
 
             void ITypeSerializer.WriteDateTimeOffset(
                 ISerdeInfo typeInfo,

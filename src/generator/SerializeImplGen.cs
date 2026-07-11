@@ -111,7 +111,13 @@ public partial class SerializeImplGen
                     )
                 )
                 {
-                    writeStmt = MakeWriteValueStmt(m, notNullTypeName, notNullTypeName, i, receiverExpr);
+                    writeStmt = MakeWriteValueStmt(
+                        m,
+                        notNullTypeName,
+                        notNullTypeName,
+                        i,
+                        receiverExpr
+                    );
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
                 //    method. Check using the non-null form (even if it's nullable), since nullable
@@ -142,7 +148,13 @@ public partial class SerializeImplGen
                     { } wrapper
                 )
                 {
-                    writeStmt = MakeWriteValueStmt(m, notNullTypeName, wrapper.Proxy, i, receiverExpr);
+                    writeStmt = MakeWriteValueStmt(
+                        m,
+                        notNullTypeName,
+                        wrapper.Proxy,
+                        i,
+                        receiverExpr
+                    );
                 }
                 else
                 {
@@ -209,7 +221,9 @@ public partial class SerializeImplGen
                 {
                     statements.AppendLine($"if ({expr} is null) _l_fieldCount--;");
                 }
-                statements.AppendLine("var _l_type = serializer.WriteType(_l_info, _l_fieldCount);");
+                statements.AppendLine(
+                    "var _l_type = serializer.WriteType(_l_info, _l_fieldCount);"
+                );
             }
 
             statements.Append(writeStatements);
