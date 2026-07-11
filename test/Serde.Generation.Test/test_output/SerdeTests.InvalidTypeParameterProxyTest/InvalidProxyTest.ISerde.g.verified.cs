@@ -13,7 +13,7 @@ partial class InvalidProxyTest<T>
         void global::Serde.ISerialize<InvalidProxyTest<T>>.Serialize(InvalidProxyTest<T> value, global::Serde.ISerializer serializer)
         {
             var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);
-            var _l_type = serializer.WriteType(_l_info, 0);
+            var _l_type = serializer.WriteType(_l_info, 3);
             _l_type.End(_l_info);
         }
         InvalidProxyTest<T> Serde.IDeserialize<InvalidProxyTest<T>>.Deserialize(IDeserializer deserializer)
