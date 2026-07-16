@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Win32;
+using System.Threading.Tasks;
 
 namespace Serde;
 
@@ -29,6 +30,20 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
         _valueSer = TVProvider.Instance;
     }
 
+#if NET11_0_OR_GREATER
+    async Task ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
+    {
+        var typeInfo = SerdeInfo;
+        var dictionary = await serializer.WriteCollection(typeInfo, value.Count);
+        int index = 0;
+        foreach (var (key, itemValue) in value)
+        {
+            await _keySer.SerializeAsField(dictionary, typeInfo, index++, key);
+            await _valueSer.SerializeAsField(dictionary, typeInfo, index++, itemValue);
+        }
+        await dictionary.End(typeInfo);
+    }
+#else
     void ISerialize<TDict>.Serialize(TDict value, ISerializer serializer)
     {
         var typeInfo = SerdeInfo;
@@ -41,6 +56,7 @@ public abstract class SerDictBase<TSelf, TK, TV, TDict, TKProvider, TVProvider>
         }
         sd.End(typeInfo);
     }
+#endif
 }
 
 public abstract class DeDictBase<TSelf, TKey, TValue, TDict, TBuilder, TKProvider, TVProvider>

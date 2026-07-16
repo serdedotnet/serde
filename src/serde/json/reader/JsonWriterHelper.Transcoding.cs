@@ -133,7 +133,7 @@ namespace Serde.Json
                         }
                         continue;
 
-                        LongCodeWithMask:
+                    LongCodeWithMask:
                         if (!BitConverter.IsLittleEndian)
                         {
                             // be careful about the sign extension
@@ -153,7 +153,7 @@ namespace Serde.Json
                         pTarget++;
                         continue;
 
-                        LongCode:
+                    LongCode:
                         // use separate helper variables for slow and fast loop so that the jit optimizations
                         // won't get confused about the variable lifetimes
                         int chd;
@@ -349,17 +349,17 @@ namespace Serde.Json
                 bytesWritten = (int)(pTarget - bytes);
                 return OperationStatus.Done;
 
-                InvalidData:
+            InvalidData:
                 bytesConsumed = (int)((byte*)(pSrc - 1) - chars);
                 bytesWritten = (int)(pTarget - bytes);
                 return OperationStatus.InvalidData;
 
-                DestinationFull:
+            DestinationFull:
                 bytesConsumed = (int)((byte*)(pSrc - 1) - chars);
                 bytesWritten = (int)(pTarget - bytes);
                 return OperationStatus.DestinationTooSmall;
 
-                NeedMoreData:
+            NeedMoreData:
                 bytesConsumed = (int)((byte*)(pSrc - 1) - chars);
                 bytesWritten = (int)(pTarget - bytes);
                 return OperationStatus.NeedMoreData;

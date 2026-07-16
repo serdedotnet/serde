@@ -1,0 +1,34 @@
+
+namespace Serde
+{
+    public interface ISerializer
+    {
+        Serde.ITypeSerializer WriteCollection(Serde.ISerdeInfo info, int? count);
+        Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info);
+        Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info, int fieldCount);
+        void WriteBool(bool b);
+        void WriteBytes(System.ReadOnlyMemory<byte> bytes);
+        void WriteChar(char c);
+        void WriteDateOnly(System.DateOnly d);
+        void WriteDateTime(System.DateTime dt);
+        void WriteDateTimeOffset(System.DateTimeOffset dt);
+        void WriteDecimal(decimal d);
+        void WriteEnum(Serde.ISerdeInfo info, int ordinal);
+        void WriteF16(System.Half h);
+        void WriteF32(float f);
+        void WriteF64(double d);
+        void WriteI128(System.Int128 i128);
+        void WriteI16(short i16);
+        void WriteI32(int i32);
+        void WriteI64(long i64);
+        void WriteI8(sbyte b);
+        void WriteNull();
+        void WriteString(string s);
+        void WriteTimeOnly(System.TimeOnly t);
+        void WriteU128(System.UInt128 u128);
+        void WriteU16(ushort u16);
+        void WriteU32(uint u32);
+        void WriteU64(ulong u64);
+        void WriteU8(byte b);
+    }
+}

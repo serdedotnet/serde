@@ -40,6 +40,7 @@ public static class DeserializeProvider
         where TProvider : IDeserializeProvider<T> => TProvider.Instance;
 }
 
+#if !NET11_0_OR_GREATER
 /// <summary>
 /// This is a perf optimization. It allows primitive types (and only primitive types) to be
 /// deserialized without boxing. It is only useful for deserializing collections.
@@ -64,3 +65,4 @@ public static class TypeDeserialize
         };
     }
 }
+#endif

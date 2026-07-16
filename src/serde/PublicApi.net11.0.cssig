@@ -1,0 +1,62 @@
+namespace Serde
+{
+    public static class ISerializerExt
+    {
+        public static System.Threading.Tasks.Task WriteValue<T, TProvider>(this Serde.ISerializer serializer, T value) where TProvider : Serde.ISerializeProvider<T>;
+        public static System.Threading.Tasks.Task WriteValue<T>(this Serde.ISerializer serializer, T value) where T : Serde.ISerializeProvider<T>;
+    }
+    public interface ITypeSerializer
+    {
+        System.Threading.Tasks.Task End(Serde.ISerdeInfo info);
+        System.Threading.Tasks.Task SkipValue(Serde.ISerdeInfo typeInfo, int index);
+        System.Threading.Tasks.Task WriteBool(Serde.ISerdeInfo typeInfo, int index, bool b);
+        System.Threading.Tasks.Task WriteBytes(Serde.ISerdeInfo typeInfo, int index, System.ReadOnlyMemory<byte> bytes);
+        System.Threading.Tasks.Task WriteChar(Serde.ISerdeInfo typeInfo, int index, char c);
+        System.Threading.Tasks.Task WriteDateOnly(Serde.ISerdeInfo typeInfo, int index, System.DateOnly d);
+        System.Threading.Tasks.Task WriteDateTime(Serde.ISerdeInfo typeInfo, int index, System.DateTime dt);
+        System.Threading.Tasks.Task WriteDateTimeOffset(Serde.ISerdeInfo typeInfo, int index, System.DateTimeOffset dt);
+        System.Threading.Tasks.Task WriteDecimal(Serde.ISerdeInfo typeInfo, int index, decimal d);
+        System.Threading.Tasks.Task WriteEnum(Serde.ISerdeInfo typeInfo, int index, Serde.ISerdeInfo fieldInfo, int ordinal);
+        System.Threading.Tasks.Task WriteF16(Serde.ISerdeInfo typeInfo, int index, System.Half h);
+        System.Threading.Tasks.Task WriteF32(Serde.ISerdeInfo typeInfo, int index, float f);
+        System.Threading.Tasks.Task WriteF64(Serde.ISerdeInfo typeInfo, int index, double d);
+        System.Threading.Tasks.Task WriteFieldEnd(Serde.ISerdeInfo typeInfo, int index, Serde.ISerializer serializer);
+        System.Threading.Tasks.Task WriteI128(Serde.ISerdeInfo typeInfo, int index, System.Int128 i128);
+        System.Threading.Tasks.Task WriteI16(Serde.ISerdeInfo typeInfo, int index, short i16);
+        System.Threading.Tasks.Task WriteI32(Serde.ISerdeInfo typeInfo, int index, int i32);
+        System.Threading.Tasks.Task WriteI64(Serde.ISerdeInfo typeInfo, int index, long i64);
+        System.Threading.Tasks.Task WriteI8(Serde.ISerdeInfo typeInfo, int index, sbyte b);
+        System.Threading.Tasks.Task WriteNull(Serde.ISerdeInfo typeInfo, int index);
+        System.Threading.Tasks.Task WriteString(Serde.ISerdeInfo typeInfo, int index, string s);
+        System.Threading.Tasks.Task WriteTimeOnly(Serde.ISerdeInfo typeInfo, int index, System.TimeOnly t);
+        System.Threading.Tasks.Task WriteU128(Serde.ISerdeInfo typeInfo, int index, System.UInt128 u128);
+        System.Threading.Tasks.Task WriteU16(Serde.ISerdeInfo typeInfo, int index, ushort u16);
+        System.Threading.Tasks.Task WriteU32(Serde.ISerdeInfo typeInfo, int index, uint u32);
+        System.Threading.Tasks.Task WriteU64(Serde.ISerdeInfo typeInfo, int index, ulong u64);
+        System.Threading.Tasks.Task WriteU8(Serde.ISerdeInfo typeInfo, int index, byte b);
+        System.Threading.Tasks.Task WriteValue<T, TProvider>(Serde.ISerdeInfo typeInfo, int index, T value) where T : class? where TProvider : Serde.ISerializeProvider<T>;
+        System.Threading.Tasks.Task WriteValue<T>(Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> serialize) where T : class?;
+        System.Threading.Tasks.Task<Serde.ISerializer> WriteFieldStart(Serde.ISerdeInfo typeInfo, int index);
+    }
+    public static class EnumerableHelpers
+    {
+        public static System.Threading.Tasks.Task SerializeSpanAsync<T>(Serde.ISerdeInfo typeInfo, T[] items, Serde.ISerialize<T> serializeImpl, Serde.ISerializer serializer);
+    }
+    public static class ITypeDeserializerExt
+    {
+        public static System.Guid ReadGuid(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index);
+        public static T ReadValue<T, TProvider>(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index) where TProvider : Serde.IDeserializeProvider<T>;
+        public static T ReadValue<T>(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index, Serde.IDeserialize<T> deserialize);
+    }
+    public static class ITypeSerializerExt
+    {
+        public static System.Threading.Tasks.Task WriteGuid(this Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo serdeInfo, int index, System.Guid value);
+        public static System.Threading.Tasks.Task WriteStringIfNotNull(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, string? value);
+        public static System.Threading.Tasks.Task WriteValue<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value) where TProvider : Serde.ISerializeProvider<T>;
+        public static System.Threading.Tasks.Task WriteValue<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> proxy);
+        public static System.Threading.Tasks.Task WriteValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value) where T : class where TProvider : Serde.ISerializeProvider<T?>;
+        public static System.Threading.Tasks.Task WriteValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value) where T : struct where TProvider : Serde.ISerializeProvider<T?>;
+        public static System.Threading.Tasks.Task WriteValueIfNotNull<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value, Serde.ISerialize<T?> proxy) where T : class;
+        public static System.Threading.Tasks.Task WriteValueIfNotNull<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value, Serde.ISerialize<T?> proxy) where T : struct;
+    }
+}

@@ -836,10 +836,10 @@ namespace Serde.Json
 
             retVal = true;
 
-            Done:
+        Done:
             return retVal;
 
-            ReadFirstToken:
+        ReadFirstToken:
             retVal = ReadFirstToken(first);
             goto Done;
         }
@@ -1374,7 +1374,7 @@ namespace Serde.Json
                 return false;
             }
 
-            Done:
+        Done:
             _bytePositionInLine++; // Add 1 for the end quote
             _valueMemory = memory.Slice(0, idx);
             ValueIsEscaped = true;
@@ -1527,7 +1527,7 @@ namespace Serde.Json
                 data[i]
             );
 
-            Done:
+        Done:
             _valueMemory = memory.Slice(0, i);
             consumed = i;
             return true;
@@ -2133,10 +2133,10 @@ namespace Serde.Json
                 }
             }
 
-            Done:
+        Done:
             return ConsumeTokenResult.Success;
 
-            RollBack:
+        RollBack:
             return ConsumeTokenResult.NotEnoughDataRollBackState;
         }
 
@@ -2171,7 +2171,7 @@ namespace Serde.Json
             }
             return true;
 
-            IncompleteNoRollback:
+        IncompleteNoRollback:
             return false;
         }
 
@@ -2208,7 +2208,7 @@ namespace Serde.Json
             }
             return true;
 
-            IncompleteRollback:
+        IncompleteRollback:
             return false;
         }
 
@@ -2389,11 +2389,11 @@ namespace Serde.Json
                 );
             }
 
-            Done:
+        Done:
             return ConsumeTokenResult.Success;
-            IncompleteNoRollback:
+        IncompleteNoRollback:
             return ConsumeTokenResult.IncompleteNoRollBackNecessary;
-            IncompleteRollback:
+        IncompleteRollback:
             return ConsumeTokenResult.NotEnoughDataRollBackState;
         }
 
@@ -2465,12 +2465,12 @@ namespace Serde.Json
             _bytePositionInLine += 2 + localBuffer.Length;
             goto Done;
 
-            EndOfComment:
+        EndOfComment:
             toConsume++;
             _bytePositionInLine = 0;
             _lineNumber++;
 
-            Done:
+        Done:
             _consumed += 2 + toConsume;
             return true;
         }

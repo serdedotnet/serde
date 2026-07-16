@@ -5,11 +5,28 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Serde;
 
 public static class EnumerableHelpers
 {
+#if NET11_0_OR_GREATER
+    public static async Task SerializeSpanAsync<T>(
+        ISerdeInfo typeInfo,
+        T[] items,
+        ISerialize<T> serializeImpl,
+        ISerializer serializer
+    )
+    {
+        var enumerable = await serializer.WriteCollection(typeInfo, items.Length);
+        for (int index = 0; index < items.Length; index++)
+        {
+            await serializeImpl.SerializeAsField(enumerable, typeInfo, index, items[index]);
+        }
+        await enumerable.End(typeInfo);
+    }
+#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SerializeSpan<T>(
         ISerdeInfo typeInfo,
@@ -27,6 +44,7 @@ public static class EnumerableHelpers
         enumerable.End(typeInfo);
     }
 
+#if !NET11_0_OR_GREATER
     [Obsolete("Use the ISerialize<T> overload instead")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SerializeSpan<T>(
@@ -35,6 +53,8 @@ public static class EnumerableHelpers
         ITypeSerialize<T> serializeImpl,
         ISerializer serializer
     ) => SerializeSpan(typeInfo, arr, (ISerialize<T>)serializeImpl, serializer);
+#endif
+#endif
 }
 
 public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList>
@@ -48,8 +68,13 @@ public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList
 
     protected SerListBase() { }
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<TList>.Serialize(TList value, ISerializer serializer) =>
+        EnumerableHelpers.SerializeSpanAsync(SerdeInfo, GetSpan(value).ToArray(), _ser, serializer);
+#else
     void ISerialize<TList>.Serialize(TList value, ISerializer serializer) =>
         EnumerableHelpers.SerializeSpan(SerdeInfo, GetSpan(value), _ser, serializer);
+#endif
 
     protected abstract ReadOnlySpan<T> GetSpan(TList value);
 }

@@ -25,7 +25,8 @@ public partial class SerializeImplGen
     private static void GenEnumSerialize(
         ITypeSymbol receiverType,
         SourceBuilder statements,
-        List<DataMemberSymbol> fieldsAndProps
+        List<DataMemberSymbol> fieldsAndProps,
+        string awaitPrefix
     )
     {
         var enumType = (INamedTypeSymbol)receiverType;
@@ -37,7 +38,7 @@ public partial class SerializeImplGen
         {
             var primName = Proxies.TryGetPrimitiveName(underlying)!;
             statements.AppendLine(
-                $"serializer.Write{primName}(({underlying.ToDisplayString()})value);"
+                $"{awaitPrefix}serializer.Write{primName}(({underlying.ToDisplayString()})value);"
             );
             return;
         }
@@ -64,6 +65,6 @@ public partial class SerializeImplGen
         );
 
         // `var _l_type = serializer.WriteEnum(_l_info, );`
-        statements.AppendLine("serializer.WriteEnum(_l_info, _l_index);");
+        statements.AppendLine($"{awaitPrefix}serializer.WriteEnum(_l_info, _l_index);");
     }
 }

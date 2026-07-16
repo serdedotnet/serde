@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Serde;
 
@@ -25,6 +26,21 @@ namespace Serde;
 /// </summary>
 public interface ISerialize<T> : ISerdeInfoProvider
 {
+#if NET11_0_OR_GREATER
+    Task Serialize(T value, ISerializer serializer);
+
+    async Task SerializeAsField(
+        ITypeSerializer typeSerializer,
+        ISerdeInfo serdeInfo,
+        int index,
+        T value
+    )
+    {
+        var serializer = await typeSerializer.WriteFieldStart(serdeInfo, index);
+        await Serialize(value, serializer);
+        await typeSerializer.WriteFieldEnd(serdeInfo, index, serializer);
+    }
+#else
     void Serialize(T value, ISerializer serializer);
 
     /// <summary>
@@ -36,8 +52,10 @@ public interface ISerialize<T> : ISerdeInfoProvider
         Serialize(value, s);
         typeSerializer.WriteFieldEnd(serdeInfo, index, s);
     }
+#endif
 }
 
+#if !NET11_0_OR_GREATER
 [Obsolete("Use ISerialize<T>.SerializeAsField instead")]
 public interface ITypeSerialize<T> : ISerialize<T>
 {
@@ -75,6 +93,7 @@ public static class TypeSerialize
         ) => underlying.SerializeAsField(typeSerializer, serdeInfo, index, value);
     }
 }
+#endif
 
 public interface ISerializeProvider<T>
 {

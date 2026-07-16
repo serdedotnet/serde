@@ -1,10 +1,19 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Serde;
 
 public static class ISerializerExt
 {
+#if NET11_0_OR_GREATER
+    public static Task WriteValue<T, TProvider>(this ISerializer serializer, T value)
+        where TProvider : ISerializeProvider<T> =>
+        TProvider.Instance.Serialize(value, serializer);
+
+    public static Task WriteValue<T>(this ISerializer serializer, T value)
+        where T : ISerializeProvider<T> => serializer.WriteValue<T, T>(value);
+#else
     public static void WriteValue<T, TProvider>(this ISerializer serializer, T value)
         where TProvider : ISerializeProvider<T>
     {
@@ -14,8 +23,10 @@ public static class ISerializerExt
 
     public static void WriteValue<T>(this ISerializer serializer, T value)
         where T : ISerializeProvider<T> => serializer.WriteValue<T, T>(value);
+#endif
 }
 
+#if !NET11_0_OR_GREATER
 public static class ISerializeExt
 {
     [Obsolete($"Use {nameof(ISerializerExt)}.{nameof(ISerializerExt.WriteValue)} instead")]
@@ -30,9 +41,28 @@ public static class ISerializeExt
     public static void WriteValue<T>(ISerializer serializer, T value)
         where T : ISerializeProvider<T> => serializer.WriteValue<T, T>(value);
 }
+#endif
 
 public static class ITypeSerializerExt
 {
+#if NET11_0_OR_GREATER
+    public static Task WriteValue<T>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        T value,
+        ISerialize<T> proxy
+    ) => proxy.SerializeAsField(serializeType, typeInfo, index, value);
+
+    public static Task WriteValue<T, TProvider>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        T value
+    )
+        where TProvider : ISerializeProvider<T> =>
+        TProvider.Instance.SerializeAsField(serializeType, typeInfo, index, value);
+#else
     public static void WriteValue<T>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
@@ -49,8 +79,27 @@ public static class ITypeSerializerExt
     )
         where TProvider : ISerializeProvider<T> =>
         TProvider.Instance.SerializeAsField(serializeType, typeInfo, index, value);
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET11_0_OR_GREATER
+    public static async Task WriteStringIfNotNull(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        string? value
+    )
+    {
+        if (value is null)
+        {
+            await serializeType.SkipValue(typeInfo, index);
+        }
+        else
+        {
+            await serializeType.WriteString(typeInfo, index, value);
+        }
+    }
+#else
     public static void WriteStringIfNotNull(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
@@ -67,7 +116,67 @@ public static class ITypeSerializerExt
             serializeType.WriteString(typeInfo, index, value);
         }
     }
+#endif
 
+#if NET11_0_OR_GREATER
+    public static Task WriteValueIfNotNull<T>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        T? value,
+        ISerialize<T?> proxy
+    )
+        where T : class =>
+        value is null
+            ? WriteSkippedValue(serializeType, typeInfo, index)
+            : proxy.SerializeAsField(serializeType, typeInfo, index, value);
+
+    public static Task WriteValueIfNotNull<T, TProvider>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        T? value
+    )
+        where T : class
+        where TProvider : ISerializeProvider<T?> =>
+        serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
+
+    public static Task WriteValueIfNotNull<T>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        T? value,
+        ISerialize<T?> proxy
+    )
+        where T : struct =>
+        value is null
+            ? WriteSkippedValue(serializeType, typeInfo, index)
+            : serializeType.WriteValue(typeInfo, index, value, proxy);
+
+    public static Task WriteValueIfNotNull<T, TProvider>(
+        this ITypeSerializer serializeType,
+        ISerdeInfo typeInfo,
+        int index,
+        T? value
+    )
+        where T : struct
+        where TProvider : ISerializeProvider<T?> =>
+        serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
+
+    public static Task WriteGuid(
+        this ITypeSerializer typeSerializer,
+        ISerdeInfo serdeInfo,
+        int index,
+        Guid value
+    ) => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
+
+    private static async Task WriteSkippedValue(
+        ITypeSerializer serializeType, ISerdeInfo typeInfo, int index
+    )
+    {
+        await serializeType.SkipValue(typeInfo, index);
+    }
+#else
     public static void WriteValueIfNotNull<T>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
@@ -132,7 +241,9 @@ public static class ITypeSerializerExt
         int index,
         Guid value
     ) => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
+#endif
 
+#if !NET11_0_OR_GREATER
     [Obsolete("Use WriteValue instead")]
     public static void WriteBoxedValue<T>(
         this ITypeSerializer serializeType,
@@ -185,4 +296,5 @@ public static class ITypeSerializerExt
         T value,
         ITypeSerialize<T> proxy
     ) => proxy.SerializeAsField(serializeType, serdeInfo, index, value);
+#endif
 }

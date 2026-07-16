@@ -17,9 +17,11 @@ public partial class SerializeImplGen
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
     )
     {
+        var isAsync = IsAsyncSerialize(context);
+        var awaitPrefix = isAsync ? "await " : "";
         if (receiverType.IsAbstract)
         {
-            return GenUnionSerializeMethod((INamedTypeSymbol)receiverType);
+            return GenUnionSerializeMethod((INamedTypeSymbol)receiverType, isAsync);
         }
 
         var statements = new SourceBuilder();
@@ -38,7 +40,7 @@ public partial class SerializeImplGen
         // If the type is an enum, we only want to serialize one field (the enum value), not all fields
         if (receiverType.TypeKind == TypeKind.Enum)
         {
-            GenEnumSerialize(receiverType, statements, fieldsAndProps);
+            GenEnumSerialize(receiverType, statements, fieldsAndProps, awaitPrefix);
         }
         else
         {
@@ -99,7 +101,9 @@ public partial class SerializeImplGen
                     { } proxy
                 )
                 {
-                    writeStmt = MakeWriteValueStmt(m, notNullTypeName, proxy, i, receiverExpr);
+                    writeStmt = MakeWriteValueStmt(
+                        m, notNullTypeName, proxy, i, receiverExpr, awaitPrefix
+                    );
                 }
                 // 2. Check for a direct implementation of ISerialize
                 else if (
@@ -116,7 +120,8 @@ public partial class SerializeImplGen
                         notNullTypeName,
                         notNullTypeName,
                         i,
-                        receiverExpr
+                        receiverExpr,
+                        awaitPrefix
                     );
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
@@ -134,7 +139,7 @@ public partial class SerializeImplGen
                         // Use WriteValueIfNotNull if it's not been disabled and the field is nullable
                         primName += "IfNotNull";
                     }
-                    writeStmt = $"_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});";
+                    writeStmt = $"{awaitPrefix}_l_type.Write{primName}(_l_info, {i}, {receiverExpr}.{m.Name});";
                 }
                 // 4. A wrapper that implements ISerialize
                 else if (
@@ -153,7 +158,8 @@ public partial class SerializeImplGen
                         notNullTypeName,
                         wrapper.Proxy,
                         i,
-                        receiverExpr
+                        receiverExpr,
+                        awaitPrefix
                     );
                 }
                 else
@@ -185,7 +191,8 @@ public partial class SerializeImplGen
                     string type,
                     string proxy,
                     int i,
-                    string valueExpr
+                    string valueExpr,
+                    string awaitPrefix
                 )
                 {
                     // Generate statements of the form `type.WriteValue<FieldType, Serialize>("FieldName", value.FieldValue)`
@@ -194,14 +201,14 @@ public partial class SerializeImplGen
                     // accept a `T?` value and a provider of the nullable type.
                     if (m.IsNullable && !m.SerializeNull)
                     {
-                        return $"_l_type.WriteValueIfNotNull<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+                        return $"{awaitPrefix}_l_type.WriteValueIfNotNull<{type}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
                     }
                     // Plain WriteValue: the generic type argument must match the static type of the value
                     // expression and the provider. For a nullable member (e.g. `int?` serialized via
                     // NullableProxy when SerializeNull is set) that is the full nullable type, not the
                     // unwrapped inner type.
                     var typeArg = m.IsNullable ? m.Type.ToDisplayString() : type;
-                    return $"_l_type.WriteValue<{typeArg}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
+                    return $"{awaitPrefix}_l_type.WriteValue<{typeArg}, {proxy}>(_l_info, {i}, {valueExpr}.{m.Name});";
                 }
             }
 
@@ -211,7 +218,7 @@ public partial class SerializeImplGen
             if (skippableExprs.Count == 0)
             {
                 statements.AppendLine(
-                    $"var _l_type = serializer.WriteType(_l_info, {fieldsAndProps.Count});"
+                    $"var _l_type = {awaitPrefix}serializer.WriteType(_l_info, {fieldsAndProps.Count});"
                 );
             }
             else
@@ -222,24 +229,24 @@ public partial class SerializeImplGen
                     statements.AppendLine($"if ({expr} is null) _l_fieldCount--;");
                 }
                 statements.AppendLine(
-                    "var _l_type = serializer.WriteType(_l_info, _l_fieldCount);"
+                    $"var _l_type = {awaitPrefix}serializer.WriteType(_l_info, _l_fieldCount);"
                 );
             }
 
             statements.Append(writeStatements);
 
             // `type.End();`
-            statements.Append("_l_type.End(_l_info);");
+            statements.Append($"{awaitPrefix}_l_type.End(_l_info);");
         }
 
         // The interface type is the foreign type when present, otherwise the receiver.
         var interfaceType = (ITypeSymbol?)foreignType ?? receiverType;
         var interfaceString = interfaceType.ToDisplayString();
 
-        // Generate method `void ISerialize<type>.Serialize(type value, ISerializer serializer) { ... }`
+        var returnType = isAsync ? "async global::System.Threading.Tasks.Task" : "void";
         var members = new SourceBuilder(
             $$"""
-            void global::Serde.ISerialize<{{interfaceString}}>.Serialize({{interfaceString}} value, global::Serde.ISerializer serializer)
+            {{returnType}} global::Serde.ISerialize<{{interfaceString}}>.Serialize({{interfaceString}} value, global::Serde.ISerializer serializer)
             {
                 {{statements}}
             }
@@ -252,7 +259,18 @@ public partial class SerializeImplGen
     /// <summary>
     /// Generate the ISerialize{T}.Serialize method for a union type.
     /// </summary>
-    private static SourceBuilder GenUnionSerializeMethod(INamedTypeSymbol baseType)
+    internal static bool IsAsyncSerialize(GeneratorExecutionContext context)
+    {
+        var serialize = context
+            .Compilation
+            .GetTypeByMetadataName("Serde.ISerialize`1")?
+            .GetMembers("Serialize")
+            .OfType<IMethodSymbol>()
+            .SingleOrDefault();
+        return serialize?.ReturnType.Name == "Task";
+    }
+
+    private static SourceBuilder GenUnionSerializeMethod(INamedTypeSymbol baseType, bool isAsync)
     {
         Debug.Assert(baseType.IsAbstract);
 
@@ -260,6 +278,7 @@ public partial class SerializeImplGen
         // field, with the name being the type name and the value being the record case.
 
         var caseTypes = SymbolUtilities.GetDUTypeMembers(baseType);
+        var awaitPrefix = isAsync ? "await " : "";
         var casesBuilder = new SourceBuilder();
         for (int i = 0; i < caseTypes.Length; i++)
         {
@@ -267,21 +286,21 @@ public partial class SerializeImplGen
             var tString = t.ToDisplayString();
             casesBuilder.AppendLine($"case {tString} c:");
             casesBuilder.AppendLine(
-                $"    _l_type.WriteValue<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);"
+                $"    {awaitPrefix}_l_type.WriteValue<{tString}, {SerdeInfoGenerator.GetUnionProxyName(t)}>(_l_serdeInfo, {i}, c);"
             );
             casesBuilder.AppendLine($"    break;");
         }
         var methodDecl = new SourceBuilder(
             $$"""
-            void ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
+            {{(isAsync ? "async global::System.Threading.Tasks.Task" : "void")}} ISerialize<{{baseType.ToDisplayString()}}>.Serialize({{baseType.ToDisplayString()}} value, ISerializer serializer)
             {
                 var _l_serdeInfo = global::Serde.SerdeInfoProvider.GetInfo(this);
-                var _l_type = serializer.WriteType(_l_serdeInfo, 1);
+                var _l_type = {{awaitPrefix}}serializer.WriteType(_l_serdeInfo, 1);
                 switch (value)
                 {
                     {{casesBuilder}}
                 }
-                _l_type.End(_l_serdeInfo);
+                {{awaitPrefix}}_l_type.End(_l_serdeInfo);
             }
             """
         );

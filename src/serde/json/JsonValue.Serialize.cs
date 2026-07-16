@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Serde.Json
 {
@@ -35,6 +36,56 @@ namespace Serde.Json
     {
         public ISerdeInfo SerdeInfo => JsonValue.UnionInfo.Instance;
 
+#if NET11_0_OR_GREATER
+        async Task ISerialize<JsonValue>.Serialize(JsonValue value, ISerializer serializer)
+        {
+            switch (value)
+            {
+                case JsonValue.Number(double number):
+                    await serializer.WriteF64(number);
+                    break;
+                case JsonValue.Bool(bool boolean):
+                    await serializer.WriteBool(boolean);
+                    break;
+                case JsonValue.String(string text):
+                    await serializer.WriteString(text);
+                    break;
+                case JsonValue.Object(ImmutableDictionary<string, JsonValue> members):
+                    {
+                        var info = JsonValue.UnionInfo.ObjectInfo;
+                        var dictionary = await serializer.WriteCollection(info, members.Count);
+                        int index = 0;
+                        foreach (var (name, node) in members.OrderBy(kvp => kvp.Key))
+                        {
+                            await dictionary.WriteString(info, index++, name);
+                            await ((ISerialize<JsonValue>)this).SerializeAsField(
+                                dictionary, info, index++, node
+                            );
+                        }
+                        await dictionary.End(info);
+                        break;
+                    }
+                case JsonValue.Array(ImmutableArray<JsonValue> elements):
+                    {
+                        var info = JsonValue.UnionInfo.ArrayInfo;
+                        var array = await serializer.WriteCollection(info, elements.Length);
+                        for (int index = 0; index < elements.Length; index++)
+                        {
+                            await ((ISerialize<JsonValue>)this).SerializeAsField(
+                                array, info, index, elements[index]
+                            );
+                        }
+                        await array.End(info);
+                        break;
+                    }
+                case JsonValue.Null:
+                    await serializer.WriteNull();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown JsonValue type: {value.GetType()}");
+            }
+        }
+#else
         void ISerialize<JsonValue>.Serialize(JsonValue value, ISerializer serializer)
         {
             switch (value)
@@ -82,5 +133,6 @@ namespace Serde.Json
                     );
             }
         }
+#endif
     }
 }

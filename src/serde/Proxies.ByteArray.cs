@@ -4,6 +4,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Serde;
 
@@ -91,8 +92,13 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         Serde.SerdeInfo.MakePrimitive("byte[]", PrimitiveKind.Bytes);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<byte[]>.Serialize(byte[] value, ISerializer serializer) =>
+        serializer.WriteBytes(value);
+#else
     void ISerialize<byte[]>.Serialize(byte[] value, ISerializer serializer) =>
         serializer.WriteBytes(value);
+#endif
 
     byte[] IDeserialize<byte[]>.Deserialize(IDeserializer deserializer)
     {
@@ -112,6 +118,14 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
         }
     }
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<byte[]>.SerializeAsField(
+        ITypeSerializer serializer, ISerdeInfo info, int index, byte[] value
+    )
+    {
+        return serializer.WriteBytes(info, index, value);
+    }
+#else
     void ISerialize<byte[]>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
@@ -121,6 +135,7 @@ public sealed class ByteArrayProxy : ISerdePrimitive<ByteArrayProxy, byte[]>
     {
         serializer.WriteBytes(info, index, value);
     }
+#endif
 
     byte[] IDeserialize<byte[]>.DeserializeAsField(
         ITypeDeserializer deserializer,

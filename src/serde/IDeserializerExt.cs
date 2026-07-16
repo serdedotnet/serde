@@ -35,6 +35,7 @@ public static class ITypeDeserializerExt
     public static Guid ReadGuid(this ITypeDeserializer @this, ISerdeInfo info, int index) =>
         @this.ReadValue(info, index, GuidProxy.Instance);
 
+#if !NET11_0_OR_GREATER
     [Obsolete("Use ReadValue instead")]
     public static T ReadBoxedValue<T>(
         this ITypeDeserializer deserializeType,
@@ -65,4 +66,5 @@ public static class ITypeDeserializerExt
         int index,
         ITypeDeserialize<T> d
     ) => d.DeserializeAsField(deserializeType, info, index);
+#endif
 }

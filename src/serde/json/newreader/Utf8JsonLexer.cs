@@ -334,7 +334,7 @@ internal struct Utf8JsonLexer<TReader>(TReader byteReader)
             LexDigits(skipOnly, scratch);
         }
 
-        ReturnSpan:
+    ReturnSpan:
         if (skipOnly)
         {
             return default;

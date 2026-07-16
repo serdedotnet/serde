@@ -65,44 +65,44 @@ internal struct MemoryReader(ReadOnlyMemory<byte> bytes) : IByteReader
             switch (b)
             {
                 case (byte)'"':
-                {
-                    if (skipOnly)
+                    {
+                        if (skipOnly)
+                        {
+                            Advance();
+                            return Utf8Span.Empty;
+                        }
+
+                        Debug.Assert(scratch is not null);
+                        var curSpan = span[start.._pos];
+                        Utf8Span strSpan;
+                        if (scratch.Count == 0)
+                        {
+                            strSpan = curSpan;
+                        }
+                        else
+                        {
+                            scratch.AddRange(curSpan);
+                            strSpan = scratch.Span;
+                        }
+                        Advance();
+                        return strSpan;
+                    }
+                case (byte)'\\':
+                    {
+                        if (!skipOnly)
+                        {
+                            scratch!.AddRange(span[start.._pos]);
+                        }
+                        Advance();
+                        LexEscape(skipOnly, scratch);
+                        start = _pos;
+                        break;
+                    }
+                default:
                     {
                         Advance();
-                        return Utf8Span.Empty;
+                        throw new InvalidOperationException("Invalid control character");
                     }
-
-                    Debug.Assert(scratch is not null);
-                    var curSpan = span[start.._pos];
-                    Utf8Span strSpan;
-                    if (scratch.Count == 0)
-                    {
-                        strSpan = curSpan;
-                    }
-                    else
-                    {
-                        scratch.AddRange(curSpan);
-                        strSpan = scratch.Span;
-                    }
-                    Advance();
-                    return strSpan;
-                }
-                case (byte)'\\':
-                {
-                    if (!skipOnly)
-                    {
-                        scratch!.AddRange(span[start.._pos]);
-                    }
-                    Advance();
-                    LexEscape(skipOnly, scratch);
-                    start = _pos;
-                    break;
-                }
-                default:
-                {
-                    Advance();
-                    throw new InvalidOperationException("Invalid control character");
-                }
             }
         }
     }
@@ -155,25 +155,25 @@ internal struct MemoryReader(ReadOnlyMemory<byte> bytes) : IByteReader
                 AddOrSkip('\t', skipOnly, scratch);
                 break;
             case (byte)'u':
-            {
-                if (skipOnly)
                 {
-                    Advance(4);
+                    if (skipOnly)
+                    {
+                        Advance(4);
+                        break;
+                    }
+                    Debug.Assert(scratch is not null);
+                    var reqLen = scratch.Count + 5;
+                    scratch.EnsureCapacity(reqLen);
+                    var dest = scratch.BufferSpan[scratch.Count..];
+                    int written = 0;
+                    JsonReaderHelper.DecodeUnicodeEscape(_bytes.Span, dest, ref _pos, ref written);
+                    scratch.Count += written;
                     break;
                 }
-                Debug.Assert(scratch is not null);
-                var reqLen = scratch.Count + 5;
-                scratch.EnsureCapacity(reqLen);
-                var dest = scratch.BufferSpan[scratch.Count..];
-                int written = 0;
-                JsonReaderHelper.DecodeUnicodeEscape(_bytes.Span, dest, ref _pos, ref written);
-                scratch.Count += written;
-                break;
-            }
             default:
-            {
-                throw new InvalidOperationException($"Invalid escape character: {s}");
-            }
+                {
+                    throw new InvalidOperationException($"Invalid escape character: {s}");
+                }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

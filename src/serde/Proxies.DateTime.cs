@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace Serde;
 
@@ -12,15 +13,29 @@ public sealed class DateTimeProxy : ISerdePrimitive<DateTimeProxy, DateTime>
         Serde.SerdeInfo.MakePrimitive("System.DateTime", PrimitiveKind.DateTime);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<DateTime>.Serialize(DateTime value, ISerializer serializer) =>
+        serializer.WriteDateTime(value);
+#else
     void ISerialize<DateTime>.Serialize(DateTime value, ISerializer serializer) =>
         serializer.WriteDateTime(value);
+#endif
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<DateTime>.SerializeAsField(
+        ITypeSerializer serializer, ISerdeInfo info, int index, DateTime value
+    )
+    {
+        return serializer.WriteDateTime(info, index, value);
+    }
+#else
     void ISerialize<DateTime>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
         int index,
         DateTime value
     ) => serializer.WriteDateTime(info, index, value);
+#endif
 
     DateTime IDeserialize<DateTime>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDateTime();
@@ -42,18 +57,32 @@ public sealed class DateTimeOffsetProxy : ISerdePrimitive<DateTimeOffsetProxy, D
         Serde.SerdeInfo.MakePrimitive("System.DateTimeOffset", PrimitiveKind.String);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ISerializer serializer) =>
+        serializer.WriteDateTimeOffset(value);
+#else
     void ISerialize<DateTimeOffset>.Serialize(DateTimeOffset value, ISerializer serializer) =>
         serializer.WriteDateTimeOffset(value);
+#endif
 
     DateTimeOffset IDeserialize<DateTimeOffset>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDateTimeOffset();
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<DateTimeOffset>.SerializeAsField(
+        ITypeSerializer serializer, ISerdeInfo info, int index, DateTimeOffset value
+    )
+    {
+        return serializer.WriteDateTimeOffset(info, index, value);
+    }
+#else
     void ISerialize<DateTimeOffset>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
         int index,
         DateTimeOffset value
     ) => serializer.WriteDateTimeOffset(info, index, value);
+#endif
 
     DateTimeOffset IDeserialize<DateTimeOffset>.DeserializeAsField(
         ITypeDeserializer deserializer,
@@ -72,15 +101,29 @@ public sealed class DateOnlyProxy : ISerdePrimitive<DateOnlyProxy, DateOnly>
         Serde.SerdeInfo.MakePrimitive("System.DateOnly", PrimitiveKind.DateOnly);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<DateOnly>.Serialize(DateOnly value, ISerializer serializer) =>
+        serializer.WriteDateOnly(value);
+#else
     void ISerialize<DateOnly>.Serialize(DateOnly value, ISerializer serializer) =>
         serializer.WriteDateOnly(value);
+#endif
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<DateOnly>.SerializeAsField(
+        ITypeSerializer serializer, ISerdeInfo info, int index, DateOnly value
+    )
+    {
+        return serializer.WriteDateOnly(info, index, value);
+    }
+#else
     void ISerialize<DateOnly>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
         int index,
         DateOnly value
     ) => serializer.WriteDateOnly(info, index, value);
+#endif
 
     DateOnly IDeserialize<DateOnly>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadDateOnly();
@@ -102,15 +145,29 @@ public sealed class TimeOnlyProxy : ISerdePrimitive<TimeOnlyProxy, TimeOnly>
         Serde.SerdeInfo.MakePrimitive("System.TimeOnly", PrimitiveKind.TimeOnly);
     ISerdeInfo ISerdeInfoProvider.SerdeInfo => SerdeInfo;
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<TimeOnly>.Serialize(TimeOnly value, ISerializer serializer) =>
+        serializer.WriteTimeOnly(value);
+#else
     void ISerialize<TimeOnly>.Serialize(TimeOnly value, ISerializer serializer) =>
         serializer.WriteTimeOnly(value);
+#endif
 
+#if NET11_0_OR_GREATER
+    Task ISerialize<TimeOnly>.SerializeAsField(
+        ITypeSerializer serializer, ISerdeInfo info, int index, TimeOnly value
+    )
+    {
+        return serializer.WriteTimeOnly(info, index, value);
+    }
+#else
     void ISerialize<TimeOnly>.SerializeAsField(
         ITypeSerializer serializer,
         ISerdeInfo info,
         int index,
         TimeOnly value
     ) => serializer.WriteTimeOnly(info, index, value);
+#endif
 
     TimeOnly IDeserialize<TimeOnly>.Deserialize(IDeserializer deserializer) =>
         deserializer.ReadTimeOnly();

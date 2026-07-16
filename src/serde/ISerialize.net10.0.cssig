@@ -1,0 +1,9 @@
+
+namespace Serde
+{
+    public interface ISerialize<T>
+    {
+        void Serialize(T value, Serde.ISerializer serializer);
+        void SerializeAsField(Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo serdeInfo, int index, T value);
+    }
+}

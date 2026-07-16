@@ -604,10 +604,10 @@ namespace Serde.Json
                 }
             }
 
-            Success:
+        Success:
             return true;
 
-            DestinationTooShort:
+        DestinationTooShort:
             return false;
         }
 

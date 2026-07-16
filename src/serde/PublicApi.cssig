@@ -67,33 +67,6 @@ namespace Serde
         public static Serde.BoolProxy Instance { get; }
         public static Serde.ISerdeInfo SerdeInfo { get; }
     }
-    public static class BoxProxy
-    {
-        [System.Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
-        public static class De<T, TProvider> where TProvider : Serde.IDeserializeProvider<T>
-        {
-            public static readonly Serde.BoxProxy.De<T> Instance;
-        }
-        [System.Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
-        public sealed class De<T>(Serde.IDeserialize<T> _underlying)
-        {
-            public Serde.ISerdeInfo SerdeInfo { get; }
-            public T Deserialize(Serde.IDeserializer deserializer);
-            public T Deserialize(Serde.ITypeDeserializer deserializer, Serde.ISerdeInfo info, int index);
-        }
-        [System.Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
-        public sealed class Ser<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>
-        {
-            public static readonly Serde.BoxProxy.Ser<T> Instance;
-        }
-        [System.Obsolete("BoxProxy is deprecated. Use ReadValue and WriteValue instead.")]
-        public sealed class Ser<T>
-        {
-            public Ser(Serde.ISerialize<T> underlying);
-            public Serde.ISerdeInfo SerdeInfo { get; }
-            public void Serialize(object? value, Serde.ISerializer serializer);
-        }
-    }
     public sealed class ByteArrayProxy
     {
         public static Serde.ByteArrayProxy Instance { get; }
@@ -265,25 +238,17 @@ namespace Serde
             public static Serde.ISerialize<double> Serialize { get; }
         }
     }
-    public static class EnumerableHelpers
-    {
-        public static void SerializeSpan<T>(Serde.ISerdeInfo typeInfo, System.ReadOnlySpan<T> arr, Serde.ISerialize<T> serializeImpl, Serde.ISerializer serializer);
-        [System.Obsolete("Use the ISerialize<T> overload instead")]
-        public static void SerializeSpan<T>(Serde.ISerdeInfo typeInfo, System.ReadOnlySpan<T> arr, Serde.ITypeSerialize<T> serializeImpl, Serde.ISerializer serializer);
-    }
     public sealed class F16Proxy
     {
         public System.Half Deserialize(Serde.IDeserializer deserializer);
         public static Serde.F16Proxy Instance { get; }
         public static Serde.ISerdeInfo SerdeInfo { get; }
-        public void Serialize(System.Half value, Serde.ISerializer serializer);
     }
     public sealed class F32Proxy
     {
         public float Deserialize(Serde.IDeserializer deserializer);
         public static Serde.F32Proxy Instance { get; }
         public static Serde.ISerdeInfo SerdeInfo { get; }
-        public void Serialize(float value, Serde.ISerializer serializer);
     }
     public sealed class F64Proxy
     {
@@ -322,7 +287,6 @@ namespace Serde
         public System.Guid Deserialize(Serde.IDeserializer deserializer);
         public static Serde.GuidProxy Instance { get; }
         public static Serde.ISerdeInfo SerdeInfo { get; }
-        public void Serialize(System.Guid value, Serde.ISerializer serializer);
     }
     public static class HalfExtensions
     {
@@ -433,61 +397,9 @@ namespace Serde
     {
         static TSerde Instance { get; }
     }
-    public interface ISerialize<T>
-    {
-        void Serialize(T value, Serde.ISerializer serializer);
-        void SerializeAsField(Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo serdeInfo, int index, T value);
-    }
-    public static class ISerializeExt
-    {
-        [System.Obsolete("Use ISerializerExt.WriteValue instead")]
-        public static void WriteValue<T, TProvider>(Serde.ISerializer serializer, T value) where TProvider : Serde.ISerializeProvider<T>;
-        [System.Obsolete("Use ISerializerExt.WriteValue instead")]
-        public static void WriteValue<T>(Serde.ISerializer serializer, T value) where T : Serde.ISerializeProvider<T>;
-    }
     public interface ISerializeProvider<T>
     {
         static Serde.ISerialize<T> Instance { get; }
-    }
-    public interface ISerializer
-    {
-        Serde.ITypeSerializer WriteCollection(Serde.ISerdeInfo info, int? count);
-        Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info);
-        Serde.ITypeSerializer WriteType(Serde.ISerdeInfo info, int fieldCount);
-        void WriteBool(bool b);
-        void WriteBytes(System.ReadOnlyMemory<byte> bytes);
-        void WriteChar(char c);
-        void WriteDateOnly(System.DateOnly d);
-        void WriteDateTime(System.DateTime dt);
-        void WriteDateTimeOffset(System.DateTimeOffset dt);
-        void WriteDecimal(decimal d);
-        void WriteEnum(Serde.ISerdeInfo info, int ordinal);
-        void WriteF16(System.Half h);
-        void WriteF32(float f);
-        void WriteF64(double d);
-        void WriteI128(System.Int128 i128);
-        void WriteI16(short i16);
-        void WriteI32(int i32);
-        void WriteI64(long i64);
-        void WriteI8(sbyte b);
-        void WriteNull();
-        void WriteString(string s);
-        void WriteTimeOnly(System.TimeOnly t);
-        void WriteU128(System.UInt128 u128);
-        void WriteU16(ushort u16);
-        void WriteU32(uint u32);
-        void WriteU64(ulong u64);
-        void WriteU8(byte b);
-    }
-    public static class ISerializerExt
-    {
-        public static void WriteValue<T, TProvider>(this Serde.ISerializer serializer, T value) where TProvider : Serde.ISerializeProvider<T>;
-        public static void WriteValue<T>(this Serde.ISerializer serializer, T value) where T : Serde.ISerializeProvider<T>;
-    }
-    [System.Obsolete("Use IDeserialize<T>.DeserializeAsField instead")]
-    public interface ITypeDeserialize<T>
-    {
-        T Deserialize(Serde.ITypeDeserializer deserializer, Serde.ISerdeInfo info, int index);
     }
     public interface ITypeDeserializer
     {
@@ -525,75 +437,6 @@ namespace Serde
         void ReadBytes(Serde.ISerdeInfo info, int index, System.Buffers.IBufferWriter<byte> writer);
         void ReadFieldEnd(Serde.ISerdeInfo info, int index, Serde.IDeserializer deserializer);
         void SkipValue(Serde.ISerdeInfo info, int index);
-    }
-    public static class ITypeDeserializerExt
-    {
-        public static System.Guid ReadGuid(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index);
-        [System.Obsolete("Use ReadValue instead")]
-        public static T ReadBoxedValue<T, TProvider>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index) where TProvider : Serde.IDeserializeProvider<T>;
-        [System.Obsolete("Use ReadValue instead")]
-        public static T ReadBoxedValue<T>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index, Serde.IDeserialize<T> d) where T : struct;
-        public static T ReadValue<T, TProvider>(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index) where TProvider : Serde.IDeserializeProvider<T>;
-        public static T ReadValue<T>(this Serde.ITypeDeserializer @this, Serde.ISerdeInfo info, int index, Serde.IDeserialize<T> deserialize);
-        [System.Obsolete("Use ReadValue with an IDeserialize<T> instead")]
-        public static T ReadValue<T>(this Serde.ITypeDeserializer deserializeType, Serde.ISerdeInfo info, int index, Serde.ITypeDeserialize<T> d);
-    }
-    [System.Obsolete("Use ISerialize<T>.SerializeAsField instead")]
-    public interface ITypeSerialize<T>
-    {
-        void Serialize(T value, Serde.ITypeSerializer serializer, Serde.ISerdeInfo info, int index);
-    }
-    public interface ITypeSerializer
-    {
-        Serde.ISerializer WriteFieldStart(Serde.ISerdeInfo typeInfo, int index);
-        void End(Serde.ISerdeInfo info);
-        void SkipValue(Serde.ISerdeInfo typeInfo, int index);
-        void WriteBool(Serde.ISerdeInfo typeInfo, int index, bool b);
-        void WriteBytes(Serde.ISerdeInfo typeInfo, int index, System.ReadOnlyMemory<byte> bytes);
-        void WriteChar(Serde.ISerdeInfo typeInfo, int index, char c);
-        void WriteDateOnly(Serde.ISerdeInfo typeInfo, int index, System.DateOnly d);
-        void WriteDateTime(Serde.ISerdeInfo typeInfo, int index, System.DateTime dt);
-        void WriteDateTimeOffset(Serde.ISerdeInfo typeInfo, int index, System.DateTimeOffset dt);
-        void WriteDecimal(Serde.ISerdeInfo typeInfo, int index, decimal d);
-        void WriteEnum(Serde.ISerdeInfo typeInfo, int index, Serde.ISerdeInfo fieldInfo, int ordinal);
-        void WriteF16(Serde.ISerdeInfo typeInfo, int index, System.Half h);
-        void WriteF32(Serde.ISerdeInfo typeInfo, int index, float f);
-        void WriteF64(Serde.ISerdeInfo typeInfo, int index, double d);
-        void WriteFieldEnd(Serde.ISerdeInfo typeInfo, int index, Serde.ISerializer serializer);
-        void WriteI128(Serde.ISerdeInfo typeInfo, int index, System.Int128 i128);
-        void WriteI16(Serde.ISerdeInfo typeInfo, int index, short i16);
-        void WriteI32(Serde.ISerdeInfo typeInfo, int index, int i32);
-        void WriteI64(Serde.ISerdeInfo typeInfo, int index, long i64);
-        void WriteI8(Serde.ISerdeInfo typeInfo, int index, sbyte b);
-        void WriteNull(Serde.ISerdeInfo typeInfo, int index);
-        void WriteString(Serde.ISerdeInfo typeInfo, int index, string s);
-        void WriteTimeOnly(Serde.ISerdeInfo typeInfo, int index, System.TimeOnly t);
-        void WriteU128(Serde.ISerdeInfo typeInfo, int index, System.UInt128 u128);
-        void WriteU16(Serde.ISerdeInfo typeInfo, int index, ushort u16);
-        void WriteU32(Serde.ISerdeInfo typeInfo, int index, uint u32);
-        void WriteU64(Serde.ISerdeInfo typeInfo, int index, ulong u64);
-        void WriteU8(Serde.ISerdeInfo typeInfo, int index, byte b);
-        void WriteValue<T, TProvider>(Serde.ISerdeInfo typeInfo, int index, T value) where T : class? where TProvider : Serde.ISerializeProvider<T>;
-        void WriteValue<T>(Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> serialize) where T : class?;
-    }
-    public static class ITypeSerializerExt
-    {
-        [System.Obsolete("Use WriteValue instead")]
-        public static void WriteBoxedValue<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo serdeInfo, int index, T value) where TProvider : Serde.ISerializeProvider<T>;
-        [System.Obsolete("Use WriteValue instead")]
-        public static void WriteBoxedValue<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo serdeInfo, int index, T value, Serde.ISerialize<T> proxy) where T : struct;
-        [System.Obsolete("Use WriteValue instead")]
-        public static void WriteBoxedValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value) where TProvider : Serde.ISerializeProvider<T>;
-        public static void WriteGuid(this Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo serdeInfo, int index, System.Guid value);
-        public static void WriteStringIfNotNull(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, string? value);
-        public static void WriteValue<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value) where TProvider : Serde.ISerializeProvider<T>;
-        [System.Obsolete("Use WriteValue with an ISerialize<T> instead")]
-        public static void WriteValue<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo serdeInfo, int index, T value, Serde.ITypeSerialize<T> proxy);
-        public static void WriteValue<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T value, Serde.ISerialize<T> proxy);
-        public static void WriteValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value) where T : class where TProvider : Serde.ISerializeProvider<T?>;
-        public static void WriteValueIfNotNull<T, TProvider>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value) where T : struct where TProvider : Serde.ISerializeProvider<T?>;
-        public static void WriteValueIfNotNull<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value, Serde.ISerialize<T?> proxy) where T : class;
-        public static void WriteValueIfNotNull<T>(this Serde.ITypeSerializer serializeType, Serde.ISerdeInfo typeInfo, int index, T? value, Serde.ISerialize<T?> proxy) where T : struct;
     }
     public interface IUnionSerdeInfo
     {
@@ -919,16 +762,6 @@ namespace Serde
             public static Serde.ISerialize<System.ValueTuple<T1>> Instance { get; }
         }
     }
-    public static class TypeDeserialize
-    {
-        [System.Obsolete("Use IDeserialize<T>.DeserializeAsField instead")]
-        public static Serde.ITypeDeserialize<T> GetOrBox<T, TProvider>() where TProvider : Serde.IDeserializeProvider<T>;
-    }
-    public static class TypeSerialize
-    {
-        [System.Obsolete("Use ISerialize<T>.SerializeAsField instead")]
-        public static Serde.ITypeSerialize<T> GetOrBox<T, TProvider>() where TProvider : Serde.ISerializeProvider<T>;
-    }
     public sealed class U128Proxy
     {
         public static Serde.ISerdeInfo SerdeInfo { get; }
@@ -951,10 +784,8 @@ namespace Serde
     }
     public sealed class U8Proxy
     {
-        public byte Deserialize(Serde.IDeserializer deserializer);
         public static Serde.ISerdeInfo SerdeInfo { get; }
         public static Serde.U8Proxy Instance { get; }
-        public void Serialize(byte value, Serde.ISerializer serializer);
     }
     public static class UInt16Extensions
     {
@@ -996,7 +827,6 @@ namespace Serde.Json
     }
     public sealed class JsonSerializer
     {
-        public Serde.ISerializer WriteFieldStart(Serde.ISerdeInfo typeInfo, int fieldIndex);
         public static Serde.Json.JsonValue DeserializeJsonValue(string source);
         public static System.Collections.Generic.List<T> DeserializeList<T>(string source) where T : Serde.IDeserializeProvider<T>;
         public static System.ReadOnlyMemory<byte> ToBytes<T, TProvider>(T s) where TProvider : Serde.ISerializeProvider<T>;
@@ -1009,31 +839,6 @@ namespace Serde.Json
         public static string Serialize<T, TProvider>(T s) where TProvider : Serde.ISerializeProvider<T>;
         public static string Serialize<T>(T provider, Serde.ISerialize<T> ser);
         public static string Serialize<T>(T s) where T : Serde.ISerializeProvider<T>;
-        public void WriteBool(bool b);
-        public void WriteBytes(System.ReadOnlyMemory<byte> bytes);
-        public void WriteChar(char c);
-        public void WriteDateOnly(System.DateOnly d);
-        public void WriteDateTime(System.DateTime dt);
-        public void WriteDateTimeOffset(System.DateTimeOffset dt);
-        public void WriteDecimal(decimal d);
-        public void WriteEnum(Serde.ISerdeInfo info, int ordinal);
-        public void WriteF16(System.Half h);
-        public void WriteF32(float f);
-        public void WriteF64(double d);
-        public void WriteFieldEnd(Serde.ISerdeInfo typeInfo, int fieldIndex, Serde.ISerializer serializer);
-        public void WriteI128(System.Int128 i128);
-        public void WriteI16(short i16);
-        public void WriteI32(int i32);
-        public void WriteI64(long i64);
-        public void WriteI8(sbyte b);
-        public void WriteNull();
-        public void WriteString(string s);
-        public void WriteTimeOnly(System.TimeOnly t);
-        public void WriteU128(System.UInt128 u128);
-        public void WriteU16(ushort u16);
-        public void WriteU32(uint u32);
-        public void WriteU64(ulong u64);
-        public void WriteU8(byte b);
     }
     public abstract record JsonValue
     {

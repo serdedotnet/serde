@@ -1,0 +1,9 @@
+
+namespace Serde
+{
+    public interface ISerialize<T>
+    {
+        System.Threading.Tasks.Task Serialize(T value, Serde.ISerializer serializer);
+        System.Threading.Tasks.Task SerializeAsField(Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo serdeInfo, int index, T value);
+    }
+}

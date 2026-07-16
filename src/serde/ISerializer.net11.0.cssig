@@ -1,0 +1,33 @@
+
+namespace Serde
+{
+    public interface ISerializer
+    {
+        System.Threading.Tasks.Task<Serde.ITypeSerializer> WriteCollection(Serde.ISerdeInfo info, int? count);
+        System.Threading.Tasks.Task<Serde.ITypeSerializer> WriteType(Serde.ISerdeInfo info, int fieldCount);
+        System.Threading.Tasks.Task WriteBool(bool b);
+        System.Threading.Tasks.Task WriteBytes(System.ReadOnlyMemory<byte> bytes);
+        System.Threading.Tasks.Task WriteChar(char c);
+        System.Threading.Tasks.Task WriteDateOnly(System.DateOnly d);
+        System.Threading.Tasks.Task WriteDateTime(System.DateTime dt);
+        System.Threading.Tasks.Task WriteDateTimeOffset(System.DateTimeOffset dt);
+        System.Threading.Tasks.Task WriteDecimal(decimal d);
+        System.Threading.Tasks.Task WriteEnum(Serde.ISerdeInfo info, int ordinal);
+        System.Threading.Tasks.Task WriteF16(System.Half h);
+        System.Threading.Tasks.Task WriteF32(float f);
+        System.Threading.Tasks.Task WriteF64(double d);
+        System.Threading.Tasks.Task WriteI128(System.Int128 i128);
+        System.Threading.Tasks.Task WriteI16(short i16);
+        System.Threading.Tasks.Task WriteI32(int i32);
+        System.Threading.Tasks.Task WriteI64(long i64);
+        System.Threading.Tasks.Task WriteI8(sbyte b);
+        System.Threading.Tasks.Task WriteNull();
+        System.Threading.Tasks.Task WriteString(string s);
+        System.Threading.Tasks.Task WriteTimeOnly(System.TimeOnly t);
+        System.Threading.Tasks.Task WriteU128(System.UInt128 u128);
+        System.Threading.Tasks.Task WriteU16(ushort u16);
+        System.Threading.Tasks.Task WriteU32(uint u32);
+        System.Threading.Tasks.Task WriteU64(ulong u64);
+        System.Threading.Tasks.Task WriteU8(byte b);
+    }
+}

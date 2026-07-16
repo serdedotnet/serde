@@ -29,4 +29,5 @@ public interface ISerdeProvider<TSelf, TSerde, T> : ISerializeProvider<T>, IDese
 }
 
 public interface ISerdeProvider<TSelf, T> : ISerdeProvider<TSelf, ISerde<T>, T>
-    where TSelf : ISerdeProvider<TSelf, T>, ISerde<T> { }
+    where TSelf : ISerdeProvider<TSelf, T>, ISerde<T>
+{ }

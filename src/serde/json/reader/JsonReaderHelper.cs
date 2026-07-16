@@ -98,7 +98,7 @@ namespace Serde.Json
                 int unaligned = (int)Unsafe.AsPointer(ref searchSpace) & (Vector<byte>.Count - 1);
                 nLength = (IntPtr)((Vector<byte>.Count - unaligned) & (Vector<byte>.Count - 1));
             }
-            SequentialScan:
+        SequentialScan:
             uint lookUp;
             while ((byte*)nLength >= (byte*)8)
             {
@@ -202,21 +202,21 @@ namespace Serde.Json
                 }
             }
             return -1;
-            Found: // Workaround for https://github.com/dotnet/runtime/issues/8795
+        Found: // Workaround for https://github.com/dotnet/runtime/issues/8795
             return (int)(byte*)index;
-            Found1:
+        Found1:
             return (int)(byte*)(index + 1);
-            Found2:
+        Found2:
             return (int)(byte*)(index + 2);
-            Found3:
+        Found3:
             return (int)(byte*)(index + 3);
-            Found4:
+        Found4:
             return (int)(byte*)(index + 4);
-            Found5:
+        Found5:
             return (int)(byte*)(index + 5);
-            Found6:
+        Found6:
             return (int)(byte*)(index + 6);
-            Found7:
+        Found7:
             return (int)(byte*)(index + 7);
         }
 
