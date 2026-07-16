@@ -6,6 +6,7 @@
     <Deterministic>true</Deterministic>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <IsPackable>false</IsPackable>
+    <Features Condition="'$(TargetFramework)'=='net11.0'">$(Features);runtime-async=on</Features>
   </PropertyGroup>
 
   <ItemGroup>
