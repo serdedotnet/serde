@@ -18,10 +18,10 @@ public interface ISerializer : IAsyncDisposable
     Task WriteI32(int i32);
     Task WriteI64(long i64);
     Task WriteI128(Int128 i128);
-    Task WriteF16(Half h)
+    async Task WriteF16(Half h)
     {
         // Default implementation: promote to float
-        return WriteF32((float)h);
+        await WriteF32((float)h);
     }
     Task WriteF32(float f);
     Task WriteF64(double d);
@@ -31,15 +31,15 @@ public interface ISerializer : IAsyncDisposable
     Task WriteDateTime(DateTime dt);
     Task WriteDateTimeOffset(DateTimeOffset dt);
     Task WriteBytes(ReadOnlyMemory<byte> bytes);
-    Task WriteDateOnly(DateOnly d)
+    async Task WriteDateOnly(DateOnly d)
     {
         // Default implementation: serialize as ISO 8601 date string
-        return WriteString(d.ToString("yyyy-MM-dd"));
+        await WriteString(d.ToString("yyyy-MM-dd"));
     }
-    Task WriteTimeOnly(TimeOnly t)
+    async Task WriteTimeOnly(TimeOnly t)
     {
         // Default implementation: serialize as ISO 8601 time string
-        return WriteString(t.ToString("HH:mm:ss"));
+        await WriteString(t.ToString("HH:mm:ss"));
     }
     Task WriteEnum(ISerdeInfo info, int ordinal);
 
@@ -226,8 +226,8 @@ public interface ITypeSerializer
     Task WriteI32(ISerdeInfo typeInfo, int index, int i32);
     Task WriteI64(ISerdeInfo typeInfo, int index, long i64);
     Task WriteI128(ISerdeInfo typeInfo, int index, Int128 i128);
-    Task WriteF16(ISerdeInfo typeInfo, int index, Half h) =>
-        WriteF32(typeInfo, index, (float)h);
+    async Task WriteF16(ISerdeInfo typeInfo, int index, Half h) =>
+        await WriteF32(typeInfo, index, (float)h);
     Task WriteF32(ISerdeInfo typeInfo, int index, float f);
     Task WriteF64(ISerdeInfo typeInfo, int index, double d);
     Task WriteDecimal(ISerdeInfo typeInfo, int index, decimal d);
@@ -235,10 +235,10 @@ public interface ITypeSerializer
     Task WriteNull(ISerdeInfo typeInfo, int index);
     Task WriteDateTime(ISerdeInfo typeInfo, int index, DateTime dt);
     Task WriteDateTimeOffset(ISerdeInfo typeInfo, int index, DateTimeOffset dt);
-    Task WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d) =>
-        WriteString(typeInfo, index, d.ToString("yyyy-MM-dd"));
-    Task WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t) =>
-        WriteString(typeInfo, index, t.ToString("HH:mm:ss"));
+    async Task WriteDateOnly(ISerdeInfo typeInfo, int index, DateOnly d) =>
+        await WriteString(typeInfo, index, d.ToString("yyyy-MM-dd"));
+    async Task WriteTimeOnly(ISerdeInfo typeInfo, int index, TimeOnly t) =>
+        await WriteString(typeInfo, index, t.ToString("HH:mm:ss"));
     Task WriteBytes(ISerdeInfo typeInfo, int index, ReadOnlyMemory<byte> bytes);
     Task WriteEnum(ISerdeInfo typeInfo, int index, ISerdeInfo fieldInfo, int ordinal);
 
@@ -249,10 +249,10 @@ public interface ITypeSerializer
     Task End(ISerdeInfo info);
 
     // Non-virtual/abstract members
-    public sealed Task WriteValue<T, TProvider>(ISerdeInfo typeInfo, int index, T value)
+    public sealed async Task WriteValue<T, TProvider>(ISerdeInfo typeInfo, int index, T value)
         where T : class?
         where TProvider : ISerializeProvider<T> =>
-        TProvider.Instance.SerializeAsField(this, typeInfo, index, value);
+        await TProvider.Instance.SerializeAsField(this, typeInfo, index, value);
 #else
     ISerializer WriteFieldStart(ISerdeInfo typeInfo, int index);
     void WriteFieldEnd(ISerdeInfo typeInfo, int index, ISerializer serializer);

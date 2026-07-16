@@ -22,7 +22,11 @@ namespace Serde.Json
                 new JsonWriterOptions { Indented = false, SkipValidation = true }
             );
             var serializer = new JsonSerializer(writer);
+#if NETCOREAPP11_OR_GREATER
+            ser.Serialize(provider, serializer).GetAwaiter().GetResult();
+#else
             ser.Serialize(provider, serializer);
+#endif
             writer.Flush();
             return bufferWriter.WrittenMemory;
         }
@@ -44,7 +48,11 @@ namespace Serde.Json
                 new JsonWriterOptions { Indented = false, SkipValidation = true }
             );
             var serializer = new JsonSerializer(writer);
+#if NETCOREAPP11_OR_GREATER
+            ser.Serialize(provider, serializer).GetAwaiter().GetResult();
+#else
             ser.Serialize(provider, serializer);
+#endif
             writer.Flush();
             return Encoding.UTF8.GetString(bufferWriter.WrittenMemory.Span);
         }

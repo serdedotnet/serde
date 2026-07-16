@@ -69,8 +69,18 @@ public abstract class SerListBase<TSelf, T, TList, TProvider> : ISerialize<TList
     protected SerListBase() { }
 
 #if NET11_0_OR_GREATER
-    Task ISerialize<TList>.Serialize(TList value, ISerializer serializer) =>
-        EnumerableHelpers.SerializeSpanAsync(SerdeInfo, GetSpan(value).ToArray(), _ser, serializer);
+    async Task ISerialize<TList>.Serialize(TList value, ISerializer serializer)
+    {
+        var info = SerdeInfo;
+        var count = GetSpan(value).Length;
+        var enumerable = await serializer.WriteCollection(info, count);
+        for (int index = 0; index < count; index++)
+        {
+            var item = GetSpan(value)[index];
+            await _ser.SerializeAsField(enumerable, info, index, item);
+        }
+        await enumerable.End(info);
+    }
 #else
     void ISerialize<TList>.Serialize(TList value, ISerializer serializer) =>
         EnumerableHelpers.SerializeSpan(SerdeInfo, GetSpan(value), _ser, serializer);

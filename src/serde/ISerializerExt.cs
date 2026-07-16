@@ -7,12 +7,12 @@ namespace Serde;
 public static class ISerializerExt
 {
 #if NET11_0_OR_GREATER
-    public static Task WriteValue<T, TProvider>(this ISerializer serializer, T value)
+    public static async Task WriteValue<T, TProvider>(this ISerializer serializer, T value)
         where TProvider : ISerializeProvider<T> =>
-        TProvider.Instance.Serialize(value, serializer);
+        await TProvider.Instance.Serialize(value, serializer);
 
-    public static Task WriteValue<T>(this ISerializer serializer, T value)
-        where T : ISerializeProvider<T> => serializer.WriteValue<T, T>(value);
+    public static async Task WriteValue<T>(this ISerializer serializer, T value)
+        where T : ISerializeProvider<T> => await serializer.WriteValue<T, T>(value);
 #else
     public static void WriteValue<T, TProvider>(this ISerializer serializer, T value)
         where TProvider : ISerializeProvider<T>
@@ -46,22 +46,22 @@ public static class ISerializeExt
 public static class ITypeSerializerExt
 {
 #if NET11_0_OR_GREATER
-    public static Task WriteValue<T>(
+    public static async Task WriteValue<T>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         T value,
         ISerialize<T> proxy
-    ) => proxy.SerializeAsField(serializeType, typeInfo, index, value);
+    ) => await proxy.SerializeAsField(serializeType, typeInfo, index, value);
 
-    public static Task WriteValue<T, TProvider>(
+    public static async Task WriteValue<T, TProvider>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
         T value
     )
         where TProvider : ISerializeProvider<T> =>
-        TProvider.Instance.SerializeAsField(serializeType, typeInfo, index, value);
+        await TProvider.Instance.SerializeAsField(serializeType, typeInfo, index, value);
 #else
     public static void WriteValue<T>(
         this ITypeSerializer serializeType,
@@ -119,7 +119,7 @@ public static class ITypeSerializerExt
 #endif
 
 #if NET11_0_OR_GREATER
-    public static Task WriteValueIfNotNull<T>(
+    public static async Task WriteValueIfNotNull<T>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
@@ -127,11 +127,11 @@ public static class ITypeSerializerExt
         ISerialize<T?> proxy
     )
         where T : class =>
-        value is null
+        await (value is null
             ? WriteSkippedValue(serializeType, typeInfo, index)
-            : proxy.SerializeAsField(serializeType, typeInfo, index, value);
+            : proxy.SerializeAsField(serializeType, typeInfo, index, value));
 
-    public static Task WriteValueIfNotNull<T, TProvider>(
+    public static async Task WriteValueIfNotNull<T, TProvider>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
@@ -139,9 +139,9 @@ public static class ITypeSerializerExt
     )
         where T : class
         where TProvider : ISerializeProvider<T?> =>
-        serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
+        await serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 
-    public static Task WriteValueIfNotNull<T>(
+    public static async Task WriteValueIfNotNull<T>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
@@ -149,11 +149,11 @@ public static class ITypeSerializerExt
         ISerialize<T?> proxy
     )
         where T : struct =>
-        value is null
+        await (value is null
             ? WriteSkippedValue(serializeType, typeInfo, index)
-            : serializeType.WriteValue(typeInfo, index, value, proxy);
+            : serializeType.WriteValue(typeInfo, index, value, proxy));
 
-    public static Task WriteValueIfNotNull<T, TProvider>(
+    public static async Task WriteValueIfNotNull<T, TProvider>(
         this ITypeSerializer serializeType,
         ISerdeInfo typeInfo,
         int index,
@@ -161,14 +161,14 @@ public static class ITypeSerializerExt
     )
         where T : struct
         where TProvider : ISerializeProvider<T?> =>
-        serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
+        await serializeType.WriteValueIfNotNull(typeInfo, index, value, TProvider.Instance);
 
-    public static Task WriteGuid(
+    public static async Task WriteGuid(
         this ITypeSerializer typeSerializer,
         ISerdeInfo serdeInfo,
         int index,
         Guid value
-    ) => typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
+    ) => await typeSerializer.WriteValue(serdeInfo, index, value, GuidProxy.Instance);
 
     private static async Task WriteSkippedValue(
         ITypeSerializer serializeType, ISerdeInfo typeInfo, int index

@@ -14,34 +14,34 @@ partial class JsonSerializer
             GetSerializer(index);
         public async Task WriteFieldEnd(ISerdeInfo typeInfo, int index, ISerializer serializer) { }
 
-        public Task WriteBool(ISerdeInfo info, int index, bool value) => GetSerializer(index).WriteBool(value);
-        public Task WriteChar(ISerdeInfo info, int index, char value) => GetSerializer(index).WriteChar(value);
-        public Task WriteU8(ISerdeInfo info, int index, byte value) => GetSerializer(index).WriteU8(value);
-        public Task WriteU16(ISerdeInfo info, int index, ushort value) => GetSerializer(index).WriteU16(value);
-        public Task WriteU32(ISerdeInfo info, int index, uint value) => GetSerializer(index).WriteU32(value);
-        public Task WriteU64(ISerdeInfo info, int index, ulong value) => GetSerializer(index).WriteU64(value);
-        public Task WriteU128(ISerdeInfo info, int index, UInt128 value) => GetSerializer(index).WriteU128(value);
-        public Task WriteI8(ISerdeInfo info, int index, sbyte value) => GetSerializer(index).WriteI8(value);
-        public Task WriteI16(ISerdeInfo info, int index, short value) => GetSerializer(index).WriteI16(value);
-        public Task WriteI32(ISerdeInfo info, int index, int value) => GetSerializer(index).WriteI32(value);
-        public Task WriteI64(ISerdeInfo info, int index, long value) => GetSerializer(index).WriteI64(value);
-        public Task WriteI128(ISerdeInfo info, int index, Int128 value) => GetSerializer(index).WriteI128(value);
-        public Task WriteF16(ISerdeInfo info, int index, Half value) => GetSerializer(index).WriteF16(value);
-        public Task WriteF32(ISerdeInfo info, int index, float value) => GetSerializer(index).WriteF32(value);
-        public Task WriteF64(ISerdeInfo info, int index, double value) => GetSerializer(index).WriteF64(value);
-        public Task WriteDecimal(ISerdeInfo info, int index, decimal value) => GetSerializer(index).WriteDecimal(value);
-        public Task WriteString(ISerdeInfo info, int index, string value) => GetSerializer(index).WriteString(value);
-        public Task WriteNull(ISerdeInfo info, int index) => GetSerializer(index).WriteNull();
-        public Task WriteDateTime(ISerdeInfo info, int index, DateTime value) => GetSerializer(index).WriteDateTime(value);
-        public Task WriteDateTimeOffset(ISerdeInfo info, int index, DateTimeOffset value) => GetSerializer(index).WriteDateTimeOffset(value);
-        public Task WriteDateOnly(ISerdeInfo info, int index, DateOnly value) => GetSerializer(index).WriteDateOnly(value);
-        public Task WriteTimeOnly(ISerdeInfo info, int index, TimeOnly value) => GetSerializer(index).WriteTimeOnly(value);
-        public Task WriteBytes(ISerdeInfo info, int index, ReadOnlyMemory<byte> value) => GetSerializer(index).WriteBytes(value);
-        public Task WriteEnum(ISerdeInfo info, int index, ISerdeInfo fieldInfo, int ordinal) => GetSerializer(index).WriteEnum(fieldInfo, ordinal);
+        public async Task WriteBool(ISerdeInfo info, int index, bool value) => await GetSerializer(index).WriteBool(value);
+        public async Task WriteChar(ISerdeInfo info, int index, char value) => await GetSerializer(index).WriteChar(value);
+        public async Task WriteU8(ISerdeInfo info, int index, byte value) => await GetSerializer(index).WriteU8(value);
+        public async Task WriteU16(ISerdeInfo info, int index, ushort value) => await GetSerializer(index).WriteU16(value);
+        public async Task WriteU32(ISerdeInfo info, int index, uint value) => await GetSerializer(index).WriteU32(value);
+        public async Task WriteU64(ISerdeInfo info, int index, ulong value) => await GetSerializer(index).WriteU64(value);
+        public async Task WriteU128(ISerdeInfo info, int index, UInt128 value) => await GetSerializer(index).WriteU128(value);
+        public async Task WriteI8(ISerdeInfo info, int index, sbyte value) => await GetSerializer(index).WriteI8(value);
+        public async Task WriteI16(ISerdeInfo info, int index, short value) => await GetSerializer(index).WriteI16(value);
+        public async Task WriteI32(ISerdeInfo info, int index, int value) => await GetSerializer(index).WriteI32(value);
+        public async Task WriteI64(ISerdeInfo info, int index, long value) => await GetSerializer(index).WriteI64(value);
+        public async Task WriteI128(ISerdeInfo info, int index, Int128 value) => await GetSerializer(index).WriteI128(value);
+        public async Task WriteF16(ISerdeInfo info, int index, Half value) => await GetSerializer(index).WriteF16(value);
+        public async Task WriteF32(ISerdeInfo info, int index, float value) => await GetSerializer(index).WriteF32(value);
+        public async Task WriteF64(ISerdeInfo info, int index, double value) => await GetSerializer(index).WriteF64(value);
+        public async Task WriteDecimal(ISerdeInfo info, int index, decimal value) => await GetSerializer(index).WriteDecimal(value);
+        public async Task WriteString(ISerdeInfo info, int index, string value) => await GetSerializer(index).WriteString(value);
+        public async Task WriteNull(ISerdeInfo info, int index) => await GetSerializer(index).WriteNull();
+        public async Task WriteDateTime(ISerdeInfo info, int index, DateTime value) => await GetSerializer(index).WriteDateTime(value);
+        public async Task WriteDateTimeOffset(ISerdeInfo info, int index, DateTimeOffset value) => await GetSerializer(index).WriteDateTimeOffset(value);
+        public async Task WriteDateOnly(ISerdeInfo info, int index, DateOnly value) => await GetSerializer(index).WriteDateOnly(value);
+        public async Task WriteTimeOnly(ISerdeInfo info, int index, TimeOnly value) => await GetSerializer(index).WriteTimeOnly(value);
+        public async Task WriteBytes(ISerdeInfo info, int index, ReadOnlyMemory<byte> value) => await GetSerializer(index).WriteBytes(value);
+        public async Task WriteEnum(ISerdeInfo info, int index, ISerdeInfo fieldInfo, int ordinal) => await GetSerializer(index).WriteEnum(fieldInfo, ordinal);
 
-        public Task WriteValue<T>(ISerdeInfo info, int index, T value, ISerialize<T> serialize)
+        public async Task WriteValue<T>(ISerdeInfo info, int index, T value, ISerialize<T> serialize)
             where T : class? =>
-            serialize.Serialize(value, GetSerializer(index));
+            await serialize.Serialize(value, GetSerializer(index));
 
         public abstract Task End(ISerdeInfo info);
     }
@@ -217,40 +217,40 @@ partial class JsonSerializer
             : Exception("JSON allows only strings in this location, expected a string.")
         { }
 
-        private static Task Invalid() => throw new KeyNotStringException();
-        private static Task<T> Invalid<T>() => throw new KeyNotStringException();
+        private static async Task Invalid() => throw new KeyNotStringException();
+        private static async Task<T> Invalid<T>() => throw new KeyNotStringException();
 
-        public Task WriteBool(bool b) => Invalid();
-        public Task WriteChar(char c) => Invalid();
-        public Task WriteU8(byte b) => Invalid();
-        public Task WriteU16(ushort u16) => Invalid();
-        public Task WriteU32(uint u32) => Invalid();
-        public Task WriteU64(ulong u64) => Invalid();
-        public Task WriteU128(UInt128 u128) => Invalid();
-        public Task WriteI8(sbyte b) => Invalid();
-        public Task WriteI16(short i16) => Invalid();
-        public Task WriteI32(int i32) => Invalid();
-        public Task WriteI64(long i64) => Invalid();
-        public Task WriteI128(Int128 i128) => Invalid();
-        public Task WriteF16(Half h) => Invalid();
-        public Task WriteF32(float f) => Invalid();
-        public Task WriteF64(double d) => Invalid();
-        public Task WriteDecimal(decimal d) => Invalid();
-        public Task WriteNull() => Invalid();
-        public Task WriteDateTime(DateTime dt) => Invalid();
-        public Task WriteDateTimeOffset(DateTimeOffset dt) => Invalid();
-        public Task WriteDateOnly(DateOnly d) => Invalid();
-        public Task WriteTimeOnly(TimeOnly t) => Invalid();
-        public Task WriteBytes(ReadOnlyMemory<byte> bytes) => Invalid();
-        public Task WriteEnum(ISerdeInfo info, int ordinal) => Invalid();
+        public async Task WriteBool(bool b) => await Invalid();
+        public async Task WriteChar(char c) => await Invalid();
+        public async Task WriteU8(byte b) => await Invalid();
+        public async Task WriteU16(ushort u16) => await Invalid();
+        public async Task WriteU32(uint u32) => await Invalid();
+        public async Task WriteU64(ulong u64) => await Invalid();
+        public async Task WriteU128(UInt128 u128) => await Invalid();
+        public async Task WriteI8(sbyte b) => await Invalid();
+        public async Task WriteI16(short i16) => await Invalid();
+        public async Task WriteI32(int i32) => await Invalid();
+        public async Task WriteI64(long i64) => await Invalid();
+        public async Task WriteI128(Int128 i128) => await Invalid();
+        public async Task WriteF16(Half h) => await Invalid();
+        public async Task WriteF32(float f) => await Invalid();
+        public async Task WriteF64(double f) => await Invalid();
+        public async Task WriteDecimal(decimal d) => await Invalid();
+        public async Task WriteNull() => await Invalid();
+        public async Task WriteDateTime(DateTime dt) => await Invalid();
+        public async Task WriteDateTimeOffset(DateTimeOffset dt) => await Invalid();
+        public async Task WriteDateOnly(DateOnly d) => await Invalid();
+        public async Task WriteTimeOnly(TimeOnly t) => await Invalid();
+        public async Task WriteBytes(ReadOnlyMemory<byte> bytes) => await Invalid();
+        public async Task WriteEnum(ISerdeInfo info, int ordinal) => await Invalid();
 
         public async Task WriteString(string s)
         {
             parent._writer.WritePropertyName(s);
         }
 
-        Task<ITypeSerializer> ISerializer.WriteCollection(ISerdeInfo typeInfo, int? size) => Invalid<ITypeSerializer>();
-        Task<ITypeSerializer> ISerializer.WriteType(ISerdeInfo typeInfo, int fieldCount) => Invalid<ITypeSerializer>();
+        async Task<ITypeSerializer> ISerializer.WriteCollection(ISerdeInfo typeInfo, int? size) => await Invalid<ITypeSerializer>();
+        async Task<ITypeSerializer> ISerializer.WriteType(ISerdeInfo typeInfo, int fieldCount) => await Invalid<ITypeSerializer>();
     }
 #else
     private sealed class KeySerializer(JsonSerializer _parent) : ISerializer

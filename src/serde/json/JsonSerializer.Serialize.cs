@@ -220,12 +220,6 @@ partial class JsonSerializer : ISerializer
 partial class JsonSerializer : ITypeSerializer
 {
 #if NET11_0_OR_GREATER
-    private async Task WriteField(ISerdeInfo info, int index, Action write)
-    {
-        _writer.WritePropertyName(info.GetFieldName(index));
-        write();
-    }
-
     async Task<ISerializer> ITypeSerializer.WriteFieldStart(ISerdeInfo info, int index)
     {
         _writer.WritePropertyName(info.GetFieldName(index));
@@ -247,66 +241,152 @@ partial class JsonSerializer : ITypeSerializer
         _writer.WriteEndObject();
     }
 
-    Task ITypeSerializer.WriteBool(ISerdeInfo info, int index, bool value) =>
-        WriteField(info, index, () => _writer.WriteBooleanValue(value));
-    Task ITypeSerializer.WriteChar(ISerdeInfo info, int index, char value) =>
-        WriteField(info, index, () => _writer.WriteStringValue(value.ToString()));
-    Task ITypeSerializer.WriteU8(ISerdeInfo info, int index, byte value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteU16(ISerdeInfo info, int index, ushort value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteU32(ISerdeInfo info, int index, uint value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteU64(ISerdeInfo info, int index, ulong value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteU128(ISerdeInfo info, int index, UInt128 value) =>
-        WriteField(info, index, () =>
-        {
-            if (value <= ulong.MaxValue) _writer.WriteNumberValue((ulong)value);
-            else _writer.WriteRawValue(value.ToString());
-        });
-    Task ITypeSerializer.WriteI8(ISerdeInfo info, int index, sbyte value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteI16(ISerdeInfo info, int index, short value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteI32(ISerdeInfo info, int index, int value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteI64(ISerdeInfo info, int index, long value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteI128(ISerdeInfo info, int index, Int128 value) =>
-        WriteField(info, index, () =>
-        {
-            if (value >= long.MinValue && value <= long.MaxValue) _writer.WriteNumberValue((long)value);
-            else _writer.WriteRawValue(value.ToString());
-        });
-    Task ITypeSerializer.WriteF16(ISerdeInfo info, int index, Half value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue((float)value));
-    Task ITypeSerializer.WriteF32(ISerdeInfo info, int index, float value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteF64(ISerdeInfo info, int index, double value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteDecimal(ISerdeInfo info, int index, decimal value) =>
-        WriteField(info, index, () => _writer.WriteNumberValue(value));
-    Task ITypeSerializer.WriteString(ISerdeInfo info, int index, string value) =>
-        WriteField(info, index, () => _writer.WriteStringValue(value));
-    Task ITypeSerializer.WriteNull(ISerdeInfo info, int index) =>
-        WriteField(info, index, _writer.WriteNullValue);
-    Task ITypeSerializer.WriteDateTime(ISerdeInfo info, int index, DateTime value) =>
-        WriteField(info, index, () =>
-        {
-            if (value.Kind != DateTimeKind.Utc) throw new ArgumentException("DateTime must be in UTC");
-            _writer.WriteStringValue(value);
-        });
-    Task ITypeSerializer.WriteDateTimeOffset(ISerdeInfo info, int index, DateTimeOffset value) =>
-        WriteField(info, index, () => _writer.WriteStringValue(value));
-    Task ITypeSerializer.WriteDateOnly(ISerdeInfo info, int index, DateOnly value) =>
-        WriteField(info, index, () => _writer.WriteStringValue(value.ToString("yyyy-MM-dd")));
-    Task ITypeSerializer.WriteTimeOnly(ISerdeInfo info, int index, TimeOnly value) =>
-        WriteField(info, index, () => _writer.WriteStringValue(value.ToString("HH:mm:ss")));
-    Task ITypeSerializer.WriteBytes(ISerdeInfo info, int index, ReadOnlyMemory<byte> value) =>
-        WriteField(info, index, () => _writer.WriteBase64StringValue(value.Span));
-    Task ITypeSerializer.WriteEnum(ISerdeInfo info, int index, ISerdeInfo fieldInfo, int ordinal) =>
-        WriteField(info, index, () => _writer.WriteStringValue(fieldInfo.GetFieldName(ordinal)));
+    async Task ITypeSerializer.WriteBool(ISerdeInfo info, int index, bool value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteBooleanValue(value);
+    }
+
+    async Task ITypeSerializer.WriteChar(ISerdeInfo info, int index, char value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteStringValue(value.ToString());
+    }
+
+    async Task ITypeSerializer.WriteU8(ISerdeInfo info, int index, byte value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteU16(ISerdeInfo info, int index, ushort value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteU32(ISerdeInfo info, int index, uint value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteU64(ISerdeInfo info, int index, ulong value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteU128(ISerdeInfo info, int index, UInt128 value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        if (value <= ulong.MaxValue) _writer.WriteNumberValue((ulong)value);
+        else _writer.WriteRawValue(value.ToString());
+    }
+
+    async Task ITypeSerializer.WriteI8(ISerdeInfo info, int index, sbyte value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteI16(ISerdeInfo info, int index, short value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteI32(ISerdeInfo info, int index, int value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteI64(ISerdeInfo info, int index, long value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteI128(ISerdeInfo info, int index, Int128 value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        if (value >= long.MinValue && value <= long.MaxValue) _writer.WriteNumberValue((long)value);
+        else _writer.WriteRawValue(value.ToString());
+    }
+
+    async Task ITypeSerializer.WriteF16(ISerdeInfo info, int index, Half value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue((float)value);
+    }
+
+    async Task ITypeSerializer.WriteF32(ISerdeInfo info, int index, float value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteF64(ISerdeInfo info, int index, double value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteDecimal(ISerdeInfo info, int index, decimal value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNumberValue(value);
+    }
+
+    async Task ITypeSerializer.WriteString(ISerdeInfo info, int index, string value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteStringValue(value);
+    }
+
+    async Task ITypeSerializer.WriteNull(ISerdeInfo info, int index)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteNullValue();
+    }
+
+    async Task ITypeSerializer.WriteDateTime(ISerdeInfo info, int index, DateTime value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        if (value.Kind != DateTimeKind.Utc) throw new ArgumentException("DateTime must be in UTC");
+        _writer.WriteStringValue(value);
+    }
+
+    async Task ITypeSerializer.WriteDateTimeOffset(ISerdeInfo info, int index, DateTimeOffset value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteStringValue(value);
+    }
+
+    async Task ITypeSerializer.WriteDateOnly(ISerdeInfo info, int index, DateOnly value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteStringValue(value.ToString("yyyy-MM-dd"));
+    }
+
+    async Task ITypeSerializer.WriteTimeOnly(ISerdeInfo info, int index, TimeOnly value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteStringValue(value.ToString("HH:mm:ss"));
+    }
+
+    async Task ITypeSerializer.WriteBytes(ISerdeInfo info, int index, ReadOnlyMemory<byte> value)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteBase64StringValue(value.Span);
+    }
+
+    async Task ITypeSerializer.WriteEnum(ISerdeInfo info, int index, ISerdeInfo fieldInfo, int ordinal)
+    {
+        _writer.WritePropertyName(info.GetFieldName(index));
+        _writer.WriteStringValue(fieldInfo.GetFieldName(ordinal));
+    }
 #else
     ISerializer ITypeSerializer.WriteFieldStart(ISerdeInfo typeInfo, int fieldIndex)
     {

@@ -39,8 +39,8 @@ public static class TupleProxy
             private readonly ISerialize<T1> _ser1 = TProvider1.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize(ValueTuple<T1> value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo, typeSerializer =>
+            public async Task Serialize(ValueTuple<T1> value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo, typeSerializer =>
                     _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1));
 #else
             public void Serialize(ValueTuple<T1> value, ISerializer serializer)
@@ -120,8 +120,8 @@ public static class TupleProxy
             private readonly ISerialize<T2> _ser2 = TProvider2.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize((T1, T2) value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo,
+            public async Task Serialize((T1, T2) value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo,
                     typeSerializer => _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1),
                     typeSerializer => _ser2.SerializeAsField(typeSerializer, SerdeInfo, 1, value.Item2));
 #else
@@ -217,8 +217,8 @@ public static class TupleProxy
             private readonly ISerialize<T3> _ser3 = TProvider3.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize((T1, T2, T3) value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo,
+            public async Task Serialize((T1, T2, T3) value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo,
                     typeSerializer => _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1),
                     typeSerializer => _ser2.SerializeAsField(typeSerializer, SerdeInfo, 1, value.Item2),
                     typeSerializer => _ser3.SerializeAsField(typeSerializer, SerdeInfo, 2, value.Item3));
@@ -328,8 +328,8 @@ public static class TupleProxy
             private readonly ISerialize<T4> _ser4 = TProvider4.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize((T1, T2, T3, T4) value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo,
+            public async Task Serialize((T1, T2, T3, T4) value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo,
                     typeSerializer => _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1),
                     typeSerializer => _ser2.SerializeAsField(typeSerializer, SerdeInfo, 1, value.Item2),
                     typeSerializer => _ser3.SerializeAsField(typeSerializer, SerdeInfo, 2, value.Item3),
@@ -462,8 +462,8 @@ public static class TupleProxy
             private readonly ISerialize<T5> _ser5 = TProvider5.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize((T1, T2, T3, T4, T5) value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo,
+            public async Task Serialize((T1, T2, T3, T4, T5) value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo,
                     typeSerializer => _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1),
                     typeSerializer => _ser2.SerializeAsField(typeSerializer, SerdeInfo, 1, value.Item2),
                     typeSerializer => _ser3.SerializeAsField(typeSerializer, SerdeInfo, 2, value.Item3),
@@ -621,8 +621,8 @@ public static class TupleProxy
             private readonly ISerialize<T6> _ser6 = TProvider6.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize((T1, T2, T3, T4, T5, T6) value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo,
+            public async Task Serialize((T1, T2, T3, T4, T5, T6) value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo,
                     typeSerializer => _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1),
                     typeSerializer => _ser2.SerializeAsField(typeSerializer, SerdeInfo, 1, value.Item2),
                     typeSerializer => _ser3.SerializeAsField(typeSerializer, SerdeInfo, 2, value.Item3),
@@ -797,8 +797,8 @@ public static class TupleProxy
             private readonly ISerialize<T7> _ser7 = TProvider7.Instance;
 
 #if NET11_0_OR_GREATER
-            public Task Serialize((T1, T2, T3, T4, T5, T6, T7) value, ISerializer serializer) =>
-                SerializeAsync(serializer, SerdeInfo,
+            public async Task Serialize((T1, T2, T3, T4, T5, T6, T7) value, ISerializer serializer) =>
+                await SerializeAsync(serializer, SerdeInfo,
                     typeSerializer => _ser1.SerializeAsField(typeSerializer, SerdeInfo, 0, value.Item1),
                     typeSerializer => _ser2.SerializeAsField(typeSerializer, SerdeInfo, 1, value.Item2),
                     typeSerializer => _ser3.SerializeAsField(typeSerializer, SerdeInfo, 2, value.Item3),
