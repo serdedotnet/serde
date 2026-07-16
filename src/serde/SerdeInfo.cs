@@ -313,7 +313,8 @@ file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
 
     private static readonly ReadOnlyMemory<byte> _valueUtf8Name = "Value"u8.ToArray();
 
-    public ReadOnlyMemory<byte> GetFieldNameMem(int index) => index == 0 ? _valueUtf8Name : throw GetOOR(index);
+    public ReadOnlyMemory<byte> GetFieldNameMem(int index) =>
+        index == 0 ? _valueUtf8Name : throw GetOOR(index);
 
     public string GetFieldStringName(int index) => index == 0 ? "Value" : throw GetOOR(index);
 
@@ -611,7 +612,8 @@ file sealed class UnionSerdeInfo(
     /// </summary>
     public Utf8Span GetFieldName(int index) => GetFieldNameMem(index).Span;
 
-    public ReadOnlyMemory<byte> GetFieldNameMem(int index) => ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
+    public ReadOnlyMemory<byte> GetFieldNameMem(int index) =>
+        ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
 
     public string GetFieldStringName(int index) => caseInfos[index].Name;
 
