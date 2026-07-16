@@ -44,6 +44,11 @@ public interface ISerdeInfo
     Utf8Span GetFieldName(int index);
 
     /// <summary>
+    /// Get the field name as a UTF8 memory block for the field at the given index. The index must be valid.
+    /// </summary>
+    ReadOnlyMemory<byte> GetFieldNameMem(int index);
+
+    /// <summary>
     /// Get the attributes for the field at the given index. The index must be valid. This list may be
     /// modified from the original set of attributes in source code or metadata to reflect only the
     /// attributes that are relevant to serialization or deserialization.

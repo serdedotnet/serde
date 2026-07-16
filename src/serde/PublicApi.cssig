@@ -410,6 +410,7 @@ namespace Serde
         Serde.PrimitiveKind? PrimitiveKind { get; }
         System.Collections.Generic.IList<System.Reflection.CustomAttributeData> Attributes { get; }
         System.Collections.Generic.IList<System.Reflection.CustomAttributeData> GetFieldAttributes(int index);
+        System.ReadOnlyMemory<byte> GetFieldNameMem(int index);
         System.ReadOnlySpan<byte> GetFieldName(int index);
         bool HasExplicitFieldOrdinals { get; }
         int FieldCount { get; }
