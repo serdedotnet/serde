@@ -259,7 +259,9 @@ public static class SerdeInfo
 
         public IList<CustomAttributeData> Attributes => [];
 
-        public Utf8Span GetFieldName(int index) =>
+        public Utf8Span GetFieldName(int index) => GetFieldNameMem(index).Span;
+
+        public ReadOnlyMemory<byte> GetFieldNameMem(int index) =>
             index >= 0 && index < TypeArgInfos.Length
                 ? ISerdeInfo.UTF8Encoding.GetBytes(TypeArgInfos[index].Name)
                 : throw GetOOR(index);
@@ -307,7 +309,11 @@ file sealed record NullableSerdeInfo(ISerdeInfo UnderlyingInfo) : ISerdeInfo
 
     public IList<CustomAttributeData> Attributes => [];
 
-    public Utf8Span GetFieldName(int index) => index == 0 ? "Value"u8 : throw GetOOR(index);
+    public Utf8Span GetFieldName(int index) => GetFieldNameMem(index).Span;
+
+    private static readonly ReadOnlyMemory<byte> _valueUtf8Name = "Value"u8.ToArray();
+
+    public ReadOnlyMemory<byte> GetFieldNameMem(int index) => index == 0 ? _valueUtf8Name : throw GetOOR(index);
 
     public string GetFieldStringName(int index) => index == 0 ? "Value" : throw GetOOR(index);
 
@@ -336,6 +342,8 @@ file sealed class WrappingInfo(ISerdeInfo underlying, string name) : ISerdeInfo
 
     public Utf8Span GetFieldName(int index) => underlying.GetFieldName(index);
 
+    public ReadOnlyMemory<byte> GetFieldNameMem(int index) => underlying.GetFieldNameMem(index);
+
     public string GetFieldStringName(int index) => underlying.GetFieldStringName(index);
 
     public IList<CustomAttributeData> GetFieldAttributes(int index) =>
@@ -358,6 +366,7 @@ file interface INoFieldsInfo : ISerdeInfo
     int ISerdeInfo.FieldCount => 0;
 
     Utf8Span ISerdeInfo.GetFieldName(int index) => throw GetOOR(index);
+    ReadOnlyMemory<byte> ISerdeInfo.GetFieldNameMem(int index) => throw GetOOR(index);
     string ISerdeInfo.GetFieldStringName(int index) => throw GetOOR(index);
     IList<CustomAttributeData> ISerdeInfo.GetFieldAttributes(int index) => throw GetOOR(index);
 
@@ -518,9 +527,11 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         return _indexToInfo[index].CustomAttributesData;
     }
 
-    public Utf8Span GetFieldName(int index)
+    public Utf8Span GetFieldName(int index) => GetFieldNameMem(index).Span;
+
+    public ReadOnlyMemory<byte> GetFieldNameMem(int index)
     {
-        return _indexToInfo[index].Utf8Name.Span;
+        return _indexToInfo[index].Utf8Name;
     }
 
     public string GetFieldStringName(int index)
@@ -598,8 +609,9 @@ file sealed class UnionSerdeInfo(
     /// <summary>
     /// The field name for a union is the name of the case.
     /// </summary>
-    public Utf8Span GetFieldName(int index) =>
-        ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
+    public Utf8Span GetFieldName(int index) => GetFieldNameMem(index).Span;
+
+    public ReadOnlyMemory<byte> GetFieldNameMem(int index) => ISerdeInfo.UTF8Encoding.GetBytes(GetFieldStringName(index));
 
     public string GetFieldStringName(int index) => caseInfos[index].Name;
 

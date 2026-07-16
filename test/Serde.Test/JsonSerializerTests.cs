@@ -424,6 +424,9 @@ namespace Serde.Test
                     throw new System.NotImplementedException();
 
                 public System.ReadOnlySpan<byte> GetFieldName(int index) =>
+                    GetFieldNameMem(index).Span;
+
+                public System.ReadOnlyMemory<byte> GetFieldNameMem(int index) =>
                     Encoding.UTF8.GetBytes(GetFieldStringName(index));
 
                 public string GetFieldStringName(int index) =>

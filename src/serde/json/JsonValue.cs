@@ -88,6 +88,8 @@ namespace Serde.Json
 
             public Utf8Span GetFieldName(int index) => throw GetOOR(index);
 
+            public ReadOnlyMemory<byte> GetFieldNameMem(int index) => throw GetOOR(index);
+
             public string GetFieldStringName(int index) => throw GetOOR(index);
 
             public int TryGetIndex(Utf8Span fieldName) => ITypeDeserializer.IndexNotFound;

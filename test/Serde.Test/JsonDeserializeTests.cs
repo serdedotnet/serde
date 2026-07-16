@@ -705,7 +705,9 @@ namespace Serde.Test
                         _ => throw new System.ArgumentOutOfRangeException(nameof(index)),
                     };
 
-                public ReadOnlySpan<byte> GetFieldName(int index) =>
+                public ReadOnlySpan<byte> GetFieldName(int index) => GetFieldNameMem(index).Span;
+
+                public ReadOnlyMemory<byte> GetFieldNameMem(int index) =>
                     Encoding.UTF8.GetBytes(GetFieldStringName(index));
 
                 public string GetFieldStringName(int index) =>
