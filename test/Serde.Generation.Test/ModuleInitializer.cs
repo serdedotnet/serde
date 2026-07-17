@@ -1,6 +1,5 @@
 using System.Runtime.CompilerServices;
 using VerifyTests;
-using VerifyXunit;
 
 internal static class ModuleInit
 {

@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using VerifyXunit;
 using Xunit;
 using static Serde.Test.GeneratorTestUtils;
 

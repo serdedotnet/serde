@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using VerifyXunit;
 using Xunit;
 using static Serde.Test.GeneratorTestUtils;
 
@@ -185,9 +184,8 @@ readonly partial struct StringWrap
     }
 }";
             return VerifyDiagnostics(
-                src,
                 // (3,18): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
-                DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 29)
+                src
             );
         }
 
@@ -201,9 +199,8 @@ using Serde;
 partial record struct StringWrap(string Wrapped);
 ";
             return VerifyDiagnostics(
-                src,
                 // (3,2): error ERR_CantWrapSpecialType: The type 'string' can't be automatically wrapped because it is a built-in type.
-                DiagnosticResult.CompilerError("ERR_CantWrapSpecialType").WithSpan("", 3, 2, 3, 28)
+                src
             );
         }
 

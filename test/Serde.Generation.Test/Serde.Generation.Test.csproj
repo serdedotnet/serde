@@ -18,8 +18,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
     <PackageReference Include="Verify.SourceGenerators" />
-    <PackageReference Include="Verify.XunitV3" />
-    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Verify" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="NXTest" />
     <ProjectReference Include="../../src/serde/Serde.csproj" />
     <ProjectReference Include="../../src/generator/SerdeGenerator.csproj" />
   </ItemGroup>

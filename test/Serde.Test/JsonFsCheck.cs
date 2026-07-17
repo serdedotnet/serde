@@ -18,7 +18,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Serde.Test
 {
-    public class JsonFsCheck
+    public class JsonFsCheck : TestBase
     {
         private static readonly EmitOptions s_emitOptions = new EmitOptions();
         private static readonly ReferenceAssemblies s_net10Refs = new ReferenceAssemblies(
@@ -37,10 +37,7 @@ namespace Serde.Test
         [Fact]
         public async Task CheckPrimitiveEquivalentsAsync()
         {
-            var resolvedRefs = await s_net10Refs.ResolveAsync(
-                null,
-                TestContext.Current.CancellationToken
-            );
+            var resolvedRefs = await s_net10Refs.ResolveAsync(null, CancellationToken);
 
             TestTypeGenerators
                 .GenTopLevelTypeDef.Array[100]
