@@ -24,7 +24,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="NXTest" />
     <ProjectReference Include="../../src/serde/Serde.csproj" />
     <ProjectReference
       Include="../../src/generator/SerdeGenerator.csproj"

@@ -454,3 +454,6 @@ $RECYCLE.BIN/
 
 # Verify
 *.received.*
+
+# NXTest generated files
+**/generated/NXTest.Generators/

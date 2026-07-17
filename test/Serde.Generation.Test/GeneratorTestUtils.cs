@@ -15,40 +15,47 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Text;
+using VerifyNXTest;
 using VerifyTests;
-using VerifyXunit;
 using Xunit;
 
 namespace Serde.Test
 {
     public static class GeneratorTestUtils
     {
-        public static Task VerifyDiagnostics(string src, params DiagnosticResult[] diagnostics) =>
-            VerifyMultiFile(src);
+        public static Task VerifyDiagnostics(
+            string src,
+            [CallerMemberName] string caller = "",
+            [CallerFilePath] string sourceFile = ""
+        ) => VerifyMultiFile(src, caller: caller, sourceFile: sourceFile);
 
         public static Task VerifyGeneratedCode(
             string src,
             string typeName,
             string expected,
-            params DiagnosticResult[] diagnostics
-        ) => VerifyMultiFile(src);
+            [CallerMemberName] string caller = "",
+            [CallerFilePath] string sourceFile = ""
+        ) => VerifyMultiFile(src, caller: caller, sourceFile: sourceFile);
 
         public static Task<VerifyResult[]> VerifyMultiFile(
             string src,
-            MetadataReference[]? additionalRefs = null
+            MetadataReference[]? additionalRefs = null,
+            [CallerMemberName] string caller = "",
+            [CallerFilePath] string sourceFile = ""
         )
         {
             var settings = new VerifySettings();
             settings.UseDirectory("test_output/");
             settings.UseUniqueDirectory();
-            return VerifyGeneratedCode(src, settings, additionalRefs);
+            return VerifyGeneratedCode(src, settings, additionalRefs, caller, sourceFile);
         }
 
         public static Task<VerifyResult[]> VerifyGeneratedCode(
             string src,
             string directoryName,
             string testMethodName,
-            bool multiFile
+            bool multiFile,
+            [CallerFilePath] string sourceFile = ""
         )
         {
             var settings = new VerifySettings();
@@ -58,20 +65,31 @@ namespace Serde.Test
             {
                 settings.UseUniqueDirectory();
             }
-            return VerifyGeneratedCode(src, settings);
+            return VerifyGeneratedCode(
+                src,
+                settings,
+                additionalRefs: null,
+                methodName: testMethodName,
+                sourceFile: sourceFile,
+                typeName: directoryName
+            );
         }
 
         public static async Task<VerifyResult[]> VerifyGeneratedCode(
             string src,
             VerifySettings settings,
-            MetadataReference[]? additionalRefs = null
+            MetadataReference[]? additionalRefs,
+            string methodName,
+            string sourceFile,
+            string? typeName = null
         )
         {
+            typeName ??= Path.GetFileNameWithoutExtension(sourceFile);
             var generatorInstance = new SerdeImplRoslynGenerator();
             GeneratorDriver driver = CSharpGeneratorDriver.Create(generatorInstance);
             Compilation comp = await CreateCompilation(src, additionalRefs);
             driver = driver.RunGeneratorsAndUpdateCompilation(comp, out comp, out _);
-            var verify = Verifier.Verify(driver, settings);
+            var verify = Verifier.Verify(driver, settings, typeName, methodName, sourceFile);
             var diags = comp.GetDiagnostics()
                 .Where(d => d.Severity >= DiagnosticSeverity.Warning)
                 .Where(d => d.Id != "CS0649")
