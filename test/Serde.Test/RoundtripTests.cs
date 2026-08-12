@@ -75,6 +75,40 @@ public sealed partial class RoundtripTests
         Assert.Equal(p.Y, back.Y);
     }
 
+    [GenerateSerde]
+    [UseProxy(ForType = typeof(ForeignPoint), Proxy = typeof(ForeignPointProxy))]
+    [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
+    public partial record ProxiedContainer
+    {
+        public required ForeignPoint Point { get; init; }
+        public required ForeignPoint? OptionalPoint { get; init; }
+    }
+
+    /// <summary>
+    /// A type-scoped proxy registered with <c>[UseProxy]</c> also applies to nullable reference
+    /// members of that type, by composing with <c>NullableRefProxy</c>.
+    /// </summary>
+    [Fact]
+    public void UseProxyWithNullableRefMemberRoundtrip()
+    {
+        var c = new ProxiedContainer
+        {
+            Point = new ForeignPoint(1, 2),
+            OptionalPoint = new ForeignPoint(3, 4),
+        };
+        var json = JsonSerializer.Serialize(c);
+        Assert.Equal("""{"Point":{"X":1,"Y":2},"OptionalPoint":{"X":3,"Y":4}}""", json);
+
+        var back = JsonSerializer.Deserialize<ProxiedContainer>(json);
+        Assert.Equal(3, back.OptionalPoint!.X);
+        Assert.Equal(4, back.OptionalPoint.Y);
+
+        var withNull = c with { OptionalPoint = null };
+        var nullJson = JsonSerializer.Serialize(withNull);
+        Assert.Equal("""{"Point":{"X":1,"Y":2}}""", nullJson);
+        Assert.Null(JsonSerializer.Deserialize<ProxiedContainer>(nullJson).OptionalPoint);
+    }
+
     private static void AssertRoundTrip<T>(T t)
         where T : ISerializeProvider<T>, IDeserializeProvider<T>
     {

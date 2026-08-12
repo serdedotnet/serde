@@ -408,17 +408,19 @@ sealed partial class {{proxyName}};
     )
     {
         // Check for explicit proxy (member first, then type)
-        if (TryGetExplicitProxy(memberSymbol, type, usage, context, proxyContext) is { } proxyType)
-        {
-            return ResolveProxyString(
-                proxyType,
+        if (
+            TryGetExplicitProxyString(
+                memberSymbol,
                 type,
                 context,
                 usage,
                 inProgress,
-                memberSymbol,
                 proxyContext
-            );
+            ) is
+            { } explicitProxy
+        )
+        {
+            return explicitProxy;
         }
 
         // Then check if the type directly implements serde
@@ -486,10 +488,89 @@ sealed partial class {{proxyName}};
     }
 
     /// <summary>
-    /// Looks for an explicit proxy type from member options or type options.
-    /// Returns the proxy type symbol (unconstructed for generics).
+    /// Looks for an explicit proxy for the given type, from member options, type options or a
+    /// registered <c>[UseProxy]</c> mapping, and returns it as a string.
+    ///
+    /// Proxies which are registered for a type (rather than for a specific member) are registered
+    /// for the non-nullable type, so for a nullable reference type they are composed with
+    /// <c>NullableRefProxy</c>, just like implicit proxies are.
     /// </summary>
-    private static ITypeSymbol? TryGetExplicitProxy(
+    private static string? TryGetExplicitProxyString(
+        ISymbol? memberSymbol,
+        ITypeSymbol type,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress,
+        ProxyContext proxyContext
+    )
+    {
+        // Options on the member itself apply to the exact declared type of the member, including
+        // its nullability, so they are never composed with NullableRefProxy.
+        if (
+            memberSymbol != null
+            && TryGetProxyFromAttributes(memberSymbol, type, usage, context) is { } memberProxy
+        )
+        {
+            return ResolveProxyString(
+                memberProxy,
+                type,
+                context,
+                usage,
+                inProgress,
+                memberSymbol,
+                proxyContext
+            );
+        }
+
+        if (type is { IsReferenceType: true, NullableAnnotation: NullableAnnotation.Annotated })
+        {
+            var nonNullType = type.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+            if (
+                TryGetTypeScopedProxy(memberSymbol, nonNullType, usage, context, proxyContext) is
+                { } nonNullProxy
+            )
+            {
+                var nonNullProxyString = ResolveProxyString(
+                    nonNullProxy,
+                    nonNullType,
+                    context,
+                    usage,
+                    inProgress,
+                    memberSymbol,
+                    proxyContext
+                );
+                if (nonNullProxyString is null)
+                {
+                    return null;
+                }
+                var nonNullTypeString = nonNullType.ToDisplayString(s_fqnFormat);
+                return $"Serde.NullableRefProxy.{GetSingletonImplName(usage)}<{nonNullTypeString}, {nonNullProxyString}>";
+            }
+            return null;
+        }
+
+        if (
+            TryGetTypeScopedProxy(memberSymbol, type, usage, context, proxyContext) is { } typeProxy
+        )
+        {
+            return ResolveProxyString(
+                typeProxy,
+                type,
+                context,
+                usage,
+                inProgress,
+                memberSymbol,
+                proxyContext
+            );
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Looks for a proxy registered for the given type, either through a <c>[UseProxy]</c> mapping
+    /// or through options on the type itself.
+    /// </summary>
+    private static ITypeSymbol? TryGetTypeScopedProxy(
         ISymbol? memberSymbol,
         ITypeSymbol type,
         SerdeUsage usage,
@@ -497,14 +578,10 @@ sealed partial class {{proxyName}};
         ProxyContext proxyContext
     )
     {
-        // Check member first, then type
-        if (
-            memberSymbol != null
-            && TryGetProxyFromSymbol(memberSymbol, type, usage, context, proxyContext)
-                is { } memberProxy
-        )
+        // [UseProxy] mappings take precedence over options on the type itself
+        if (memberSymbol != null && proxyContext.TryGetProxy(type, usage) is { } useProxyType)
         {
-            return memberProxy;
+            return ResolveProxyForGenericType(useProxyType, type, memberSymbol, usage, context);
         }
 
         return TryGetProxyFromSymbol(type, type, usage, context, proxyContext);
@@ -521,6 +598,32 @@ sealed partial class {{proxyName}};
         SerdeUsage usage,
         GeneratorExecutionContext context,
         ProxyContext proxyContext
+    )
+    {
+        if (TryGetProxyFromAttributes(symbol, typeToWrap, usage, context) is { } attrProxy)
+        {
+            return attrProxy;
+        }
+
+        // Check if UseProxy also specifies a proxy for this type
+        if (proxyContext.TryGetProxy(typeToWrap, usage) is { } useProxyType)
+        {
+            // No SerdeMemberOptions proxy, use the UseProxy one
+            return ResolveProxyForGenericType(useProxyType, typeToWrap, symbol, usage, context);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Checks a symbol's SerdeMemberOptions/SerdeTypeOptions attributes for proxy specifications.
+    /// For generic types, returns the nested Ser/De type from the proxy.
+    /// </summary>
+    private static ITypeSymbol? TryGetProxyFromAttributes(
+        ISymbol symbol,
+        ITypeSymbol typeToWrap,
+        SerdeUsage usage,
+        GeneratorExecutionContext context
     )
     {
         foreach (var attr in symbol.GetAttributes())
@@ -594,13 +697,6 @@ sealed partial class {{proxyName}};
                     }
                 }
             }
-        }
-
-        // Check if UseProxy also specifies a proxy for this type
-        if (proxyContext.TryGetProxy(typeToWrap, usage) is { } useProxyType)
-        {
-            // No SerdeMemberOptions proxy, use the UseProxy one
-            return ResolveProxyForGenericType(useProxyType, typeToWrap, symbol, usage, context);
         }
 
         return null;
@@ -726,22 +822,14 @@ sealed partial class {{proxyName}};
     )
     {
         // Check for explicit proxy on member or type (but not ImplementsSerde - that's handled by the caller)
-        if (
-            TryGetExplicitProxy(member.Symbol, member.Type, usage, context, proxyContext) is
-            { } proxyType
-        )
-        {
-            return ResolveProxyString(
-                proxyType,
-                member.Type,
-                context,
-                usage,
-                inProgress,
-                member.Symbol,
-                proxyContext
-            );
-        }
-        return null;
+        return TryGetExplicitProxyString(
+            member.Symbol,
+            member.Type,
+            context,
+            usage,
+            inProgress,
+            proxyContext
+        );
     }
 
     [return: NotNullIfNotNull(nameof(wkOpt))]

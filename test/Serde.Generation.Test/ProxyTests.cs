@@ -416,6 +416,36 @@ partial class C
         }
 
         /// <summary>
+        /// A type-scoped proxy registered with [UseProxy] should also apply to nullable
+        /// reference members of that type, by composing it with NullableRefProxy.
+        /// </summary>
+        [Fact]
+        public Task UseProxyWithNullableRefMember()
+        {
+            var src = """
+using Serde;
+
+class Point
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+}
+
+[GenerateSerde(ForType = typeof(Point))]
+internal sealed partial class PointProxy {}
+
+[GenerateSerde]
+[UseProxy(ForType = typeof(Point), Proxy = typeof(PointProxy))]
+partial class C
+{
+    public Point P = new Point();
+    public Point? OptP = null;
+}
+""";
+            return VerifyMultiFile(src);
+        }
+
+        /// <summary>
         /// A non-empty proxy with an explicit conversion operator should use the proxy's
         /// members for serialization/deserialization, constructing the proxy on deserialize
         /// and converting to the foreign type.
