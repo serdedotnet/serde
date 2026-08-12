@@ -24,6 +24,6 @@
     <PackageVersion Include="Verify" Version="31.25.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
     <PackageVersion Include="xunit.v3.assert" Version="3.2.2" />
-    <PackageVersion Include="NXTest" Version="0.1.4" />
+    <PackageVersion Include="NXTest" Version="0.3.0" />
   </ItemGroup>
 </Project>
