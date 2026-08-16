@@ -23,7 +23,7 @@
     <PackageVersion Include="PolyKit.Embedded" Version="3.0.9" />
     <PackageVersion Include="Verify" Version="31.28.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
-    <PackageVersion Include="xunit.v3.assert" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.assert" Version="4.0.0" />
     <PackageVersion Include="NXTest" Version="0.3.0" />
   </ItemGroup>
 </Project>
