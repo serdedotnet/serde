@@ -8,6 +8,9 @@ partial struct S
         typeof(S).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("f", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

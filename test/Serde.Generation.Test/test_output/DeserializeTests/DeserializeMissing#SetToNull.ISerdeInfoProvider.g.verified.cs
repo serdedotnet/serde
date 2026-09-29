@@ -8,7 +8,10 @@ partial record struct SetToNull
         typeof(SetToNull).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("present", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>()),
-            new("missing", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>()),
+            new("missing", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>())
+            {
+                IsOptional = true,
+            },
             new("throwMissing", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>())
             {
                 MemberInfo = typeof(SetToNull).GetProperty("ThrowMissing"),

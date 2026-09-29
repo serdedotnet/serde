@@ -15,6 +15,7 @@ partial class JsonDeserializeTests
                 new("missing", global::Serde.SerdeInfoProvider.GetDeserializeInfo<bool, global::Serde.BoolProxy>())
                 {
                     MemberInfo = typeof(Serde.Test.JsonDeserializeTests.ThrowMissingFalse).GetProperty("Missing"),
+                    IsOptional = true,
                 }
             }
         );

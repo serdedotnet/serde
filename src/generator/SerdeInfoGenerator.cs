@@ -125,6 +125,12 @@ internal static class SerdeInfoGenerator
         var allExplicit =
             !isEnum && emittedMembers.Count > 0 && emittedMembers.All(e => e.Member.Ordinal is int);
 
+        // Match the deserializer: initializers are only preserved inside their declaring type.
+        var containingType = inProgress.IsEmpty ? null : inProgress[0].Containing;
+        var preserveInitializers =
+            containingType is not null
+            && SymbolEqualityComparer.Default.Equals(receiverType, containingType);
+
         var memberEntries = new List<string>(emittedMembers.Count);
         foreach (var (m, wrapper) in emittedMembers)
         {
@@ -240,10 +246,13 @@ internal static class SerdeInfoGenerator
             // MemberInfo only exists to lazily supply the field's custom attributes. If the member
             // has no attributes, skip it entirely so the runtime never does the reflection lookup.
             var emitMemberInfo = !m.Attributes.IsEmpty;
+            var isOptional =
+                m.SkipDeserialize
+                || !m.GetDeserializeInitializer(context.Compilation, preserveInitializers).Required;
 
             var sb = new StringBuilder();
             sb.Append($"new(\"{m.GetFormattedName()}\", {infoExpr})");
-            if (emitMemberInfo || emitOrdinal)
+            if (emitMemberInfo || emitOrdinal || isOptional)
             {
                 sb.Append(Utilities.NewLine).Append("{").Append(Utilities.NewLine);
                 if (emitMemberInfo)
@@ -253,6 +262,10 @@ internal static class SerdeInfoGenerator
                 if (emitOrdinal)
                 {
                     sb.Append($"    Ordinal = {(int)m.Ordinal!},").Append(Utilities.NewLine);
+                }
+                if (isOptional)
+                {
+                    sb.Append("    IsOptional = true,").Append(Utilities.NewLine);
                 }
                 sb.Append("}");
             }

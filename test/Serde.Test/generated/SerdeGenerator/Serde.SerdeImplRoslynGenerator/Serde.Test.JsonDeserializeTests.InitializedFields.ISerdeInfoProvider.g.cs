@@ -11,8 +11,14 @@ partial class JsonDeserializeTests
             "InitializedFields",
             typeof(Serde.Test.JsonDeserializeTests.InitializedFields).GetCustomAttributesData(),
             new global::Serde.SerdeInfo.FieldInfo[] {
-                new("num", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>()),
-                new("str", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>()),
+                new("num", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>())
+                {
+                    IsOptional = true,
+                },
+                new("str", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>())
+                {
+                    IsOptional = true,
+                },
                 new("required", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>())
             }
         );

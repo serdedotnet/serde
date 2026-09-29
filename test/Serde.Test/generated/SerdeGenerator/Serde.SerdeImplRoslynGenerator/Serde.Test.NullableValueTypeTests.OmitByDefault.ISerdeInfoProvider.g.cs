@@ -12,6 +12,9 @@ partial class NullableValueTypeTests
             typeof(Serde.Test.NullableValueTypeTests.OmitByDefault).GetCustomAttributesData(),
             new global::Serde.SerdeInfo.FieldInfo[] {
                 new("value", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>())
+                {
+                    IsOptional = true,
+                }
             }
         );
     }

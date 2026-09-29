@@ -413,6 +413,7 @@ namespace Serde
         System.ReadOnlyMemory<byte> GetFieldNameMem(int index);
         System.ReadOnlySpan<byte> GetFieldName(int index);
         bool HasExplicitFieldOrdinals { get; }
+        bool IsFieldOptional(int index);
         int FieldCount { get; }
         int GetFieldOrdinal(int fieldPosition);
         int TryGetIndex(System.ReadOnlySpan<byte> fieldName);
@@ -795,6 +796,7 @@ namespace Serde
         {
             public System.Collections.Generic.IList<System.Reflection.CustomAttributeData> Attributes { get; init; }
             public System.Reflection.MemberInfo? MemberInfo { get; init; }
+            public bool IsOptional { get; init; }
             public int Ordinal { get; init; }
         }
     }

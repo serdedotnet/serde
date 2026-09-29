@@ -11,6 +11,7 @@ partial struct Rgb
             new("green", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte, global::Serde.U8Proxy>())
             {
                 MemberInfo = typeof(Rgb).GetField("Green"),
+                IsOptional = true,
             },
             new("blue", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte, global::Serde.U8Proxy>())
         }

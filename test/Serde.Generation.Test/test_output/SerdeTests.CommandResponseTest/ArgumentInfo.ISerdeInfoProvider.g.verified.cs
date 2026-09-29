@@ -7,8 +7,14 @@ partial class ArgumentInfo
         "ArgumentInfo",
         typeof(ArgumentInfo).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
-            new("name", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
+            new("name", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+            {
+                IsOptional = true,
+            },
             new("value", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

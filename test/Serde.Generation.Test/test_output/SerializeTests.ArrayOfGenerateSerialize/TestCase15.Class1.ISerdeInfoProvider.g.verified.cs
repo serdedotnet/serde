@@ -9,8 +9,14 @@ partial class TestCase15
             "Class1",
             typeof(TestCase15.Class1).GetCustomAttributesData(),
             new global::Serde.SerdeInfo.FieldInfo[] {
-                new("field0", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>()),
+                new("field0", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>())
+                {
+                    IsOptional = true,
+                },
                 new("field1", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte, global::Serde.U8Proxy>())
+                {
+                    IsOptional = true,
+                }
             }
         );
     }

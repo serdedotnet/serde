@@ -15,6 +15,7 @@ partial class JsonDeserializeTests
                 new("skip", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>())
                 {
                     MemberInfo = typeof(Serde.Test.JsonDeserializeTests.SkipDeserialize).GetProperty("Skip"),
+                    IsOptional = true,
                 }
             }
         );

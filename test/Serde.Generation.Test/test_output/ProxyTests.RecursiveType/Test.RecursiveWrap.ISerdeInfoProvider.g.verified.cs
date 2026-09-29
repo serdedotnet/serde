@@ -11,6 +11,9 @@ partial class RecursiveWrap
         typeof(Recursive).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("next", global::Serde.SerdeInfoProvider.GetSerializeInfo<Recursive?, Test.RecursiveWrap>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

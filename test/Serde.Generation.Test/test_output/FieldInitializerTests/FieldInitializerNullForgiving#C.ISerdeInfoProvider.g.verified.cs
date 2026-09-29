@@ -7,9 +7,18 @@ partial class C
         "C",
         typeof(C).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
-            new("s", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>()),
-            new("arr", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>()),
+            new("s", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string, global::Serde.StringProxy>())
+            {
+                IsOptional = true,
+            },
+            new("arr", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int[], Serde.ArrayProxy.De<int, global::Serde.I32Proxy>>())
+            {
+                IsOptional = true,
+            },
             new("n", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

@@ -68,6 +68,12 @@ public static class SerdeInfo
         /// <see cref="ISerdeInfo.GetFieldOrdinal"/>
         /// </summary>
         public int Ordinal { get; init; } = -1;
+
+        /// <summary>
+        /// Whether the field may be absent when deserializing. Defaults to false (required).
+        /// <see cref="ISerdeInfo.IsFieldOptional"/>
+        /// </summary>
+        public bool IsOptional { get; init; }
     }
 
     /// <summary>
@@ -352,6 +358,8 @@ file sealed class WrappingInfo(ISerdeInfo underlying, string name) : ISerdeInfo
 
     public int TryGetIndex(Utf8Span fieldName) => underlying.TryGetIndex(fieldName);
 
+    public bool IsFieldOptional(int index) => underlying.IsFieldOptional(index);
+
     public int GetFieldOrdinal(int fieldPosition) => underlying.GetFieldOrdinal(fieldPosition);
 
     public bool HasExplicitFieldOrdinals => underlying.HasExplicitFieldOrdinals;
@@ -405,7 +413,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
         ReadOnlyMemory<byte> Utf8Name,
         IList<CustomAttributeData> CustomAttributesData,
         ISerdeInfo FieldSerdeInfo,
-        int Ordinal
+        int Ordinal,
+        bool IsOptional
     );
 
     public string Name { get; }
@@ -470,7 +479,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
                 default,
                 fieldAttributes,
                 field.SerdeInfo,
-                field.Ordinal >= 0 ? field.Ordinal : index
+                field.Ordinal >= 0 ? field.Ordinal : index,
+                field.IsOptional
             );
             indexToInfoBuilder.Add(fieldInfo);
         }
@@ -518,6 +528,8 @@ file sealed record TypeWithFieldsInfo : ISerdeInfo
 
     [Experimental("SerdeExperimentalFieldInfo")]
     public ISerdeInfo GetFieldInfo(int index) => _indexToInfo[index].FieldSerdeInfo;
+
+    public bool IsFieldOptional(int index) => _indexToInfo[index].IsOptional;
 
     public int GetFieldOrdinal(int fieldPosition) => _indexToInfo[fieldPosition].Ordinal;
 
