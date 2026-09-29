@@ -73,7 +73,7 @@ public static class SerdeInfo
         /// Whether the field may be absent when deserializing. Defaults to false (required).
         /// <see cref="ISerdeInfo.IsFieldOptional"/>
         /// </summary>
-        public bool IsOptional { get; init; }
+        public bool IsOptional { get; init; } = false;
     }
 
     /// <summary>
