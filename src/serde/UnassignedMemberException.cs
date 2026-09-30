@@ -8,7 +8,10 @@ namespace Serde;
 /// </summary>
 public sealed class UnassignedMemberException : DeserializeException
 {
-    internal UnassignedMemberException(ISerdeInfo serdeInfo, ImmutableArray<int> missingFieldIndices)
+    internal UnassignedMemberException(
+        ISerdeInfo serdeInfo,
+        ImmutableArray<int> missingFieldIndices
+    )
         : base(FormatMessage(serdeInfo, missingFieldIndices))
     {
         SerdeInfo = serdeInfo;
