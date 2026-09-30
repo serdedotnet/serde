@@ -8,8 +8,14 @@ partial class CommandResponse<TResult, TProxy>
         typeof(CommandResponse<,>).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("status", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>()),
-            new("message", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
-            new("arguments", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.List<ArgumentInfo>?, Serde.NullableRefProxy.Ser<System.Collections.Generic.List<ArgumentInfo>, Serde.ListProxy.Ser<ArgumentInfo, ArgumentInfo>>>()),
+            new("message", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+            {
+                IsOptional = true,
+            },
+            new("arguments", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Collections.Generic.List<ArgumentInfo>?, Serde.NullableRefProxy.Ser<System.Collections.Generic.List<ArgumentInfo>, Serde.ListProxy.Ser<ArgumentInfo, ArgumentInfo>>>())
+            {
+                IsOptional = true,
+            },
             new("results", global::Serde.SerdeInfoProvider.GetSerializeInfo<TResult, TProxy>())
             {
                 MemberInfo = typeof(CommandResponse<,>).GetProperty("Results"),

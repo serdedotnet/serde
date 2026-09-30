@@ -64,6 +64,38 @@ public sealed partial class SerdeInfoTests
         Assert.Equal(3, info.FieldCount);
     }
 
+    [Fact]
+    public void GeneratedFieldOptionality()
+    {
+        var optional = SerdeInfoProvider.GetDeserializeInfo<Options>();
+        Assert.True(optional.IsFieldOptional(optional.TryGetIndex("first"u8)));
+
+        var required = SerdeInfoProvider.GetDeserializeInfo<Rgb, RgbProxy>();
+        Assert.False(required.IsFieldOptional(required.TryGetIndex("r"u8)));
+    }
+
+    [Fact]
+    public void MakeCustom_PreservesFieldOptionality()
+    {
+        var required = new SerdeInfo.FieldInfo("required", I32Proxy.SerdeInfo);
+        Assert.False(required.IsOptional);
+        var info = SerdeInfo.MakeCustom(
+            "OptionalFields",
+            Array.Empty<CustomAttributeData>(),
+            new SerdeInfo.FieldInfo[]
+            {
+                new("optional", StringProxy.SerdeInfo) { IsOptional = true },
+                required,
+            }
+        );
+
+        foreach (var candidate in new[] { info, info.WithName("Renamed") })
+        {
+            Assert.True(candidate.IsFieldOptional(0));
+            Assert.False(candidate.IsFieldOptional(1));
+        }
+    }
+
     [GenerateDeserialize]
     [Closed]
     public abstract partial record UnionBase
@@ -268,6 +300,8 @@ public sealed partial class SerdeInfoTests
         Assert.Empty(info.GetFieldAttributes(1));
         Assert.Equal(I32Proxy.SerdeInfo, info.GetFieldInfo(0));
         Assert.Equal(StringProxy.SerdeInfo, info.GetFieldInfo(1));
+        Assert.False(info.IsFieldOptional(0));
+        Assert.False(info.IsFieldOptional(1));
     }
 
     [Fact]

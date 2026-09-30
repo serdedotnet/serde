@@ -12,6 +12,9 @@ partial class JsonSerializerTests
             typeof(Serde.Test.JsonSerializerTests.NullableByteArrayWrap).GetCustomAttributesData(),
             new global::Serde.SerdeInfo.FieldInfo[] {
                 new("bytes", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte[]?, Serde.NullableRefProxy.Ser<byte[], global::Serde.ByteArrayProxy>>())
+                {
+                    IsOptional = true,
+                }
             }
         );
     }

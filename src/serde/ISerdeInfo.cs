@@ -65,6 +65,13 @@ public interface ISerdeInfo
     ISerdeInfo GetFieldInfo(int index);
 
     /// <summary>
+    /// Whether the field at the given index may be absent when deserializing. This is independent
+    /// of whether its value may be null or is omitted when serializing. The index must be valid.
+    /// Fields are required by default.
+    /// </summary>
+    bool IsFieldOptional(int index) => false;
+
+    /// <summary>
     /// Get the ordinal for the field at the given physical position. The physical position is the
     /// dense index in <c>[0, <see cref="FieldCount"/>)</c> used by all the other <c>GetField*</c>
     /// accessors. The ordinal is the stable identity of the field, which may be assigned explicitly

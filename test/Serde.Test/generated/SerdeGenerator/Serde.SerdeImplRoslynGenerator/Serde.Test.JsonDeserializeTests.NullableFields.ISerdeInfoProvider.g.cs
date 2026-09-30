@@ -11,7 +11,10 @@ partial class JsonDeserializeTests
             "NullableFields",
             typeof(Serde.Test.JsonDeserializeTests.NullableFields).GetCustomAttributesData(),
             new global::Serde.SerdeInfo.FieldInfo[] {
-                new("s", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>()),
+                new("s", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>())
+                {
+                    IsOptional = true,
+                },
                 new("dict", global::Serde.SerdeInfoProvider.GetDeserializeInfo<System.Collections.Generic.Dictionary<string, string?>, Serde.DictProxy.De<string, string?, global::Serde.StringProxy, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>>())
             }
         );

@@ -14,6 +14,7 @@ partial class NullableValueTypeTests
                 new("value", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>())
                 {
                     MemberInfo = typeof(Serde.Test.NullableValueTypeTests.EmitNull).GetProperty("Value"),
+                    IsOptional = true,
                 }
             }
         );

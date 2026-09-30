@@ -8,8 +8,14 @@ partial record ComplexRecord
         typeof(ComplexRecord).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("id", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>()),
-            new("description", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>()),
+            new("description", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>())
+            {
+                IsOptional = true,
+            },
             new("nestedRecord", global::Serde.SerdeInfoProvider.GetSerializeInfo<SimpleRecord?, Serde.NullableRefProxy.Ser<SimpleRecord, SimpleRecord>>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

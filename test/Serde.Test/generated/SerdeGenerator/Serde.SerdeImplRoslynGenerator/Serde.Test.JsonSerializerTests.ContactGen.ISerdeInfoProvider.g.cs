@@ -12,8 +12,14 @@ partial class JsonSerializerTests
             typeof(Serde.Test.JsonSerializerTests.ContactGen).GetCustomAttributesData(),
             new global::Serde.SerdeInfo.FieldInfo[] {
                 new("id", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>()),
-                new("name", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>()),
+                new("name", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>())
+                {
+                    IsOptional = true,
+                },
                 new("email", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>())
+                {
+                    IsOptional = true,
+                }
             }
         );
     }

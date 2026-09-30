@@ -8,6 +8,9 @@ partial class C
         typeof(C).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("colorOpt", global::Serde.SerdeInfoProvider.GetSerializeInfo<Rgb?, Serde.NullableProxy.Ser<Rgb, RgbProxy>>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

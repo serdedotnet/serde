@@ -14,6 +14,7 @@ partial class SerdeInfoTests
                 new("first", global::Serde.SerdeInfoProvider.GetDeserializeInfo<string?, Serde.NullableRefProxy.De<string, global::Serde.StringProxy>>())
                 {
                     MemberInfo = typeof(Serde.Test.SerdeInfoTests.Options).GetProperty("First"),
+                    IsOptional = true,
                 }
             }
         );

@@ -10,6 +10,7 @@ partial record Container
             new("sdkDir", global::Serde.SerdeInfoProvider.GetDeserializeInfo<Original?, Proxy>())
             {
                 MemberInfo = typeof(Container).GetProperty("SdkDir"),
+                IsOptional = true,
             }
         }
     );

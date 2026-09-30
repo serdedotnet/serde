@@ -22,18 +22,36 @@ partial record AllInOne
             new("intField", global::Serde.SerdeInfoProvider.GetSerializeInfo<int, global::Serde.I32Proxy>()),
             new("longField", global::Serde.SerdeInfoProvider.GetSerializeInfo<long, global::Serde.I64Proxy>()),
             new("int128Field", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Int128, global::Serde.I128Proxy>()),
-            new("stringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
+            new("stringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>())
+            {
+                IsOptional = true,
+            },
             new("dateTimeOffsetField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.DateTimeOffset, global::Serde.DateTimeOffsetProxy>()),
             new("dateTimeField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.DateTime, global::Serde.DateTimeProxy>()),
             new("dateOnlyField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.DateOnly, global::Serde.DateOnlyProxy>()),
             new("timeOnlyField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.TimeOnly, global::Serde.TimeOnlyProxy>()),
             new("guidField", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Guid, global::Serde.GuidProxy>()),
             new("escapedStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string, global::Serde.StringProxy>()),
-            new("nullStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>()),
-            new("nullIntField", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>()),
-            new("uIntArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<uint[], Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>()),
-            new("nestedArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>()),
-            new("byteArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte[], global::Serde.ByteArrayProxy>()),
+            new("nullStringField", global::Serde.SerdeInfoProvider.GetSerializeInfo<string?, Serde.NullableRefProxy.Ser<string, global::Serde.StringProxy>>())
+            {
+                IsOptional = true,
+            },
+            new("nullIntField", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>())
+            {
+                IsOptional = true,
+            },
+            new("uIntArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<uint[], Serde.ArrayProxy.Ser<uint, global::Serde.U32Proxy>>())
+            {
+                IsOptional = true,
+            },
+            new("nestedArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<int[][], Serde.ArrayProxy.Ser<int[], Serde.ArrayProxy.Ser<int, global::Serde.I32Proxy>>>())
+            {
+                IsOptional = true,
+            },
+            new("byteArr", global::Serde.SerdeInfoProvider.GetSerializeInfo<byte[], global::Serde.ByteArrayProxy>())
+            {
+                IsOptional = true,
+            },
             new("intImm", global::Serde.SerdeInfoProvider.GetSerializeInfo<System.Collections.Immutable.ImmutableArray<int>, Serde.ImmutableArrayProxy.Ser<int, global::Serde.I32Proxy>>()),
             new("color", global::Serde.SerdeInfoProvider.GetSerializeInfo<Serde.Test.AllInOne.ColorEnum, Serde.Test.AllInOne.ColorEnumProxy>())
         }

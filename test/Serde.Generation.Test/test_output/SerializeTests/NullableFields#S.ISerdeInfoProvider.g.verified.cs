@@ -7,8 +7,14 @@ partial struct S<T1, T2, TSerialize>
         "S",
         typeof(S<,,>).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
-            new("fI", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>()),
+            new("fI", global::Serde.SerdeInfoProvider.GetSerializeInfo<int?, Serde.NullableProxy.Ser<int, global::Serde.I32Proxy>>())
+            {
+                IsOptional = true,
+            },
             new("f3", global::Serde.SerdeInfoProvider.GetSerializeInfo<TSerialize?, Serde.NullableProxy.Ser<TSerialize, TSerialize>>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }

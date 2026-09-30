@@ -13,6 +13,9 @@ partial class RoundtripTests
             new global::Serde.SerdeInfo.FieldInfo[] {
                 new("Point", global::Serde.SerdeInfoProvider.GetSerializeInfo<Serde.Test.RoundtripTests.ForeignPoint, Serde.Test.RoundtripTests.ForeignPointProxy>()),
                 new("OptionalPoint", global::Serde.SerdeInfoProvider.GetSerializeInfo<Serde.Test.RoundtripTests.ForeignPoint?, Serde.NullableRefProxy.Ser<Serde.Test.RoundtripTests.ForeignPoint, Serde.Test.RoundtripTests.ForeignPointProxy>>())
+                {
+                    IsOptional = true,
+                }
             }
         );
     }

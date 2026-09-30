@@ -9,6 +9,9 @@ partial class C
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("p", global::Serde.SerdeInfoProvider.GetSerializeInfo<Point, PointProxy>()),
             new("optP", global::Serde.SerdeInfoProvider.GetSerializeInfo<Point?, Serde.NullableRefProxy.Ser<Point, PointProxy>>())
+            {
+                IsOptional = true,
+            }
         }
     );
 }
