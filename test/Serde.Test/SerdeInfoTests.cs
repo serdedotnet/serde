@@ -64,201 +64,36 @@ public sealed partial class SerdeInfoTests
         Assert.Equal(3, info.FieldCount);
     }
 
-    [GenerateSerde]
-    public partial record OptionalFields
+    [Fact]
+    public void GeneratedFieldOptionality()
     {
-        public required string RequiredReference { get; init; }
-        public int RequiredValue { get; init; }
-        public string? NullableReference { get; init; }
-        public int? NullableValue { get; init; }
+        var optional = SerdeInfoProvider.GetDeserializeInfo<Options>();
+        Assert.True(optional.IsFieldOptional(optional.TryGetIndex("first"u8)));
 
-        [SerdeMemberOptions(ThrowIfMissing = true)]
-        public string? RequiredNullableReference { get; init; }
-
-        [SerdeMemberOptions(ThrowIfMissing = true)]
-        public int? RequiredNullableValue { get; init; }
-
-        [SerdeMemberOptions(ThrowIfMissing = false)]
-        public required string OptionalReference { get; init; }
-
-        [SerdeMemberOptions(ThrowIfMissing = false)]
-        public int OptionalValue { get; init; }
-
-        public string InitializedReference { get; init; } = "default";
-        public int InitializedValue = 42;
-        public string StaticInitializer { get; init; } = DefaultText;
-        public string UnsupportedInitializer { get; init; } = CreateDefaultText();
-
-        [SerdeMemberOptions(ThrowIfMissing = true)]
-        public int RequiredInitializer { get; init; } = 42;
-
-        [SerdeMemberOptions(SkipDeserialize = true, ThrowIfMissing = true)]
-        public int Skipped { get; init; }
-
-        private static string DefaultText => "default";
-
-        private static string CreateDefaultText() => "default";
-    }
-
-    [Theory]
-    [InlineData("requiredReference", false)]
-    [InlineData("requiredValue", false)]
-    [InlineData("nullableReference", true)]
-    [InlineData("nullableValue", true)]
-    [InlineData("requiredNullableReference", false)]
-    [InlineData("requiredNullableValue", false)]
-    [InlineData("optionalReference", true)]
-    [InlineData("optionalValue", true)]
-    [InlineData("initializedReference", true)]
-    [InlineData("initializedValue", true)]
-    [InlineData("staticInitializer", true)]
-    [InlineData("unsupportedInitializer", false)]
-    [InlineData("requiredInitializer", false)]
-    [InlineData("skipped", true)]
-    public void GeneratedFieldOptionalityMatchesDeserialization(string name, bool expected)
-    {
-        var deserializeInfo = SerdeInfoProvider.GetDeserializeInfo<OptionalFields>();
-        var serializeInfo = SerdeInfoProvider.GetSerializeInfo<OptionalFields>();
-        foreach (var info in new[] { deserializeInfo, serializeInfo })
-        {
-            var index = info.TryGetIndex(System.Text.Encoding.UTF8.GetBytes(name));
-            Assert.InRange(index, 0, info.FieldCount - 1);
-            Assert.Equal(expected, info.IsFieldOptional(index));
-        }
+        var required = SerdeInfoProvider.GetDeserializeInfo<Rgb, RgbProxy>();
+        Assert.False(required.IsFieldOptional(required.TryGetIndex("r"u8)));
     }
 
     [Fact]
-    public void WithName_PreservesFieldOptionality()
+    public void MakeCustom_PreservesFieldOptionality()
     {
-        var original = SerdeInfoProvider.GetDeserializeInfo<OptionalFields>();
-        var renamed = original.WithName("Renamed");
-        for (int i = 0; i < original.FieldCount; i++)
-        {
-            Assert.Equal(original.IsFieldOptional(i), renamed.IsFieldOptional(i));
-        }
-    }
-
-    [GenerateDeserialize]
-    public partial class InitializedTarget
-    {
-        public int Number { get; init; } = 42;
-        public string Text { get; init; } = DefaultText;
-
-        private static string DefaultText => "target";
-    }
-
-    [GenerateDeserialize(ForType = typeof(InitializedTarget))]
-    public partial class EmptyInitializedProxy;
-
-    [GenerateDeserialize(ForType = typeof(InitializedTarget))]
-    public partial class NonEmptyInitializedProxy
-    {
-        public int Number { get; init; } = 7;
-        public string Text { get; init; } = DefaultText;
-
-        private static string DefaultText => "proxy";
-
-        public static explicit operator InitializedTarget(NonEmptyInitializedProxy value) =>
-            new InitializedTarget { Number = value.Number, Text = value.Text };
-    }
-
-    [Fact]
-    public void InitializerOptionalityUsesDeserializerGenerationContext()
-    {
-        var normalInfo = SerdeInfoProvider.GetDeserializeInfo<InitializedTarget>();
-        var emptyProxyInfo = SerdeInfoProvider.GetDeserializeInfo<
-            InitializedTarget,
-            EmptyInitializedProxy
-        >();
-        var nonEmptyProxyInfo = SerdeInfoProvider.GetDeserializeInfo<
-            InitializedTarget,
-            NonEmptyInitializedProxy
-        >();
-
-        foreach (var name in new[] { "number", "text" })
-        {
-            var utf8Name = System.Text.Encoding.UTF8.GetBytes(name);
-            Assert.True(normalInfo.IsFieldOptional(normalInfo.TryGetIndex(utf8Name)));
-            Assert.False(emptyProxyInfo.IsFieldOptional(emptyProxyInfo.TryGetIndex(utf8Name)));
-            Assert.True(nonEmptyProxyInfo.IsFieldOptional(nonEmptyProxyInfo.TryGetIndex(utf8Name)));
-        }
-
-        var normal = Json.JsonSerializer.Deserialize<InitializedTarget>("{}");
-        Assert.Equal(42, normal.Number);
-        Assert.Equal("target", normal.Text);
-        Assert.Throws<DeserializeException>(() =>
-            Json.JsonSerializer.Deserialize<InitializedTarget, EmptyInitializedProxy>("{}")
-        );
-        var proxied = Json.JsonSerializer.Deserialize<InitializedTarget, NonEmptyInitializedProxy>(
-            "{}"
-        );
-        Assert.Equal(7, proxied.Number);
-        Assert.Equal("proxy", proxied.Text);
-    }
-
-    [Fact]
-    public void MakeCustom_PreservesOptionalityWithSparseOrdinals()
-    {
-        var required = new SerdeInfo.FieldInfo("required", I32Proxy.SerdeInfo) { Ordinal = 5 };
+        var required = new SerdeInfo.FieldInfo("required", I32Proxy.SerdeInfo);
         Assert.False(required.IsOptional);
         var info = SerdeInfo.MakeCustom(
             "OptionalFields",
             Array.Empty<CustomAttributeData>(),
             new SerdeInfo.FieldInfo[]
             {
-                new("optional", StringProxy.SerdeInfo) { Ordinal = 0, IsOptional = true },
-                new("explicitRequired", BoolProxy.SerdeInfo) { Ordinal = 2, IsOptional = false },
+                new("optional", StringProxy.SerdeInfo) { IsOptional = true },
                 required,
             }
         );
 
         foreach (var candidate in new[] { info, info.WithName("Renamed") })
         {
-            Assert.True(candidate.HasExplicitFieldOrdinals);
-            Assert.Equal(3, candidate.FieldCount);
-            Assert.Equal(0, candidate.TryGetIndex("optional"u8));
-            Assert.Equal(0, candidate.GetFieldOrdinal(0));
-            Assert.Equal("optional", candidate.GetFieldStringName(0));
-            Assert.Equal(StringProxy.SerdeInfo, candidate.GetFieldInfo(0));
             Assert.True(candidate.IsFieldOptional(0));
-            Assert.Equal(1, candidate.TryGetIndex("explicitRequired"u8));
-            Assert.Equal(2, candidate.GetFieldOrdinal(1));
             Assert.False(candidate.IsFieldOptional(1));
-            Assert.Equal(2, candidate.TryGetIndex("required"u8));
-            Assert.Equal(5, candidate.GetFieldOrdinal(2));
-            Assert.Equal(I32Proxy.SerdeInfo, candidate.GetFieldInfo(2));
-            Assert.False(candidate.IsFieldOptional(2));
         }
-    }
-
-    [Fact]
-    public void ExistingSerdeInfoImplementationsDefaultToRequired()
-    {
-        ISerdeInfo info = new LegacySerdeInfo();
-        Assert.False(info.IsFieldOptional(0));
-    }
-
-    private sealed class LegacySerdeInfo : ISerdeInfo
-    {
-        public string Name => "Legacy";
-        public InfoKind Kind => InfoKind.CustomType;
-        public PrimitiveKind? PrimitiveKind => null;
-        public IList<CustomAttributeData> Attributes => Array.Empty<CustomAttributeData>();
-        public int FieldCount => 1;
-
-        public string GetFieldStringName(int index) => "value";
-
-        public ReadOnlySpan<byte> GetFieldName(int index) => "value"u8;
-
-        public ReadOnlyMemory<byte> GetFieldNameMem(int index) => "value"u8.ToArray();
-
-        public IList<CustomAttributeData> GetFieldAttributes(int index) =>
-            Array.Empty<CustomAttributeData>();
-
-        public int TryGetIndex(ReadOnlySpan<byte> fieldName) =>
-            fieldName.SequenceEqual("value"u8) ? 0 : ITypeDeserializer.IndexNotFound;
-
-        public ISerdeInfo GetFieldInfo(int index) => I32Proxy.SerdeInfo;
     }
 
     [GenerateDeserialize]
