@@ -47,7 +47,7 @@ partial class InvalidJsonTests
                 typeDeserialize.End(_l_serdeInfo);
                 if ((_r_assignedValid & 0b1) != 0b1)
                 {
-                    throw Serde.DeserializeException.UnassignedMember();
+                    throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1, _l_serdeInfo);
                 }
                 var newType = new Serde.Json.Test.InvalidJsonTests.ClassWithDictionaryOfIntArray() {
                     Obj = _l_obj,

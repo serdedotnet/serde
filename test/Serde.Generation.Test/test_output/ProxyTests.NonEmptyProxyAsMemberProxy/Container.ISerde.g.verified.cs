@@ -50,7 +50,7 @@ partial class Container
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b1) != 0b1)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1, _l_serdeInfo);
             }
             var newType = new Container() {
                 Point = _l_point,

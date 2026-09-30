@@ -73,7 +73,7 @@ partial class Test
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b1111) != 0b1111)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1111, _l_serdeInfo);
             }
             var newType = new Serde.Json.Test.Test() {
                 v2 = _l_v2,

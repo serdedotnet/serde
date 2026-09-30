@@ -493,7 +493,7 @@ partial struct MaxSizeType
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b1111111111111111111111111111111111111111111111111111111111111111) != 0b1111111111111111111111111111111111111111111111111111111111111111)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1111111111111111111111111111111111111111111111111111111111111111, _l_serdeInfo);
             }
             var newType = new Serde.Test.MaxSizeType() {
                 Field1 = _l_field1,

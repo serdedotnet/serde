@@ -189,6 +189,7 @@ namespace Serde
         public static Serde.DeserializeException DuplicateKey(string propertyName, Serde.ISerdeInfo info);
         public static Serde.DeserializeException ExpectedEndOfType(int index);
         public static Serde.DeserializeException UnassignedMember();
+        public static Serde.UnassignedMemberException UnassignedMember(ulong assignedMask, ulong requiredMask, Serde.ISerdeInfo info);
         public static Serde.DeserializeException UnknownMember(string name, Serde.ISerdeInfo info);
         public static Serde.DeserializeException WrongItemCount(int expected, int actual);
         public static void ThrowIfDuplicate(byte assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
@@ -979,6 +980,11 @@ namespace Serde
             public static Serde.IDeserialize<ulong> Deserialize { get; }
             public static Serde.ISerialize<ulong> Serialize { get; }
         }
+    }
+    public sealed class UnassignedMemberException
+    {
+        public Serde.ISerdeInfo SerdeInfo { get; }
+        public System.Collections.Immutable.ImmutableArray<int> MissingFieldIndices { get; }
     }
     public sealed class UseProxy()
     {

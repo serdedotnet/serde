@@ -254,9 +254,10 @@ namespace Serde.Test
     ""present"": ""abc"",
     ""extra"": ""def""
 }";
-            Assert.Throws<DeserializeException>(() =>
+            var ex = Assert.Throws<UnassignedMemberException>(() =>
                 JsonSerializer.Deserialize<ThrowMissing>(src)
             );
+            Assert.Equal([1], ex.MissingFieldIndices);
         }
 
         [GenerateDeserialize]
@@ -365,8 +366,14 @@ namespace Serde.Test
     "num": 1
 }
 """;
-            Assert.Throws<DeserializeException>(() =>
+            var ex = Assert.Throws<UnassignedMemberException>(() =>
                 JsonSerializer.Deserialize<InitializedFields>(src)
+            );
+            Assert.Equal([2], ex.MissingFieldIndices);
+            Assert.Equal("required", ex.SerdeInfo.GetFieldStringName(2));
+            Assert.Equal(
+                "Missing required member 'required' in type 'InitializedFields'.",
+                ex.Message
             );
         }
 

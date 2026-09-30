@@ -71,7 +71,7 @@ partial class Proxy1
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b1111) != 0b1111)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1111, _l_serdeInfo);
             }
             var newType = new System.Runtime.InteropServices.ComTypes.BIND_OPTS() {
                 cbStruct = _l_cbstruct,

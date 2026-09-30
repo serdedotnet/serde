@@ -195,7 +195,7 @@ partial record AllInOne
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b11000001111110111111111111) != 0b11000001111110111111111111)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b11000001111110111111111111, _l_serdeInfo);
             }
             var newType = new Serde.Test.AllInOne() {
                 BoolField = _l_boolfield,

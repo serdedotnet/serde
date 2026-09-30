@@ -43,7 +43,7 @@ partial struct S
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b0) != 0b0)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b0, _l_serdeInfo);
             }
             var newType = new S() {
                 F = _l_f,
