@@ -61,7 +61,7 @@ partial class MemberOrdinalTests
                 typeDeserialize.End(_l_serdeInfo);
                 if ((_r_assignedValid & 0b11) != 0b11)
                 {
-                    throw Serde.DeserializeException.UnassignedMember();
+                    throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b11, _l_serdeInfo);
                 }
                 var newType = new Serde.Test.MemberOrdinalTests.OrderedWithSkip() {
                     B = _l_b,

@@ -52,7 +52,7 @@ partial class C
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b10) != 0b10)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b10, _l_serdeInfo);
             }
             var newType = new Mine.C() {
                 Field = _l_field,

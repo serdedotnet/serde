@@ -80,7 +80,7 @@ partial class CommandResponse<TResult, TProxy>
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b11001) != 0b11001)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b11001, _l_serdeInfo);
             }
             var newType = new CommandResponse<TResult, TProxy>() {
                 Status = _l_status,

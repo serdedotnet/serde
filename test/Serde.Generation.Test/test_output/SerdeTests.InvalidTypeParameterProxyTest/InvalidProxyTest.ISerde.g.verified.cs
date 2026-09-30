@@ -61,7 +61,7 @@ partial class InvalidProxyTest<T>
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b0) != 0b0)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b0, _l_serdeInfo);
             }
             var newType = new InvalidProxyTest<T>() {
                 Value1 = _l_value1,

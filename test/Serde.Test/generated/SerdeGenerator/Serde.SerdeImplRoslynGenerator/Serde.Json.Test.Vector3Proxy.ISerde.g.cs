@@ -66,7 +66,7 @@ partial class Vector3Proxy
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b111) != 0b111)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b111, _l_serdeInfo);
             }
             var newType = new System.Numerics.Vector3() {
                 X = _l_x,

@@ -68,7 +68,7 @@ partial class TupleTests
                 typeDeserialize.End(_l_serdeInfo);
                 if ((_r_assignedValid & 0b111) != 0b111)
                 {
-                    throw Serde.DeserializeException.UnassignedMember();
+                    throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b111, _l_serdeInfo);
                 }
                 var newType = new Serde.Test.TupleTests.TupleHolder() {
                     Pair = _l_pair,

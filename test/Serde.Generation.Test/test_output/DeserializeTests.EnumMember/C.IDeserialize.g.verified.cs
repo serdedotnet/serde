@@ -61,7 +61,7 @@ partial class C
             typeDeserialize.End(_l_serdeInfo);
             if ((_r_assignedValid & 0b1111) != 0b1111)
             {
-                throw Serde.DeserializeException.UnassignedMember();
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1111, _l_serdeInfo);
             }
             var newType = new C() {
                 ColorInt = _l_colorint,

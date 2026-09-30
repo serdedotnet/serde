@@ -433,7 +433,7 @@ namespace Serde
                 $$"""
                 if (({{AssignedVarName}} & {{assignedMask}}) != {{assignedMask}})
                 {
-                    throw Serde.DeserializeException.UnassignedMember();
+                    throw Serde.DeserializeException.UnassignedMember({{AssignedVarName}}, {{assignedMask}}, _l_serdeInfo);
                 }
                 var newType = new {{typeName}}({{parameters}}) {
 

@@ -54,7 +54,7 @@ partial class GenericWrapperTests
                 typeDeserialize.End(_l_serdeInfo);
                 if ((_r_assignedValid & 0b1) != 0b1)
                 {
-                    throw Serde.DeserializeException.UnassignedMember();
+                    throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b1, _l_serdeInfo);
                 }
                 var newType = new Serde.Test.GenericWrapperTests.CustomImArrayExplicitWrapOnMember() {
                     A = _l_a,

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Immutable;
 
 namespace Serde;
 
@@ -10,6 +11,29 @@ public class DeserializeException(string msg) : Exception(msg)
 {
     public static DeserializeException UnassignedMember() =>
         throw new DeserializeException("Not all members were assigned.");
+
+    /// <summary>
+    /// Creates an exception for a type whose required members were not all assigned.
+    /// <paramref name="assignedMask" /> and <paramref name="requiredMask" /> are bitfields
+    /// indexed by field index in <paramref name="info" />.
+    /// </summary>
+    public static UnassignedMemberException UnassignedMember(
+        ulong assignedMask,
+        ulong requiredMask,
+        ISerdeInfo info
+    )
+    {
+        var missing = ImmutableArray.CreateBuilder<int>();
+        var missingMask = requiredMask & ~assignedMask;
+        for (int i = 0; i < 64; i++)
+        {
+            if ((missingMask & (1UL << i)) != 0)
+            {
+                missing.Add(i);
+            }
+        }
+        return new UnassignedMemberException(info, missing.ToImmutable());
+    }
 
     public static DeserializeException UnknownMember(string name, ISerdeInfo info) =>
         new DeserializeException(
