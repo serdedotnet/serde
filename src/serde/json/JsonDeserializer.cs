@@ -427,7 +427,7 @@ internal sealed partial class JsonDeserializer<TReader> : BaseJsonDeserializer, 
         _scratch.Clear();
         var span = Reader.LexUtf8Span(_scratch);
         var localIndex = info.TryGetIndex(span);
-        var errorName = localIndex == ITypeDeserializer.IndexNotFound ? System.Text.Encoding.UTF8.GetString(span) : null;
+        var errorName = localIndex == ITypeDeserializer.IndexNotFound ? Encoding.UTF8.GetString(span) : null;
         if (errorName is not null)
         {
             throw Serde.DeserializeException.UnknownMember(errorName, info);

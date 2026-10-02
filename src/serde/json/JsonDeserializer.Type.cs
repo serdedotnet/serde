@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Buffers.Text;
+using System.Text;
 using static Serde.Json.ThrowHelpers;
 
 namespace Serde.Json;
@@ -67,7 +68,7 @@ partial class JsonDeserializer<TReader>
             _deserializer._scratch.Clear();
             var span = _deserializer.Reader.LexUtf8Span(_deserializer._scratch);
             var localIndex = serdeInfo.TryGetIndex(span);
-            var errorName = localIndex == ITypeDeserializer.IndexNotFound ? System.Text.Encoding.UTF8.GetString(span) : null;
+            var errorName = localIndex == ITypeDeserializer.IndexNotFound ? Encoding.UTF8.GetString(span) : null;
             _deserializer._first = false;
             return (localIndex, errorName);
         }
