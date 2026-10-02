@@ -302,6 +302,31 @@ namespace Serde.Test
             public string? Missing { get; init; }
         }
 
+        [Fact]
+        public void DenyUnknownReportsMemberName()
+        {
+            var ex = Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<DenyUnknown>("""{ "present": "abc", "extra": "def" }""")
+            );
+            Assert.Contains("'extra'", ex.Message);
+        }
+
+        [GenerateDeserialize]
+        private enum SmallEnum
+        {
+            A,
+            B,
+        }
+
+        [Fact]
+        public void UnknownEnumReportsName()
+        {
+            var ex = Assert.Throws<DeserializeException>(() =>
+                JsonSerializer.Deserialize<SmallEnum, SmallEnumProxy>("\"c\"")
+            );
+            Assert.Contains("'c'", ex.Message);
+        }
+
         [GenerateDeserialize]
         private partial class NullableFields
         {
