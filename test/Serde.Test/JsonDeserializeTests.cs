@@ -554,6 +554,30 @@ namespace Serde.Test
             Assert.Equal(b, Serde.Json.JsonSerializer.Deserialize<BasicDU>(bJson));
         }
 
+        [GenerateDeserialize]
+        abstract partial record DUWithInitializer
+        {
+            private DUWithInitializer() { }
+
+            public sealed record A : DUWithInitializer
+            {
+                public required string Name { get; init; }
+                public bool Flag { get; init; } = true;
+            }
+        }
+
+        [Fact]
+        public void DUCaseInitializedFieldIsOptional()
+        {
+            var src = """
+                {"A":{"name":"x"}}
+                """;
+            Assert.Equal(
+                new DUWithInitializer.A { Name = "x", Flag = true },
+                Serde.Json.JsonSerializer.Deserialize<DUWithInitializer>(src)
+            );
+        }
+
         private abstract partial record BasicDUManualTag : IDeserializeProvider<BasicDUManualTag>
         {
             private BasicDUManualTag() { }

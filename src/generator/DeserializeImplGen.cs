@@ -147,15 +147,7 @@ namespace Serde
 
             var classScopeProxyMap = ProxyMap.FromSymbol(type);
 
-            // Field initializers are only preserved when the deserializer is generated
-            // into the same type whose members we are reading (its own nested _DeObj).
-            // For an empty ForType proxy, `type` is the foreign target but the code is
-            // emitted in the proxy type, so the initializers — which may reference members
-            // inaccessible from the proxy — must not be copied.
-            var containingType = inProgress.IsEmpty ? null : inProgress[0].Containing;
-            var preserveInitializers =
-                containingType is not null
-                && SymbolEqualityComparer.Default.Equals(type, containingType);
+            var initializerScope = SymbolUtilities.GetInitializerScope(type, inProgress);
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
@@ -295,7 +287,7 @@ namespace Serde
                     var localName = GetLocalName(m);
                     var (initializer, isRequired) = m.GetDeserializeInitializer(
                         context.Compilation,
-                        preserveInitializers
+                        initializerScope
                     );
                     localsBuilder.AppendLine($"{memberType} {localName} = {initializer};");
 
