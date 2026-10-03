@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    internal Dictionary<string, string>? Unknown { get; init; }
+                                         ^^^^^^^
+}
+*/
+ : (9,41)-(9,48),
+      Message: The 'CaptureUnknownMembers' option on member 'Unknown' has no effect because the member is not public.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CaptureMemberNotPublic,
+        Title: ,
+        MessageFormat: The 'CaptureUnknownMembers' option on member 'Unknown' has no effect because the member is not public.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

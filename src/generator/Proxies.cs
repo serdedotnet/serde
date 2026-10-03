@@ -439,6 +439,47 @@ sealed partial class {{proxyName}};
     }
 
     /// <summary>
+    /// Gets the value type and its proxy for a member that captures unknown members, which must be
+    /// a <c>Dictionary&lt;string, TValue&gt;</c>. The proxy is resolved the same way as for any
+    /// other member of type <c>TValue</c>.
+    /// </summary>
+    internal static TypeWithProxy GetCaptureValueProxy(
+        DataMemberSymbol capture,
+        ProxyMap classScopeProxyMap,
+        GeneratorExecutionContext context,
+        SerdeUsage usage,
+        ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
+    )
+    {
+        var type = ((INamedTypeSymbol)capture.Type).TypeArguments[1];
+        var typeName = type.ToDisplayString();
+        var proxy = TryGetProxyString(
+            null,
+            type,
+            context,
+            usage,
+            inProgress,
+            ProxyContext.Create(classScopeProxyMap, ProxyMap.FromSymbol(capture.Symbol))
+        );
+        if (proxy is null)
+        {
+            context.ReportDiagnostic(
+                CreateDiagnostic(
+                    DiagId.ERR_DoesntImplementInterface,
+                    capture.Locations[0],
+                    capture.Symbol,
+                    typeName,
+                    usage == SerdeUsage.Serialize
+                        ? "Serde.ISerializeProvider<T>"
+                        : "Serde.IDeserializeProvider<T>"
+                )
+            );
+            proxy = typeName;
+        }
+        return new TypeWithProxy(typeName, proxy);
+    }
+
+    /// <summary>
     /// Converts an explicit proxy type symbol (from a <c>[Proxy = typeof(...)]</c> attribute) to a string.
     /// For unconstructed generics, delegates to <see cref="MakeProxyString"/> to fill in type arguments.
     /// </summary>

@@ -172,6 +172,12 @@ partial class JsonSerializer : ITypeSerializer
         // No-op for JSON
     }
 
+    public ISerializer WriteFieldStart(ISerdeInfo typeInfo, string name)
+    {
+        _writer.WritePropertyName(name);
+        return this;
+    }
+
     void ITypeSerializer.WriteValue<T>(
         ISerdeInfo typeInfo,
         int fieldIndex,

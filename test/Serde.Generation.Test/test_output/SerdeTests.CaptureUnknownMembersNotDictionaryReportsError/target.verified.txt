@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public string Unknown { get; init; } = "";
+                  ^^^^^^^
+}
+*/
+ : (8,18)-(8,25),
+      Message: Member 'Unknown' captures unknown members, so it must be a 'Dictionary<string, T>', but its type is 'string'.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CaptureMemberNotDictionary,
+        Title: ,
+        MessageFormat: Member 'Unknown' captures unknown members, so it must be a 'Dictionary<string, T>', but its type is 'string'.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

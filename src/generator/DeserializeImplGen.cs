@@ -159,6 +159,9 @@ namespace Serde
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
+
+            // Unknown members are read into the capture member, if any, instead of being skipped
+            var captureMember = SymbolUtilities.GetCaptureMember(type, context);
             var assignedVarType = members.Count switch
             {
                 <= 8 => "byte",
@@ -173,6 +176,7 @@ namespace Serde
                 typeFqn,
                 type,
                 members,
+                captureMember,
                 requiredMask
             );
             string foreignTypeConversionOpt = foreignType is not null
@@ -183,9 +187,10 @@ namespace Serde
             const string indexLocalName = "_l_index_";
             const string IndexErrorName = "_l_errorName";
 
-            var errorNameOrDiscard = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
-                ? $"{IndexErrorName}"
-                : "_";
+            var errorNameOrDiscard =
+                SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers || captureMember is not null
+                    ? $"{IndexErrorName}"
+                    : "_";
 
             var interfaceString = (foreignType ?? type).ToDisplayString(SymbolUtilities.FqnFormat);
             var methodText = new SourceBuilder(
@@ -319,19 +324,45 @@ namespace Serde
                         assignedMaskValue |= 1L << fieldIndex;
                     }
                 }
-                var unknownMemberBehavior = SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers
-                    ? $"""
+                string unknownMemberBehavior;
+                if (captureMember is { } capture)
+                {
+                    var captureType = capture.Type.WithNullableAnnotation(
+                        NullableAnnotation.Annotated
+                    );
+                    localsBuilder.AppendLine(
+                        $"{captureType.ToDisplayString()} {GetLocalName(capture)} = null;"
+                    );
+                    unknownMemberBehavior = CaptureUnknownMember(capture);
+                }
+                else if (SymbolUtilities.GetTypeOptions(type).DenyUnknownMembers)
+                {
+                    unknownMemberBehavior = $"""
                         throw Serde.DeserializeException.UnknownMember(_l_errorName!, {typeInfoLocalName});
-                        """
-                    : $"""
+                        """;
+                }
+                else
+                {
+                    unknownMemberBehavior = $"""
                         typeDeserialize.SkipValue(_l_serdeInfo, {indexLocalName});
                         break;
                         """;
+                }
                 foreach (var i in skippedIndices)
                 {
                     casesBuilder.AppendLine(
                         $"""
                         case {i}:
+                        """
+                    );
+                }
+                if (captureMember is not null && skippedIndices.Count > 0)
+                {
+                    // Skipped members are still members of the type, so they aren't captured
+                    casesBuilder.AppendLine(
+                        $"""
+                            typeDeserialize.SkipValue({typeInfoLocalName}, {indexLocalName});
+                            break;
                         """
                     );
                 }
@@ -353,6 +384,40 @@ namespace Serde
                     "0b" + Convert.ToString(assignedMaskValue, 2)
                 );
             }
+
+            // Reads an unknown member's value into the capture member's dictionary, which is
+            // created on first use
+            string CaptureUnknownMember(DataMemberSymbol capture)
+            {
+                var local = GetLocalName(capture);
+                var (valueType, valueProxy) = Proxies.GetCaptureValueProxy(
+                    capture,
+                    classScopeProxyMap,
+                    context,
+                    SerdeUsage.Deserialize,
+                    inProgress
+                );
+                var add = SymbolUtilities.GetTypeOptions(type).AllowDuplicateKeys
+                    ? $"{local}[{IndexErrorName}] = _l_unknownValue;"
+                    : $$"""
+                        if (!{{local}}.TryAdd({{IndexErrorName}}, _l_unknownValue))
+                        {
+                            throw Serde.DeserializeException.DuplicateKey({{IndexErrorName}}, {{typeInfoLocalName}});
+                        }
+                        """;
+                // A format that can't name the unknown member can't have it captured
+                return $$"""
+                    if ({{IndexErrorName}} is null)
+                    {
+                        typeDeserialize.SkipValue({{typeInfoLocalName}}, {{indexLocalName}});
+                        break;
+                    }
+                    var _l_unknownValue = typeDeserialize.ReadValue<{{valueType}}, {{valueProxy}}>({{typeInfoLocalName}}, {{indexLocalName}});
+                    {{local}} ??= new();
+                    {{add}}
+                    break;
+                    """;
+            }
         }
 
         private const string AssignedVarName = "_r_assignedValid";
@@ -368,6 +433,7 @@ namespace Serde
             string typeName,
             ITypeSymbol type,
             List<DataMemberSymbol> members,
+            DataMemberSymbol? captureMember,
             string assignedMask
         )
         {
@@ -402,6 +468,10 @@ namespace Serde
             }
 
             var assignmentMembers = new List<DataMemberSymbol>(members);
+            if (captureMember is { } capture)
+            {
+                assignmentMembers.Add(capture);
+            }
             var parameters = new StringBuilder();
             if (primaryCtor is not null)
             {
@@ -424,7 +494,7 @@ namespace Serde
                     {
                         parameters.Append(", ");
                     }
-                    parameters.Append(GetLocalName(assignmentMembers[index]));
+                    parameters.Append(GetValue(assignmentMembers[index]));
                     assignmentMembers.RemoveAt(index);
                 }
             }
@@ -446,12 +516,20 @@ namespace Serde
                 {
                     continue;
                 }
-                typeCreation.AppendLine($"{m.Name} = {GetLocalName(m)},");
+                typeCreation.AppendLine($"{m.Name} = {GetValue(m)},");
             }
             typeCreation.Dedent();
             typeCreation.AppendLine("};");
 
             return typeCreation;
+
+            // The value assigned to a member. The capture member's dictionary is only created when
+            // there's an unknown member, so a non-nullable capture member gets an empty one.
+            string GetValue(DataMemberSymbol m) =>
+                SymbolEqualityComparer.Default.Equals(m.Symbol, captureMember?.Symbol)
+                && !m.IsNullable
+                    ? $"{GetLocalName(m)} ?? new()"
+                    : GetLocalName(m);
         }
 
         private static string GetLocalName(DataMemberSymbol m) => "_l_" + m.Name.ToLower();
