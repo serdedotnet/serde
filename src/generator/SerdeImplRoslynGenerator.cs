@@ -377,9 +377,15 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             typeDeclContext = Proxies.GenerateEnumProxy(typeDeclContext, generationContext);
         }
 
-        // All generated code is nested in the attributed type, so member initializers can be
-        // copied into it if they're declared there. An empty ForType proxy reads the members of a
-        // type declared elsewhere, so its initializers aren't copied.
+        // Member initializers are only copied for types whose source is always in this
+        // compilation: the attributed type and its union cases. Their generated code is all nested
+        // in the attributed type, which is the scope the copied initializers must be accessible
+        // from.
+        //
+        // An empty ForType proxy reads the members of an external type, which is usually in
+        // another assembly. Assemblies don't keep initializers (they're compiled into the
+        // constructor), so they can't be copied there. To keep the same members required no
+        // matter which assembly the type lives in, its initializers are never copied.
         var initializerScope = SymbolEqualityComparer.Default.Equals(receiverType, typeSymbol)
             ? typeSymbol
             : null;

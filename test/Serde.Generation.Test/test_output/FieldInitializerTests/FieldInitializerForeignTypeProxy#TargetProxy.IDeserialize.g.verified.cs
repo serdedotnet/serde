@@ -14,6 +14,7 @@ partial struct TargetProxy
         {
             int _l_x = default!;
             int _l_y = default!;
+            int _l_z = default!;
 
             byte _r_assignedValid = 0;
 
@@ -39,6 +40,11 @@ partial struct TargetProxy
                         _l_y = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
                         _r_assignedValid |= ((byte)1) << 1;
                         break;
+                    case 2:
+                        Serde.DeserializeException.ThrowIfDuplicate(_r_assignedValid, 2, _l_serdeInfo);
+                        _l_z = typeDeserialize.ReadI32(_l_serdeInfo, _l_index_);
+                        _r_assignedValid |= ((byte)1) << 2;
+                        break;
                     case Serde.ITypeDeserializer.IndexNotFound:
                         typeDeserialize.SkipValue(_l_serdeInfo, _l_index_);
                         break;
@@ -47,13 +53,14 @@ partial struct TargetProxy
                 }
             }
             typeDeserialize.End(_l_serdeInfo);
-            if ((_r_assignedValid & 0b11) != 0b11)
+            if ((_r_assignedValid & 0b111) != 0b111)
             {
-                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b11, _l_serdeInfo);
+                throw Serde.DeserializeException.UnassignedMember(_r_assignedValid, 0b111, _l_serdeInfo);
             }
             var newType = new Target() {
                 X = _l_x,
                 Y = _l_y,
+                Z = _l_z,
             };
 
             return newType;

@@ -160,10 +160,10 @@ namespace Other
         }
 
         /// <summary>
-        /// Field initializers must NOT be preserved for a ForType proxy: the generated
-        /// deserializer lives in the proxy type, not nested in the target, so a
-        /// fully-qualified reference to a private/inaccessible static member would fail
-        /// to compile. The initializer falls back to default! instead.
+        /// Field initializers are never preserved for an empty ForType proxy, even a constant
+        /// that could be copied. The target is usually in another assembly, where initializers
+        /// aren't visible, so ignoring them everywhere keeps the same members required no matter
+        /// where the target lives. Every member falls back to default! and stays required.
         /// </summary>
         [Fact]
         public Task FieldInitializerForeignTypeProxy()
@@ -176,6 +176,7 @@ class Target
     private static readonly int s_def = 7;
     public int X = s_def;
     public int Y;
+    public int Z = 5;
 }
 
 [GenerateDeserialize(ForType = typeof(Target))]

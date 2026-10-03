@@ -186,9 +186,10 @@ internal
 sealed class SerdeMemberOptions : Attribute
 {
     /// <summary>
-    /// Throw an exception if the target field is not present when deserializing.  This is the
-    /// default behavior for fields of non-nullable types, while the default behavior for nullable
-    /// types is to set the field to null.
+    /// Throw an exception if the target field is not present when deserializing. When this option
+    /// isn't set, a missing member is an error only if its type is non-nullable and it has no
+    /// initializer that Serde can preserve. A missing member with a preserved initializer keeps
+    /// the initializer's value, and a missing nullable member without one is set to null.
     /// </summary>
     public bool ThrowIfMissing { get; init; } = true;
 

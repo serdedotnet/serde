@@ -8,7 +8,8 @@ partial struct TargetProxy
         typeof(Target).GetCustomAttributesData(),
         new global::Serde.SerdeInfo.FieldInfo[] {
             new("x", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>()),
-            new("y", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>())
+            new("y", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>()),
+            new("z", global::Serde.SerdeInfoProvider.GetDeserializeInfo<int, global::Serde.I32Proxy>())
         }
     );
 }

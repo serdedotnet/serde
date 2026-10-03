@@ -6,6 +6,12 @@ Sometimes you need to serialize or deserialize a type you don't control or can't
 {{#include ../../samples/ExternalTypes.cs }}
 ```
 
+## Initializers
+
+An empty proxy ignores the external type's field and property initializers, so its non-nullable members are required when deserializing. Compiled assemblies don't keep initializers (they become part of the constructor), so Serde can't see them for a type in another assembly. Serde ignores them even when the external type is in your own project, so that the same members are required no matter where the type lives.
+
+If you need defaults for missing members, use a [non-empty proxy](#types-that-need-conversion) and put the initializers on the proxy's own members.
+
 ## Types that need conversion
 
 An empty proxy works when the external type has a parameterless constructor (or a
