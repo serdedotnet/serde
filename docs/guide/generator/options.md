@@ -64,7 +64,28 @@ Note that these options only apply to the target type, not the type of nested me
 
 - `[SerdeMemberOptions(ThrowIfMissing = false)]`
 
-  `false` by default. When true, throws an exception if the target field is not present when deserializing.  This is the default behavior for fields of non-nullable types, while the default behavior for nullable types is to set the field to null.
+  Not set by default. When true, throws an exception if the member is not present when deserializing. When false, a missing member is never an error; it keeps its initializer's value, or `default` if it has none.
+
+  When not set, a missing member is an error only if its type is non-nullable and it has no initializer that Serde can preserve. A missing member with a preserved initializer keeps the initializer's value, and a missing nullable member without one is set to null:
+
+  ```csharp
+  [GenerateDeserialize]
+  partial record Options
+  {
+      public required string Name { get; init; } // required: non-nullable, no initializer
+      public int Retries { get; init; } = 3;      // optional: 3 if missing
+      public string? Comment { get; init; }       // optional: null if missing
+  }
+  ```
+
+  Serde preserves an initializer by copying it into the generated deserializer, so only initializers that are safe to copy are preserved:
+
+  - constants, including enum values and `null`, and
+  - references to static fields or properties that are accessible from the type with the `Generate` attribute, such as `string.Empty` or `int.MaxValue`.
+
+  Any other initializer, like a method call or `new List<int>()`, isn't preserved, so the member is required unless it's nullable or `ThrowIfMissing = false`.
+
+  Initializers are preserved for the members of the type with the `Generate` attribute and of its union cases. They are never preserved for the target of an empty `ForType` proxy; see [External types](../foreign-types.md#initializers).
 
 - `[SerdeMemberOptions(SerializeNull = false)]`
 

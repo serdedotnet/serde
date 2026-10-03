@@ -36,6 +36,7 @@ internal static class SerdeInfoGenerator
         INamedTypeSymbol? foreignType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
+        ITypeSymbol? initializerScope,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
     )
     {
@@ -46,6 +47,7 @@ internal static class SerdeInfoGenerator
                 receiverType,
                 context,
                 usage,
+                initializerScope,
                 inProgress
             );
             return;
@@ -124,9 +126,6 @@ internal static class SerdeInfoGenerator
         // is a reported error and is skipped here to avoid emitting bogus data.
         var allExplicit =
             !isEnum && emittedMembers.Count > 0 && emittedMembers.All(e => e.Member.Ordinal is int);
-
-        // Match the deserializer, so members with preserved initializers are reported optional.
-        var initializerScope = SymbolUtilities.GetInitializerScope(receiverType, inProgress);
 
         var memberEntries = new List<string>(emittedMembers.Count);
         foreach (var (m, wrapper) in emittedMembers)
@@ -275,6 +274,7 @@ internal static class SerdeInfoGenerator
         INamedTypeSymbol receiverType,
         GeneratorExecutionContext context,
         SerdeUsage usage,
+        ITypeSymbol? initializerScope,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
     )
     {
@@ -301,12 +301,14 @@ partial {{declKeywords}} {{typeName}}{{originalCtx.TypeParameterList}}
                 )
             );
             var newCtx = TypeDeclContext.FromFile(nestedType.ToString(), proxyName);
+            // The case's proxy is nested in the union, so it shares the union's initializer scope.
             SerdeImplRoslynGenerator.GenerateInfoAndSerdeImpls(
                 usage,
                 context,
                 newCtx,
                 m,
                 foreignType: null,
+                initializerScope,
                 inProgress.Add((m, receiverType))
             );
             var serdeObjFqn = $"{newCtx.GetFqn()}.{usage.GetSerdeObjName()}";

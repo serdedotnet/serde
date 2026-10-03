@@ -377,6 +377,19 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             typeDeclContext = Proxies.GenerateEnumProxy(typeDeclContext, generationContext);
         }
 
+        // Member initializers are only copied for types whose source is always in this
+        // compilation: the attributed type and its union cases. Their generated code is all nested
+        // in the attributed type, which is the scope the copied initializers must be accessible
+        // from.
+        //
+        // An empty ForType proxy reads the members of an external type, which is usually in
+        // another assembly. Assemblies don't keep initializers (they're compiled into the
+        // constructor), so they can't be copied there. To keep the same members required no
+        // matter which assembly the type lives in, its initializers are never copied.
+        var initializerScope = SymbolEqualityComparer.Default.Equals(receiverType, typeSymbol)
+            ? typeSymbol
+            : null;
+
         var inProgress = ImmutableList.Create<(ITypeSymbol Receiver, ITypeSymbol Containing)>(
             (receiverType.WithNullableAnnotation(NullableAnnotation.Annotated), typeSymbol)
         );
@@ -408,6 +421,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                 typeDeclContext,
                 receiverType,
                 foreignType,
+                initializerScope,
                 inProgress
             );
             serdeObjString = isEnum
@@ -503,6 +517,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         TypeDeclContext typeDeclContext,
         INamedTypeSymbol receiverType,
         INamedTypeSymbol? foreignType,
+        ITypeSymbol? initializerScope,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
     )
     {
@@ -512,6 +527,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             foreignType,
             generationContext,
             usage,
+            initializerScope,
             inProgress
         );
 
@@ -521,6 +537,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
             receiverType,
             foreignType,
             generationContext,
+            initializerScope,
             inProgress
         );
     }
@@ -637,6 +654,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
         ITypeSymbol receiverType,
         INamedTypeSymbol? foreignType,
         GeneratorExecutionContext context,
+        ITypeSymbol? initializerScope,
         ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
     )
     {
@@ -665,6 +683,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                     context,
                     receiverType,
                     foreignType,
+                    initializerScope,
                     inProgress
                 );
                 baseList = $" : Serde.IDeserialize<{interfaceType.ToDisplayString()}>";
@@ -680,6 +699,7 @@ public class SerdeImplRoslynGenerator : IIncrementalGenerator
                     context,
                     receiverType,
                     foreignType,
+                    initializerScope,
                     inProgress
                 );
                 implMembers.Append(deserializeMembers);
