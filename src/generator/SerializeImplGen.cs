@@ -61,6 +61,10 @@ public partial class SerializeImplGen
             // `var _l_info = GetInfo(this);`
             statements.AppendLine($"var _l_info = global::Serde.SerdeInfoProvider.GetInfo(this);");
 
+            // Unknown members captured by a member aren't in the type's info. They're written
+            // after the declared members, identified by name rather than index.
+            var captureMember = SymbolUtilities.GetCaptureMember(receiverType, context);
+
             // The field-writing statements are collected separately so that the number of fields
             // that will actually be written can be computed and passed to WriteType before any of
             // them are emitted. Nullable fields that are skipped when null (i.e. serialized with an
@@ -211,7 +215,7 @@ public partial class SerializeImplGen
             // Compute the number of fields that will actually be written and open the type. When no
             // fields can be skipped the count is a constant; otherwise it starts at the total and is
             // decremented for each nullable field whose value is null.
-            if (skippableExprs.Count == 0)
+            if (skippableExprs.Count == 0 && captureMember is null)
             {
                 statements.AppendLine(
                     $"var _l_type = serializer.WriteType(_l_info, {fieldsAndProps.Count});"
@@ -224,12 +228,37 @@ public partial class SerializeImplGen
                 {
                     statements.AppendLine($"if ({expr} is null) _l_fieldCount--;");
                 }
+                if (captureMember is { Name: var captureName })
+                {
+                    statements.AppendLine(
+                        $"_l_fieldCount += {receiverExpr}.{captureName}?.Count ?? 0;"
+                    );
+                }
                 statements.AppendLine(
                     "var _l_type = serializer.WriteType(_l_info, _l_fieldCount);"
                 );
             }
 
             statements.Append(writeStatements);
+
+            if (captureMember is { } capture)
+            {
+                var (valueType, valueProxy) = Proxies.GetCaptureValueProxy(
+                    capture,
+                    classScopeProxyMap,
+                    context,
+                    SerdeUsage.Serialize,
+                    inProgress
+                );
+                statements.AppendLine(
+                    $$"""
+                    if ({{receiverExpr}}.{{capture.Name}} is { } _l_unknown)
+                    {
+                        global::Serde.UnknownMembers.Serialize<{{valueType}}, {{valueProxy}}>(_l_unknown, _l_type, _l_info);
+                    }
+                    """
+                );
+            }
 
             // `type.End();`
             statements.Append("_l_type.End(_l_info);");

@@ -32,6 +32,11 @@ namespace Serde
         ERR_OrdinalOnSkippedMember = 20,
         ERR_OrdinalOnEnumMember = 21,
         ERR_AsUnderlyingOnNonEnum = 22,
+        ERR_CaptureMemberNotDictionary = 23,
+        ERR_CaptureWithDenyUnknownMembers = 24,
+        ERR_MultipleCaptureMembers = 25,
+        ERR_CaptureMemberNotPublic = 26,
+        ERR_CaptureWithMemberOption = 27,
     }
 
     internal static class Diagnostics
@@ -61,6 +66,11 @@ namespace Serde
                 ERR_OrdinalOnSkippedMember => nameof(ERR_OrdinalOnSkippedMember),
                 ERR_OrdinalOnEnumMember => nameof(ERR_OrdinalOnEnumMember),
                 ERR_AsUnderlyingOnNonEnum => nameof(ERR_AsUnderlyingOnNonEnum),
+                ERR_CaptureMemberNotDictionary => nameof(ERR_CaptureMemberNotDictionary),
+                ERR_CaptureWithDenyUnknownMembers => nameof(ERR_CaptureWithDenyUnknownMembers),
+                ERR_MultipleCaptureMembers => nameof(ERR_MultipleCaptureMembers),
+                ERR_CaptureMemberNotPublic => nameof(ERR_CaptureMemberNotPublic),
+                ERR_CaptureWithMemberOption => nameof(ERR_CaptureWithMemberOption),
             };
 
         public static Diagnostic CreateDiagnostic(

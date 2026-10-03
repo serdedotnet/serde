@@ -1,0 +1,42 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(CaptureUnknownMembers = true, Rename = "extra", Skip = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+                                       ^^^^^^^
+}
+*/
+ : (9,39)-(9,46),
+      Message: The 'Rename' option on member 'Unknown' has no effect because the member captures unknown members.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CaptureWithMemberOption,
+        Title: ,
+        MessageFormat: The 'Rename' option on member 'Unknown' has no effect because the member captures unknown members.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    },
+    {
+      Location: /*
+    [SerdeMemberOptions(CaptureUnknownMembers = true, Rename = "extra", Skip = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+                                       ^^^^^^^
+}
+*/
+ : (9,39)-(9,46),
+      Message: The 'Skip' option on member 'Unknown' has no effect because the member captures unknown members.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CaptureWithMemberOption,
+        Title: ,
+        MessageFormat: The 'Skip' option on member 'Unknown' has no effect because the member captures unknown members.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

@@ -333,4 +333,124 @@ public enum Color
 """;
         return VerifyDiagnostics(src);
     }
+
+    [Fact]
+    public Task CaptureUnknownMembers()
+    {
+        var src = """
+using System.Collections.Generic;
+using Serde;
+
+[GenerateSerde]
+public partial class C
+{
+    public required string Name { get; init; }
+
+    [SerdeMemberOptions(SkipDeserialize = true)]
+    public int Computed { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+}
+""";
+        return VerifyMultiFile(src);
+    }
+
+    [Fact]
+    public Task CaptureUnknownMembersNotDictionaryReportsError()
+    {
+        var src = """
+using Serde;
+
+[GenerateSerde]
+public partial class C
+{
+    public required string Name { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public string Unknown { get; init; } = "";
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task CaptureUnknownMembersWithDenyReportsError()
+    {
+        var src = """
+using System.Collections.Generic;
+using Serde;
+
+[GenerateSerde]
+[SerdeTypeOptions(DenyUnknownMembers = true)]
+public partial class C
+{
+    public required string Name { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task MultipleCaptureUnknownMembersReportsError()
+    {
+        var src = """
+using System.Collections.Generic;
+using Serde;
+
+[GenerateSerde]
+public partial class C
+{
+    public required string Name { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public Dictionary<string, string>? Other { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task CaptureUnknownMembersNotPublicReportsError()
+    {
+        var src = """
+using System.Collections.Generic;
+using Serde;
+
+[GenerateSerde]
+public partial class C
+{
+    public required string Name { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    internal Dictionary<string, string>? Unknown { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
+
+    [Fact]
+    public Task CaptureUnknownMembersWithOtherOptionsReportsError()
+    {
+        var src = """
+using System.Collections.Generic;
+using Serde;
+
+[GenerateSerde]
+public partial class C
+{
+    public required string Name { get; init; }
+
+    [SerdeMemberOptions(CaptureUnknownMembers = true, Rename = "extra", Skip = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+}
+""";
+        return VerifyDiagnostics(src);
+    }
 }

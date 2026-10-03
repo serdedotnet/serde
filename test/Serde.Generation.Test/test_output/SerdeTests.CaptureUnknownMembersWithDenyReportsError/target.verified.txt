@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public Dictionary<string, string>? Unknown { get; init; }
+                                       ^^^^^^^
+}
+*/
+ : (10,39)-(10,46),
+      Message: Member 'Unknown' captures unknown members, but type 'C' denies unknown members with 'DenyUnknownMembers'.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_CaptureWithDenyUnknownMembers,
+        Title: ,
+        MessageFormat: Member 'Unknown' captures unknown members, but type 'C' denies unknown members with 'DenyUnknownMembers'.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

@@ -189,9 +189,9 @@ namespace Serde
         public static Serde.DeserializeException DuplicateKey(string propertyName, Serde.ISerdeInfo info);
         public static Serde.DeserializeException ExpectedEndOfType(int index);
         public static Serde.DeserializeException UnassignedMember();
-        public static Serde.UnassignedMemberException UnassignedMember(ulong assignedMask, ulong requiredMask, Serde.ISerdeInfo info);
         public static Serde.DeserializeException UnknownMember(string name, Serde.ISerdeInfo info);
         public static Serde.DeserializeException WrongItemCount(int expected, int actual);
+        public static Serde.UnassignedMemberException UnassignedMember(ulong assignedMask, ulong requiredMask, Serde.ISerdeInfo info);
         public static void ThrowIfDuplicate(byte assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
         public static void ThrowIfDuplicate(uint assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
         public static void ThrowIfDuplicate(ulong assignedMask, int fieldIndex, Serde.ISerdeInfo serdeInfo);
@@ -548,6 +548,7 @@ namespace Serde
     public interface ITypeSerializer
     {
         Serde.ISerializer WriteFieldStart(Serde.ISerdeInfo typeInfo, int index);
+        Serde.ISerializer WriteFieldStart(Serde.ISerdeInfo typeInfo, string name);
         void End(Serde.ISerdeInfo info);
         void SkipValue(Serde.ISerdeInfo typeInfo, int index);
         void WriteBool(Serde.ISerdeInfo typeInfo, int index, bool b);
@@ -562,6 +563,7 @@ namespace Serde
         void WriteF32(Serde.ISerdeInfo typeInfo, int index, float f);
         void WriteF64(Serde.ISerdeInfo typeInfo, int index, double d);
         void WriteFieldEnd(Serde.ISerdeInfo typeInfo, int index, Serde.ISerializer serializer);
+        void WriteFieldEnd(Serde.ISerdeInfo typeInfo, string name, Serde.ISerializer serializer);
         void WriteI128(Serde.ISerdeInfo typeInfo, int index, System.Int128 i128);
         void WriteI16(Serde.ISerdeInfo typeInfo, int index, short i16);
         void WriteI32(Serde.ISerdeInfo typeInfo, int index, int i32);
@@ -818,6 +820,7 @@ namespace Serde
         public System.Type? DeserializeProxy { get; init; }
         public System.Type? Proxy { get; init; }
         public System.Type? SerializeProxy { get; init; }
+        public bool CaptureUnknownMembers { get; init; }
         public bool ProvideAttributes { get; init; }
         public bool SerializeNull { get; init; }
         public bool Skip { get; init; }
@@ -988,6 +991,10 @@ namespace Serde
         public Serde.ISerdeInfo SerdeInfo { get; }
         public System.Collections.Immutable.ImmutableArray<int> MissingFieldIndices { get; }
     }
+    public static class UnknownMembers
+    {
+        public static void Serialize<TValue, TProvider>(System.Collections.Generic.Dictionary<string, TValue> members, Serde.ITypeSerializer typeSerializer, Serde.ISerdeInfo typeInfo) where TProvider : Serde.ISerializeProvider<TValue>;
+    }
     public sealed class UseProxy()
     {
         public System.Type? DeserializeProxy { get; init; }
@@ -1005,6 +1012,7 @@ namespace Serde.Json
     public sealed class JsonSerializer
     {
         public Serde.ISerializer WriteFieldStart(Serde.ISerdeInfo typeInfo, int fieldIndex);
+        public Serde.ISerializer WriteFieldStart(Serde.ISerdeInfo typeInfo, string name);
         public static Serde.Json.JsonValue DeserializeJsonValue(string source);
         public static System.Collections.Generic.List<T> DeserializeList<T>(string source) where T : Serde.IDeserializeProvider<T>;
         public static System.ReadOnlyMemory<byte> ToBytes<T, TProvider>(T s) where TProvider : Serde.ISerializeProvider<T>;

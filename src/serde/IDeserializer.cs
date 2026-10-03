@@ -83,6 +83,10 @@ public interface ITypeDeserializer
     /// method should return <see cref="EndOfType" /> and set errorName to null. If the field is not
     /// found, the method should return <see cref="IndexNotFound" /> and set errorName to the name
     /// of the missing field, or the best-possible user-facing name.
+    ///
+    /// After returning <see cref="IndexNotFound" /> with a non-null name, the caller may read the
+    /// field's value with <see cref="ReadValue{T}"/> (or the other read methods) passing <see
+    /// cref="IndexNotFound" /> as the index, instead of calling <see cref="SkipValue"/>.
     /// </summary>
     (int, string? errorName) TryReadIndexWithName(ISerdeInfo info);
 
