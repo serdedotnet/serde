@@ -297,9 +297,9 @@ namespace Serde
         /// set to true. A non-nullable member without a preserved initializer stays required so
         /// that a missing value is reported rather than silently left as <c>default!</c>.
         ///
-        /// <paramref name="initializerScope"/> is the type the deserializer is generated in (see
-        /// <see cref="SymbolUtilities.GetInitializerScope"/>), or null if initializers must not be
-        /// preserved.
+        /// <paramref name="initializerScope"/> is the type the deserializer is generated in, or
+        /// null if the member is declared outside it (e.g. the target of a ForType proxy), in which
+        /// case initializers are not preserved.
         /// </summary>
         public (string Initializer, bool Required) GetDeserializeInitializer(
             Compilation compilation,

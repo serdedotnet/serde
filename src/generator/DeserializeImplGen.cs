@@ -19,6 +19,7 @@ namespace Serde
             GeneratorExecutionContext context,
             ITypeSymbol receiverType,
             INamedTypeSymbol? foreignType,
+            ITypeSymbol? initializerScope,
             ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
         )
         {
@@ -40,6 +41,7 @@ namespace Serde
                         receiverType,
                         typeSyntax,
                         foreignType,
+                        initializerScope,
                         inProgress
                     );
             return members;
@@ -140,14 +142,13 @@ namespace Serde
             ITypeSymbol type,
             TypeSyntax typeSyntax,
             INamedTypeSymbol? foreignType,
+            ITypeSymbol? initializerScope,
             ImmutableList<(ITypeSymbol Receiver, ITypeSymbol Containing)> inProgress
         )
         {
             Debug.Assert(type.TypeKind != TypeKind.Enum);
 
             var classScopeProxyMap = ProxyMap.FromSymbol(type);
-
-            var initializerScope = SymbolUtilities.GetInitializerScope(type, inProgress);
 
             var members = SymbolUtilities.GetDataMembers(type, SerdeUsage.Both, context);
             var typeFqn = typeSyntax.ToString();
