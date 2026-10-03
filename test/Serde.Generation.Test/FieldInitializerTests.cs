@@ -79,6 +79,31 @@ partial class C
         }
 
         /// <summary>
+        /// An empty collection expression has no identifiers and is target-typed by the
+        /// generated local, so it is preserved. Non-empty collection expressions may reference
+        /// symbols that aren't in scope in generated code, so they fall back to default!.
+        /// </summary>
+        [Fact]
+        public Task FieldInitializerEmptyCollection()
+        {
+            var src = """
+using Serde;
+using System.Collections.Generic;
+
+[GenerateDeserialize]
+partial class C
+{
+    public List<int> Items = [];
+    public int[] Arr = [];
+    public string[] Strs { get; set; } = [];
+    // Non-empty collection expressions are not preserved
+    public int[] NonEmpty = [1, 2];
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
+        /// <summary>
         /// Verify that null! on a non-nullable reference type roundtrips correctly.
         /// GetConstantValue returns null (without the !), so we need to re-add the
         /// null-forgiving operator for the generated code to compile under #nullable enable.
