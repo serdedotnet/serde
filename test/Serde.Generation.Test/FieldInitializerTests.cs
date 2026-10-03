@@ -184,6 +184,39 @@ partial struct TargetProxy { }
             return VerifyDeserialize(src);
         }
 
+        /// <summary>
+        /// A union case's deserializer is generated in a proxy nested in the union, so its
+        /// initializers are preserved if they are accessible from the union. A private static
+        /// member of the case is not, so it falls back to default!, but a private const is
+        /// still copied by value.
+        /// </summary>
+        [Fact]
+        public Task FieldInitializerUnionCase()
+        {
+            var src = """
+using Serde;
+
+[GenerateDeserialize]
+abstract partial record Shape
+{
+    private Shape() { }
+
+    public sealed partial record Install : Shape
+    {
+        private const int PrivateConst = 3;
+        private static readonly int s_private = 7;
+        internal static readonly int Internal = 9;
+
+        public bool Flag { get; init; } = true;
+        public int FromPrivateConst { get; init; } = PrivateConst;
+        public int FromPrivate { get; init; } = s_private;
+        public int FromInternal { get; init; } = Internal;
+    }
+}
+""";
+            return VerifyDeserialize(src);
+        }
+
         private static Task VerifyDeserialize(string src, [CallerMemberName] string caller = "") =>
             VerifyGeneratedCode(src, nameof(FieldInitializerTests), caller, multiFile: false);
     }

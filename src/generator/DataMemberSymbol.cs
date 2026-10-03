@@ -211,10 +211,11 @@ namespace Serde
         /// <summary>
         /// Returns the initializer expression string for this member, or null if there is no
         /// initializer or the initializer is not "constant". Constant here means either an
-        /// actual const, or a static member reference. This expression should be safe to emit
-        /// into methods inside the type.
+        /// actual const, or a static member reference that is accessible within
+        /// <paramref name="within"/>. This expression should be safe to emit into methods nested
+        /// inside <paramref name="within"/>.
         /// </summary>
-        public string? GetConstInitializer(Compilation compilation)
+        public string? GetConstInitializer(Compilation compilation, ITypeSymbol within)
         {
             foreach (var syntaxRef in Symbol.DeclaringSyntaxReferences)
             {
@@ -231,12 +232,14 @@ namespace Serde
                 var semanticModel = compilation.GetSemanticModel(syntax.SyntaxTree);
 
                 var expr = initializer.Value;
-                // Check if the expression resolves to a symbol we can safely fully-qualify.
+                // Check if the expression resolves to a symbol we can safely fully-qualify. An
+                // inaccessible constant still falls through to be copied by value below.
                 var symbolInfo = semanticModel.GetSymbolInfo(expr);
                 if (
                     symbolInfo.Symbol
-                    is IFieldSymbol { IsStatic: true }
-                        or IPropertySymbol { IsStatic: true }
+                        is IFieldSymbol { IsStatic: true }
+                            or IPropertySymbol { IsStatic: true }
+                    && compilation.IsSymbolAccessibleWithin(symbolInfo.Symbol, within)
                 )
                 {
                     return symbolInfo.Symbol.ToDisplayString(SymbolUtilities.FqnFormat);
@@ -294,16 +297,18 @@ namespace Serde
         /// set to true. A non-nullable member without a preserved initializer stays required so
         /// that a missing value is reported rather than silently left as <c>default!</c>.
         ///
-        /// <paramref name="preserveInitializers"/> must be false when the deserializer is generated
-        /// outside the declaring type (e.g. a ForType proxy), where the initializer may reference
-        /// inaccessible members and so must not be relied upon.
+        /// <paramref name="initializerScope"/> is the type the deserializer is generated in (see
+        /// <see cref="SymbolUtilities.GetInitializerScope"/>), or null if initializers must not be
+        /// preserved.
         /// </summary>
         public (string Initializer, bool Required) GetDeserializeInitializer(
             Compilation compilation,
-            bool preserveInitializers
+            ITypeSymbol? initializerScope
         )
         {
-            var preserved = preserveInitializers ? GetConstInitializer(compilation) : null;
+            var preserved = initializerScope is null
+                ? null
+                : GetConstInitializer(compilation, initializerScope);
             var required =
                 ThrowIfMissing == true
                 || (!IsNullable && ThrowIfMissing == null && preserved is null);

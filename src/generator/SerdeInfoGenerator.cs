@@ -125,11 +125,8 @@ internal static class SerdeInfoGenerator
         var allExplicit =
             !isEnum && emittedMembers.Count > 0 && emittedMembers.All(e => e.Member.Ordinal is int);
 
-        // Match the deserializer: initializers are only preserved inside their declaring type.
-        var containingType = inProgress.IsEmpty ? null : inProgress[0].Containing;
-        var preserveInitializers =
-            containingType is not null
-            && SymbolEqualityComparer.Default.Equals(receiverType, containingType);
+        // Match the deserializer, so members with preserved initializers are reported optional.
+        var initializerScope = SymbolUtilities.GetInitializerScope(receiverType, inProgress);
 
         var memberEntries = new List<string>(emittedMembers.Count);
         foreach (var (m, wrapper) in emittedMembers)
@@ -248,7 +245,7 @@ internal static class SerdeInfoGenerator
             var emitMemberInfo = !m.Attributes.IsEmpty;
             var isOptional =
                 m.SkipDeserialize
-                || !m.GetDeserializeInitializer(context.Compilation, preserveInitializers).Required;
+                || !m.GetDeserializeInitializer(context.Compilation, initializerScope).Required;
 
             var sb = new StringBuilder();
             sb.Append($"new(\"{m.GetFormattedName()}\", {infoExpr})");
