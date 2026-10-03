@@ -121,12 +121,15 @@ public partial class SerializeImplGen
                 }
                 // 3. Check if the member type is a primitive type. If so, it has a dedicated 'Write'
                 //    method. Check using the non-null form (even if it's nullable), since nullable
-                //    types aren't considered primitives
+                //    types aren't considered primitives. The 'Write' methods don't accept null, so a
+                //    nullable member can only use them when a null value is skipped; one that
+                //    serializes null goes through the nullable wrapper below instead.
                 else if (
-                    Proxies.TryGetPrimitiveName(
+                    !(m.IsNullable && m.SerializeNull)
+                    && Proxies.TryGetPrimitiveName(
                         m.Type.WithNullableAnnotation(NullableAnnotation.NotAnnotated)
-                    ) is
-                    { } primName
+                    )
+                        is { } primName
                 )
                 {
                     if (m.IsNullable && !m.SerializeNull)

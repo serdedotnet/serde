@@ -202,6 +202,21 @@ partial struct S<T1, T2, T3, T4, T5>
         }
 
         [Fact]
+        public Task SerializeNullString()
+        {
+            var src = """
+using Serde;
+[GenerateSerialize]
+partial class C
+{
+    [SerdeMemberOptions(SerializeNull = true)]
+    public string? S;
+}
+""";
+            return VerifySerialize(src);
+        }
+
+        [Fact]
         public Task NullableFields()
         {
             var src = """
