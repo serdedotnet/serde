@@ -221,10 +221,9 @@ namespace Serde
         /// Returns the type that the deserializer for <paramref name="type"/> is generated in, if
         /// the initializers of its members may be copied there, or null if they may not.
         ///
-        /// All generated code is nested in the type with the Generate attribute: a type's own
-        /// deserializer is nested in the type, and a union case's deserializer is nested in a
-        /// proxy inside the union. Initializers are not copied for a ForType proxy, which reads the
-        /// members of a type it doesn't contain.
+        /// All generated code is nested in the type with the Generate attribute. Initializers are
+        /// copied from types declared in that type: the type itself, or one of its union cases.
+        /// They are not copied for the target of a ForType proxy, which is declared elsewhere.
         /// </summary>
         internal static ITypeSymbol? GetInitializerScope(
             ITypeSymbol type,
@@ -236,11 +235,14 @@ namespace Serde
                 return null;
             }
             var root = inProgress[0].Containing;
-            var isUnionCase = SymbolEqualityComparer.Default.Equals(
-                type.BaseType,
-                inProgress[^1].Containing
-            );
-            return SymbolEqualityComparer.Default.Equals(type, root) || isUnionCase ? root : null;
+            for (var t = type; t is not null; t = t.ContainingType)
+            {
+                if (SymbolEqualityComparer.Default.Equals(t, root))
+                {
+                    return root;
+                }
+            }
+            return null;
         }
 
         public static TypeSyntax ToFqnSyntax(this ITypeSymbol t) =>
