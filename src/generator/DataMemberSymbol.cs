@@ -210,9 +210,9 @@ namespace Serde
 
         /// <summary>
         /// Returns the initializer expression string for this member, or null if there is no
-        /// initializer or the initializer is not "constant". Constant here means either an
-        /// actual const, or a static member reference that is accessible within
-        /// <paramref name="within"/>. This expression should be safe to emit into methods nested
+        /// initializer or the initializer is not "constant". Constant here means an actual const,
+        /// an empty collection expression (<c>[]</c>), or a static member reference that is
+        /// accessible within <paramref name="within"/>. This expression should be safe to emit into methods nested
         /// inside <paramref name="within"/>.
         /// </summary>
         public string? GetConstInitializer(Compilation compilation, ITypeSymbol within)
@@ -248,6 +248,13 @@ namespace Serde
                 if (expr is InvocationExpressionSyntax)
                 {
                     return null;
+                }
+
+                // An empty collection expression has no identifiers and is target-typed by the
+                // local it's assigned to, which is declared with the member's type.
+                if (expr is CollectionExpressionSyntax { Elements.Count: 0 })
+                {
+                    return "[]";
                 }
 
                 var constant = semanticModel.GetConstantValue(expr);

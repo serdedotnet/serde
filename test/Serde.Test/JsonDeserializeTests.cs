@@ -382,6 +382,21 @@ namespace Serde.Test
             Assert.Equal(7, de.Required);
         }
 
+        [GenerateDeserialize]
+        private partial class EmptyCollectionInitializers
+        {
+            public List<int> Items = [];
+            public int[] Arr { get; init; } = [];
+        }
+
+        [Fact]
+        public void EmptyCollectionInitializersAreOptional()
+        {
+            var de = JsonSerializer.Deserialize<EmptyCollectionInitializers>("{}");
+            Assert.Empty(de.Items);
+            Assert.Empty(de.Arr);
+        }
+
         [Fact]
         public void FieldWithoutInitializerIsRequired()
         {
