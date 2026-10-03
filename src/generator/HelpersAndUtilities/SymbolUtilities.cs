@@ -401,6 +401,16 @@ namespace Serde
                                 AllowDuplicateKeys = (bool)value,
                             },
                             (
+                                nameof(TypeOptions.SerializeNull),
+                                {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            ) => options with
+                            {
+                                SerializeNull = (bool)value,
+                            },
+                            (
                                 nameof(TypeOptions.Rename),
                                 {
                                     Kind: TypedConstantKind.Primitive,
