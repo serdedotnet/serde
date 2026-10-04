@@ -60,6 +60,15 @@ namespace Serde.Test
         }
 
         [Fact]
+        public void DeserializeEscapedSurrogatePairs()
+        {
+            Assert.Equal(
+                new JsonValue.String("a🤖🌍z"),
+                JsonSerializer.DeserializeJsonValue("\"a\\uD83E\\uDD16\\uD83C\\uDF0Dz\"")
+            );
+        }
+
+        [Fact]
         public void DeserializeInt()
         {
             var src = "123";
