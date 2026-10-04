@@ -545,10 +545,12 @@ namespace Serde.Json
                             "invalid escape sequences must have already been caught by Utf8JsonReader.Read()"
                         );
 
-                        if (!DecodeUnicodeEscape(source, destination, ref idx, ref written))
+                        int digitIdx = idx + 1;
+                        if (!DecodeUnicodeEscape(source, destination, ref digitIdx, ref written))
                         {
                             goto DestinationTooShort;
                         }
+                        idx = digitIdx - 1;
                         break;
                 }
 
@@ -659,7 +661,7 @@ namespace Serde.Json
                 );
 
                 // We must have a low surrogate following a high surrogate.
-                if (source.Length < idx + 7 || source[idx + 1] != '\\' || source[idx + 2] != 'u')
+                if (source.Length < idx + 6 || source[idx] != '\\' || source[idx + 1] != 'u')
                 {
                     ThrowHelper.ThrowInvalidOperationException_ReadIncompleteUTF16();
                 }
@@ -667,7 +669,7 @@ namespace Serde.Json
                 // The source is known to be valid JSON, and hence if we see a \u, it is guaranteed to have 4 hex digits following it
                 // Otherwise, the Utf8JsonReader would have already thrown an exception.
                 result = Utf8Parser.TryParse(
-                    source.Slice(idx + 3, 4),
+                    source.Slice(idx + 2, 4),
                     out int lowSurrogate,
                     out bytesConsumed,
                     'x'

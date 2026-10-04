@@ -32,6 +32,23 @@ public sealed partial class RoundtripTests
     }
 
     [GenerateSerde]
+    private partial record UnicodeNote
+    {
+        public required string Text { get; init; }
+    }
+
+    [Fact]
+    public void EscapedSurrogatePairsRoundtrip()
+    {
+        var note = new UnicodeNote { Text = "a🤖🌍z" };
+        Assert.Equal(note, JsonSerializer.Deserialize<UnicodeNote>(JsonSerializer.Serialize(note)));
+        Assert.Equal(
+            note,
+            JsonSerializer.Deserialize<UnicodeNote>("""{"text":"a\uD83E\uDD16\uD83C\uDF0Dz"}""")
+        );
+    }
+
+    [GenerateSerde]
     [SerdeTypeOptions(MemberFormat = MemberFormat.None)]
     public partial record Point
     {
