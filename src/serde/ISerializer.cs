@@ -125,6 +125,19 @@ public interface ITypeSerializer
     ISerializer WriteFieldStart(ISerdeInfo typeInfo, int index);
     void WriteFieldEnd(ISerdeInfo typeInfo, int index, ISerializer serializer);
 
+    /// <summary>
+    /// Start writing a field that is identified by name, rather than by an index into <paramref
+    /// name="typeInfo"/>, because it is not one of the type's fields. This is the write-side
+    /// counterpart of <see cref="ITypeDeserializer.TryReadIndexWithName"/> returning <see
+    /// cref="ITypeDeserializer.IndexNotFound"/> with a name, and is used to write back fields
+    /// captured by <see cref="SerdeMemberOptions.CaptureUnknownMembers"/>. Formats that cannot represent
+    /// fields outside the type's field table should throw <see cref="NotSupportedException"/>.
+    /// </summary>
+    ISerializer WriteFieldStart(ISerdeInfo typeInfo, string name) =>
+        throw new NotSupportedException($"{GetType()} does not support writing fields by name.");
+
+    void WriteFieldEnd(ISerdeInfo typeInfo, string name, ISerializer serializer) { }
+
     void WriteBool(ISerdeInfo typeInfo, int index, bool b);
     void WriteChar(ISerdeInfo typeInfo, int index, char c);
     void WriteU8(ISerdeInfo typeInfo, int index, byte b);

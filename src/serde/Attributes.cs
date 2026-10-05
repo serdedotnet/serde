@@ -240,6 +240,24 @@ sealed class SerdeMemberOptions : Attribute
     public bool SkipDeserialize { get; init; } = false;
 
     /// <summary>
+    /// Capture members not recognized by the type into this member during deserialization, and
+    /// write its entries back out as members during serialization. This is the alternative to <see
+    /// cref="SerdeTypeOptions.DenyUnknownMembers"/>, which rejects unknown members, and the
+    /// default, which skips them.
+    ///
+    /// The member must be a <c>Dictionary&lt;string, T&gt;</c>, keyed by the member names as they
+    /// appear in the format. Each value is read and written by <c>T</c>'s ordinary implementation.
+    /// Duplicate unknown members follow <see cref="SerdeTypeOptions.AllowDuplicateKeys"/>, like
+    /// the type's own members. If there are no unknown members, a nullable member is left null and
+    /// a non-nullable one gets an empty dictionary.
+    ///
+    /// This member is not itself serialized as a member and does not appear in the type's <see
+    /// cref="ISerdeInfo"/>. Writing the captured members requires a format that supports writing
+    /// fields by name (see <see cref="ITypeSerializer.WriteFieldStart(ISerdeInfo, string)"/>).
+    /// </summary>
+    public bool CaptureUnknownMembers { get; init; } = false;
+
+    /// <summary>
     /// Proxy type for the ISerialize and IDeserialize implementations.
     /// </summary>
     public Type? Proxy { get; init; } = null;

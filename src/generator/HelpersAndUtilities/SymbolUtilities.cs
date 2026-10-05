@@ -12,6 +12,131 @@ namespace Serde
 {
     internal static class SymbolUtilities
     {
+        /// <summary>
+        /// Find the member marked with <c>[SerdeMemberOptions(CaptureUnknownMembers = true)]</c>, if
+        /// any. Returns null, after reporting a diagnostic, if the member can't capture unknown
+        /// members.
+        /// </summary>
+        public static DataMemberSymbol? GetCaptureMember(
+            ITypeSymbol type,
+            GeneratorExecutionContext context
+        )
+        {
+            DataMemberSymbol? capture = null;
+            var curType = type;
+            while (curType is not ({ SpecialType: SpecialType.System_Object } or null))
+            {
+                var typeOptions = GetTypeOptions(curType);
+                foreach (var m in curType.GetMembers())
+                {
+                    if (
+                        m
+                            is not (
+                                IFieldSymbol { IsStatic: false }
+                                or IPropertySymbol { IsStatic: false, Parameters.Length: 0 }
+                            )
+                        || GetMemberOptions(m) is not { CaptureUnknownMembers: true } memberOptions
+                    )
+                    {
+                        continue;
+                    }
+                    if (m.DeclaredAccessibility != Accessibility.Public)
+                    {
+                        context.ReportDiagnostic(
+                            CreateDiagnostic(
+                                DiagId.ERR_CaptureMemberNotPublic,
+                                m.Locations[0],
+                                m.Name
+                            )
+                        );
+                        continue;
+                    }
+                    // The member isn't serialized or deserialized as a member itself, so none of
+                    // its other options apply
+                    foreach (var option in GetOtherMemberOptions(m))
+                    {
+                        context.ReportDiagnostic(
+                            CreateDiagnostic(
+                                DiagId.ERR_CaptureWithMemberOption,
+                                m.Locations[0],
+                                option,
+                                m.Name
+                            )
+                        );
+                    }
+                    if (capture is { } first)
+                    {
+                        context.ReportDiagnostic(
+                            CreateDiagnostic(
+                                DiagId.ERR_MultipleCaptureMembers,
+                                m.Locations[0],
+                                m.Name,
+                                type.Name,
+                                first.Name
+                            )
+                        );
+                        continue;
+                    }
+                    capture = new DataMemberSymbol(m, typeOptions, memberOptions);
+                }
+                curType = curType.BaseType;
+            }
+
+            if (capture is not { } c)
+            {
+                return null;
+            }
+            if (GetTypeOptions(type).DenyUnknownMembers)
+            {
+                context.ReportDiagnostic(
+                    CreateDiagnostic(
+                        DiagId.ERR_CaptureWithDenyUnknownMembers,
+                        c.Locations[0],
+                        c.Name,
+                        type.Name
+                    )
+                );
+                return null;
+            }
+            if (!IsStringKeyedDictionary(c.Type, context.Compilation))
+            {
+                context.ReportDiagnostic(
+                    CreateDiagnostic(
+                        DiagId.ERR_CaptureMemberNotDictionary,
+                        c.Locations[0],
+                        c.Name,
+                        c.Type.ToDisplayString()
+                    )
+                );
+                return null;
+            }
+            return capture;
+
+            // The names of the options set on the member's SerdeMemberOptions, other than
+            // CaptureUnknownMembers
+            static IEnumerable<string> GetOtherMemberOptions(ISymbol member) =>
+                member
+                    .GetAttributes()
+                    .Where(attr =>
+                        attr.AttributeClass is { } attrClass
+                        && WellKnownTypes.IsWellKnownAttribute(
+                            attrClass,
+                            WellKnownAttribute.SerdeMemberOptions
+                        )
+                    )
+                    .SelectMany(attr => attr.NamedArguments)
+                    .Select(arg => arg.Key)
+                    .Where(name => name != nameof(MemberOptions.CaptureUnknownMembers));
+
+            static bool IsStringKeyedDictionary(ITypeSymbol type, Compilation compilation) =>
+                type is INamedTypeSymbol { TypeArguments: [var key, _] } named
+                && SymbolEqualityComparer.Default.Equals(
+                    named.OriginalDefinition,
+                    compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2")
+                )
+                && key.SpecialType == SpecialType.System_String;
+        }
+
         public static ITypeSymbol GetSymbolType(ISymbol symbol) =>
             symbol switch
             {
@@ -66,6 +191,12 @@ namespace Serde
                         continue;
                     }
                     var memberOptions = GetMemberOptions(m);
+                    if (memberOptions.CaptureUnknownMembers)
+                    {
+                        // Captures unknown members rather than being a member itself. Its options
+                        // are checked by GetCaptureMember.
+                        continue;
+                    }
                     if (
                         memberOptions.Skip
                         || (memberOptions.SkipSerialize && usage == SerdeUsage.Serialize)
@@ -336,6 +467,18 @@ namespace Serde
                             } => options with
                             {
                                 SkipDeserialize = (bool)value,
+                            },
+
+                            {
+                                Key: nameof(MemberOptions.CaptureUnknownMembers),
+                                Value:
+                                {
+                                    Kind: TypedConstantKind.Primitive,
+                                    Type.SpecialType: SpecialType.System_Boolean
+                                }
+                            } => options with
+                            {
+                                CaptureUnknownMembers = (bool)value,
                             },
 
                             _ => options,

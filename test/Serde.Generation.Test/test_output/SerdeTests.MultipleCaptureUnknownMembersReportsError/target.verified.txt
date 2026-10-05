@@ -1,0 +1,23 @@
+﻿{
+  Diagnostics: [
+    {
+      Location: /*
+    [SerdeMemberOptions(CaptureUnknownMembers = true)]
+    public Dictionary<string, string>? Other { get; init; }
+                                       ^^^^^
+}
+*/
+ : (12,39)-(12,44),
+      Message: Member 'Other' captures unknown members, but type 'C' already captures them in member 'Unknown'.,
+      Severity: Error,
+      Descriptor: {
+        Id: ERR_MultipleCaptureMembers,
+        Title: ,
+        MessageFormat: Member 'Other' captures unknown members, but type 'C' already captures them in member 'Unknown'.,
+        Category: Serde,
+        DefaultSeverity: Error,
+        IsEnabledByDefault: true
+      }
+    }
+  ]
+}

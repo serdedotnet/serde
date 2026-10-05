@@ -187,4 +187,19 @@
   <data name="ERR_OrdinalOnEnumMember" xml:space="preserve">
     <value>The 'Ordinal' option on enum member '{0}' is not allowed. Enum members are mapped by their declared value, not by ordinal.</value>
   </data>
+  <data name="ERR_CaptureMemberNotDictionary" xml:space="preserve">
+    <value>Member '{0}' captures unknown members, so it must be a 'Dictionary&lt;string, T&gt;', but its type is '{1}'.</value>
+  </data>
+  <data name="ERR_CaptureWithDenyUnknownMembers" xml:space="preserve">
+    <value>Member '{0}' captures unknown members, but type '{1}' denies unknown members with 'DenyUnknownMembers'.</value>
+  </data>
+  <data name="ERR_MultipleCaptureMembers" xml:space="preserve">
+    <value>Member '{0}' captures unknown members, but type '{1}' already captures them in member '{2}'.</value>
+  </data>
+  <data name="ERR_CaptureMemberNotPublic" xml:space="preserve">
+    <value>The 'CaptureUnknownMembers' option on member '{0}' has no effect because the member is not public.</value>
+  </data>
+  <data name="ERR_CaptureWithMemberOption" xml:space="preserve">
+    <value>The '{0}' option on member '{1}' has no effect because the member captures unknown members.</value>
+  </data>
 </root>

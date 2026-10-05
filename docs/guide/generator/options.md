@@ -102,3 +102,21 @@ Note that these options only apply to the target type, not the type of nested me
   When any member of a type specifies an explicit ordinal, every member must specify one. Ordinals must be non-negative and unique, but they need **not** be contiguous: gaps ("holes") are allowed, so an obsolete member's ordinal can be retired without renumbering the others. Members are laid out in ascending ordinal order, and `GetFieldOrdinal` is guaranteed to be strictly increasing across the field positions. Like all member options, `Ordinal` only applies to public fields and properties; placing it on any other member is an error. It is also not allowed on enum members, which are mapped by their declared value rather than by ordinal.
 
   When no member declares an ordinal, `ISerdeInfo.GetFieldOrdinal` still returns a value, but it is just the incidental physical position (declaration order), which is not a stable identity. Use `ISerdeInfo.HasExplicitFieldOrdinals` to tell the two cases apart: a positional or tag-based format should only rely on ordinals for its wire layout when that flag is `true`.
+- `[SerdeMemberOptions(CaptureUnknownMembers = true)]`
+
+  `false` by default. When true, members in the input that the type doesn't define are collected into this member instead of being skipped, and are written back out as members when serializing. This is the alternative to `DenyUnknownMembers`, which rejects unknown members; the two can't be combined. At most one member of a type can capture unknown members.
+
+  The member must be a `Dictionary<string, T>`, keyed by the member names as they appear in the format. The value type is up to you: `Dictionary<string, JsonValue>` keeps arbitrary JSON, while something like `Dictionary<string, string>` only accepts unknown members with string values. Duplicate unknown members follow `AllowDuplicateKeys`, like the type's own members. If there are no unknown members, a nullable member is left `null` and a non-nullable one gets an empty dictionary.
+
+  ```csharp
+  [GenerateSerde]
+  public partial record Person
+  {
+      public required string Name { get; init; }
+
+      [SerdeMemberOptions(CaptureUnknownMembers = true)]
+      public Dictionary<string, JsonValue> Unknown { get; init; } = new();
+  }
+  ```
+
+  The capturing member doesn't appear in the type's `ISerdeInfo`, and isn't itself written as a member. Writing captured members back out requires a format that can write members by name; formats that can't will throw when there are captured members to write. Serializing a captured member whose name matches one of the type's own members throws, since that member would otherwise be written twice.
